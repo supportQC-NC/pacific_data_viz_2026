@@ -183,5 +183,114 @@
     "map_low": "below reference",
     "map_mid": "reference",
     "map_high": "above"
+  },
+  "act3": {
+    "lead": "As the sea advances, the human map is redrawn. Population growth is slowing almost everywhere — and several islands are already losing inhabitants, while others crowd a growing population onto a threatened shore.",
+    "value_label": "Annual growth",
+    "unit": "%",
+    "baseline": "stable (0)",
+    "mean_label": "avg",
+    "pop_title": "Population growth",
+    "pop_sub": "annual rate",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "The indicator is an annual population GROWTH RATE (in %), not a headcount. 0 = stable population; above 0: the island is gaining inhabitants; below: it is losing them.",
+      "steps": [
+        {
+          "k": "Rate, not headcount",
+          "v": "Each value is the one-year population change, in %. Negative = decline (emigration), positive = growth."
+        },
+        {
+          "k": "Mean + spread",
+          "v": "The thick line is the average of the 22 territories; the band shows where 8 in 10 territories sit (10th–90th percentile), so it isn't crushed by tiny islands with extreme swings."
+        },
+        {
+          "k": "Time",
+          "v": "The slider (or ▶) moves the year on the curve AND the 3D map at once."
+        },
+        {
+          "k": "The map",
+          "v": "Height ∝ rate magnitude; red = the island is growing (coastal pressure), blue = it is emptying (departures)."
+        }
+      ],
+      "takeaway": "Growth is running out of steam: many islands plateau or empty out, while a handful pack ever more people onto increasingly exposed coasts."
+    },
+    "map_title": "Growth by territory",
+    "map_sub": "annual rate",
+    "map_low": "decline",
+    "map_mid": "stable",
+    "map_high": "growth",
+    "evo_title": "Who accelerates, who drops off",
+    "evo_sub": "change in rate between first and last year",
+    "evo_down": "Tipping into decline",
+    "evo_up": "Acceleration",
+    "table_title": "The data in detail",
+    "table_sub": "click a header to sort",
+    "vs_mean": "Gap vs average",
+    "demo_badge": "demo",
+    "coverage": "territories",
+    "period": "period",
+    "pop_unit": "%",
+    "coming": "Data retrieved ✓"
+  },
+  "act4": {
+    "kpi_affected": "people affected (total)",
+    "kpi_loss": "economic losses (total)",
+    "kpi_events": "recorded events",
+    "kpi_worst": "worst disaster",
+    "explore": "Explore:",
+    "timeline_title": "The rhythm of disasters",
+    "timeline_sub": "one circle per event, sized by magnitude",
+    "rank_title": "Who bears the heaviest toll",
+    "rank_sub": "total over the whole period",
+    "map_title": "The footprint of disasters",
+    "map_sub": "total by territory",
+    "map_low": "spared",
+    "map_high": "hardest hit",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "Here the data isn't a steady trend but a series of DISASTERS: isolated spikes, many years with no event. So we look at totals and shocks, not a curve.",
+      "steps": [
+        {
+          "k": "Spikes, not a curve",
+          "v": "Each disaster is a dated event: people affected and economic losses cluster in a few years."
+        },
+        {
+          "k": "The timeline",
+          "v": "Each circle is an event placed on its year; the bigger it is, the more people it affected (or the more it cost). Clusters reveal the dark years."
+        },
+        {
+          "k": "The ranking",
+          "v": "The total over the whole period shows which territories carry the heaviest toll."
+        },
+        {
+          "k": "The map (log scale)",
+          "v": "Heights are on a logarithmic scale: without it, Fiji would dwarf everyone else. Taller and redder means a higher total."
+        }
+      ],
+      "takeaway": "A handful of events — Winston (Fiji, 2016), Pam (Vanuatu, 2015) — concentrate most of the human cost: hundreds of thousands of people affected and hundreds of millions of dollars in losses."
+    },
+    "affected_title": "People affected",
+    "affected_sub": "by disasters",
+    "affected_unit": "ppl",
+    "loss_title": "Economic losses",
+    "loss_sub": "direct damage",
+    "loss_unit": "US$",
+    "coverage": "territories",
+    "period": "period",
+    "points": "events",
+    "demo_badge": "demo",
+    "lead": "Anomalies always end up with a face: people affected and economic losses, concentrated in a few disaster years.",
+    "coming": "Data retrieved ✓"
+  },
+  "act5": {
+    "lead": "The Pacific does not suffer in silence. Against rising seas and the human cost, a trajectory is taking hold: the share of renewable energy is climbing, territory by territory. Here is the retrieved data.",
+    "ren_title": "Renewable energy",
+    "ren_sub": "share of final consumption",
+    "ren_unit": "%",
+    "coverage": "territories",
+    "period": "period",
+    "demo_badge": "demo",
+    "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next."
   }
 }

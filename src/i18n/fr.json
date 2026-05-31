@@ -183,5 +183,114 @@
     "map_low": "sous la référence",
     "map_mid": "référence",
     "map_high": "au-dessus"
+  },
+  "act3": {
+    "lead": "Pendant que la mer avance, la carte humaine se redessine. La croissance démographique ralentit presque partout — et plusieurs îles perdent déjà leurs habitants, tandis que d'autres concentrent une population croissante sur un littoral menacé.",
+    "value_label": "Croissance annuelle",
+    "unit": "%",
+    "baseline": "stable (0)",
+    "mean_label": "moy.",
+    "pop_title": "Croissance de la population",
+    "pop_sub": "taux annuel",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "L'indicateur est un TAUX de croissance annuel de la population (en %), pas un effectif. 0 = population stable ; au-dessus de 0 : l'île gagne des habitants ; en dessous : elle en perd.",
+      "steps": [
+        {
+          "k": "Taux, pas effectif",
+          "v": "Chaque valeur est la variation de population sur un an, en %. Négatif = déclin (émigration), positif = croissance."
+        },
+        {
+          "k": "Moyenne + dispersion",
+          "v": "La ligne épaisse est la moyenne des 22 territoires ; la bande montre où se situent 8 territoires sur 10 (10ᵉ–90ᵉ centile), pour ne pas être écrasée par les micro-îles aux variations extrêmes."
+        },
+        {
+          "k": "Le temps",
+          "v": "Le curseur (ou ▶) déplace l'année sur la courbe ET sur la carte 3D en même temps."
+        },
+        {
+          "k": "La carte",
+          "v": "Hauteur ∝ amplitude du taux ; rouge = l'île grandit (pression côtière), bleu = elle se vide (départs)."
+        }
+      ],
+      "takeaway": "La croissance s'essouffle : beaucoup d'îles plafonnent ou se vident, pendant qu'une poignée entasse toujours plus d'habitants sur des côtes de plus en plus exposées."
+    },
+    "map_title": "Croissance par territoire",
+    "map_sub": "taux annuel",
+    "map_low": "déclin",
+    "map_mid": "stable",
+    "map_high": "croissance",
+    "evo_title": "Qui accélère, qui décroche",
+    "evo_sub": "variation du taux entre la première et la dernière année",
+    "evo_down": "Bascule vers le déclin",
+    "evo_up": "Accélération",
+    "table_title": "Les données en détail",
+    "table_sub": "cliquez sur un en-tête pour trier",
+    "vs_mean": "Écart vs moyenne",
+    "demo_badge": "démo",
+    "coverage": "territoires",
+    "period": "période",
+    "pop_unit": "%",
+    "coming": "Données récupérées ✓"
+  },
+  "act4": {
+    "kpi_affected": "personnes affectées (cumul)",
+    "kpi_loss": "pertes économiques (cumul)",
+    "kpi_events": "événements recensés",
+    "kpi_worst": "catastrophe la plus lourde",
+    "explore": "Explorer :",
+    "timeline_title": "Le rythme des catastrophes",
+    "timeline_sub": "un cercle par événement, taille selon l'ampleur",
+    "rank_title": "Qui paie le plus lourd tribut",
+    "rank_sub": "cumul sur toute la période",
+    "map_title": "L'empreinte des catastrophes",
+    "map_sub": "cumul par territoire",
+    "map_low": "épargné",
+    "map_high": "le plus touché",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "Ici, la donnée n'est pas une tendance régulière mais une succession de CATASTROPHES : des pics isolés, beaucoup d'années sans événement. On regarde donc le cumul et les chocs, pas une courbe.",
+      "steps": [
+        {
+          "k": "Des pics, pas une courbe",
+          "v": "Chaque catastrophe est un événement daté : personnes affectées et pertes économiques se concentrent sur quelques années."
+        },
+        {
+          "k": "La frise",
+          "v": "Chaque cercle est un événement, placé sur son année ; plus il est gros, plus il a affecté de personnes (ou coûté cher). Les grappes révèlent les années noires."
+        },
+        {
+          "k": "Le classement",
+          "v": "Le cumul sur toute la période montre quels territoires portent le tribut le plus lourd."
+        },
+        {
+          "k": "La carte (échelle log)",
+          "v": "Les hauteurs sont en échelle logarithmique : sans ça, Fidji écraserait tous les autres. Plus c'est haut et rouge, plus le cumul est élevé."
+        }
+      ],
+      "takeaway": "Quelques événements — Winston (Fidji, 2016), Pam (Vanuatu, 2015) — concentrent l'essentiel du coût humain : des centaines de milliers de personnes affectées et des centaines de millions de dollars de pertes."
+    },
+    "affected_title": "Personnes affectées",
+    "affected_sub": "par les catastrophes",
+    "affected_unit": "pers.",
+    "loss_title": "Pertes économiques",
+    "loss_sub": "dommages directs",
+    "loss_unit": "US$",
+    "coverage": "territoires",
+    "period": "période",
+    "points": "événements",
+    "demo_badge": "démo",
+    "lead": "Les anomalies finissent toujours par avoir un visage : des personnes affectées et des pertes économiques, concentrées sur quelques années de catastrophe.",
+    "coming": "Données récupérées ✓"
+  },
+  "act5": {
+    "lead": "Le Pacifique ne subit pas en silence. Face à la montée des eaux et au coût humain, une trajectoire s'affirme : la part des énergies renouvelables grimpe, territoire par territoire. Voici les données récupérées.",
+    "ren_title": "Énergies renouvelables",
+    "ren_sub": "part de la consommation finale",
+    "ren_unit": "%",
+    "coverage": "territoires",
+    "period": "période",
+    "demo_badge": "démo",
+    "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante."
   }
 }

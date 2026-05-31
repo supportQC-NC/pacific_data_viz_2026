@@ -16,9 +16,9 @@ import "./Home.scss";
 const ACTS = [
   { id: "a1", to: "/emissions" },
   { id: "a2", to: "/ocean" },
-  { id: "a3", to: null },
-  { id: "a4", to: null },
-  { id: "a5", to: null },
+  { id: "a3", to: "/territory" },
+  { id: "a4", to: "/impact" },
+  { id: "a5", to: "/momentum" },
 ];
 
 export default function Home() {

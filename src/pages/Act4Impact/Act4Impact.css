@@ -1,0 +1,170 @@
+@charset "UTF-8";
+.act4 {
+  padding-block: var(--sp-24) var(--sp-16);
+  min-height: 100vh;
+}
+
+.act4__head {
+  margin-bottom: var(--sp-12);
+}
+
+.act4__title {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: var(--fw-light);
+  margin: var(--sp-3) 0 var(--sp-6);
+}
+
+.act4__lead {
+  max-width: var(--maxw-text);
+  color: var(--c-text-soft);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+}
+
+.act4__state {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-6) 0;
+}
+
+.act4__state--err {
+  color: var(--c-warm);
+}
+
+.act4__btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  background: var(--c-bg-2);
+  border: var(--border-hair) solid var(--c-line-strong);
+  padding: var(--sp-2) var(--sp-5);
+  border-radius: var(--r-pill);
+  transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
+.act4__btn:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+/* Chiffres-chocs */
+.act4__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-4);
+  margin: var(--sp-8) 0 var(--sp-12);
+}
+
+@media (max-width: 820px) {
+  .act4__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.act4__kpi {
+  border: var(--border-hair) solid var(--c-line);
+  border-left: 3px solid var(--c-warm);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  padding: var(--sp-6);
+}
+
+.act4__kpi-val {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: var(--fw-light);
+  color: var(--c-warm);
+  line-height: 1;
+}
+
+.act4__kpi-lbl {
+  display: block;
+  margin-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* Bascule métrique */
+.act4__metric {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  flex-wrap: wrap;
+}
+
+.act4__metric-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-mute);
+}
+
+.act4__toggle {
+  display: inline-flex;
+  gap: var(--sp-2);
+}
+
+.act4__toggle-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.act4__toggle-btn:hover {
+  color: var(--c-text);
+}
+
+.act4__toggle-btn.is-on {
+  color: var(--c-bg);
+  background: var(--c-warm);
+  border-color: var(--c-warm);
+}
+
+/* Sections */
+.act4__sec-head {
+  margin: var(--sp-12) 0 var(--sp-4);
+  padding-top: var(--sp-8);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+
+.act4__sec-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+}
+
+.act4__sub {
+  display: block;
+  margin-top: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+
+.act4__back {
+  display: inline-block;
+  margin-top: var(--sp-16);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.act4__back:hover {
+  color: var(--c-accent);
+}/*# sourceMappingURL=Act4Impact.css.map */

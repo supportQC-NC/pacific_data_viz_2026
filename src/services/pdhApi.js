@@ -126,10 +126,97 @@ function buildSstFallback() {
   return rows;
 }
 
+// Population : TAUX de croissance annuel (%) par territoire 1990→2025.
+// (L'indicateur live est un taux, pas un effectif.) Beaucoup ralentissent ;
+// certaines îles passent en négatif (émigration).
+const POPRATE_1990 = {
+  PG: 2.9, FJ: 1.2, SB: 3.3, NC: 2.2, PF: 2.4, GU: 2.0, VU: 2.9, WS: 1.0,
+  TO: 0.4, FM: 1.8, KI: 2.1, MH: 1.5, PW: 2.2, CK: 0.2, AS: 3.2, MP: 5.5,
+  NR: 1.0, TV: 1.3, WF: 1.0, NU: -1.5, TK: 0.2, PN: -1.0,
+};
+const POPRATE_2025 = {
+  PG: 1.8, FJ: 0.5, SB: 2.4, NC: 0.9, PF: 0.2, GU: 0.7, VU: 2.3, WS: 0.6,
+  TO: -0.4, FM: 0.5, KI: 1.5, MH: -3.3, PW: -0.1, CK: -3.4, AS: -1.6, MP: -1.8,
+  NR: 0.7, TV: -1.7, WF: -0.8, NU: 0.4, TK: 4.4, PN: 0,
+};
+function buildPopulationFallback() {
+  const rows = [];
+  Object.keys(POPRATE_1990).forEach((geo) => {
+    const a = POPRATE_1990[geo];
+    const b = POPRATE_2025[geo];
+    for (let year = 1990; year <= 2025; year += 1) {
+      const t = (year - 1990) / 35;
+      const noise = (((geo.charCodeAt(0) + year) % 5) - 2) * 0.12;
+      rows.push({ geo, year, value: +(a + (b - a) * t + noise).toFixed(2) });
+    }
+  });
+  return rows;
+}
+
+// Catastrophes : données ÉVÉNEMENTIELLES (pics, pas séries continues).
+// Quelques événements marquants réels, par territoire.
+const DISASTER_EVENTS = [
+  { geo: "FJ", year: 2012, affected: 14000, loss: 100000000 },
+  { geo: "FJ", year: 2016, affected: 540000, loss: 1400000000 }, // Winston
+  { geo: "FJ", year: 2020, affected: 75000, loss: 50000000 },
+  { geo: "VU", year: 2015, affected: 188000, loss: 449000000 },  // Pam
+  { geo: "VU", year: 2020, affected: 160000, loss: 600000000 },  // Harold
+  { geo: "VU", year: 2023, affected: 250000, loss: 400000000 },
+  { geo: "TO", year: 2018, affected: 80000, loss: 164000000 },   // Gita
+  { geo: "TO", year: 2022, affected: 84000, loss: 90000000 },    // Hunga Tonga
+  { geo: "SB", year: 2014, affected: 52000, loss: 108000000 },
+  { geo: "PG", year: 2015, affected: 480000, loss: 12000000 },   // sécheresse
+  { geo: "PG", year: 2018, affected: 544000, loss: 300000000 },  // séisme
+  { geo: "WS", year: 2012, affected: 7500, loss: 200000000 },    // Evan
+  { geo: "FM", year: 2015, affected: 30000, loss: 8500000 },
+  { geo: "MH", year: 2013, affected: 6000, loss: 4900000 },
+  { geo: "TV", year: 2015, affected: 4000, loss: 11000000 },
+  { geo: "KI", year: 2015, affected: 25000, loss: 5000000 },
+  { geo: "PF", year: 2010, affected: 5000, loss: 30000000 },     // Oli
+  { geo: "AS", year: 2009, affected: 8000, loss: 150000000 },    // tsunami
+  { geo: "CK", year: 2005, affected: 1000, loss: 7000000 },
+  { geo: "GU", year: 2002, affected: 3000, loss: 50000000 },
+  { geo: "NC", year: 2003, affected: 2000, loss: 5000000 },
+];
+function buildDisastersAffectedFallback() {
+  return DISASTER_EVENTS.filter((e) => e.affected > 0).map((e) => ({ geo: e.geo, year: e.year, value: e.affected }));
+}
+function buildDisastersLossFallback() {
+  return DISASTER_EVENTS.filter((e) => e.loss > 0).map((e) => ({ geo: e.geo, year: e.year, value: e.loss }));
+}
+
+// Renouvelables : part des renouvelables dans la conso finale d'énergie (%).
+// Trajectoire montante (élan) ; quelques pionniers à très forte part (TK solaire).
+const RENEW_2000 = {
+  PG: 55, SB: 55, WS: 35, PF: 30, VU: 25, FJ: 18, NC: 13, TO: 5, CK: 5, PN: 5,
+  TV: 2, KI: 2, NU: 2, FM: 1, MH: 1, GU: 1, AS: 1, MP: 1, PW: 1, WF: 1, NR: 0, TK: 0,
+};
+const RENEW_2021 = {
+  TK: 93, SB: 40, CK: 40, PN: 40, WS: 40, VU: 35, PF: 32, FJ: 28, PG: 50, NC: 18,
+  TV: 18, TO: 13, KI: 10, NU: 10, PW: 8, GU: 6, WF: 6, AS: 5, FM: 5, MH: 4, MP: 4, NR: 3,
+};
+function buildRenewablesFallback() {
+  const rows = [];
+  Object.keys(RENEW_2000).forEach((geo) => {
+    const a = RENEW_2000[geo];
+    const b = RENEW_2021[geo];
+    for (let year = 2000; year <= 2021; year += 1) {
+      const t = (year - 2000) / 21;
+      const noise = (((geo.charCodeAt(0) + year) % 5) - 2) * 0.4;
+      rows.push({ geo, year, value: +Math.max(0, Math.min(100, a + (b - a) * t + noise)).toFixed(1) });
+    }
+  });
+  return rows;
+}
+
 const FALLBACKS = {
   emissions: buildEmissionsFallback,
   seaLevel: buildSeaLevelFallback,
   sst: buildSstFallback,
+  population: buildPopulationFallback,
+  disastersAffected: buildDisastersAffectedFallback,
+  disastersLoss: buildDisastersLossFallback,
+  renewables: buildRenewablesFallback,
 };
 function fallbackResult(id) {
   const build = FALLBACKS[id];

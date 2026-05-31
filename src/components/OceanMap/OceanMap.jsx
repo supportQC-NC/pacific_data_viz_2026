@@ -1,13 +1,13 @@
 // src/components/OceanMap/OceanMap.jsx
 // ============================================================
 // Carte Mapbox SATELLITE 3D — colonnes extrudées (fill-extrusion).
-// Chaque territoire = une colonne : HAUTEUR ∝ anomalie, COULEUR
-// divergente (bleu sous la référence ↔ rouge au-dessus). Vue inclinée
-// (pitch), ciel atmosphérique, intro qui « pousse » les colonnes.
-// Lisible (plus haut = plus fort) et exploite la 3D de Mapbox.
+// HAUTEUR ∝ valeur, COULEUR selon le domaine. Vue inclinée + terrain
+// réel + ciel + intro qui « pousse » les colonnes.
+// logScale=true : échelle logarithmique (pour des valeurs sur plusieurs
+// ordres de grandeur, ex. personnes affectées / pertes économiques).
 // Token : REACT_APP_MAPBOX_TOKEN.
 // Props : data [{area,name,value,year}], unit, range {min,max},
-//         lowLabel, midLabel, highLabel, noTokenMsg
+//         logScale, lowLabel, midLabel, highLabel, noTokenMsg
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -20,17 +20,15 @@ const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const COLD = "#2c7fb8";
 const NEUTRAL = "#e6edf3";
 const HOT = "#e8453c";
-const MAX_H = 750000; // hauteur max d'une colonne (m) — visible à ce zoom
+const MAX_H = 750000;
 const BASE_H = 45000;
 
-function colorExpr(min, max) {
-  const lo = Math.min(min, 0);
-  const hi = Math.max(max, 0);
+function colorExpr(lo, hi) {
   if (lo < 0 && hi > 0)
     return [
       "interpolate",
       ["linear"],
-      ["get", "value"],
+      ["get", "cv"],
       lo,
       COLD,
       0,
@@ -42,7 +40,7 @@ function colorExpr(min, max) {
     return [
       "interpolate",
       ["linear"],
-      ["get", "value"],
+      ["get", "cv"],
       lo,
       COLD,
       hi === lo ? lo + 1e-6 : hi,
@@ -51,7 +49,7 @@ function colorExpr(min, max) {
   return [
     "interpolate",
     ["linear"],
-    ["get", "value"],
+    ["get", "cv"],
     lo,
     NEUTRAL,
     hi === lo ? lo + 1e-6 : hi,
@@ -59,7 +57,6 @@ function colorExpr(min, max) {
   ];
 }
 
-// Footprint carré (~rayon en km) autour d'un point.
 function squareKm([lng, lat], km) {
   const dLat = km / 111;
   const dLng = km / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -78,6 +75,7 @@ export default function OceanMap({
   data,
   unit,
   range,
+  logScale = false,
   lowLabel,
   midLabel,
   highLabel,
@@ -91,10 +89,23 @@ export default function OceanMap({
 
   const min = range?.min ?? -1;
   const max = range?.max ?? 1;
+
+  // Domaine couleur/hauteur (linéaire ou log).
+  const { dom, loD, hiD } = useMemo(() => {
+    const fn = logScale ? (v) => Math.log10(1 + Math.max(0, v)) : (v) => v;
+    return {
+      dom: fn,
+      loD: logScale ? fn(Math.max(0, min)) : min,
+      hiD: fn(max),
+    };
+  }, [logScale, min, max]);
+
   const norm = useMemo(
     () => (v) =>
-      max === min ? 0.5 : Math.max(0, Math.min(1, (v - min) / (max - min))),
-    [min, max],
+      hiD === loD
+        ? 0.5
+        : Math.max(0, Math.min(1, (dom(v) - loD) / (hiD - loD))),
+    [dom, loD, hiD],
   );
 
   const fc = useMemo(() => {
@@ -110,6 +121,7 @@ export default function OceanMap({
           name: d.name,
           value: d.value,
           year: d.year,
+          cv: dom(d.value),
           height: BASE_H + norm(d.value) * MAX_H,
           lng: c[0],
           lat: c[1],
@@ -117,7 +129,7 @@ export default function OceanMap({
       });
     });
     return { type: "FeatureCollection", features };
-  }, [data, norm]);
+  }, [data, dom, norm]);
 
   const centers = useMemo(
     () => ({
@@ -159,8 +171,6 @@ export default function OceanMap({
           "sky-atmosphere-sun-intensity": 6,
         },
       });
-
-      // Relief réel (DEM Mapbox) — les îles prennent du volume.
       if (!map.getSource("dem")) {
         map.addSource("dem", {
           type: "raster-dem",
@@ -191,7 +201,7 @@ export default function OceanMap({
         type: "fill-extrusion",
         source: "cols",
         paint: {
-          "fill-extrusion-color": colorExpr(min, max),
+          "fill-extrusion-color": colorExpr(loD, hiD),
           "fill-extrusion-height": ["*", ["get", "height"], 0],
           "fill-extrusion-base": 0,
           "fill-extrusion-opacity": 0.92,
@@ -228,7 +238,7 @@ export default function OceanMap({
         popup
           .setLngLat(e.lngLat)
           .setHTML(
-            `<strong>${f.properties.name}</strong><br/>${v > 0 ? "+" : ""}${v} ${unit} · ${f.properties.year}`,
+            `<strong>${f.properties.name}</strong><br/>${Number(v).toLocaleString()} ${unit}${f.properties.year ? ` · ${f.properties.year}` : ""}`,
           )
           .addTo(map);
       });
@@ -239,7 +249,6 @@ export default function OceanMap({
 
       setLoaded(true);
 
-      // Intro : les colonnes poussent de 0 à leur hauteur.
       const T0 = performance.now();
       const DUR = 1100;
       const grow = (now) => {
@@ -265,15 +274,13 @@ export default function OceanMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Recolore quand l'amplitude change (changement de métrique).
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
     if (map.getLayer("cols"))
-      map.setPaintProperty("cols", "fill-extrusion-color", colorExpr(min, max));
-  }, [loaded, min, max]);
+      map.setPaintProperty("cols", "fill-extrusion-color", colorExpr(loD, hiD));
+  }, [loaded, loD, hiD]);
 
-  // Données (année / métrique) → hauteurs.
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
@@ -294,7 +301,9 @@ export default function OceanMap({
         <span>{lowLabel}</span>
         <span className="omap__legend-bar" />
         <span>{highLabel}</span>
-        <span className="omap__legend-mid">· {midLabel}</span>
+        {midLabel ? (
+          <span className="omap__legend-mid">· {midLabel}</span>
+        ) : null}
       </div>
     </div>
   );
