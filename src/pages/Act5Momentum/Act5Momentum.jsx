@@ -71,9 +71,20 @@ function pointsAt(d, year, lang) {
   return d.areas
     .filter((a) => isPict(a))
     .map((a) => {
-      const p = (d.byArea[a] || []).find((q) => q.year === year);
-      return p && Number.isFinite(p.value)
-        ? { area: a, code: a, name: pictName(a, lang), value: p.value, year }
+      const s = d.byArea[a] || [];
+      // Valeur de l'année, sinon la plus récente disponible avant cette année.
+      let chosen = null;
+      for (let i = 0; i < s.length; i += 1) {
+        if (s[i].year <= year && Number.isFinite(s[i].value)) chosen = s[i];
+      }
+      return chosen
+        ? {
+            area: a,
+            code: a,
+            name: pictName(a, lang),
+            value: chosen.value,
+            year: chosen.year,
+          }
         : null;
     })
     .filter(Boolean);
@@ -98,9 +109,29 @@ export default function Act5Momentum() {
 
   const years = useMemo(() => (data ? data.years : []), [data]);
 
+  // Année la mieux couverte (évite d'ouvrir sur une année creuse, ex. 2023 = PF seule).
+  const bestIdx = useMemo(() => {
+    if (!data) return 0;
+    let best = 0;
+    let bestCov = -1;
+    data.years.forEach((y, i) => {
+      let cov = 0;
+      data.areas.forEach((a) => {
+        if (!isPict(a)) return;
+        const p = (data.byArea[a] || []).find((q) => q.year === y);
+        if (p && Number.isFinite(p.value)) cov += 1;
+      });
+      if (cov >= bestCov) {
+        bestCov = cov;
+        best = i;
+      }
+    });
+    return best;
+  }, [data]);
+
   useEffect(() => {
-    if (years.length && yearIdx === null) setYearIdx(years.length - 1);
-  }, [years, yearIdx]);
+    if (years.length && yearIdx === null) setYearIdx(bestIdx);
+  }, [years, yearIdx, bestIdx]);
 
   useEffect(() => {
     if (!playing || !years.length) return undefined;

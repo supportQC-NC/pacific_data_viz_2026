@@ -88,6 +88,7 @@ export default function OceanMap({
   const mapRef = useRef(null);
   const popupRef = useRef(null);
   const rafRef = useRef(0);
+  const fittedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
   const min = range?.min ?? -1;
@@ -156,11 +157,12 @@ export default function OceanMap({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: [186, -14],
-      zoom: 2.7,
-      pitch: 58,
-      bearing: -10,
+      center: [200, -13],
+      zoom: 2.0,
+      pitch: 50,
+      bearing: -8,
       maxPitch: 72,
+      renderWorldCopies: true,
       antialias: true,
     });
     mapRef.current = map;
@@ -298,6 +300,27 @@ export default function OceanMap({
     if (ce) ce.setData(centers);
     if (map.getLayer("cols"))
       map.setPaintProperty("cols", "fill-extrusion-height", ["get", "height"]);
+
+    // Cadrage automatique sur l'ensemble des territoires (une seule fois).
+    if (!fittedRef.current && fc.features.length) {
+      // Antiméridien : ramener les longitudes négatives en 0–360 pour un bbox contigu.
+      const lngs = fc.features.map((f) =>
+        f.properties.lng < 0 ? f.properties.lng + 360 : f.properties.lng,
+      );
+      const lats = fc.features.map((f) => f.properties.lat);
+      const bounds = [
+        [Math.min(...lngs) - 4, Math.min(...lats) - 4],
+        [Math.max(...lngs) + 4, Math.max(...lats) + 4],
+      ];
+      map.fitBounds(bounds, {
+        padding: 60,
+        pitch: 50,
+        bearing: -8,
+        maxZoom: 4.2,
+        duration: 0,
+      });
+      fittedRef.current = true;
+    }
   }, [loaded, fc, centers]);
 
   if (!TOKEN) return <div className="omap omap--notoken">{noTokenMsg}</div>;
