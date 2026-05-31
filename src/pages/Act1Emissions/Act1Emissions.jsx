@@ -1,12 +1,14 @@
 // src/pages/Act1Emissions/Act1Emissions.jsx
 // ============================================================
-// Acte 01 — Le paradoxe (émissions de GES par habitant).
-// Données via Redux. Viz : beeswarm d3 ANIMÉ dans le temps
-// (curseur d'années + lecture) + ligne "moyenne mondiale".
-// Export PDF / Excel via <ExportBar>.
-//
-// FIX boucle de rendu : les props passées à <ExportBar> (rows / meta /
-// labels) sont MÉMOÏSÉES → références stables → plus de re-render infini.
+// Acte 01 — Le paradoxe. Lecture analyste, multi-angles & dynamique :
+//   • Guide de lecture
+//   • Beeswarm (distribution, log, acronymes)
+//   • Classement animé
+//   • Trajectoires temporelles
+//   • Carte satellite
+//   • Évolution (plus améliorés / plus dégradés)
+//   • Tableau de données triable
+//   • Export PDF / Excel
 // ============================================================
 
 import React, {
@@ -23,15 +25,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
+import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
+import RankBars from "../../components/RankBars/RankBars";
+import TrendLines from "../../components/TrendLines/TrendLines";
+import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
+import DataTable from "../../components/DataTable/DataTable";
 import ExportBar from "../../components/ExportBar/ExportBar";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import "./Act1Emissions.scss";
 
-// Carte chargée à la demande : mapbox-gl (lourd) n'alourdit pas le 1er rendu.
 const PacificMap = lazy(() => import("../../components/PacificMap/PacificMap"));
 
 const WORLD_AVG = 4.76; // t CO2e / hab — moyenne mondiale (EDGAR)
+const TREND_TOP = 7;
 
 export default function Act1Emissions() {
   const { t, lang } = useLang();
@@ -54,12 +61,10 @@ export default function Act1Emissions() {
   const years = ready && emissions.data ? emissions.data.years : [];
   const empty = ready && years.length === 0;
 
-  // Cale l'année par défaut sur la plus récente une fois les données chargées.
   useEffect(() => {
     if (years.length && yearIdx === null) setYearIdx(years.length - 1);
   }, [years, yearIdx]);
 
-  // Lecture automatique dans le temps.
   useEffect(() => {
     if (!playing || !years.length) return undefined;
     const id = setInterval(() => {
@@ -71,13 +76,12 @@ export default function Act1Emissions() {
         }
         return next;
       });
-    }, 900);
+    }, 1100);
     return () => clearInterval(id);
   }, [playing, years]);
 
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
 
-  // Points du beeswarm pour l'année sélectionnée.
   const points = useMemo(() => {
     if (!ready || !emissions.data || currentYear == null) return [];
     const { byArea } = emissions.data;
@@ -97,9 +101,44 @@ export default function Act1Emissions() {
       .filter((d) => d && Number.isFinite(d.value) && d.value > 0);
   }, [ready, emissions.data, currentYear, lang]);
 
-  // ----- Props MÉMOÏSÉES pour <ExportBar> (références stables) -----
+  // Séries complètes de TOUS les territoires (évolution).
+  const allSeries = useMemo(() => {
+    if (!ready || !emissions.data) return [];
+    const { byArea } = emissions.data;
+    return Object.entries(byArea)
+      .filter(([area]) => isPict(area))
+      .map(([area, series]) => ({
+        area,
+        name: pictName(area, lang),
+        values: series.filter((p) => Number.isFinite(p.value) && p.value > 0),
+      }));
+  }, [ready, emissions.data, lang]);
+
+  // Top émetteurs pour les trajectoires.
+  const trends = useMemo(() => {
+    if (!allSeries.length || !years.length) return [];
+    const latest = years[years.length - 1];
+    return [...allSeries]
+      .map((s) => {
+        const lp =
+          s.values.find((p) => p.year === latest) ||
+          s.values[s.values.length - 1];
+        return { ...s, latest: lp ? lp.value : 0 };
+      })
+      .filter((s) => s.values.length > 1)
+      .sort((a, b) => b.latest - a.latest)
+      .slice(0, TREND_TOP);
+  }, [allSeries, years]);
+
+  // ----- Props mémoïsées -----
   const exportRows = useMemo(
-    () => points.map((p) => ({ name: p.name, value: p.value, year: p.year })),
+    () =>
+      points.map((p) => ({
+        name: p.name,
+        code: p.area,
+        value: p.value,
+        year: p.year,
+      })),
     [points],
   );
   const exportMeta = useMemo(
@@ -109,6 +148,10 @@ export default function Act1Emissions() {
       source: t("act1.caption"),
       filename: `emissions_pacifique_${currentYear ?? ""}`,
       sheet: "Emissions",
+      unit: t("act1.unit"),
+      refValue: WORLD_AVG,
+      refLabel: t("act1.world_avg"),
+      year: currentYear ?? "",
     }),
     [t, currentYear],
   );
@@ -117,16 +160,39 @@ export default function Act1Emissions() {
       title: t("export.title"),
       pdf: t("export.pdf"),
       excel: t("export.excel"),
+      col_rank: t("export.col_rank"),
+      col_code: t("export.col_code"),
       col_name: t("export.col_name"),
       col_value: t("export.col_value"),
-      col_year: t("export.col_year"),
+      col_vs_world: t("export.col_vs_world"),
+      sheet_data: t("export.sheet_data"),
+      sheet_summary: t("export.sheet_summary"),
+      summary_title: t("export.summary_title"),
+      summary_year: t("export.summary_year"),
+      summary_count: t("export.summary_count"),
+      summary_max: t("export.summary_max"),
+      summary_min: t("export.summary_min"),
+      summary_median: t("export.summary_median"),
+      summary_mean: t("export.summary_mean"),
+      summary_world: t("export.summary_world"),
+      summary_source: t("export.summary_source"),
+      summary_generated: t("export.summary_generated"),
     }),
     [t],
   );
-  // ------------------------------------------------------------------
+  const evoLabels = useMemo(
+    () => ({
+      improved: t("act1.evo.improved"),
+      worsened: t("act1.evo.worsened"),
+      since: t("act1.evo.since"),
+      no_data: t("act1.evo.no_data"),
+    }),
+    [t],
+  );
+  // ---------------------------
 
   const togglePlay = useCallback(() => {
-    setYearIdx((i) => (i === years.length - 1 ? 0 : i)); // relance depuis le début si à la fin
+    setYearIdx((i) => (i === years.length - 1 ? 0 : i));
     setPlaying((p) => !p);
   }, [years.length]);
 
@@ -142,6 +208,13 @@ export default function Act1Emissions() {
           <h1 className="act1__title">{t("home.acts.a1_title")}</h1>
           <p className="act1__lead">{t("act1.lead")}</p>
         </header>
+
+        <ReadingGuide
+          title={t("act1.guide.title")}
+          intro={t("act1.guide.intro")}
+          steps={t("act1.guide.steps")}
+          takeaway={t("act1.guide.takeaway")}
+        />
 
         <section className="act1__chart">
           <div className="act1__chart-head">
@@ -179,7 +252,6 @@ export default function Act1Emissions() {
 
           {ready && !empty && currentYear != null && (
             <>
-              {/* Curseur temporel */}
               <div className="act1__timeline">
                 <button className="act1__play" onClick={togglePlay}>
                   {playing ? t("act1.pause") : t("act1.play")}
@@ -199,7 +271,6 @@ export default function Act1Emissions() {
                 <span className="act1__year">{currentYear}</span>
               </div>
 
-              {/* Cible capturée pour l'export */}
               <div ref={chartRef} className="act1__capture">
                 <BeeswarmChart
                   data={points}
@@ -213,7 +284,32 @@ export default function Act1Emissions() {
                 />
               </div>
 
-              {/* Carte Mapbox : où se situent les territoires (isolée + lazy) */}
+              <div className="act1__map-head">
+                <h3 className="act1__map-title">{t("act1.viz_rank_title")}</h3>
+                <span className="act1__chart-sub">
+                  {t("act1.viz_rank_sub")}
+                </span>
+              </div>
+              <RankBars
+                data={points}
+                unit={t("act1.unit")}
+                worldAvg={WORLD_AVG}
+                refLabel={t("act1.world_avg")}
+              />
+
+              <div className="act1__map-head">
+                <h3 className="act1__map-title">{t("act1.viz_trend_title")}</h3>
+                <span className="act1__chart-sub">
+                  {t("act1.viz_trend_sub")}
+                </span>
+              </div>
+              <TrendLines
+                series={trends}
+                years={years}
+                currentYear={currentYear}
+                unit={t("act1.unit")}
+              />
+
               <div className="act1__map-head">
                 <h3 className="act1__map-title">{t("act1.map_title")}</h3>
                 <span className="act1__chart-sub">{t("act1.map_sub")}</span>
@@ -239,6 +335,28 @@ export default function Act1Emissions() {
                   />
                 </Suspense>
               </ErrorBoundary>
+
+              <div className="act1__map-head">
+                <h3 className="act1__map-title">{t("act1.evo.title")}</h3>
+                <span className="act1__chart-sub">{t("act1.evo.sub")}</span>
+              </div>
+              <EvolutionPanel
+                series={allSeries}
+                labels={evoLabels}
+                unit={t("act1.unit")}
+                topN={5}
+              />
+
+              <div className="act1__map-head">
+                <h3 className="act1__map-title">{t("act1.table.title")}</h3>
+                <span className="act1__chart-sub">{t("act1.table.sub")}</span>
+              </div>
+              <DataTable
+                rows={exportRows}
+                labels={exportLabels}
+                unit={t("act1.unit")}
+                refValue={WORLD_AVG}
+              />
             </>
           )}
 

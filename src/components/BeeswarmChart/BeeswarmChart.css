@@ -1,13 +1,14 @@
-/* src/components/BeeswarmChart/BeeswarmChart.scss */
 .bee {
   width: 100%;
 }
+
 .bee__controls {
   display: flex;
   justify-content: flex-end;
   gap: var(--sp-2);
   margin-bottom: var(--sp-4);
 }
+
 .bee__toggle {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -19,61 +20,119 @@
   border-radius: var(--r-pill);
   transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
 }
+
 .bee__toggle:hover {
   color: var(--c-text);
 }
+
 .bee__toggle.is-on {
   color: var(--c-accent);
   border-color: var(--c-accent);
 }
+
 .bee__svg {
   width: 100%;
   height: auto;
   overflow: visible;
 }
+
 .bee__axis {
   stroke: var(--c-line-strong);
   stroke-width: 1;
 }
+
 .bee__grid {
   stroke: var(--c-line);
   stroke-width: 1;
 }
+
 .bee__tick {
   fill: var(--c-text-mute);
   font-family: var(--font-mono);
   font-size: 13px;
 }
+
+.bee__axis-title {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.bee__ref-g {
+  transition: transform 0.7s var(--ease-out);
+}
+
 .bee__ref {
   stroke: var(--c-warm);
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
+
 .bee__ref-label {
   fill: var(--c-warm);
   font-family: var(--font-mono);
   font-size: 13px;
 }
+
+.bee__mean-g {
+  transition: transform 0.7s var(--ease-out);
+}
+
+.bee__mean {
+  stroke: var(--c-accent);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 5;
+  opacity: 0.8;
+}
+
+.bee__mean-label {
+  fill: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
 .bee__dot {
   cursor: pointer;
   stroke: var(--c-bg);
   stroke-width: 1.5;
-  transition: cx 0.7s var(--ease-out), cy 0.7s var(--ease-out), r var(--t-fast) var(--ease-out), fill 0.5s var(--ease-out);
 }
+
+.bee__dot.is-hover {
+  stroke: var(--c-text);
+  stroke-width: 2;
+}
+
+.bee__code {
+  fill: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 2px;
+}
+
 .bee__tip {
   pointer-events: none;
 }
+
 .bee__tip-bg {
   fill: var(--c-surface);
   stroke: var(--c-line-strong);
   stroke-width: 1;
 }
+
 .bee__tip-name {
   fill: var(--c-text);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
 }
+
 .bee__tip-val {
   fill: var(--c-accent);
   font-family: var(--font-mono);

@@ -1,0 +1,41 @@
+// src/components/RankBars/RankBars.scss
+.rank {
+  width: 100%;
+}
+.rank__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.rank__bar {
+  // largeur/couleur pilotées par GSAP
+}
+.rank__name {
+  fill: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+.rank__val {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.rank__ref-g {
+  transition: transform 0.7s var(--ease-out);
+}
+.rank__ref {
+  stroke: var(--c-warm);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.rank__ref-label {
+  fill: var(--c-warm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.rank__axis-title {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}

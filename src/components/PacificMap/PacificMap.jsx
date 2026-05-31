@@ -1,9 +1,9 @@
 // src/components/PacificMap/PacificMap.jsx
 // ============================================================
-// Carte Mapbox (globe sombre) du Pacifique.
+// Carte Mapbox SATELLITE (globe) du Pacifique.
 // 1 cercle = 1 territoire ; couleur + taille = valeur (émissions/hab.).
-// Pilotée par les mêmes données/année que le beeswarm de l'acte.
-// Token requis : REACT_APP_MAPBOX_TOKEN (gratuit sur mapbox.com).
+// Style satellite-streets pour une lecture visuelle (relief, océan,
+// noms de lieux). Token requis : REACT_APP_MAPBOX_TOKEN.
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -14,8 +14,6 @@ import "./PacificMap.scss";
 
 const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
-// Paliers de couleur/taille (t CO2e/hab.) — la plupart du Pacifique est bas,
-// Palaos / Nouvelle-Calédonie ressortent en rouge.
 const COLOR = [
   "interpolate",
   ["linear"],
@@ -34,26 +32,26 @@ const HALO_R = [
   ["linear"],
   ["get", "value"],
   0,
-  10,
+  12,
   5,
-  16,
+  18,
   20,
-  28,
+  30,
   60,
-  46,
+  50,
 ];
 const DOT_R = [
   "interpolate",
   ["linear"],
   ["get", "value"],
   0,
-  4,
   5,
-  6,
+  5,
+  7,
   20,
-  9,
+  10,
   60,
-  13,
+  15,
 ];
 
 export default function PacificMap({
@@ -77,34 +75,39 @@ export default function PacificMap({
           return {
             type: "Feature",
             geometry: { type: "Point", coordinates: c },
-            properties: { name: d.name, value: d.value, year: d.year },
+            properties: {
+              name: d.name,
+              code: d.area,
+              value: d.value,
+              year: d.year,
+            },
           };
         })
         .filter(Boolean),
     [data],
   );
 
-  // Initialisation unique de la carte.
   useEffect(() => {
     if (!TOKEN || mapRef.current || !containerRef.current) return undefined;
     mapboxgl.accessToken = TOKEN;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: [180, -12],
-      zoom: 1.9,
+      zoom: 2.1,
       projection: "globe",
+      attributionControl: true,
     });
     mapRef.current = map;
 
     map.on("style.load", () => {
       map.setFog({
-        color: "rgb(8,16,28)",
-        "high-color": "rgb(16,40,72)",
-        "horizon-blend": 0.1,
-        "space-color": "rgb(2,6,14)",
-        "star-intensity": 0.35,
+        color: "rgb(186, 210, 235)",
+        "high-color": "rgb(36, 92, 158)",
+        "horizon-blend": 0.06,
+        "space-color": "rgb(4, 10, 22)",
+        "star-intensity": 0.25,
       });
     });
 
@@ -120,8 +123,8 @@ export default function PacificMap({
         paint: {
           "circle-radius": HALO_R,
           "circle-color": COLOR,
-          "circle-opacity": 0.18,
-          "circle-blur": 0.85,
+          "circle-opacity": 0.25,
+          "circle-blur": 0.8,
         },
       });
       map.addLayer({
@@ -131,8 +134,25 @@ export default function PacificMap({
         paint: {
           "circle-radius": DOT_R,
           "circle-color": COLOR,
-          "circle-stroke-color": "#02101c",
-          "circle-stroke-width": 1.2,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 1.6,
+        },
+      });
+      map.addLayer({
+        id: "code",
+        type: "symbol",
+        source: "terr",
+        layout: {
+          "text-field": ["get", "code"],
+          "text-size": 11,
+          "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
+          "text-offset": [0, -1.4],
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "rgba(0,0,0,0.6)",
+          "text-halo-width": 1.4,
         },
       });
 
@@ -168,7 +188,6 @@ export default function PacificMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mise à jour des points à chaque changement de données / d'année.
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
     const src = mapRef.current.getSource("terr");

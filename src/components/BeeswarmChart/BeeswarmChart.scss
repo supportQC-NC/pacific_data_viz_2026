@@ -1,94 +1,141 @@
-/* src/components/BeeswarmChart/BeeswarmChart.scss */
+// src/components/BeeswarmChart/BeeswarmChart.scss
+// ============================================================
+// Styles du beeswarm. Position/rayon/couleur des points sont
+// pilotés par GSAP → on N'AJOUTE PAS de transition CSS sur cx/cy/r/fill
+// (sinon double animation). Les repères (lignes moyennes) glissent en CSS.
+// ============================================================
 
 .bee {
   width: 100%;
+}
 
-  &__controls {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--sp-2);
-    margin-bottom: var(--sp-4);
-  }
-  &__toggle {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-    padding: var(--sp-1) var(--sp-3);
-    border: var(--border-hair) solid var(--c-line);
-    border-radius: var(--r-pill);
-    transition:
-      color var(--t-fast) var(--ease-out),
-      border-color var(--t-fast) var(--ease-out);
-    &:hover {
-      color: var(--c-text);
-    }
-    &.is-on {
-      color: var(--c-accent);
-      border-color: var(--c-accent);
-    }
-  }
+.bee__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
 
-  &__svg {
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
+.bee__toggle {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+.bee__toggle:hover {
+  color: var(--c-text);
+}
+.bee__toggle.is-on {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+}
 
-  &__axis {
-    stroke: var(--c-line-strong);
-    stroke-width: 1;
-  }
-  &__grid {
-    stroke: var(--c-line);
-    stroke-width: 1;
-  }
-  &__tick {
-    fill: var(--c-text-mute);
-    font-family: var(--font-mono);
-    font-size: 13px;
-  }
+.bee__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
 
-  &__ref {
-    stroke: var(--c-warm);
-    stroke-width: 1.5;
-    stroke-dasharray: 4 4;
-  }
-  &__ref-label {
-    fill: var(--c-warm);
-    font-family: var(--font-mono);
-    font-size: 13px;
-  }
+.bee__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+.bee__grid {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.bee__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.bee__axis-title {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
 
-  &__dot {
-    cursor: pointer;
-    stroke: var(--c-bg);
-    stroke-width: 1.5;
-    transition:
-      cx 0.7s var(--ease-out),
-      cy 0.7s var(--ease-out),
-      r var(--t-fast) var(--ease-out),
-      fill 0.5s var(--ease-out);
-  }
+// --- Repère : moyenne mondiale ---
+.bee__ref-g {
+  transition: transform 0.7s var(--ease-out);
+}
+.bee__ref {
+  stroke: var(--c-warm);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.bee__ref-label {
+  fill: var(--c-warm);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
 
-  &__tip {
-    pointer-events: none;
-  }
-  &__tip-bg {
-    fill: var(--c-surface);
-    stroke: var(--c-line-strong);
-    stroke-width: 1;
-  }
-  &__tip-name {
-    fill: var(--c-text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 600;
-  }
-  &__tip-val {
-    fill: var(--c-accent);
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
+// --- Repère : moyenne Pacifique ---
+.bee__mean-g {
+  transition: transform 0.7s var(--ease-out);
+}
+.bee__mean {
+  stroke: var(--c-accent);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 5;
+  opacity: 0.8;
+}
+.bee__mean-label {
+  fill: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+// --- Points ---
+.bee__dot {
+  cursor: pointer;
+  stroke: var(--c-bg);
+  stroke-width: 1.5;
+}
+.bee__dot.is-hover {
+  stroke: var(--c-text);
+  stroke-width: 2;
+}
+
+// Acronyme (code SPC) au centre de chaque point.
+.bee__code {
+  fill: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 2px;
+}
+
+// --- Tooltip ---
+.bee__tip {
+  pointer-events: none;
+}
+.bee__tip-bg {
+  fill: var(--c-surface);
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+.bee__tip-name {
+  fill: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+}
+.bee__tip-val {
+  fill: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }

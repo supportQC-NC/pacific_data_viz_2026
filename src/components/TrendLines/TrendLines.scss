@@ -1,0 +1,87 @@
+// src/components/TrendLines/TrendLines.scss
+.trend {
+  width: 100%;
+}
+.trend--empty {
+  min-height: 1px;
+}
+.trend__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.trend__grid {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.trend__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+.trend__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.trend__axis-title {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.trend__line {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+  pointer-events: stroke;
+  cursor: pointer;
+  transition:
+    opacity var(--t-fast) var(--ease-out),
+    stroke-width var(--t-fast) var(--ease-out);
+}
+.trend__line.is-dim {
+  opacity: 0.18;
+}
+.trend__line.is-on {
+  opacity: 1;
+  stroke-width: 3.25;
+}
+.trend__connector {
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.trend__label-g {
+  cursor: pointer;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+.trend__label-g.is-dim {
+  opacity: 0.25;
+}
+.trend__label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+// Curseur d'année mobile + points qui suivent les courbes.
+.trend__marker {
+  transition: transform 0.6s var(--ease-out);
+}
+.trend__marker-line {
+  stroke: var(--c-text-mute);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.trend__marker-label {
+  fill: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+.trend__marker-dot {
+  stroke: var(--c-bg);
+  stroke-width: 1.5;
+  transition: cy 0.6s var(--ease-out);
+}

@@ -66,14 +66,67 @@
     "map_sub": "par territoire · survolez un point",
     "map_low": "Faible",
     "map_high": "Élevé",
-    "map_no_token": "Carte indisponible : ajoutez votre token Mapbox dans un fichier .env (REACT_APP_MAPBOX_TOKEN=…) à la racine du projet, puis relancez « npm start »."
+    "map_no_token": "Carte indisponible : ajoutez votre token Mapbox dans un fichier .env (REACT_APP_MAPBOX_TOKEN=…) à la racine du projet, puis relancez « npm start ».",
+    "viz_rank_title": "Classement par habitant",
+    "viz_rank_sub": "barres réordonnées selon l'année — qui monte, qui descend",
+    "viz_trend_title": "Trajectoires dans le temps",
+    "viz_trend_sub": "évolution des plus gros émetteurs · le curseur suit l'année",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "Cet acte compare les émissions de gaz à effet de serre par habitant des pays et territoires du Pacifique. Voici comment lire les visualisations.",
+      "steps": [
+        {
+          "k": "Le nuage de points",
+          "v": "Chaque point est un territoire (acronyme SPC). Plus il est à droite, plus il émet par habitant. L'échelle est logarithmique pour révéler les écarts malgré les valeurs extrêmes."
+        },
+        {
+          "k": "Les deux repères",
+          "v": "La ligne orange est la moyenne mondiale (4,76 t, fixe). La ligne bleue Ø est la moyenne du Pacifique pour l'année affichée — elle, elle bouge."
+        },
+        {
+          "k": "Le temps",
+          "v": "Le curseur d'années (ou la lecture ▶) anime tous les graphes en même temps : nuage, classement, trajectoires et carte."
+        },
+        {
+          "k": "Classement & trajectoires",
+          "v": "Le classement montre qui domine une année donnée ; les trajectoires montrent l'évolution sur la période."
+        }
+      ],
+      "takeaway": "Le paradoxe : la plupart des territoires émettent bien moins que la moyenne mondiale, alors qu'ils subissent les premiers les effets du changement climatique."
+    },
+    "evo": {
+      "title": "Évolution dans le temps",
+      "sub": "variation entre la première et la dernière année disponibles",
+      "improved": "Les plus en baisse",
+      "worsened": "Les plus en hausse",
+      "since": "sur",
+      "no_data": "Pas assez d'historique pour analyser l'évolution."
+    },
+    "table": {
+      "title": "Les données en détail",
+      "sub": "cliquez sur un en-tête pour trier"
+    }
   },
   "export": {
     "title": "Télécharger",
     "pdf": "PDF",
     "excel": "Excel",
+    "col_rank": "Rang",
+    "col_code": "Code",
     "col_name": "Territoire",
     "col_value": "Valeur (t CO₂e/hab.)",
-    "col_year": "Année"
+    "col_vs_world": "Écart vs moyenne mondiale",
+    "sheet_data": "Données",
+    "sheet_summary": "Synthèse",
+    "summary_title": "Synthèse statistique",
+    "summary_year": "Année",
+    "summary_count": "Nombre de territoires",
+    "summary_max": "Maximum",
+    "summary_min": "Minimum",
+    "summary_median": "Médiane",
+    "summary_mean": "Moyenne (Pacifique)",
+    "summary_world": "Moyenne mondiale",
+    "summary_source": "Source",
+    "summary_generated": "Généré le"
   }
 }

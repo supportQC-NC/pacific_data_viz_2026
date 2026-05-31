@@ -66,14 +66,67 @@
     "map_sub": "by territory · hover a point",
     "map_low": "Low",
     "map_high": "High",
-    "map_no_token": "Map unavailable: add your Mapbox token to a .env file (REACT_APP_MAPBOX_TOKEN=…) at the project root, then restart “npm start”."
+    "map_no_token": "Map unavailable: add your Mapbox token to a .env file (REACT_APP_MAPBOX_TOKEN=…) at the project root, then restart “npm start”.",
+    "viz_rank_title": "Per-capita ranking",
+    "viz_rank_sub": "bars reorder by year — who rises, who falls",
+    "viz_trend_title": "Trajectories over time",
+    "viz_trend_sub": "evolution of the biggest emitters · the cursor tracks the year",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "This act compares greenhouse-gas emissions per capita across Pacific countries and territories. Here is how to read the visualisations.",
+      "steps": [
+        {
+          "k": "The dot plot",
+          "v": "Each dot is a territory (SPC code). The further right, the higher its per-capita emissions. The scale is logarithmic to reveal differences despite extreme values."
+        },
+        {
+          "k": "The two references",
+          "v": "The orange line is the world average (4.76 t, fixed). The blue Ø line is the Pacific average for the displayed year — that one moves."
+        },
+        {
+          "k": "Time",
+          "v": "The year slider (or ▶ play) animates every chart at once: dot plot, ranking, trajectories and map."
+        },
+        {
+          "k": "Ranking & trajectories",
+          "v": "The ranking shows who leads in a given year; the trajectories show the evolution over the period."
+        }
+      ],
+      "takeaway": "The paradox: most territories emit far below the world average, yet they are the first to bear the effects of climate change."
+    },
+    "evo": {
+      "title": "Evolution over time",
+      "sub": "change between the first and last available years",
+      "improved": "Largest decreases",
+      "worsened": "Largest increases",
+      "since": "over",
+      "no_data": "Not enough history to analyse the evolution."
+    },
+    "table": {
+      "title": "The data in detail",
+      "sub": "click a header to sort"
+    }
   },
   "export": {
     "title": "Download",
     "pdf": "PDF",
     "excel": "Excel",
+    "col_rank": "Rank",
+    "col_code": "Code",
     "col_name": "Territory",
     "col_value": "Value (t CO₂e/cap.)",
-    "col_year": "Year"
+    "col_vs_world": "Gap vs world average",
+    "sheet_data": "Data",
+    "sheet_summary": "Summary",
+    "summary_title": "Statistical summary",
+    "summary_year": "Year",
+    "summary_count": "Number of territories",
+    "summary_max": "Maximum",
+    "summary_min": "Minimum",
+    "summary_median": "Median",
+    "summary_mean": "Average (Pacific)",
+    "summary_world": "World average",
+    "summary_source": "Source",
+    "summary_generated": "Generated on"
   }
 }
