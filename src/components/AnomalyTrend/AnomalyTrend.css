@@ -1,0 +1,138 @@
+.atrend {
+  width: 100%;
+}
+
+.atrend--empty {
+  min-height: 1px;
+}
+
+.atrend__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.atrend__grid {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+
+.atrend__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.atrend__unit {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.atrend__band {
+  fill-opacity: 0.12;
+  stroke: none;
+}
+
+.atrend__area {
+  fill-opacity: 0.2;
+  stroke: none;
+}
+
+.atrend__mean {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.atrend__meanlabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--fw-semi);
+}
+
+.atrend__baseline {
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+
+.atrend__baseline-label {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.atrend__marker {
+  transition: transform 0.5s var(--ease-out);
+}
+
+.atrend__marker-line {
+  stroke: var(--c-text-mute);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.atrend__marker-label {
+  fill: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: var(--fw-semi);
+}
+
+.atrend__marker-dot {
+  stroke: var(--c-bg);
+  stroke-width: 2;
+  transition: cy 0.5s var(--ease-out);
+}
+
+.atrend__marker-val {
+  fill: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: y 0.5s var(--ease-out);
+}
+
+/* --- Teinte MER (bleu) --- */
+.atrend--sea .atrend__band {
+  fill: var(--c-accent);
+}
+
+.atrend--sea .atrend__area {
+  fill: var(--c-accent);
+}
+
+.atrend--sea .atrend__mean {
+  stroke: var(--c-accent);
+}
+
+.atrend--sea .atrend__meanlabel {
+  fill: var(--c-accent);
+}
+
+.atrend--sea .atrend__marker-dot {
+  fill: var(--c-accent);
+}
+
+/* --- Teinte CHALEUR (rouge) --- */
+.atrend--warm .atrend__band {
+  fill: var(--c-warm);
+}
+
+.atrend--warm .atrend__area {
+  fill: var(--c-warm);
+}
+
+.atrend--warm .atrend__mean {
+  stroke: var(--c-warm);
+}
+
+.atrend--warm .atrend__meanlabel {
+  fill: var(--c-warm);
+}
+
+.atrend--warm .atrend__marker-dot {
+  fill: var(--c-warm);
+}/*# sourceMappingURL=AnomalyTrend.css.map */

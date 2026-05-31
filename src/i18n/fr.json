@@ -136,13 +136,52 @@
     "lead": "Deux signaux silencieux redessinent l'horizon du Pacifique : le niveau de la mer qui monte et la température de surface qui grimpe. Voici les données récupérées, territoire par territoire.",
     "sea_title": "Niveau de la mer",
     "sea_sub": "variation observée",
-    "sea_unit": "mm",
+    "sea_unit": "m",
     "sst_title": "Température de surface",
     "sst_sub": "anomalie",
     "sst_unit": "°C",
     "coverage": "territoires",
     "period": "période",
     "demo_badge": "démo",
-    "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante."
+    "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante.",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "Deux indicateurs, une même histoire : l'océan du Pacifique monte et se réchauffe. Les deux courbes montrent des ANOMALIES — l'écart à une période de référence, pas une valeur absolue.",
+      "steps": [
+        {
+          "k": "Anomalie, pas valeur brute",
+          "v": "0 = la normale de référence. Au-dessus de 0 : plus chaud / plus haut que d'habitude ; en dessous : plus frais / plus bas."
+        },
+        {
+          "k": "Moyenne + dispersion",
+          "v": "La ligne épaisse est la moyenne des 21 territoires ; la bande claire montre l'écart entre le territoire le plus bas et le plus haut cette année-là."
+        },
+        {
+          "k": "Le temps",
+          "v": "Le curseur (ou ▶) déplace l'année sur les deux courbes ET sur la carte en même temps."
+        },
+        {
+          "k": "La carte",
+          "v": "Bleu = sous la référence, rouge = au-dessus ; la taille du cercle traduit l'amplitude. Choisissez la métrique avec le sélecteur."
+        }
+      ],
+      "takeaway": "Lentes mais nettes, les deux courbes franchissent la référence et ne redescendent plus : le Pacifique chauffe et la mer s'élève."
+    },
+    "baseline": "référence 0",
+    "mean_label": "moy.",
+    "explore": "Explorer :",
+    "value_label": "Anomalie",
+    "vs_mean": "Écart vs moyenne",
+    "evo_down": "Plus forte baisse",
+    "evo_up": "Plus forte hausse",
+    "evo_title": "Évolution par territoire",
+    "evo_sub": "écart entre la première et la dernière année disponibles",
+    "table_title": "Les données en détail",
+    "table_sub": "cliquez sur un en-tête pour trier",
+    "map_title": "Cartographie de l'anomalie",
+    "map_sub": "par territoire",
+    "map_low": "sous la référence",
+    "map_mid": "référence",
+    "map_high": "au-dessus"
   }
 }

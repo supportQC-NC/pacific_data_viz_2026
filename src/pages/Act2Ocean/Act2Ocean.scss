@@ -4,7 +4,7 @@
   min-height: 100vh;
 }
 .act2__head {
-  margin-bottom: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 .act2__title {
   font-size: clamp(2.5rem, 7vw, 5rem);
@@ -18,31 +18,94 @@
   line-height: var(--lh-base);
 }
 
-.act2__panels {
+.act2__state {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-6) 0;
+}
+.act2__state--err {
+  color: var(--c-warm);
+}
+
+.act2__btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  background: var(--c-bg-2);
+  border: var(--border-hair) solid var(--c-line-strong);
+  padding: var(--sp-2) var(--sp-5);
+  border-radius: var(--r-pill);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+.act2__btn:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+/* Timeline partagée */
+.act2__timeline {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin: var(--sp-8) 0 var(--sp-6);
+  flex-wrap: wrap;
+}
+.act2__slider {
+  flex: 1;
+  min-width: 180px;
+  accent-color: var(--c-accent);
+  cursor: pointer;
+}
+.act2__year {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-light);
+  color: var(--c-accent);
+  min-width: 4ch;
+}
+.act2__demo {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  border: var(--border-hair) solid var(--c-line-strong);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-pill);
+}
+
+/* Courbes */
+.act2__charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-6);
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-16);
 }
-@media (max-width: 720px) {
-  .act2__panels {
+@media (max-width: 900px) {
+  .act2__charts {
     grid-template-columns: 1fr;
   }
 }
-
-.act2__panel {
+.act2__chart {
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-md);
   background: var(--c-surface);
-  padding: var(--sp-8);
+  padding: var(--sp-6);
 }
-.act2__panel-head {
-  margin-bottom: var(--sp-6);
+.act2__chart-head {
+  margin-bottom: var(--sp-4);
 }
-.act2__panel-title {
+.act2__chart-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semi);
 }
-.act2__panel-sub {
+.act2__chart-sub {
   display: block;
   margin-top: var(--sp-1);
   font-family: var(--font-mono);
@@ -51,48 +114,61 @@
   color: var(--c-text-mute);
 }
 
-.act2__state {
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--c-text-mute);
-}
-.act2__state--err {
-  color: var(--c-warm);
-}
-
-.act2__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Sélecteur de métrique */
+.act2__metric {
+  display: flex;
+  align-items: center;
   gap: var(--sp-4);
-  margin: 0;
+  margin-bottom: var(--sp-6);
+  flex-wrap: wrap;
 }
-.act2__stat dt {
+.act2__metric-label {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--c-text-mute);
 }
-.act2__stat dd {
-  margin: var(--sp-1) 0 0;
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semi);
-  color: var(--c-accent);
+.act2__toggle {
+  display: inline-flex;
+  gap: var(--sp-2);
+}
+.act2__toggle-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+.act2__toggle-btn:hover {
+  color: var(--c-text);
+}
+.act2__toggle-btn.is-on {
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border-color: var(--c-accent);
 }
 
-.act2__coming {
-  margin-top: var(--sp-12);
-  padding: var(--sp-4) var(--sp-6);
-  border: var(--border-hair) dashed var(--c-line-strong);
-  border-radius: var(--r-sm);
-  color: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+/* En-têtes de section */
+.act2__map-head {
+  margin: var(--sp-12) 0 var(--sp-4);
+  padding-top: var(--sp-8);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+.act2__map-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
 }
 
 .act2__back {
   display: inline-block;
-  margin-top: var(--sp-12);
+  margin-top: var(--sp-16);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--c-text-mute);

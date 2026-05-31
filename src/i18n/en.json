@@ -136,13 +136,52 @@
     "lead": "Two silent signals are redrawing the Pacific's horizon: rising sea level and warming surface temperature. Here is the retrieved data, territory by territory.",
     "sea_title": "Sea level",
     "sea_sub": "observed change",
-    "sea_unit": "mm",
+    "sea_unit": "m",
     "sst_title": "Surface temperature",
     "sst_sub": "anomaly",
     "sst_unit": "°C",
     "coverage": "territories",
     "period": "period",
     "demo_badge": "demo",
-    "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next."
+    "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next.",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "Two indicators, one story: the Pacific ocean is rising and warming. Both curves show ANOMALIES — the gap from a reference period, not an absolute value.",
+      "steps": [
+        {
+          "k": "Anomaly, not raw value",
+          "v": "0 = the reference normal. Above 0: warmer / higher than usual; below: cooler / lower."
+        },
+        {
+          "k": "Mean + spread",
+          "v": "The thick line is the average of the 21 territories; the light band shows the gap between the lowest and highest territory that year."
+        },
+        {
+          "k": "Time",
+          "v": "The slider (or ▶) moves the year on both curves AND the map at once."
+        },
+        {
+          "k": "The map",
+          "v": "Blue = below reference, red = above; circle size reflects magnitude. Pick the metric with the toggle."
+        }
+      ],
+      "takeaway": "Slow but unmistakable, both curves cross the reference and never come back: the Pacific is warming and the sea is rising."
+    },
+    "baseline": "reference 0",
+    "mean_label": "avg",
+    "explore": "Explore:",
+    "value_label": "Anomaly",
+    "vs_mean": "Gap vs average",
+    "evo_down": "Largest decrease",
+    "evo_up": "Largest increase",
+    "evo_title": "Evolution by territory",
+    "evo_sub": "change between first and last available years",
+    "table_title": "The data in detail",
+    "table_sub": "click a header to sort",
+    "map_title": "Mapping the anomaly",
+    "map_sub": "by territory",
+    "map_low": "below reference",
+    "map_mid": "reference",
+    "map_high": "above"
   }
 }

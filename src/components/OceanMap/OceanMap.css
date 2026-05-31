@@ -1,0 +1,67 @@
+.omap {
+  position: relative;
+  width: 100%;
+}
+
+.omap__map {
+  width: 100%;
+  height: 480px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: var(--border-hair) solid var(--c-line);
+}
+
+.omap--notoken {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  padding: var(--sp-8);
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-md);
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.omap__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.omap__legend-bar {
+  width: 120px;
+  height: 8px;
+  border-radius: var(--r-pill);
+}
+
+.omap__legend--water .omap__legend-bar {
+  background: linear-gradient(90deg, #16506e, #1f9bc9, #6fe6ff);
+}
+
+.omap__legend--heat .omap__legend-bar {
+  background: linear-gradient(90deg, #e0913a, #ff7a3d, #ff3b2f);
+}
+
+.omap__legend-mid {
+  color: var(--c-text-soft);
+}
+
+.pm-popup .mapboxgl-popup-content {
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.pm-popup .mapboxgl-popup-tip {
+  border-top-color: var(--c-surface);
+}/*# sourceMappingURL=OceanMap.css.map */

@@ -1,116 +1,178 @@
 // src/pages/Act2Ocean/Act2Ocean.jsx
 // ============================================================
 // Acte 02 — L'océan. « La mer change. »
-// Étape 1 : récupération Redux (seaLevel + sst) + LOG STRUCTURÉ
-// de la donnée réelle (console groupée + table + série d'exemple)
-// pour caler les composants de visualisation à l'étape suivante.
+// Deux anomalies (niveau de la mer + température de surface) sur le
+// même curseur d'année : courbes (moyenne + bande), carte satellite
+// divergente, guide, tableau et évolution.
 // ============================================================
 
-import React, { useEffect } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
+import { pictName, isPict } from "../../i18n/pictNames";
+import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
+import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
+import DataTable from "../../components/DataTable/DataTable";
+import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import "./Act2Ocean.scss";
 
-// --- Log lisible d'un jeu normalisé (à retirer une fois les visus faites) ---
-function logDataset(id, d) {
-  if (!d) return;
-  // eslint-disable-next-line no-console
-  console.groupCollapsed(
-    `%c[Acte2] ${id} · source=${d.source} · ${d.firstYear}–${d.lastYear} · ${d.areas.length} zones`,
-    "color:#1f9bc9;font-weight:700",
-  );
-  /* eslint-disable no-console */
-  console.log("years:", d.years);
-  console.log("areas:", d.areas);
-  console.log("range:", d.range);
+const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
-  // Une ligne par territoire : nb de points, première/dernière année, dernière valeur.
-  const latest = d.lastYear;
-  const table = d.areas.map((a) => {
-    const s = d.byArea[a] || [];
-    const lp = s.find((p) => p.year === latest) || s[s.length - 1];
-    return {
-      area: a,
-      points: s.length,
-      first: s[0] && s[0].year,
-      last: s[s.length - 1] && s[s.length - 1].year,
-      latestValue: lp && lp.value,
-    };
-  });
-  console.table(table);
+const clampYear = (d, year) =>
+  d ? Math.min(d.lastYear, Math.max(d.firstYear, year)) : year;
 
-  // Série complète d'un territoire d'exemple (forme exacte des points).
-  const sample = d.areas[0];
-  console.log(`série exemple [${sample}] :`, d.byArea[sample]);
-  console.log("objet normalisé complet :", d);
-  console.groupEnd();
-  /* eslint-enable no-console */
+function meanSeries(d) {
+  if (!d) return [];
+  return d.years
+    .map((year) => {
+      const vals = [];
+      d.areas.forEach((a) => {
+        if (!isPict(a)) return;
+        const p = (d.byArea[a] || []).find((q) => q.year === year);
+        if (p && Number.isFinite(p.value)) vals.push(p.value);
+      });
+      if (!vals.length) return null;
+      const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+      return { year, mean, min: Math.min(...vals), max: Math.max(...vals) };
+    })
+    .filter(Boolean);
 }
-
-function DataPanel({ ds, title, sub, unit, t }) {
-  const ready = ds.status === "succeeded";
-  const failed = ds.status === "failed";
-  const isDemo = ready && ds.data && ds.data.source === "fallback";
-
-  return (
-    <article className="act2__panel">
-      <div className="act2__panel-head">
-        <h2 className="act2__panel-title">{title}</h2>
-        <span className="act2__panel-sub">
-          {sub} · {unit}
-          {isDemo ? ` · ${t("act2.demo_badge")}` : ""}
-        </span>
-      </div>
-
-      {!ready && !failed && <p className="act2__state">{t("scene.loading")}</p>}
-      {failed && (
-        <p className="act2__state act2__state--err">{t("scene.error")}</p>
-      )}
-
-      {ready && (
-        <dl className="act2__stats">
-          <div className="act2__stat">
-            <dt>{t("act2.coverage")}</dt>
-            <dd>{ds.data.areas.length}</dd>
-          </div>
-          <div className="act2__stat">
-            <dt>{t("act2.period")}</dt>
-            <dd>
-              {ds.data.firstYear}–{ds.data.lastYear}
-            </dd>
-          </div>
-          <div className="act2__stat">
-            <dt>min · max</dt>
-            <dd>
-              {ds.data.range.min.toFixed(2)} · {ds.data.range.max.toFixed(2)}
-            </dd>
-          </div>
-        </dl>
-      )}
-    </article>
-  );
+function allSeries(d, lang) {
+  if (!d) return [];
+  return d.areas
+    .filter((a) => isPict(a))
+    .map((a) => ({
+      area: a,
+      name: pictName(a, lang),
+      values: (d.byArea[a] || []).filter((p) => Number.isFinite(p.value)),
+    }));
+}
+function pointsAt(d, year, lang) {
+  if (!d) return [];
+  return d.areas
+    .filter((a) => isPict(a))
+    .map((a) => {
+      const p = (d.byArea[a] || []).find((q) => q.year === year);
+      return p && Number.isFinite(p.value)
+        ? { area: a, name: pictName(a, lang), value: p.value, year }
+        : null;
+    })
+    .filter(Boolean);
 }
 
 export default function Act2Ocean() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const dispatch = useDispatch();
-  const seaLevel = useSelector(selectDataset("seaLevel"));
+  const sea = useSelector(selectDataset("seaLevel"));
   const sst = useSelector(selectDataset("sst"));
+
+  const [yearIdx, setYearIdx] = useState(null);
+  const [playing, setPlaying] = useState(false);
+  const [metric, setMetric] = useState("sst");
 
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
     dispatch(loadDataset("sst"));
   }, [dispatch]);
 
-  // Logs dès que chaque jeu est prêt.
+  const ready = sea.status === "succeeded" && sst.status === "succeeded";
+  const failed = sea.status === "failed" || sst.status === "failed";
+  const isDemo =
+    ready &&
+    ((sea.data && sea.data.source === "fallback") ||
+      (sst.data && sst.data.source === "fallback"));
+
+  const masterYears = useMemo(() => {
+    const set = new Set([
+      ...(sea.data?.years || []),
+      ...(sst.data?.years || []),
+    ]);
+    return [...set].sort((a, b) => a - b);
+  }, [sea.data, sst.data]);
+
   useEffect(() => {
-    if (seaLevel.status === "succeeded") logDataset("seaLevel", seaLevel.data);
-  }, [seaLevel.status, seaLevel.data]);
+    if (masterYears.length && yearIdx === null)
+      setYearIdx(masterYears.length - 1);
+  }, [masterYears, yearIdx]);
+
   useEffect(() => {
-    if (sst.status === "succeeded") logDataset("sst", sst.data);
-  }, [sst.status, sst.data]);
+    if (!playing || !masterYears.length) return undefined;
+    const id = setInterval(() => {
+      setYearIdx((i) => {
+        const next = (i ?? 0) + 1;
+        if (next >= masterYears.length) {
+          setPlaying(false);
+          return masterYears.length - 1;
+        }
+        return next;
+      });
+    }, 700);
+    return () => clearInterval(id);
+  }, [playing, masterYears]);
+
+  const currentYear =
+    masterYears.length && yearIdx != null ? masterYears[yearIdx] : null;
+
+  const seaMean = useMemo(() => meanSeries(sea.data), [sea.data]);
+  const sstMean = useMemo(() => meanSeries(sst.data), [sst.data]);
+  const seaAll = useMemo(() => allSeries(sea.data, lang), [sea.data, lang]);
+  const sstAll = useMemo(() => allSeries(sst.data, lang), [sst.data, lang]);
+
+  const selDs = metric === "sst" ? sst : sea;
+  const selData = selDs.data;
+  const selUnit = metric === "sst" ? t("act2.sst_unit") : t("act2.sea_unit");
+  const selAll = metric === "sst" ? sstAll : seaAll;
+  const selYear = currentYear != null ? clampYear(selData, currentYear) : null;
+
+  const selPoints = useMemo(
+    () => (selData && selYear != null ? pointsAt(selData, selYear, lang) : []),
+    [selData, selYear, lang],
+  );
+  const selRegionalMean = useMemo(() => {
+    if (!selPoints.length) return 0;
+    return selPoints.reduce((s, p) => s + p.value, 0) / selPoints.length;
+  }, [selPoints]);
+
+  const tableLabels = useMemo(
+    () => ({
+      col_rank: t("export.col_rank"),
+      col_code: t("export.col_code"),
+      col_name: t("export.col_name"),
+      col_value: `${t("act2.value_label")} (${selUnit})`,
+      col_vs_world: t("act2.vs_mean"),
+    }),
+    [t, selUnit],
+  );
+  const evoLabels = useMemo(
+    () => ({
+      improved: t("act2.evo_down"),
+      worsened: t("act2.evo_up"),
+      since: t("act1.evo.since"),
+      no_data: t("act1.evo.no_data"),
+    }),
+    [t],
+  );
+
+  const togglePlay = useCallback(() => {
+    setYearIdx((i) => (i === masterYears.length - 1 ? 0 : i));
+    setPlaying((p) => !p);
+  }, [masterYears.length]);
+
+  const retry = useCallback(() => {
+    dispatch(loadDataset("seaLevel"));
+    dispatch(loadDataset("sst"));
+  }, [dispatch]);
 
   return (
     <main className="act2">
@@ -121,24 +183,174 @@ export default function Act2Ocean() {
           <p className="act2__lead">{t("act2.lead")}</p>
         </header>
 
-        <section className="act2__panels">
-          <DataPanel
-            ds={seaLevel}
-            title={t("act2.sea_title")}
-            sub={t("act2.sea_sub")}
-            unit={t("act2.sea_unit")}
-            t={t}
-          />
-          <DataPanel
-            ds={sst}
-            title={t("act2.sst_title")}
-            sub={t("act2.sst_sub")}
-            unit={t("act2.sst_unit")}
-            t={t}
-          />
-        </section>
+        <ReadingGuide
+          title={t("act2.guide.title")}
+          intro={t("act2.guide.intro")}
+          steps={t("act2.guide.steps")}
+          takeaway={t("act2.guide.takeaway")}
+        />
 
-        <p className="act2__coming">{t("act2.coming")}</p>
+        {!ready && !failed && (
+          <p className="act2__state">{t("scene.loading")}</p>
+        )}
+        {failed && (
+          <div className="act2__state act2__state--err">
+            <span>{t("scene.error")}</span>
+            <button className="act2__btn" onClick={retry}>
+              {t("act1.retry")}
+            </button>
+          </div>
+        )}
+
+        {ready && currentYear != null && (
+          <>
+            {/* Curseur d'année partagé */}
+            <div className="act2__timeline">
+              <button className="act2__btn" onClick={togglePlay}>
+                {playing ? t("act1.pause") : t("act1.play")}
+              </button>
+              <input
+                className="act2__slider"
+                type="range"
+                min={0}
+                max={masterYears.length - 1}
+                value={yearIdx ?? 0}
+                onChange={(e) => {
+                  setPlaying(false);
+                  setYearIdx(Number(e.target.value));
+                }}
+                aria-label={t("act1.year")}
+              />
+              <span className="act2__year">{currentYear}</span>
+              {isDemo && (
+                <span className="act2__demo">{t("act2.demo_badge")}</span>
+              )}
+            </div>
+
+            {/* Deux courbes d'anomalie */}
+            <div className="act2__charts">
+              <section className="act2__chart">
+                <div className="act2__chart-head">
+                  <h2 className="act2__chart-title">{t("act2.sea_title")}</h2>
+                  <span className="act2__chart-sub">
+                    {t("act2.sea_sub")} · {t("act2.sea_unit")}
+                  </span>
+                </div>
+                <AnomalyTrend
+                  data={seaMean}
+                  currentYear={
+                    currentYear != null
+                      ? clampYear(sea.data, currentYear)
+                      : null
+                  }
+                  unit={t("act2.sea_unit")}
+                  tone="sea"
+                  baselineLabel={t("act2.baseline")}
+                  meanLabel={t("act2.mean_label")}
+                />
+              </section>
+
+              <section className="act2__chart">
+                <div className="act2__chart-head">
+                  <h2 className="act2__chart-title">{t("act2.sst_title")}</h2>
+                  <span className="act2__chart-sub">
+                    {t("act2.sst_sub")} · {t("act2.sst_unit")}
+                  </span>
+                </div>
+                <AnomalyTrend
+                  data={sstMean}
+                  currentYear={
+                    currentYear != null
+                      ? clampYear(sst.data, currentYear)
+                      : null
+                  }
+                  unit={t("act2.sst_unit")}
+                  tone="warm"
+                  baselineLabel={t("act2.baseline")}
+                  meanLabel={t("act2.mean_label")}
+                />
+              </section>
+            </div>
+
+            {/* Sélecteur de métrique pour carte / tableau / évolution */}
+            <div className="act2__metric">
+              <span className="act2__metric-label">{t("act2.explore")}</span>
+              <div className="act2__toggle">
+                <button
+                  className={`act2__toggle-btn ${metric === "sst" ? "is-on" : ""}`}
+                  onClick={() => setMetric("sst")}
+                >
+                  {t("act2.sst_title")}
+                </button>
+                <button
+                  className={`act2__toggle-btn ${metric === "seaLevel" ? "is-on" : ""}`}
+                  onClick={() => setMetric("seaLevel")}
+                >
+                  {t("act2.sea_title")}
+                </button>
+              </div>
+            </div>
+
+            {/* Carte satellite divergente */}
+            <div className="act2__map-head">
+              <h3 className="act2__map-title">{t("act2.map_title")}</h3>
+              <span className="act2__chart-sub">
+                {t("act2.map_sub")} · {selYear}
+              </span>
+            </div>
+            <ErrorBoundary
+              fallback={
+                <div className="act2__state act2__state--err">
+                  {t("scene.error")}
+                </div>
+              }
+            >
+              <Suspense
+                fallback={
+                  <div className="act2__state">{t("scene.loading")}</div>
+                }
+              >
+                <OceanMap
+                  data={selPoints}
+                  unit={selUnit}
+                  range={selData ? selData.range : null}
+                  mode={metric === "seaLevel" ? "water" : "heat"}
+                  lowLabel={t("act2.map_low")}
+                  midLabel={t("act2.map_mid")}
+                  highLabel={t("act2.map_high")}
+                  noTokenMsg={t("act1.map_no_token")}
+                />
+              </Suspense>
+            </ErrorBoundary>
+
+            {/* Évolution */}
+            <div className="act2__map-head">
+              <h3 className="act2__map-title">{t("act2.evo_title")}</h3>
+              <span className="act2__chart-sub">{t("act2.evo_sub")}</span>
+            </div>
+            <EvolutionPanel
+              series={selAll}
+              labels={evoLabels}
+              unit={selUnit}
+              mode="absolute"
+              topN={5}
+            />
+
+            {/* Tableau */}
+            <div className="act2__map-head">
+              <h3 className="act2__map-title">{t("act2.table_title")}</h3>
+              <span className="act2__chart-sub">
+                {t("act2.table_sub")} · {selYear}
+              </span>
+            </div>
+            <DataTable
+              rows={selPoints}
+              labels={tableLabels}
+              unit={selUnit}
+              refValue={selRegionalMean}
+            />
+          </>
+        )}
 
         <Link to="/" className="act2__back">
           ← {t("act1.back")}
