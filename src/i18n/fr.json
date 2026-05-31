@@ -1,0 +1,79 @@
+{
+  "brand": "Te Moana",
+  "header": {
+    "tagline": "Pacifique · Changement climatique",
+    "theme": "Changer de thème",
+    "lang": "EN"
+  },
+  "home": {
+    "kicker": "Pacific Dataviz Challenge 2026 · Changement climatique",
+    "title_l1": "L'océan",
+    "title_l2": "se souvient",
+    "subtitle": "Une plongée dans les données du Pacifique : la mer qui monte, qui chauffe, et les peuples qui en portent le poids.",
+    "cta": "Descendre dans l'histoire",
+    "live_label": "Données en direct · niveau de la mer",
+    "live_loading": "Connexion au Pacific Data Hub…",
+    "live_error": "Données indisponibles pour le moment",
+    "live_coverage": "territoires suivis",
+    "acts_intro": "Cinq actes, une seule mer.",
+    "acts": {
+      "a1_tag": "Acte 01 — Origine",
+      "a1_title": "Le paradoxe",
+      "a1_text": "Le Pacifique émet une fraction infime des gaz à effet de serre mondiaux. Pourtant, c'est lui qui en subit les premières conséquences.",
+      "a2_tag": "Acte 02 — L'océan",
+      "a2_title": "La mer change",
+      "a2_text": "Le niveau monte, la surface chauffe. Deux courbes silencieuses qui redessinent l'horizon de toute une région.",
+      "a3_tag": "Acte 03 — Le territoire",
+      "a3_title": "La côte recule",
+      "a3_text": "Quarante ans de traits de côte révèlent l'érosion, pendant que la population côtière, elle, ne cesse de croître.",
+      "a4_tag": "Acte 04 — L'impact",
+      "a4_title": "Le coût humain",
+      "a4_text": "Derrière les anomalies : des personnes déplacées, des pertes économiques, des vies bouleversées par les catastrophes.",
+      "a5_tag": "Acte 05 — La réponse",
+      "a5_title": "L'élan",
+      "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience."
+    }
+  },
+  "footer": {
+    "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",
+    "scope": "Périmètre : ensemble des pays et territoires du Pacifique (SPC).",
+    "data_title": "Données",
+    "data_sources": "Pacific Data Hub · .Stat Explorer (SPC)",
+    "credit": "Réalisé pour le Pacific Dataviz Challenge 2026."
+  },
+  "scene": {
+    "loading": "Chargement des données…",
+    "error": "Données indisponibles pour le moment."
+  },
+  "act1": {
+    "lead": "Les nations du Pacifique pèsent une part infime des émissions mondiales de gaz à effet de serre. Elles figurent pourtant parmi les premières exposées à leurs conséquences. Voici les émissions par habitant, territoire par territoire.",
+    "chart_title": "Émissions de gaz à effet de serre par habitant",
+    "chart_sub": "par territoire · survolez un point pour le détail",
+    "caption": "Source : Pacific Data Hub (.Stat) — SPC. Valeurs par habitant.",
+    "back": "Retour à l'accueil",
+    "unit": "t CO₂e/hab.",
+    "world_avg": "Moyenne mondiale",
+    "scale_linear": "Linéaire",
+    "scale_log": "Log",
+    "paradox": "Quelques territoires affichent un per-capita extrême — population minuscule au dénominateur, tourisme et électricité au diesel. Pourtant leur empreinte mondiale reste sous 0,01 %. La plupart des nations du Pacifique se situent bien en dessous de la moyenne mondiale (4,76 t).",
+    "year": "Année",
+    "play": "▶ Lire",
+    "pause": "❚❚ Pause",
+    "retry": "Réessayer",
+    "empty": "Aucune donnée exploitable pour ce jeu.",
+    "demo_badge": "données de démonstration",
+    "map_title": "Où se situent ces émissions ?",
+    "map_sub": "par territoire · survolez un point",
+    "map_low": "Faible",
+    "map_high": "Élevé",
+    "map_no_token": "Carte indisponible : ajoutez votre token Mapbox dans un fichier .env (REACT_APP_MAPBOX_TOKEN=…) à la racine du projet, puis relancez « npm start »."
+  },
+  "export": {
+    "title": "Télécharger",
+    "pdf": "PDF",
+    "excel": "Excel",
+    "col_name": "Territoire",
+    "col_value": "Valeur (t CO₂e/hab.)",
+    "col_year": "Année"
+  }
+}

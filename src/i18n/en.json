@@ -1,0 +1,79 @@
+{
+  "brand": "Te Moana",
+  "header": {
+    "tagline": "Pacific · Climate change",
+    "theme": "Toggle theme",
+    "lang": "FR"
+  },
+  "home": {
+    "kicker": "Pacific Dataviz Challenge 2026 · Climate change",
+    "title_l1": "The ocean",
+    "title_l2": "remembers",
+    "subtitle": "A dive into Pacific data: a sea that rises, that warms, and the peoples who carry its weight.",
+    "cta": "Descend into the story",
+    "live_label": "Live data · sea level",
+    "live_loading": "Connecting to the Pacific Data Hub…",
+    "live_error": "Data unavailable right now",
+    "live_coverage": "territories tracked",
+    "acts_intro": "Five acts, one ocean.",
+    "acts": {
+      "a1_tag": "Act 01 — Origin",
+      "a1_title": "The paradox",
+      "a1_text": "The Pacific emits a tiny fraction of global greenhouse gases. Yet it is the first to bear the consequences.",
+      "a2_tag": "Act 02 — The ocean",
+      "a2_title": "The sea is changing",
+      "a2_text": "Sea level rises, the surface warms. Two silent curves redrawing the horizon of an entire region.",
+      "a3_tag": "Act 03 — The land",
+      "a3_title": "The coast retreats",
+      "a3_text": "Forty years of shorelines reveal erosion, while the coastal population keeps growing.",
+      "a4_tag": "Act 04 — The impact",
+      "a4_title": "The human cost",
+      "a4_text": "Behind the anomalies: displaced people, economic losses, lives upended by disasters.",
+      "a5_tag": "Act 05 — The response",
+      "a5_title": "The momentum",
+      "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience."
+    }
+  },
+  "footer": {
+    "tagline": "Giving a face to climate-change data across the Pacific.",
+    "scope": "Scope: all Pacific Island countries and territories (SPC).",
+    "data_title": "Data",
+    "data_sources": "Pacific Data Hub · .Stat Explorer (SPC)",
+    "credit": "Built for the Pacific Dataviz Challenge 2026."
+  },
+  "scene": {
+    "loading": "Loading data…",
+    "error": "Data unavailable right now."
+  },
+  "act1": {
+    "lead": "Pacific nations account for a tiny share of global greenhouse-gas emissions. Yet they are among the first exposed to their consequences. Here are per-capita emissions, territory by territory.",
+    "chart_title": "Greenhouse-gas emissions per capita",
+    "chart_sub": "by territory · hover a dot for details",
+    "caption": "Source: Pacific Data Hub (.Stat) — SPC. Per-capita values.",
+    "back": "Back to home",
+    "unit": "t CO₂e/cap.",
+    "world_avg": "World average",
+    "scale_linear": "Linear",
+    "scale_log": "Log",
+    "paradox": "A few territories show extreme per-capita values — tiny populations as denominator, tourism and diesel power. Yet their global footprint stays under 0.01%. Most Pacific nations sit well below the world average (4.76 t).",
+    "year": "Year",
+    "play": "▶ Play",
+    "pause": "❚❚ Pause",
+    "retry": "Try again",
+    "empty": "No usable data for this dataset.",
+    "demo_badge": "demo data",
+    "map_title": "Where do these emissions sit?",
+    "map_sub": "by territory · hover a point",
+    "map_low": "Low",
+    "map_high": "High",
+    "map_no_token": "Map unavailable: add your Mapbox token to a .env file (REACT_APP_MAPBOX_TOKEN=…) at the project root, then restart “npm start”."
+  },
+  "export": {
+    "title": "Download",
+    "pdf": "PDF",
+    "excel": "Excel",
+    "col_name": "Territory",
+    "col_value": "Value (t CO₂e/cap.)",
+    "col_year": "Year"
+  }
+}

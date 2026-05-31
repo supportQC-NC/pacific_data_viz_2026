@@ -1,0 +1,184 @@
+/* src/pages/Act1Emissions/Act1Emissions.scss */
+
+.act1 {
+  flex: 1;
+  padding-top: calc(var(--nav-h) + var(--sp-16));
+  padding-bottom: var(--sp-24);
+  background: var(--grad-abyss);
+
+  &__head {
+    max-width: var(--maxw-text);
+  }
+
+  &__title {
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-light);
+    margin: var(--sp-4) 0 var(--sp-6);
+  }
+  &__lead {
+    font-size: var(--fs-md);
+    color: var(--c-text-soft);
+    line-height: var(--lh-base);
+  }
+
+  &__chart {
+    margin-top: var(--sp-24);
+    padding: var(--sp-12);
+    background: color-mix(in srgb, var(--c-surface) 60%, transparent);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+  }
+  &__chart-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-8);
+    flex-wrap: wrap;
+  }
+  &__chart-title {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-semi);
+  }
+  &__chart-sub {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+    letter-spacing: 0.04em;
+  }
+
+  &__timeline {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    margin: var(--sp-8) 0 var(--sp-6);
+  }
+  &__play {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-bg);
+    background: var(--c-accent);
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--r-pill);
+    white-space: nowrap;
+  }
+  &__slider {
+    flex: 1;
+    accent-color: var(--c-accent);
+    cursor: pointer;
+  }
+  &__year {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-semi);
+    color: var(--c-accent);
+    min-width: 4ch;
+    text-align: right;
+  }
+  &__capture {
+    padding: var(--sp-4) 0;
+  }
+
+  &__state {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-mute);
+    padding: var(--sp-8) 0;
+    &--err {
+      color: var(--c-warm);
+    }
+  }
+
+  &__map-head {
+    margin: var(--sp-12) 0 var(--sp-4);
+  }
+  &__map-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-semi);
+    margin-bottom: var(--sp-1);
+  }
+
+  &__paradox {
+    margin-top: var(--sp-8);
+    padding: var(--sp-6);
+    border-left: 3px solid var(--c-warm);
+    background: color-mix(in srgb, var(--c-warm) 8%, transparent);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    color: var(--c-text-soft);
+    line-height: var(--lh-base);
+    max-width: 70ch;
+  }
+
+  &__caption {
+    margin-top: var(--sp-6);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+  }
+
+  &__back {
+    display: inline-block;
+    margin-top: var(--sp-16);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+    transition: color var(--t-fast) var(--ease-out);
+    &:hover {
+      color: var(--c-accent);
+    }
+  }
+}
+
+/* Barres horizontales */
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  &__row {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+  &__label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+    text-align: right;
+  }
+  &__track {
+    height: 12px;
+    border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--c-text-mute) 22%, transparent);
+    overflow: hidden;
+  }
+  &__fill {
+    display: block;
+    height: 100%;
+    border-radius: var(--r-pill);
+    background: linear-gradient(90deg, var(--c-accent-deep), var(--c-accent));
+    box-shadow: var(--shadow-glow);
+    transform-origin: left;
+    animation: grow 0.9s var(--ease-out) both;
+  }
+  &__value {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text);
+    min-width: 5ch;
+    text-align: right;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
