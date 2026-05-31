@@ -81,7 +81,7 @@
         },
         {
           "k": "The two references",
-          "v": "The orange line is the world average (4.76 t, fixed). The blue Ø line is the Pacific average for the displayed year — that one moves."
+          "v": "The orange line is the world average, which CHANGES every year (≈3.1 t in 1960, ≈4.7 t today). The blue Ø line is the Pacific average for the displayed year."
         },
         {
           "k": "Time",
@@ -127,6 +127,7 @@
     "summary_mean": "Average (Pacific)",
     "summary_world": "World average",
     "summary_source": "Source",
-    "summary_generated": "Generated on"
+    "summary_generated": "Generated on",
+    "sheet_series": "Time series"
   }
 }

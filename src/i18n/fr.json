@@ -81,7 +81,7 @@
         },
         {
           "k": "Les deux repères",
-          "v": "La ligne orange est la moyenne mondiale (4,76 t, fixe). La ligne bleue Ø est la moyenne du Pacifique pour l'année affichée — elle, elle bouge."
+          "v": "La ligne orange est la moyenne mondiale, qui ÉVOLUE chaque année (≈3,1 t en 1960, ≈4,7 t aujourd'hui). La ligne bleue Ø est la moyenne du Pacifique pour l'année affichée."
         },
         {
           "k": "Le temps",
@@ -127,6 +127,7 @@
     "summary_mean": "Moyenne (Pacifique)",
     "summary_world": "Moyenne mondiale",
     "summary_source": "Source",
-    "summary_generated": "Généré le"
+    "summary_generated": "Généré le",
+    "sheet_series": "Séries temporelles"
   }
 }

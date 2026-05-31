@@ -1,26 +1,22 @@
 // src/components/ExportBar/ExportBar.jsx
 // ============================================================
-// Barre d'export PDF / Excel — niveau analyste, sûr (clic only,
-// aucun useEffect → aucune boucle de rendu).
+// Export PRO — PDF (rapport multi-pages) + Excel (3 feuilles).
+// Sûr : export au clic, aucun useEffect → aucune boucle.
 //
-// PDF  : titre + sous-titre + capture du graphe + source/date.
-// Excel: classeur 2 feuilles via toute la puissance d'ExcelJS —
-//   • "Données"  : classement, code, valeur, écart vs moyenne mondiale,
-//                  heatmap (mise en forme conditionnelle), en-tête figé,
-//                  filtre auto, formats numériques, bordures.
-//   • "Synthèse" : année, n, max/min/médiane/moyenne, moyenne mondiale,
-//                  source, date de génération.
+// PDF :
+//   p.1  bandeau titre + sous-titre + capture du graphe + ligne de stats
+//   p.2  tableau de classement (rang/code/territoire/valeur/écart)
+//   pied : source · date · pagination
+// Excel :
+//   "Classement"  année courante (heatmap, filtre, en-tête figé)
+//   "Séries"      matrice territoires × années + ligne moyenne mondiale
+//                 (heatmap temporelle) — la moyenne mondiale est MOBILE
+//   "Synthèse"    statistiques
 //
-// API :
-//   targetRef : ref du DOM capturé pour le PDF
-//   rows      : [{ name, code, value, year }]
-//   meta      : { title, subtitle, source, filename, sheet, unit,
-//                 refValue, refLabel, year }
-//   labels    : { title, pdf, excel, col_rank, col_code, col_name,
-//                 col_value, col_vs_world, sheet_data, sheet_summary,
-//                 summary_title, summary_year, summary_count, summary_max,
-//                 summary_min, summary_median, summary_mean, summary_world,
-//                 summary_source, summary_generated }
+// API meta : { title, subtitle, source, filename, sheet, unit,
+//              refValue, refLabel, year, series, years, worldByYear }
+//   series : [{ code, name, values:[{year,value}] }]
+//   worldByYear : { [year]: number }
 // ============================================================
 
 import React, { useState, useCallback } from "react";
@@ -30,7 +26,6 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import "./ExportBar.scss";
 
-// --- Palette (cohérente avec la dataviz) ---
 const C = {
   ink: "FF0B1E2D",
   headerBg: "FF0E2A3F",
@@ -41,17 +36,35 @@ const C = {
   low: "FF1F9BC9",
   mid: "FFFFD166",
   high: "FFFF5A36",
+  world: "FFFF5A36",
+};
+const PDF = {
+  ink: [11, 30, 45],
+  sub: [91, 107, 122],
+  band: [14, 42, 63],
+  white: [255, 255, 255],
+  line: [210, 220, 230],
+  zebra: [245, 248, 251],
 };
 
-const median = (arr) => {
-  if (!arr.length) return 0;
-  const s = [...arr].sort((a, b) => a - b);
+const median = (a) => {
+  if (!a.length) return 0;
+  const s = [...a].sort((x, y) => x - y);
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
-const mean = (arr) =>
-  arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 const today = () => new Date().toISOString().slice(0, 10);
+const colLetter = (n) => {
+  let s = "";
+  let x = n;
+  while (x > 0) {
+    const r = (x - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    x = Math.floor((x - 1) / 26);
+  }
+  return s;
+};
 
 export default function ExportBar({
   targetRef,
@@ -71,48 +84,206 @@ export default function ExportBar({
     refValue = null,
     refLabel = "",
     year = "",
+    series = [],
+    years = [],
+    worldByYear = {},
   } = meta;
 
-  // ---------------------------------------------------------- PDF
+  // -------------------------------------------------------- PDF
   const exportPdf = useCallback(async () => {
     const node = targetRef && targetRef.current;
-    if (!node || busy) return;
+    if (busy) return;
     setBusy(true);
     try {
-      const canvas = await html2canvas(node, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-      const img = canvas.toDataURL("image/png");
-
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "pt",
         format: "a4",
       });
       const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
       const margin = 36;
-      const availW = pageW - margin * 2;
-      const imgH = availW * (canvas.height / canvas.width);
 
-      pdf.setTextColor(11, 30, 45);
+      // --- Bandeau titre ---
+      pdf.setFillColor(...PDF.band);
+      pdf.rect(0, 0, pageW, 56, "F");
+      pdf.setTextColor(...PDF.white);
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(15);
-      pdf.text(String(title), margin, 42);
+      pdf.setFontSize(16);
+      pdf.text(String(title), margin, 30);
       if (subtitle) {
         pdf.setFont("helvetica", "normal");
-        pdf.setTextColor(91, 107, 122);
         pdf.setFontSize(10);
-        pdf.text(String(subtitle), margin, 60);
+        pdf.text(String(subtitle), margin, 46);
       }
-      pdf.addImage(img, "PNG", margin, 76, availW, imgH);
 
-      pdf.setFontSize(8);
-      pdf.setTextColor(120, 130, 140);
-      const footer = [source, `${today()}`].filter(Boolean).join("  ·  ");
-      pdf.text(footer, margin, 76 + imgH + 16);
+      // --- Capture du graphe ---
+      let cursorY = 80;
+      if (node) {
+        const canvas = await html2canvas(node, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        });
+        const img = canvas.toDataURL("image/png");
+        const availW = pageW - margin * 2;
+        const maxH = pageH - cursorY - 80;
+        let w = availW;
+        let h = availW * (canvas.height / canvas.width);
+        if (h > maxH) {
+          h = maxH;
+          w = maxH * (canvas.width / canvas.height);
+        }
+        pdf.addImage(img, "PNG", margin, cursorY, w, h);
+        cursorY += h + 24;
+      }
+
+      // --- Ligne de stats ---
+      const vals = rows.map((r) => r.value);
+      if (vals.length) {
+        const s = {
+          n: vals.length,
+          max: Math.max(...vals),
+          min: Math.min(...vals),
+          med: median(vals),
+          avg: mean(vals),
+        };
+        const parts = [
+          `${labels.summary_count || "n"}: ${s.n}`,
+          `${labels.summary_max || "max"}: ${s.max.toFixed(2)}`,
+          `${labels.summary_mean || "moy."}: ${s.avg.toFixed(2)}`,
+          `${labels.summary_median || "méd."}: ${s.med.toFixed(2)}`,
+          refValue != null
+            ? `${refLabel || "monde"}: ${Number(refValue).toFixed(2)}`
+            : null,
+          unit,
+        ].filter(Boolean);
+        pdf.setTextColor(...PDF.sub);
+        pdf.setFontSize(9);
+        pdf.text(parts.join("    ·    "), margin, cursorY);
+      }
+
+      // --- Page 2 : tableau de classement ---
+      if (rows.length) {
+        pdf.addPage();
+        pdf.setFillColor(...PDF.band);
+        pdf.rect(0, 0, pageW, 40, "F");
+        pdf.setTextColor(...PDF.white);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.text(
+          `${title} — ${labels.sheet_data || "Données"} ${year}`,
+          margin,
+          26,
+        );
+
+        const sorted = [...rows].sort((a, b) => b.value - a.value);
+        const head = [
+          labels.col_rank || "#",
+          labels.col_code || "Code",
+          labels.col_name || "Territoire",
+          labels.col_value || "Valeur",
+          labels.col_vs_world || "Écart",
+        ];
+        const colW = [40, 60, 250, 110, 130];
+        const aligns = ["center", "center", "left", "right", "right"];
+        let tx = margin;
+        const xs = colW.map((w) => {
+          const x = tx;
+          tx += w;
+          return x;
+        });
+        let ty = 64;
+        const rowH = 17;
+
+        // header
+        pdf.setFillColor(...PDF.band);
+        pdf.rect(
+          margin,
+          ty - 12,
+          colW.reduce((a, b) => a + b, 0),
+          rowH,
+          "F",
+        );
+        pdf.setTextColor(...PDF.white);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        head.forEach((hd, i) => {
+          const x =
+            aligns[i] === "right"
+              ? xs[i] + colW[i] - 6
+              : aligns[i] === "center"
+                ? xs[i] + colW[i] / 2
+                : xs[i] + 6;
+          pdf.text(String(hd), x, ty, { align: aligns[i] });
+        });
+        ty += rowH;
+
+        // rows
+        pdf.setFont("helvetica", "normal");
+        sorted.forEach((r, i) => {
+          if (ty > pageH - 30) {
+            pdf.addPage();
+            ty = 50;
+          }
+          if (i % 2 === 1) {
+            pdf.setFillColor(...PDF.zebra);
+            pdf.rect(
+              margin,
+              ty - 12,
+              colW.reduce((a, b) => a + b, 0),
+              rowH,
+              "F",
+            );
+          }
+          const vs = refValue != null ? r.value - refValue : null;
+          const cells = [
+            String(i + 1),
+            r.code || "",
+            r.name || "",
+            r.value.toFixed(2),
+            vs == null ? "—" : vs > 0 ? `+${vs.toFixed(2)}` : vs.toFixed(2),
+          ];
+          cells.forEach((cell, ci) => {
+            pdf.setTextColor(
+              ...(ci === 4 && vs != null
+                ? vs > 0
+                  ? [200, 70, 40]
+                  : [30, 120, 160]
+                : PDF.ink),
+            );
+            const x =
+              aligns[ci] === "right"
+                ? xs[ci] + colW[ci] - 6
+                : aligns[ci] === "center"
+                  ? xs[ci] + colW[ci] / 2
+                  : xs[ci] + 6;
+            pdf.text(String(cell), x, ty, { align: aligns[ci] });
+          });
+          pdf.setDrawColor(...PDF.line);
+          pdf.line(
+            margin,
+            ty + 4,
+            margin + colW.reduce((a, b) => a + b, 0),
+            ty + 4,
+          );
+          ty += rowH;
+        });
+      }
+
+      // --- Pieds de page + pagination ---
+      const pageCount = pdf.getNumberOfPages();
+      for (let p = 1; p <= pageCount; p += 1) {
+        pdf.setPage(p);
+        pdf.setTextColor(...PDF.sub);
+        pdf.setFontSize(8);
+        const footer = [source, today()].filter(Boolean).join("  ·  ");
+        pdf.text(footer, margin, pageH - 16);
+        pdf.text(`${p} / ${pageCount}`, pageW - margin, pageH - 16, {
+          align: "right",
+        });
+      }
 
       pdf.save(`${filename}.pdf`);
     } catch (err) {
@@ -121,7 +292,20 @@ export default function ExportBar({
     } finally {
       setBusy(false);
     }
-  }, [targetRef, busy, title, subtitle, source, filename]);
+  }, [
+    targetRef,
+    busy,
+    title,
+    subtitle,
+    source,
+    filename,
+    unit,
+    refValue,
+    refLabel,
+    year,
+    rows,
+    labels,
+  ]);
 
   // -------------------------------------------------------- Excel
   const exportExcel = useCallback(async () => {
@@ -144,7 +328,17 @@ export default function ExportBar({
       wb.creator = "Pacific Dataviz Challenge 2026";
       wb.created = new Date();
 
-      // ===================== Feuille DONNÉES =====================
+      const styleHeader = (cell) => {
+        cell.font = { bold: true, color: { argb: C.headerText } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: C.headerBg },
+        };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+      };
+
+      // ===== Feuille 1 : Classement (année courante) =====
       const ws = wb.addWorksheet(labels.sheet_data || sheet || "Données", {
         views: [{ state: "frozen", ySplit: 4 }],
       });
@@ -155,93 +349,61 @@ export default function ExportBar({
         { key: "value", width: 22 },
         { key: "vs", width: 26 },
       ];
-
-      // Bandeau titre
       ws.mergeCells("A1:E1");
-      const tCell = ws.getCell("A1");
-      tCell.value = title;
-      tCell.font = { size: 16, bold: true, color: { argb: C.ink } };
-      tCell.alignment = { vertical: "middle" };
+      Object.assign(ws.getCell("A1"), {
+        value: `${title}${year ? ` · ${year}` : ""}`,
+      });
+      ws.getCell("A1").font = { size: 16, bold: true, color: { argb: C.ink } };
       ws.getRow(1).height = 26;
-
       ws.mergeCells("A2:E2");
-      const sCell = ws.getCell("A2");
-      sCell.value = subtitle;
-      sCell.font = { size: 10, italic: true, color: { argb: C.sub } };
+      ws.getCell("A2").value = subtitle;
+      ws.getCell("A2").font = {
+        size: 10,
+        italic: true,
+        color: { argb: C.sub },
+      };
 
-      // En-tête (ligne 4)
-      const headerRow = ws.getRow(4);
-      headerRow.values = [
+      const hr = ws.getRow(4);
+      hr.values = [
         labels.col_rank || "Rang",
         labels.col_code || "Code",
         labels.col_name || "Territoire",
         labels.col_value || "Valeur",
-        labels.col_vs_world || "Écart vs moyenne mondiale",
+        labels.col_vs_world || "Écart vs monde",
       ];
-      headerRow.height = 22;
-      headerRow.eachCell((cell) => {
-        cell.font = { bold: true, color: { argb: C.headerText } };
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: C.headerBg },
-        };
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-        cell.border = {
-          bottom: { style: "thin", color: { argb: C.headerBg } },
-        };
-      });
+      hr.height = 22;
+      hr.eachCell(styleHeader);
 
-      // Données
-      const firstDataRow = 5;
+      const first = 5;
       sorted.forEach((r, i) => {
-        const rowIdx = firstDataRow + i;
-        const row = ws.getRow(rowIdx);
+        const row = ws.getRow(first + i);
         const vs = refValue != null ? r.value - refValue : null;
         row.getCell(1).value = i + 1;
-        row.getCell(2).value = r.code || r.area || "";
+        row.getCell(2).value = r.code || "";
         row.getCell(3).value = r.name;
         row.getCell(4).value = r.value;
         row.getCell(5).value = vs;
-
         row.getCell(1).alignment = { horizontal: "center" };
         row.getCell(2).alignment = { horizontal: "center" };
         row.getCell(4).numFmt = "0.00";
         row.getCell(5).numFmt = "+0.00;[Red]-0.00;0.00";
-
         row.eachCell((cell, col) => {
-          cell.border = {
-            bottom: { style: "hair", color: { argb: C.line } },
-          };
-          if (i % 2 === 1 && col <= 5) {
+          cell.border = { bottom: { style: "hair", color: { argb: C.line } } };
+          if (i % 2 === 1 && col <= 5)
             cell.fill = {
               type: "pattern",
               pattern: "solid",
               fgColor: { argb: C.zebra },
             };
-          }
         });
       });
-
-      const lastDataRow = firstDataRow + sorted.length - 1;
-
-      // Ligne "moyenne mondiale" (repère)
-      if (refValue != null) {
-        const refRow = ws.getRow(lastDataRow + 2);
-        refRow.getCell(3).value = refLabel || "Moyenne mondiale";
-        refRow.getCell(4).value = refValue;
-        refRow.getCell(4).numFmt = "0.00";
-        refRow.getCell(3).font = { bold: true, color: { argb: C.high } };
-        refRow.getCell(4).font = { bold: true, color: { argb: C.high } };
-      }
-
-      // Filtre auto + heatmap (mise en forme conditionnelle) sur la valeur
+      const last = first + sorted.length - 1;
       ws.autoFilter = {
         from: { row: 4, column: 1 },
         to: { row: 4, column: 5 },
       };
       ws.addConditionalFormatting({
-        ref: `D${firstDataRow}:D${lastDataRow}`,
+        ref: `D${first}:D${last}`,
         rules: [
           {
             type: "colorScale",
@@ -254,21 +416,88 @@ export default function ExportBar({
           },
         ],
       });
-      // (Barres de données retirées : la règle dataBar d'ExcelJS exige des
-      //  cfvo et plante sinon. La heatmap color-scale ci-dessus suffit.)
 
-      // ===================== Feuille SYNTHÈSE =====================
+      // ===== Feuille 2 : Séries temporelles (matrice) =====
+      if (series.length && years.length) {
+        const ser = wb.addWorksheet(labels.sheet_series || "Séries", {
+          views: [{ state: "frozen", xSplit: 2, ySplit: 1 }],
+        });
+        ser.getColumn(1).width = 10;
+        ser.getColumn(2).width = 32;
+        years.forEach((_, i) => {
+          ser.getColumn(3 + i).width = 9;
+        });
+
+        const head = ser.getRow(1);
+        head.getCell(1).value = labels.col_code || "Code";
+        head.getCell(2).value = labels.col_name || "Territoire";
+        years.forEach((y, i) => {
+          head.getCell(3 + i).value = y;
+        });
+        head.height = 20;
+        head.eachCell(styleHeader);
+
+        const ranked = [...series].sort((a, b) => {
+          const av = a.values[a.values.length - 1]?.value ?? 0;
+          const bv = b.values[b.values.length - 1]?.value ?? 0;
+          return bv - av;
+        });
+        ranked.forEach((s, i) => {
+          const row = ser.getRow(2 + i);
+          row.getCell(1).value = s.code || s.area || "";
+          row.getCell(1).alignment = { horizontal: "center" };
+          row.getCell(2).value = s.name;
+          const byYear = {};
+          s.values.forEach((v) => {
+            byYear[v.year] = v.value;
+          });
+          years.forEach((y, j) => {
+            const c = row.getCell(3 + j);
+            if (byYear[y] != null) {
+              c.value = byYear[y];
+              c.numFmt = "0.00";
+            }
+          });
+        });
+        // Ligne moyenne mondiale (MOBILE)
+        const wRow = ser.getRow(2 + ranked.length + 1);
+        wRow.getCell(2).value = refLabel || "Moyenne mondiale";
+        wRow.getCell(2).font = { bold: true, color: { argb: C.world } };
+        years.forEach((y, j) => {
+          if (worldByYear[y] != null) {
+            const c = wRow.getCell(3 + j);
+            c.value = worldByYear[y];
+            c.numFmt = "0.00";
+            c.font = { bold: true, color: { argb: C.world } };
+          }
+        });
+        // Heatmap temporelle
+        const c0 = colLetter(3);
+        const c1 = colLetter(2 + years.length);
+        ser.addConditionalFormatting({
+          ref: `${c0}2:${c1}${1 + ranked.length}`,
+          rules: [
+            {
+              type: "colorScale",
+              cfvo: [
+                { type: "min" },
+                { type: "percentile", value: 50 },
+                { type: "max" },
+              ],
+              color: [{ argb: C.low }, { argb: C.mid }, { argb: C.high }],
+            },
+          ],
+        });
+      }
+
+      // ===== Feuille 3 : Synthèse =====
       const sum = wb.addWorksheet(labels.sheet_summary || "Synthèse");
-      sum.columns = [
-        { key: "k", width: 34 },
-        { key: "v", width: 30 },
-      ];
+      sum.getColumn(1).width = 34;
+      sum.getColumn(2).width = 32;
       sum.mergeCells("A1:B1");
-      const sumTitle = sum.getCell("A1");
-      sumTitle.value = labels.summary_title || "Synthèse statistique";
-      sumTitle.font = { size: 14, bold: true, color: { argb: C.ink } };
+      sum.getCell("A1").value = labels.summary_title || "Synthèse statistique";
+      sum.getCell("A1").font = { size: 14, bold: true, color: { argb: C.ink } };
       sum.getRow(1).height = 24;
-
       const kv = [
         [labels.summary_year || "Année", year],
         [labels.summary_count || "Nombre de territoires", stats.count],
@@ -300,14 +529,11 @@ export default function ExportBar({
         row.getCell(1).value = k;
         row.getCell(2).value = v;
         row.getCell(1).font = { bold: true, color: { argb: C.sub } };
-        row.getCell(1).alignment = { vertical: "middle" };
-        row.getCell(2).alignment = { vertical: "middle" };
         row.eachCell((cell) => {
           cell.border = { bottom: { style: "hair", color: { argb: C.line } } };
         });
       });
 
-      // ===================== Écriture =====================
       const buf = await wb.xlsx.writeBuffer();
       saveAs(
         new Blob([buf], {
@@ -333,6 +559,9 @@ export default function ExportBar({
     refValue,
     refLabel,
     year,
+    series,
+    years,
+    worldByYear,
     labels,
   ]);
 

@@ -1,14 +1,7 @@
 // src/pages/Act1Emissions/Act1Emissions.jsx
 // ============================================================
-// Acte 01 — Le paradoxe. Lecture analyste, multi-angles & dynamique :
-//   • Guide de lecture
-//   • Beeswarm (distribution, log, acronymes)
-//   • Classement animé
-//   • Trajectoires temporelles
-//   • Carte satellite
-//   • Évolution (plus améliorés / plus dégradés)
-//   • Tableau de données triable
-//   • Export PDF / Excel
+// Acte 01 — Le paradoxe. Lecture analyste, multi-angles & dynamique.
+// La moyenne mondiale est désormais MOBILE (série annuelle réelle).
 // ============================================================
 
 import React, {
@@ -25,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
+import { worldAvgFor } from "../../data/worldAvg";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
 import RankBars from "../../components/RankBars/RankBars";
@@ -37,7 +31,7 @@ import "./Act1Emissions.scss";
 
 const PacificMap = lazy(() => import("../../components/PacificMap/PacificMap"));
 
-const WORLD_AVG = 4.76; // t CO2e / hab — moyenne mondiale (EDGAR)
+const WORLD_AVG_FALLBACK = 4.76;
 const TREND_TOP = 7;
 
 export default function Act1Emissions() {
@@ -82,6 +76,19 @@ export default function Act1Emissions() {
 
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
 
+  // Moyenne mondiale MOBILE (année courante).
+  const worldAvg = useMemo(
+    () =>
+      currentYear != null
+        ? (worldAvgFor(currentYear) ?? WORLD_AVG_FALLBACK)
+        : WORLD_AVG_FALLBACK,
+    [currentYear],
+  );
+  const worldByYear = useMemo(
+    () => Object.fromEntries(years.map((y) => [y, worldAvgFor(y)])),
+    [years],
+  );
+
   const points = useMemo(() => {
     if (!ready || !emissions.data || currentYear == null) return [];
     const { byArea } = emissions.data;
@@ -101,7 +108,6 @@ export default function Act1Emissions() {
       .filter((d) => d && Number.isFinite(d.value) && d.value > 0);
   }, [ready, emissions.data, currentYear, lang]);
 
-  // Séries complètes de TOUS les territoires (évolution).
   const allSeries = useMemo(() => {
     if (!ready || !emissions.data) return [];
     const { byArea } = emissions.data;
@@ -109,12 +115,12 @@ export default function Act1Emissions() {
       .filter(([area]) => isPict(area))
       .map(([area, series]) => ({
         area,
+        code: area,
         name: pictName(area, lang),
         values: series.filter((p) => Number.isFinite(p.value) && p.value > 0),
       }));
   }, [ready, emissions.data, lang]);
 
-  // Top émetteurs pour les trajectoires.
   const trends = useMemo(() => {
     if (!allSeries.length || !years.length) return [];
     const latest = years[years.length - 1];
@@ -149,11 +155,14 @@ export default function Act1Emissions() {
       filename: `emissions_pacifique_${currentYear ?? ""}`,
       sheet: "Emissions",
       unit: t("act1.unit"),
-      refValue: WORLD_AVG,
+      refValue: worldAvg,
       refLabel: t("act1.world_avg"),
       year: currentYear ?? "",
+      series: allSeries,
+      years,
+      worldByYear,
     }),
-    [t, currentYear],
+    [t, currentYear, worldAvg, allSeries, years, worldByYear],
   );
   const exportLabels = useMemo(
     () => ({
@@ -166,6 +175,7 @@ export default function Act1Emissions() {
       col_value: t("export.col_value"),
       col_vs_world: t("export.col_vs_world"),
       sheet_data: t("export.sheet_data"),
+      sheet_series: t("export.sheet_series"),
       sheet_summary: t("export.sheet_summary"),
       summary_title: t("export.summary_title"),
       summary_year: t("export.summary_year"),
@@ -274,7 +284,7 @@ export default function Act1Emissions() {
               <div ref={chartRef} className="act1__capture">
                 <BeeswarmChart
                   data={points}
-                  worldAvg={WORLD_AVG}
+                  worldAvg={worldAvg}
                   unit={t("act1.unit")}
                   refLabel={t("act1.world_avg")}
                   scaleLabels={{
@@ -293,7 +303,7 @@ export default function Act1Emissions() {
               <RankBars
                 data={points}
                 unit={t("act1.unit")}
-                worldAvg={WORLD_AVG}
+                worldAvg={worldAvg}
                 refLabel={t("act1.world_avg")}
               />
 
@@ -355,7 +365,7 @@ export default function Act1Emissions() {
                 rows={exportRows}
                 labels={exportLabels}
                 unit={t("act1.unit")}
-                refValue={WORLD_AVG}
+                refValue={worldAvg}
               />
             </>
           )}
