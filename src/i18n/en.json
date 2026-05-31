@@ -284,13 +284,52 @@
     "coming": "Data retrieved ✓"
   },
   "act5": {
-    "lead": "The Pacific does not suffer in silence. Against rising seas and the human cost, a trajectory is taking hold: the share of renewable energy is climbing, territory by territory. Here is the retrieved data.",
+    "value_label": "Renewable share",
+    "unit": "%",
+    "baseline": "0 %",
+    "mean_label": "avg",
     "ren_title": "Renewable energy",
     "ren_sub": "share of final consumption",
-    "ren_unit": "%",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "The final act, and it looks ahead: the share of renewables in final energy consumption (%). Here, higher is better.",
+      "steps": [
+        {
+          "k": "A share, in %",
+          "v": "0% = all fossil; 100% = fully renewable energy. The bottom reference (0) is the starting point, not a normal."
+        },
+        {
+          "k": "Mean + spread",
+          "v": "The thick line is the regional average; the band shows where 8 in 10 territories sit (10th–90th percentile)."
+        },
+        {
+          "k": "Time",
+          "v": "The slider (or ▶) moves the year on the curve AND the green 3D map."
+        },
+        {
+          "k": "Map & podium",
+          "v": "The taller and greener a column, the higher the renewable share. The podium ranks the year's champions."
+        }
+      ],
+      "takeaway": "The momentum is real: driven by hydro, biomass and now solar, the renewable share is climbing — Kiribati, Fiji, Vanuatu, Samoa and the larger Melanesian islands leading the way."
+    },
+    "map_title": "Renewable champions",
+    "map_sub": "share by territory",
+    "map_low": "low",
+    "map_high": "high",
+    "rank_title": "The podium",
+    "rank_sub": "renewable share",
+    "evo_title": "Biggest gains",
+    "evo_sub": "change in share between first and last year",
+    "evo_down": "Decline / stagnation",
+    "evo_up": "Biggest gain",
+    "table_title": "The data in detail",
+    "table_sub": "click a header to sort",
+    "vs_mean": "Gap vs average",
+    "demo_badge": "demo",
     "coverage": "territories",
     "period": "period",
-    "demo_badge": "demo",
-    "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next."
+    "lead": "The Pacific does not suffer in silence. Against rising seas and the human cost, a trajectory is taking hold: the share of renewable energy is climbing, territory by territory.",
+    "coming": "Data retrieved ✓"
   }
 }

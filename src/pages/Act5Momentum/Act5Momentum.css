@@ -4,7 +4,7 @@
 }
 
 .act5__head {
-  margin-bottom: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 
 .act5__title {
@@ -20,30 +20,88 @@
   line-height: var(--lh-base);
 }
 
-.act5__panels {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-6);
-  max-width: 640px;
+.act5__state {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-6) 0;
 }
 
-.act5__panel {
+.act5__state--err {
+  color: var(--c-warm);
+}
+
+.act5__btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  background: var(--c-bg-2);
+  border: var(--border-hair) solid var(--c-line-strong);
+  padding: var(--sp-2) var(--sp-5);
+  border-radius: var(--r-pill);
+  transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
+.act5__btn:hover {
+  border-color: #1f8f54;
+  color: #1f8f54;
+}
+
+.act5__timeline {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin: var(--sp-8) 0 var(--sp-8);
+  flex-wrap: wrap;
+}
+
+.act5__slider {
+  flex: 1;
+  min-width: 180px;
+  accent-color: #1f8f54;
+  cursor: pointer;
+}
+
+.act5__year {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-light);
+  color: #1f8f54;
+  min-width: 4ch;
+}
+
+.act5__demo {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  border: var(--border-hair) solid var(--c-line-strong);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-pill);
+}
+
+.act5__chart {
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-md);
   background: var(--c-surface);
-  padding: var(--sp-8);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-4);
 }
 
-.act5__panel-head {
-  margin-bottom: var(--sp-6);
+.act5__chart-head {
+  margin-bottom: var(--sp-4);
 }
 
-.act5__panel-title {
+.act5__chart-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semi);
 }
 
-.act5__panel-sub {
+.act5__sub {
   display: block;
   margin-top: var(--sp-1);
   font-family: var(--font-mono);
@@ -52,51 +110,20 @@
   color: var(--c-text-mute);
 }
 
-.act5__state {
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--c-text-mute);
+.act5__sec-head {
+  margin: var(--sp-12) 0 var(--sp-4);
+  padding-top: var(--sp-8);
+  border-top: var(--border-hair) solid var(--c-line);
 }
 
-.act5__state--err {
-  color: var(--c-warm);
-}
-
-.act5__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-4);
-  margin: 0;
-}
-
-.act5__stat dt {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-text-mute);
-}
-
-.act5__stat dd {
-  margin: var(--sp-1) 0 0;
-  font-size: var(--fs-md);
+.act5__sec-title {
+  font-size: var(--fs-lg);
   font-weight: var(--fw-semi);
-  color: var(--c-accent);
-}
-
-.act5__coming {
-  margin-top: var(--sp-12);
-  padding: var(--sp-4) var(--sp-6);
-  border: var(--border-hair) dashed var(--c-line-strong);
-  border-radius: var(--r-sm);
-  color: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
 }
 
 .act5__back {
   display: inline-block;
-  margin-top: var(--sp-12);
+  margin-top: var(--sp-16);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--c-text-mute);
@@ -104,5 +131,5 @@
 }
 
 .act5__back:hover {
-  color: var(--c-accent);
+  color: #1f8f54;
 }/*# sourceMappingURL=Act5Momentum.css.map */

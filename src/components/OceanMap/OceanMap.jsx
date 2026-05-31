@@ -17,24 +17,26 @@ import PICT_GEO from "../../data/pictGeo";
 import "./OceanMap.scss";
 
 const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-const COLD = "#2c7fb8";
-const NEUTRAL = "#e6edf3";
-const HOT = "#e8453c";
+const RAMPS = {
+  diverging: { cold: "#2c7fb8", neutral: "#e6edf3", hot: "#e8453c" },
+  good: { cold: "#1f8f54", neutral: "#d6efe0", hot: "#1f8f54" },
+};
 const MAX_H = 750000;
 const BASE_H = 45000;
 
-function colorExpr(lo, hi) {
+function colorExpr(lo, hi, pal) {
+  const { cold, neutral, hot } = pal;
   if (lo < 0 && hi > 0)
     return [
       "interpolate",
       ["linear"],
       ["get", "cv"],
       lo,
-      COLD,
+      cold,
       0,
-      NEUTRAL,
+      neutral,
       hi,
-      HOT,
+      hot,
     ];
   if (hi <= 0)
     return [
@@ -42,18 +44,18 @@ function colorExpr(lo, hi) {
       ["linear"],
       ["get", "cv"],
       lo,
-      COLD,
+      cold,
       hi === lo ? lo + 1e-6 : hi,
-      NEUTRAL,
+      neutral,
     ];
   return [
     "interpolate",
     ["linear"],
     ["get", "cv"],
     lo,
-    NEUTRAL,
+    neutral,
     hi === lo ? lo + 1e-6 : hi,
-    HOT,
+    hot,
   ];
 }
 
@@ -76,6 +78,7 @@ export default function OceanMap({
   unit,
   range,
   logScale = false,
+  ramp = "diverging",
   lowLabel,
   midLabel,
   highLabel,
@@ -89,6 +92,7 @@ export default function OceanMap({
 
   const min = range?.min ?? -1;
   const max = range?.max ?? 1;
+  const pal = RAMPS[ramp] || RAMPS.diverging;
 
   // Domaine couleur/hauteur (linéaire ou log).
   const { dom, loD, hiD } = useMemo(() => {
@@ -201,7 +205,7 @@ export default function OceanMap({
         type: "fill-extrusion",
         source: "cols",
         paint: {
-          "fill-extrusion-color": colorExpr(loD, hiD),
+          "fill-extrusion-color": colorExpr(loD, hiD, pal),
           "fill-extrusion-height": ["*", ["get", "height"], 0],
           "fill-extrusion-base": 0,
           "fill-extrusion-opacity": 0.92,
@@ -278,8 +282,12 @@ export default function OceanMap({
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
     if (map.getLayer("cols"))
-      map.setPaintProperty("cols", "fill-extrusion-color", colorExpr(loD, hiD));
-  }, [loaded, loD, hiD]);
+      map.setPaintProperty(
+        "cols",
+        "fill-extrusion-color",
+        colorExpr(loD, hiD, pal),
+      );
+  }, [loaded, loD, hiD, pal]);
 
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
@@ -297,7 +305,7 @@ export default function OceanMap({
   return (
     <div className="omap">
       <div ref={containerRef} className="omap__map" />
-      <div className="omap__legend">
+      <div className={`omap__legend omap__legend--${ramp}`}>
         <span>{lowLabel}</span>
         <span className="omap__legend-bar" />
         <span>{highLabel}</span>

@@ -284,13 +284,52 @@
     "coming": "Données récupérées ✓"
   },
   "act5": {
-    "lead": "Le Pacifique ne subit pas en silence. Face à la montée des eaux et au coût humain, une trajectoire s'affirme : la part des énergies renouvelables grimpe, territoire par territoire. Voici les données récupérées.",
+    "value_label": "Part renouvelable",
+    "unit": "%",
+    "baseline": "0 %",
+    "mean_label": "moy.",
     "ren_title": "Énergies renouvelables",
     "ren_sub": "part de la consommation finale",
-    "ren_unit": "%",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "Dernier acte, et il regarde vers l'avant : la part des énergies renouvelables dans la consommation finale d'énergie (%). Ici, plus c'est haut, mieux c'est.",
+      "steps": [
+        {
+          "k": "Une part, en %",
+          "v": "0 % = tout fossile ; 100 % = énergie entièrement renouvelable. La référence du bas (0) est le point de départ, pas une normale."
+        },
+        {
+          "k": "Moyenne + dispersion",
+          "v": "La ligne épaisse est la moyenne régionale ; la bande montre où se situent 8 territoires sur 10 (10ᵉ–90ᵉ centile)."
+        },
+        {
+          "k": "Le temps",
+          "v": "Le curseur (ou ▶) déplace l'année sur la courbe ET sur la carte 3D verte."
+        },
+        {
+          "k": "Carte & podium",
+          "v": "Plus une colonne est haute et verte, plus la part renouvelable est forte. Le podium classe les champions de l'année."
+        }
+      ],
+      "takeaway": "L'élan est réel : portée par l'hydraulique, la biomasse et désormais le solaire, la part renouvelable grimpe — Kiribati, Fidji, Vanuatu, Samoa et les grandes îles de Mélanésie en tête."
+    },
+    "map_title": "Champions du renouvelable",
+    "map_sub": "part par territoire",
+    "map_low": "faible",
+    "map_high": "élevée",
+    "rank_title": "Le podium",
+    "rank_sub": "part renouvelable",
+    "evo_title": "Plus fortes progressions",
+    "evo_sub": "écart de part entre la première et la dernière année",
+    "evo_down": "Recul / stagnation",
+    "evo_up": "Plus forte progression",
+    "table_title": "Les données en détail",
+    "table_sub": "cliquez sur un en-tête pour trier",
+    "vs_mean": "Écart vs moyenne",
+    "demo_badge": "démo",
     "coverage": "territoires",
     "period": "période",
-    "demo_badge": "démo",
-    "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante."
+    "lead": "Le Pacifique ne subit pas en silence. Face à la montée des eaux et au coût humain, une trajectoire s'affirme : la part des énergies renouvelables grimpe, territoire par territoire.",
+    "coming": "Données récupérées ✓"
   }
 }

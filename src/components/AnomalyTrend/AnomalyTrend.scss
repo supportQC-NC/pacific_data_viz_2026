@@ -119,3 +119,20 @@
 .atrend--warm .atrend__marker-dot {
   fill: var(--c-warm);
 }
+
+/* --- Teinte ÉLAN (vert) --- */
+.atrend--green .atrend__band {
+  fill: #1f8f54;
+}
+.atrend--green .atrend__area {
+  fill: #1f8f54;
+}
+.atrend--green .atrend__mean {
+  stroke: #1f8f54;
+}
+.atrend--green .atrend__meanlabel {
+  fill: #1f8f54;
+}
+.atrend--green .atrend__marker-dot {
+  fill: #1f8f54;
+}

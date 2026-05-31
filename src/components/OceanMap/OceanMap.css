@@ -45,6 +45,10 @@
   color: var(--c-text-soft);
 }
 
+.omap__legend--good .omap__legend-bar {
+  background: linear-gradient(90deg, #d6efe0, #1f8f54);
+}
+
 .pm-popup .mapboxgl-popup-content {
   background: var(--c-surface);
   color: var(--c-text);

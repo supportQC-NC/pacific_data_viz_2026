@@ -100,7 +100,7 @@ export default function DataTable({
         </thead>
         <tbody>
           {sorted.map((r, i) => (
-            <tr className="dtable__row" key={r.code}>
+            <tr className="dtable__row" key={`${r.code}-${i}`}>
               <td className="dtable__td dtable__td--num dtable__td--mute">
                 {i + 1}
               </td>
