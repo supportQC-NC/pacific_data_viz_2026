@@ -1,0 +1,103 @@
+// src/pages/Act2Ocean/Act2Ocean.scss
+.act2 {
+  padding-block: var(--sp-24) var(--sp-16);
+  min-height: 100vh;
+}
+.act2__head {
+  margin-bottom: var(--sp-16);
+}
+.act2__title {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: var(--fw-light);
+  margin: var(--sp-3) 0 var(--sp-6);
+}
+.act2__lead {
+  max-width: var(--maxw-text);
+  color: var(--c-text-soft);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+}
+
+.act2__panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-6);
+}
+@media (max-width: 720px) {
+  .act2__panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.act2__panel {
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  padding: var(--sp-8);
+}
+.act2__panel-head {
+  margin-bottom: var(--sp-6);
+}
+.act2__panel-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+}
+.act2__panel-sub {
+  display: block;
+  margin-top: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+
+.act2__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.act2__state--err {
+  color: var(--c-warm);
+}
+
+.act2__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+  margin: 0;
+}
+.act2__stat dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-mute);
+}
+.act2__stat dd {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+  color: var(--c-accent);
+}
+
+.act2__coming {
+  margin-top: var(--sp-12);
+  padding: var(--sp-4) var(--sp-6);
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-sm);
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.act2__back {
+  display: inline-block;
+  margin-top: var(--sp-12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.act2__back:hover {
+  color: var(--c-accent);
+}

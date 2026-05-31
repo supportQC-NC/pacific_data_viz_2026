@@ -11,6 +11,7 @@ import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
 import Act1Emissions from './pages/Act1Emissions/Act1Emissions';
+import Act2Ocean from './pages/Act2Ocean/Act2Ocean';
 
 function AppContent() {
   return (
@@ -19,7 +20,8 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/emissions" element={<Act1Emissions />} />
-        {/* Actes 2 à 5 à venir, étape par étape. */}
+        <Route path="/ocean" element={<Act2Ocean />} />
+        {/* Actes 3 à 5 à venir, étape par étape. */}
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

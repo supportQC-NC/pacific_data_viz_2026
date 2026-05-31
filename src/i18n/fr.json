@@ -32,7 +32,9 @@
       "a5_tag": "Acte 05 — La réponse",
       "a5_title": "L'élan",
       "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience."
-    }
+    },
+    "act_explore": "Explorer",
+    "act_soon": "Bientôt"
   },
   "footer": {
     "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",
@@ -129,5 +131,18 @@
     "summary_source": "Source",
     "summary_generated": "Généré le",
     "sheet_series": "Séries temporelles"
+  },
+  "act2": {
+    "lead": "Deux signaux silencieux redessinent l'horizon du Pacifique : le niveau de la mer qui monte et la température de surface qui grimpe. Voici les données récupérées, territoire par territoire.",
+    "sea_title": "Niveau de la mer",
+    "sea_sub": "variation observée",
+    "sea_unit": "mm",
+    "sst_title": "Température de surface",
+    "sst_sub": "anomalie",
+    "sst_unit": "°C",
+    "coverage": "territoires",
+    "period": "période",
+    "demo_badge": "démo",
+    "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante."
   }
 }

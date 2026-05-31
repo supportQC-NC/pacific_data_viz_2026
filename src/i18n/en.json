@@ -32,7 +32,9 @@
       "a5_tag": "Act 05 — The response",
       "a5_title": "The momentum",
       "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience."
-    }
+    },
+    "act_explore": "Explore",
+    "act_soon": "Soon"
   },
   "footer": {
     "tagline": "Giving a face to climate-change data across the Pacific.",
@@ -129,5 +131,18 @@
     "summary_source": "Source",
     "summary_generated": "Generated on",
     "sheet_series": "Time series"
+  },
+  "act2": {
+    "lead": "Two silent signals are redrawing the Pacific's horizon: rising sea level and warming surface temperature. Here is the retrieved data, territory by territory.",
+    "sea_title": "Sea level",
+    "sea_sub": "observed change",
+    "sea_unit": "mm",
+    "sst_title": "Surface temperature",
+    "sst_sub": "anomaly",
+    "sst_unit": "°C",
+    "coverage": "territories",
+    "period": "period",
+    "demo_badge": "demo",
+    "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next."
   }
 }

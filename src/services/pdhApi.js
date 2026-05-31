@@ -2,8 +2,7 @@
 // ============================================================
 // Accès Pacific Data Hub (.Stat / SDMX). Appel live "best effort"
 // (plafonné à 8 s) ; sinon jeu de DÉMONSTRATION embarqué.
-// startPeriod abaissé à 1970 → on récupère toutes les années
-// disponibles (et pas seulement à partir de 1990).
+// Jeux de secours : emissions, seaLevel (mm), sst (°C anomalie).
 // ============================================================
 
 const BASE = process.env.REACT_APP_PDH_BASE || 'https://stats-sdmx-disseminate.pacificdata.org/rest/data';
@@ -77,6 +76,9 @@ function normalize(rows) {
 }
 
 // ---- Données de DÉMONSTRATION ----
+const PICT = ['NC', 'GU', 'PW', 'MP', 'AS', 'NR', 'CK', 'PF', 'FJ', 'NU', 'MH', 'TO', 'FM', 'WS', 'WF', 'TV', 'PG', 'KI', 'VU', 'TK', 'SB', 'PN'];
+
+// Émissions (t CO₂e/hab.)
 const EMISSIONS_BASE = {
   NC: 23.4, GU: 15.8, PW: 13.1, MP: 6.8, AS: 6.2, NR: 4.3,
   CK: 3.9, PF: 3.6, FJ: 2.6, NU: 2.1, MH: 2.0, TO: 1.7,
@@ -84,7 +86,6 @@ const EMISSIONS_BASE = {
   VU: 0.55, TK: 0.4, SB: 0.38, PN: 0.3,
 };
 const EMISSIONS_YEARS = [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024];
-
 function buildEmissionsFallback() {
   const rows = [];
   const last = EMISSIONS_YEARS.length - 1;
@@ -98,18 +99,38 @@ function buildEmissionsFallback() {
   return rows;
 }
 
-const SEALEVEL_YEARS = [1993, 2000, 2007, 2014, 2021];
+// Niveau de la mer : variation cumulée (mm) depuis 1993, ~3,5–5,3 mm/an.
+const SEALEVEL_YEARS = [1993, 1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017, 2020, 2023];
 function buildSeaLevelFallback() {
   const rows = [];
-  const codes = Object.keys(EMISSIONS_BASE);
-  SEALEVEL_YEARS.forEach((year) => {
-    const rise = (year - 1993) * 4.1;
-    codes.forEach((geo) => rows.push({ geo, year, value: +(rise + (geo.charCodeAt(0) % 5)).toFixed(1) }));
+  PICT.forEach((geo) => {
+    const rate = 3.5 + (geo.charCodeAt(0) % 4) * 0.6; // mm/an (3,5 → 5,3)
+    SEALEVEL_YEARS.forEach((year) => {
+      rows.push({ geo, year, value: +((year - 1993) * rate).toFixed(1) });
+    });
   });
   return rows;
 }
 
-const FALLBACKS = { emissions: buildEmissionsFallback, seaLevel: buildSeaLevelFallback };
+// Température de surface : anomalie (°C) vs base, ~0 → +0,9 °C (1985→2024).
+const SST_YEARS = [1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024];
+function buildSstFallback() {
+  const rows = [];
+  PICT.forEach((geo) => {
+    const jitter = (((geo.charCodeAt(0) + geo.charCodeAt(1)) % 7) - 3) * 0.03;
+    SST_YEARS.forEach((year) => {
+      const base = ((year - 1985) / (2024 - 1985)) * 0.9;
+      rows.push({ geo, year, value: +Math.max(0, base + jitter).toFixed(2) });
+    });
+  });
+  return rows;
+}
+
+const FALLBACKS = {
+  emissions: buildEmissionsFallback,
+  seaLevel: buildSeaLevelFallback,
+  sst: buildSstFallback,
+};
 function fallbackResult(id) {
   const build = FALLBACKS[id];
   if (!build) return null;
