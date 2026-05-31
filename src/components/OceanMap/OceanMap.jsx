@@ -1,12 +1,13 @@
 // src/components/OceanMap/OceanMap.jsx
 // ============================================================
-// Carte Mapbox SATELLITE (globe) — champ d'anomalie en HEATMAP.
-// Plus de pastilles ni de disques : une nappe lumineuse continue
-// dont l'intensité suit l'anomalie et s'accentue au fil des années
-// (sensation de montée / réchauffement). Mode "water" / "heat".
-// Codes territoires en repère. Token : REACT_APP_MAPBOX_TOKEN.
+// Carte Mapbox SATELLITE 3D — colonnes extrudées (fill-extrusion).
+// Chaque territoire = une colonne : HAUTEUR ∝ anomalie, COULEUR
+// divergente (bleu sous la référence ↔ rouge au-dessus). Vue inclinée
+// (pitch), ciel atmosphérique, intro qui « pousse » les colonnes.
+// Lisible (plus haut = plus fort) et exploite la 3D de Mapbox.
+// Token : REACT_APP_MAPBOX_TOKEN.
 // Props : data [{area,name,value,year}], unit, range {min,max},
-//         mode "water"|"heat", lowLabel, midLabel, highLabel, noTokenMsg
+//         lowLabel, midLabel, highLabel, noTokenMsg
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -16,45 +17,67 @@ import PICT_GEO from "../../data/pictGeo";
 import "./OceanMap.scss";
 
 const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
+const COLD = "#2c7fb8";
+const NEUTRAL = "#e6edf3";
+const HOT = "#e8453c";
+const MAX_H = 750000; // hauteur max d'une colonne (m) — visible à ce zoom
+const BASE_H = 45000;
 
-const HEAT_COLOR = {
-  water: [
+function colorExpr(min, max) {
+  const lo = Math.min(min, 0);
+  const hi = Math.max(max, 0);
+  if (lo < 0 && hi > 0)
+    return [
+      "interpolate",
+      ["linear"],
+      ["get", "value"],
+      lo,
+      COLD,
+      0,
+      NEUTRAL,
+      hi,
+      HOT,
+    ];
+  if (hi <= 0)
+    return [
+      "interpolate",
+      ["linear"],
+      ["get", "value"],
+      lo,
+      COLD,
+      hi === lo ? lo + 1e-6 : hi,
+      NEUTRAL,
+    ];
+  return [
     "interpolate",
     ["linear"],
-    ["heatmap-density"],
-    0,
-    "rgba(8,24,40,0)",
-    0.2,
-    "#123f5c",
-    0.45,
-    "#1f9bc9",
-    0.7,
-    "#46c7e8",
-    1,
-    "#b6f3ff",
-  ],
-  heat: [
-    "interpolate",
-    ["linear"],
-    ["heatmap-density"],
-    0,
-    "rgba(40,18,8,0)",
-    0.2,
-    "#c9772a",
-    0.45,
-    "#ff7a3d",
-    0.7,
-    "#ff4f2f",
-    1,
-    "#ffd2b3",
-  ],
-};
+    ["get", "value"],
+    lo,
+    NEUTRAL,
+    hi === lo ? lo + 1e-6 : hi,
+    HOT,
+  ];
+}
+
+// Footprint carré (~rayon en km) autour d'un point.
+function squareKm([lng, lat], km) {
+  const dLat = km / 111;
+  const dLng = km / (111 * Math.cos((lat * Math.PI) / 180) || 1);
+  return [
+    [
+      [lng - dLng, lat - dLat],
+      [lng + dLng, lat - dLat],
+      [lng + dLng, lat + dLat],
+      [lng - dLng, lat + dLat],
+      [lng - dLng, lat - dLat],
+    ],
+  ];
+}
 
 export default function OceanMap({
   data,
   unit,
   range,
-  mode = "water",
   lowLabel,
   midLabel,
   highLabel,
@@ -81,84 +104,104 @@ export default function OceanMap({
       if (!c) return;
       features.push({
         type: "Feature",
-        geometry: { type: "Point", coordinates: c },
+        geometry: { type: "Polygon", coordinates: squareKm(c, 26) },
         properties: {
           code: d.area,
           name: d.name,
           value: d.value,
           year: d.year,
-          norm: norm(d.value),
+          height: BASE_H + norm(d.value) * MAX_H,
+          lng: c[0],
+          lat: c[1],
         },
       });
     });
     return { type: "FeatureCollection", features };
   }, [data, norm]);
 
-  // Init unique.
+  const centers = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: fc.features.map((f) => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [f.properties.lng, f.properties.lat],
+        },
+        properties: { code: f.properties.code },
+      })),
+    }),
+    [fc],
+  );
+
   useEffect(() => {
     if (!TOKEN || mapRef.current || !containerRef.current) return undefined;
     mapboxgl.accessToken = TOKEN;
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: [180, -12],
-      zoom: 2.1,
-      projection: "globe",
+      center: [186, -14],
+      zoom: 2.7,
+      pitch: 58,
+      bearing: -10,
+      maxPitch: 72,
+      antialias: true,
     });
     mapRef.current = map;
 
-    map.on("style.load", () => {
-      map.setFog({
-        color: "rgb(186, 210, 235)",
-        "high-color": "rgb(36, 92, 158)",
-        "horizon-blend": 0.06,
-        "space-color": "rgb(4, 10, 22)",
-        "star-intensity": 0.25,
-      });
-    });
-
     map.on("load", () => {
-      map.addSource("anom", {
+      map.addLayer({
+        id: "sky",
+        type: "sky",
+        paint: {
+          "sky-type": "atmosphere",
+          "sky-atmosphere-sun": [0.0, 90.0],
+          "sky-atmosphere-sun-intensity": 6,
+        },
+      });
+
+      // Relief réel (DEM Mapbox) — les îles prennent du volume.
+      if (!map.getSource("dem")) {
+        map.addSource("dem", {
+          type: "raster-dem",
+          url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+          tileSize: 512,
+          maxzoom: 14,
+        });
+      }
+      map.setTerrain({ source: "dem", exaggeration: 1.3 });
+      map.setLight({
+        anchor: "viewport",
+        color: "#ffffff",
+        intensity: 0.45,
+        position: [1.4, 210, 30],
+      });
+
+      map.addSource("cols", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addSource("centers", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
       map.addLayer({
-        id: "heat",
-        type: "heatmap",
-        source: "anom",
+        id: "cols",
+        type: "fill-extrusion",
+        source: "cols",
         paint: {
-          "heatmap-weight": [
-            "interpolate",
-            ["linear"],
-            ["get", "norm"],
-            0,
-            0.12,
-            1,
-            1,
-          ],
-          "heatmap-intensity": 1.2,
-          "heatmap-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            0,
-            26,
-            2,
-            55,
-            4,
-            95,
-            6,
-            150,
-          ],
-          "heatmap-opacity": 0.85,
-          "heatmap-color": HEAT_COLOR[mode],
+          "fill-extrusion-color": colorExpr(min, max),
+          "fill-extrusion-height": ["*", ["get", "height"], 0],
+          "fill-extrusion-base": 0,
+          "fill-extrusion-opacity": 0.92,
+          "fill-extrusion-vertical-gradient": true,
         },
       });
       map.addLayer({
         id: "code",
         type: "symbol",
-        source: "anom",
+        source: "centers",
         layout: {
           "text-field": ["get", "code"],
           "text-size": 11,
@@ -178,33 +221,39 @@ export default function OceanMap({
         className: "pm-popup",
       });
       popupRef.current = popup;
-      map.on("mousemove", "code", (e) => {
+      map.on("mousemove", "cols", (e) => {
         map.getCanvas().style.cursor = "pointer";
         const f = e.features[0];
         const v = f.properties.value;
         popup
-          .setLngLat(f.geometry.coordinates)
+          .setLngLat(e.lngLat)
           .setHTML(
             `<strong>${f.properties.name}</strong><br/>${v > 0 ? "+" : ""}${v} ${unit} · ${f.properties.year}`,
           )
           .addTo(map);
       });
-      map.on("mouseleave", "code", () => {
+      map.on("mouseleave", "cols", () => {
         map.getCanvas().style.cursor = "";
         popup.remove();
       });
 
       setLoaded(true);
 
-      // Respiration douce du champ.
+      // Intro : les colonnes poussent de 0 à leur hauteur.
       const T0 = performance.now();
-      const tick = (now) => {
-        const pulse = 0.5 + 0.5 * Math.sin(((now - T0) / 1000) * 1.4);
-        if (map.getLayer("heat"))
-          map.setPaintProperty("heat", "heatmap-intensity", 1.05 + 0.4 * pulse);
-        rafRef.current = requestAnimationFrame(tick);
+      const DUR = 1100;
+      const grow = (now) => {
+        const k = Math.min(1, (now - T0) / DUR);
+        const e = 1 - Math.pow(1 - k, 3);
+        if (map.getLayer("cols"))
+          map.setPaintProperty("cols", "fill-extrusion-height", [
+            "*",
+            ["get", "height"],
+            e,
+          ]);
+        if (k < 1) rafRef.current = requestAnimationFrame(grow);
       };
-      rafRef.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(grow);
     });
 
     return () => {
@@ -216,27 +265,32 @@ export default function OceanMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mode (eau / chaleur) → re-ramp.
+  // Recolore quand l'amplitude change (changement de métrique).
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
-    if (map.getLayer("heat"))
-      map.setPaintProperty("heat", "heatmap-color", HEAT_COLOR[mode]);
-  }, [loaded, mode]);
+    if (map.getLayer("cols"))
+      map.setPaintProperty("cols", "fill-extrusion-color", colorExpr(min, max));
+  }, [loaded, min, max]);
 
-  // Données (année / métrique).
+  // Données (année / métrique) → hauteurs.
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
-    const src = mapRef.current.getSource("anom");
-    if (src) src.setData(fc);
-  }, [loaded, fc]);
+    const map = mapRef.current;
+    const cs = map.getSource("cols");
+    const ce = map.getSource("centers");
+    if (cs) cs.setData(fc);
+    if (ce) ce.setData(centers);
+    if (map.getLayer("cols"))
+      map.setPaintProperty("cols", "fill-extrusion-height", ["get", "height"]);
+  }, [loaded, fc, centers]);
 
   if (!TOKEN) return <div className="omap omap--notoken">{noTokenMsg}</div>;
 
   return (
     <div className="omap">
       <div ref={containerRef} className="omap__map" />
-      <div className={`omap__legend omap__legend--${mode}`}>
+      <div className="omap__legend">
         <span>{lowLabel}</span>
         <span className="omap__legend-bar" />
         <span>{highLabel}</span>

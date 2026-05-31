@@ -314,7 +314,6 @@ export default function Act2Ocean() {
                   data={selPoints}
                   unit={selUnit}
                   range={selData ? selData.range : null}
-                  mode={metric === "seaLevel" ? "water" : "heat"}
                   lowLabel={t("act2.map_low")}
                   midLabel={t("act2.map_mid")}
                   highLabel={t("act2.map_high")}
