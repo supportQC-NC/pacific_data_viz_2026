@@ -526,6 +526,13 @@
     "fish_rank_title": "Measures ranking (latest year)",
     "fish_rank_sub": "From most to least equipped. Larger Melanesia leads, smaller territories follow.",
     "fish_compare_title": "Before / after — 2000 → latest year",
-    "fish_compare_sub": "Growth in the number of measures since 2000. ▲ = stronger management."
+    "fish_compare_sub": "Growth in the number of measures since 2000. ▲ = stronger management.",
+    "country_label": "Territory",
+    "country_all": "All (region filter)",
+    "median_name": "median",
+    "regional_rl_title": "Regional trajectory — extinction",
+    "regional_rl_sub": "Median Red List Index across visible territories, year by year. The slope falls: extinction risk worsens.",
+    "regional_fish_title": "Regional trajectory — the response",
+    "regional_fish_sub": "Median number of management measures in place across visible territories, year by year. The slope rises: governance strengthens."
   }
 }

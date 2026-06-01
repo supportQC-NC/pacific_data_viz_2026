@@ -526,6 +526,13 @@
     "fish_rank_title": "Classement des mesures (dernière année)",
     "fish_rank_sub": "Du plus au moins équipé. La grande Mélanésie mène, les petits territoires suivent.",
     "fish_compare_title": "Avant / après — 2000 → dernière année",
-    "fish_compare_sub": "Progression du nombre de mesures depuis 2000. ▲ = renforcement de la gestion."
+    "fish_compare_sub": "Progression du nombre de mesures depuis 2000. ▲ = renforcement de la gestion.",
+    "country_label": "Territoire",
+    "country_all": "Tous (filtre région)",
+    "median_name": "médiane",
+    "regional_rl_title": "Trajectoire régionale — l'extinction",
+    "regional_rl_sub": "Médiane de l'indice de la Liste Rouge sur les territoires visibles, année par année. La pente descend : le risque d'extinction s'aggrave.",
+    "regional_fish_title": "Trajectoire régionale — la riposte",
+    "regional_fish_sub": "Médiane du nombre de mesures de gestion en place sur les territoires visibles, année par année. La pente monte : la gouvernance se renforce."
   }
 }

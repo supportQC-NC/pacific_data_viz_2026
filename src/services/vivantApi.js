@@ -19,20 +19,21 @@ const BASES = [
 ];
 if (ENV_BASE) BASES.unshift({ base: ENV_BASE, tag: "env" });
 
+const FULL_START = 1960; // chargement complet : on remonte très tôt, l'API ne renvoie que les années réellement présentes
 const INDICATORS = {
   redList: {
     flow: "SPC,DF_SDG_15,3.0",
     prefix: "A.ER_RSK_LST",
     tailMin: 8,
     tailMax: 11,
-    start: 1993,
+    start: FULL_START,
   },
   fishMgmt: {
     flow: "SPC,DF_CLIMATE_CHANGE,1.0",
     prefix: "A.FISH_MNGT_MULT_BILAT_ARGMT",
     tailMin: 1,
     tailMax: 3,
-    start: 1980,
+    start: FULL_START,
   },
 };
 
