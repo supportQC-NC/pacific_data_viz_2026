@@ -1,0 +1,151 @@
+// src/components/CropExplorer/CropExplorer.scss
+// ============================================================
+// Explorateur par culture. Tokens uniquement → light/dark.
+// ============================================================
+
+.cropx {
+  display: grid;
+  gap: var(--sp-8);
+}
+
+.cropx__state {
+  padding: var(--sp-8);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.cropx__state--empty {
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-md);
+}
+
+/* Barre de sélection */
+.cropx__pick-lbl {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  margin-bottom: var(--sp-3);
+}
+.cropx__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.cropx__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+    transform: translateY(-1px);
+  }
+  &.is-active {
+    color: var(--c-bg);
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+.cropx__chip-ic {
+  width: 1.15rem;
+  height: 1.15rem;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+.cropx__chip-lbl {
+  white-space: nowrap;
+}
+
+/* Panneau de la culture sélectionnée */
+.cropx__panel {
+  display: grid;
+  gap: var(--sp-8);
+  padding: var(--sp-6);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+}
+.cropx__panel-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.cropx__panel-ic {
+  width: 2.4rem;
+  height: 2.4rem;
+  font-size: 2.4rem;
+  flex-shrink: 0;
+  color: var(--c-accent);
+}
+
+/* Barre de filtre par pays */
+.cropx__countrybar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.cropx__country {
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-warm);
+    border-color: var(--c-warm);
+  }
+  &.is-active {
+    color: var(--c-bg);
+    background: var(--c-warm);
+    border-color: var(--c-warm);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 2px;
+  }
+}
+.cropx__panel-title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semi);
+}
+.cropx__panel-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+.cropx__chart-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  margin-bottom: var(--sp-3);
+}

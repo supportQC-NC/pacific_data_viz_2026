@@ -31,7 +31,10 @@
       "a4_text": "Derrière les anomalies : des personnes déplacées, des pertes économiques, des vies bouleversées par les catastrophes.",
       "a5_tag": "Acte 05 — La réponse",
       "a5_title": "L'élan",
-      "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience."
+      "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience.",
+      "a6_tag": "Acte 06 — L'assiette",
+      "a6_title": "La terre nourricière",
+      "a6_text": "Quand l'océan monte, l'assiette du Pacifique vacille : rendements des cultures, territoire par territoire et culture par culture."
     },
     "act_explore": "Explorer",
     "act_soon": "Bientôt",
@@ -235,7 +238,25 @@
     "map_sub": "par territoire",
     "map_low": "sous la référence",
     "map_mid": "référence",
-    "map_high": "au-dessus"
+    "map_high": "au-dessus",
+    "layout_label": "Disposition",
+    "layout_stacked": "Empilé",
+    "layout_cols": "Côte à côte",
+    "expand": "Agrandir",
+    "close": "Fermer",
+    "band_label": "dispersion (min–max)",
+    "anom_title": "Écart à la référence par territoire",
+    "anom_sub": "année courante · au-dessus / en-dessous de la normale",
+    "anom_up": "au-dessus",
+    "anom_down": "en-dessous",
+    "heatmap_title": "Vue d'ensemble",
+    "heatmap_sub": "chaque ligne = un territoire · chaque colonne = une année · couleur = écart à la normale",
+    "heatmap_below": "sous la normale",
+    "heatmap_above": "au-dessus",
+    "change_title": "Variation sur la période",
+    "change_sub": "écart entre la première et la dernière année disponibles",
+    "change_up": "hausse",
+    "change_down": "baisse"
   },
   "act3": {
     "lead": "Pendant que la mer avance, la carte humaine se redessine. La croissance démographique ralentit presque partout — et plusieurs îles perdent déjà leurs habitants, tandis que d'autres concentrent une population croissante sur un littoral menacé.",
@@ -384,5 +405,82 @@
     "period": "période",
     "lead": "Le Pacifique ne subit pas en silence. Face à la montée des eaux et au coût humain, une trajectoire s'affirme : la part des énergies renouvelables grimpe, territoire par territoire.",
     "coming": "Données récupérées ✓"
+  },
+  "act6": {
+    "tag": "Acte 06 — L'assiette",
+    "title": "La terre nourricière sous pression",
+    "lead": "Quand l'océan monte et se réchauffe, c'est aussi l'assiette du Pacifique qui vacille. Rendements des cultures, territoire par territoire — ce que la région récolte, et comment ça évolue.",
+    "guide": {
+      "title": "Guide de lecture",
+      "intro": "On regarde le rendement agricole (kg récoltés par hectare), résumé par territoire comme la MÉDIANE de toutes les cultures suivies par le Pacific Data Hub — à lire avec prudence (voir l'avertissement en bas).",
+      "steps": [
+        {
+          "k": "Rendement, pas surface",
+          "v": "Tout est en kg par hectare : la productivité de la terre, pas la quantité totale produite."
+        },
+        {
+          "k": "Filtre par sous-région",
+          "v": "Mélanésie, Polynésie, Micronésie — pour comparer des territoires proches."
+        },
+        {
+          "k": "Tendance + heatmap",
+          "v": "La courbe montre chaque territoire dans le temps ; la heatmap résume tout sur une grille couleur."
+        },
+        {
+          "k": "Par culture",
+          "v": "L'explorateur descend au niveau de chaque produit (banane, taro, coco…) via les icônes."
+        }
+      ],
+      "takeaway": "Les rendements bougent — parfois fortement — mais rarement pour une seule raison. Le climat est un facteur parmi d'autres."
+    },
+    "unit": "kg/ha",
+    "pac_ref": "médiane Pacifique",
+    "sub1_title": "La terre nourricière",
+    "sub1_sub": "Rendement médian par territoire, toutes cultures confondues — calculé sur les données réelles du Pacific Data Hub.",
+    "trend_title": "Rendement dans le temps",
+    "heatmap_title": "Vue d'ensemble",
+    "heatmap_sub": "chaque ligne = un territoire · chaque colonne = une année · couleur = rendement",
+    "heatmap_low": "faible",
+    "heatmap_high": "élevé",
+    "heatmap_mode_row": "tendance par territoire",
+    "heatmap_mode_abs": "niveau absolu",
+    "change_title": "Variation sur la période",
+    "change_sub": "écart entre la première et la dernière année disponibles",
+    "change_up": "hausse",
+    "change_down": "baisse",
+    "map_title": "Cartographie du rendement",
+    "map_sub": "par territoire",
+    "map_low": "faible",
+    "map_mid": "médian",
+    "map_high": "élevé",
+    "table_title": "Les données en détail",
+    "table_sub": "cliquez sur un en-tête pour trier",
+    "value_label": "Rendement",
+    "vs_median": "Écart vs médiane",
+    "explorer_title": "Explorer par culture",
+    "explorer_lead": "Choisissez un produit pour voir son rendement par territoire et le classement le plus récent.",
+    "explorer_pick": "Choisir une culture",
+    "explorer_empty": "Données par culture momentanément indisponibles (source en ligne).",
+    "explorer_trend": "Rendement par territoire",
+    "explorer_rank": "Classement",
+    "caveat_title": "À lire avant de conclure",
+    "caveat_body": "Le rendement agricole ne dépend pas que du climat : pratiques culturales, intrants, prix, surfaces, ravageurs et méthode d'estimation pèsent au moins autant. Plusieurs séries sont par ailleurs partiellement modélisées (valeurs constantes) ou comportent des trous. On présente donc ces données comme des « systèmes alimentaires sous pression », pas comme une preuve de cause à effet climatique directe.",
+    "next": "À suivre : rendement du bétail, puis croisement climat × rendement.",
+    "unavailable": "Données agricoles momentanément indisponibles depuis le Pacific Data Hub. Réessaie dans un instant.",
+    "trend_sub": "Une mini-courbe par territoire · chacune à sa propre échelle (on lit la tendance, pas le niveau) · 1990–2024",
+    "smallmult_last": "dernier point",
+    "crop_rank_title": "Les cultures les plus productives",
+    "crop_rank_sub": "Rendement médian par culture sur l'ensemble des territoires, dernière année disponible (kg/ha)",
+    "explorer_country": "Filtrer par pays",
+    "explorer_all": "Tous",
+    "regional_title": "Trajectoire régionale",
+    "regional_sub": "Médiane des rendements de tous les territoires, année par année (kg/ha)",
+    "regional_name": "Pacifique (médiane)",
+    "diversity_title": "Diversité des cultures par territoire",
+    "diversity_sub": "Nombre de cultures distinctes suivies par territoire — plus c'est élevé, plus le panier agricole est varié",
+    "diversity_unit": "cultures",
+    "volatility_title": "Instabilité des rendements",
+    "volatility_sub": "Coefficient de variation des rendements dans le temps, par territoire — plus c'est élevé, plus le territoire est exposé aux chocs",
+    "median_ref": "médiane"
   }
 }

@@ -1,138 +1,128 @@
 // src/components/AnomalyTrend/AnomalyTrend.scss
-// Couleurs DIRECTES scopées par teinte (pas d'indirection de variable
-// qui retombait sur du noir).
+// ============================================================
+// Couleur pilotée par une variable locale --tone (sea = cyan, warm).
+// Tout via les tokens → light/dark.
+// ============================================================
+
 .atrend {
   width: 100%;
 }
+.atrend--sea {
+  --tone: var(--c-accent);
+  --tone-band: color-mix(in srgb, var(--c-accent) 16%, transparent);
+  --tone-area: color-mix(in srgb, var(--c-accent) 22%, transparent);
+}
+.atrend--warm {
+  --tone: var(--c-warm);
+  --tone-band: color-mix(in srgb, var(--c-warm) 16%, transparent);
+  --tone-area: color-mix(in srgb, var(--c-warm) 22%, transparent);
+}
+
 .atrend--empty {
-  min-height: 1px;
+  min-height: 200px;
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-md);
 }
 
 .atrend__svg {
   width: 100%;
   height: auto;
-  overflow: visible;
+  display: block;
+  font-family: var(--font-mono);
 }
+
 .atrend__grid {
   stroke: var(--c-line);
   stroke-width: 1;
 }
 .atrend__tick {
   fill: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 .atrend__unit {
-  fill: var(--c-text-mute);
-  font-family: var(--font-mono);
+  fill: var(--c-text-soft);
   font-size: 12px;
   letter-spacing: 0.04em;
 }
 
 .atrend__band {
-  fill-opacity: 0.12;
-  stroke: none;
+  fill: var(--tone-band);
 }
 .atrend__area {
-  fill-opacity: 0.2;
-  stroke: none;
+  fill: var(--tone-area);
+  opacity: 0.7;
 }
-.atrend__mean {
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.atrend__meanlabel {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: var(--fw-semi);
-}
-
 .atrend__baseline {
   stroke: var(--c-line-strong);
   stroke-width: 1;
-  stroke-dasharray: 5 5;
+  stroke-dasharray: 4 4;
 }
 .atrend__baseline-label {
   fill: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
+}
+.atrend__mean {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 2.5;
+}
+.atrend__meanlabel {
+  fill: var(--tone);
+  font-size: 12px;
+  font-weight: var(--fw-semi);
 }
 
-.atrend__marker {
-  transition: transform 0.5s var(--ease-out);
+/* Légende */
+.atrend__legend-mean {
+  stroke: var(--tone);
+  stroke-width: 2.5;
 }
+.atrend__legend-band {
+  fill: var(--tone-band);
+}
+.atrend__legend-txt {
+  fill: var(--c-text-mute);
+  font-size: 12px;
+}
+
+/* Marqueur */
 .atrend__marker-line {
   stroke: var(--c-text-mute);
   stroke-width: 1;
-  stroke-dasharray: 3 4;
-}
-.atrend__marker-label {
-  fill: var(--c-text);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: var(--fw-semi);
+  stroke-dasharray: 3 3;
 }
 .atrend__marker-dot {
+  fill: var(--tone);
   stroke: var(--c-bg);
-  stroke-width: 2;
-  transition: cy 0.5s var(--ease-out);
+  stroke-width: 1.5;
 }
-.atrend__marker-val {
+.atrend__marker-dot--soft {
+  fill: none;
+  stroke: var(--tone);
+  opacity: 0.6;
+}
+
+/* Panneau de lecture */
+.atrend__readout rect {
+  fill: var(--c-surface);
+  stroke: var(--c-line-strong);
+}
+.atrend__readout-yr {
   fill: var(--c-text);
-  font-family: var(--font-mono);
   font-size: 12px;
-  transition: y 0.5s var(--ease-out);
+  font-weight: var(--fw-semi);
+}
+.atrend__readout-mean {
+  fill: var(--tone);
+  font-size: 11px;
+}
+.atrend__readout-rng {
+  fill: var(--c-text-mute);
+  font-size: 11px;
 }
 
-/* --- Teinte MER (bleu) --- */
-.atrend--sea .atrend__band {
-  fill: var(--c-accent);
-}
-.atrend--sea .atrend__area {
-  fill: var(--c-accent);
-}
-.atrend--sea .atrend__mean {
-  stroke: var(--c-accent);
-}
-.atrend--sea .atrend__meanlabel {
-  fill: var(--c-accent);
-}
-.atrend--sea .atrend__marker-dot {
-  fill: var(--c-accent);
-}
-
-/* --- Teinte CHALEUR (rouge) --- */
-.atrend--warm .atrend__band {
-  fill: var(--c-warm);
-}
-.atrend--warm .atrend__area {
-  fill: var(--c-warm);
-}
-.atrend--warm .atrend__mean {
-  stroke: var(--c-warm);
-}
-.atrend--warm .atrend__meanlabel {
-  fill: var(--c-warm);
-}
-.atrend--warm .atrend__marker-dot {
-  fill: var(--c-warm);
-}
-
-/* --- Teinte ÉLAN (vert) --- */
-.atrend--green .atrend__band {
-  fill: #1f8f54;
-}
-.atrend--green .atrend__area {
-  fill: #1f8f54;
-}
-.atrend--green .atrend__mean {
-  stroke: #1f8f54;
-}
-.atrend--green .atrend__meanlabel {
-  fill: #1f8f54;
-}
-.atrend--green .atrend__marker-dot {
-  fill: #1f8f54;
+/* Zone de capture du survol */
+.atrend__capture {
+  fill: transparent;
+  cursor: crosshair;
 }

@@ -3,6 +3,9 @@
 // Accès Pacific Data Hub (.Stat / SDMX). Appel live "best effort"
 // (plafonné à 8 s) ; sinon jeu de DÉMONSTRATION embarqué.
 // Jeux de secours : emissions, seaLevel (mm), sst (°C anomalie).
+// Agriculture : cropYield + livestockYield (DF_CLIMATE_CHANGE) — agrégés,
+//   même structure que les émissions ; pas de démo fabriquée (données
+//   réelles uniquement, sinon série vide honnête).
 // ============================================================
 
 const BASE = process.env.REACT_APP_PDH_BASE || 'https://stats-sdmx-disseminate.pacificdata.org/rest/data';
@@ -12,6 +15,8 @@ export const DATASETS = {
   seaLevel:          { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.SEA_LVL.',     start: 1970 },
   sst:               { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.SST_ANOM.',    start: 1970 },
   emissions:         { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.GHG_EMI_CAPITA.', start: 1970 },
+  cropYield:         { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.CROP_YIELD.',   start: 1961 },
+  livestockYield:    { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.LVST_YIELD.',   start: 1961 },
   population:        { flow: 'SPC,DF_NMDI_POP,1.0',       key: 'A..NMDI0002._T._T._T..', start: 1970 },
   disastersAffected: { flow: 'SPC,DF_SDG_11,3.0',         key: 'A.VC_DSR_AFFCT.........', start: 2000 },
   disastersLoss:     { flow: 'SPC,DF_SDG_11,3.0',         key: 'A.VC_DSR_AALT...._T.....', start: 2000 },
@@ -217,6 +222,8 @@ const FALLBACKS = {
   disastersAffected: buildDisastersAffectedFallback,
   disastersLoss: buildDisastersLossFallback,
   renewables: buildRenewablesFallback,
+  // cropYield / livestockYield : pas de démo fabriquée (rendements réels
+  // uniquement). En cas d'échec live, série vide plutôt que données inventées.
 };
 function fallbackResult(id) {
   const build = FALLBACKS[id];

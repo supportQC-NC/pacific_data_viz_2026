@@ -1,15 +1,16 @@
 // src/pages/Act2Ocean/Act2Ocean.jsx
 // ============================================================
 // Acte 02 — L'océan. « La mer change. »
-// Deux anomalies (niveau de la mer + température de surface) sur le
-// même curseur d'année : courbes (moyenne + bande), carte satellite
-// divergente, guide, tableau et évolution.
+// Niveau de la mer + température de surface, sur un curseur partagé.
+// Les deux courbes sont EMPILÉES par défaut (lisibles pleine largeur),
+// avec bascule « côte à côte » et bouton « agrandir » par graphe.
+// + carte 3D divergente, écart par territoire (ChangeBars), évolution,
+//   tableau. 100 % données réelles (live ou snapshot).
 // ============================================================
 
 import React, {
   useEffect,
   useMemo,
-  useRef,
   useState,
   useCallback,
   lazy,
@@ -21,7 +22,9 @@ import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
+import ChangeBars from "../../components/ChangeBars/ChangeBars";
 import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import DataTable from "../../components/DataTable/DataTable";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
@@ -80,6 +83,7 @@ export default function Act2Ocean() {
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [metric, setMetric] = useState("sst");
+  const [pairLayout, setPairLayout] = useState("stacked"); // "stacked" | "cols"
 
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
@@ -88,22 +92,15 @@ export default function Act2Ocean() {
 
   const ready = sea.status === "succeeded" && sst.status === "succeeded";
   const failed = sea.status === "failed" || sst.status === "failed";
-  const isDemo =
-    ready &&
-    ((sea.data && sea.data.source === "fallback") ||
-      (sst.data && sst.data.source === "fallback"));
+  const source = ready && sea.data ? sea.data.source : null;
 
   const masterYears = useMemo(() => {
-    const set = new Set([
-      ...(sea.data?.years || []),
-      ...(sst.data?.years || []),
-    ]);
+    const set = new Set([...(sea.data?.years || []), ...(sst.data?.years || [])]);
     return [...set].sort((a, b) => a - b);
   }, [sea.data, sst.data]);
 
   useEffect(() => {
-    if (masterYears.length && yearIdx === null)
-      setYearIdx(masterYears.length - 1);
+    if (masterYears.length && yearIdx === null) setYearIdx(masterYears.length - 1);
   }, [masterYears, yearIdx]);
 
   useEffect(() => {
@@ -144,6 +141,19 @@ export default function Act2Ocean() {
     return selPoints.reduce((s, p) => s + p.value, 0) / selPoints.length;
   }, [selPoints]);
 
+  // Écart à la référence par territoire (année courante) — barres divergentes.
+  const anomalyRows = useMemo(
+    () =>
+      selPoints.map((p) => ({
+        area: p.area,
+        name: p.name,
+        delta: p.value,
+        first: 0,
+        last: p.value,
+      })),
+    [selPoints],
+  );
+
   const tableLabels = useMemo(
     () => ({
       col_rank: t("export.col_rank"),
@@ -174,6 +184,8 @@ export default function Act2Ocean() {
     dispatch(loadDataset("sst"));
   }, [dispatch]);
 
+  const xc = { expandLabel: t("act2.expand"), closeLabel: t("act2.close") };
+
   return (
     <main className="act2">
       <div className="container">
@@ -190,9 +202,7 @@ export default function Act2Ocean() {
           takeaway={t("act2.guide.takeaway")}
         />
 
-        {!ready && !failed && (
-          <p className="act2__state">{t("scene.loading")}</p>
-        )}
+        {!ready && !failed && <p className="act2__state">{t("scene.loading")}</p>}
         {failed && (
           <div className="act2__state act2__state--err">
             <span>{t("scene.error")}</span>
@@ -204,7 +214,7 @@ export default function Act2Ocean() {
 
         {ready && currentYear != null && (
           <>
-            {/* Curseur d'année partagé */}
+            {/* Curseur partagé + source */}
             <div className="act2__timeline">
               <button className="act2__btn" onClick={togglePlay}>
                 {playing ? t("act1.pause") : t("act1.play")}
@@ -222,57 +232,66 @@ export default function Act2Ocean() {
                 aria-label={t("act1.year")}
               />
               <span className="act2__year">{currentYear}</span>
-              {isDemo && (
-                <span className="act2__demo">{t("act2.demo_badge")}</span>
-              )}
+              {source && <span className="act2__source">{t(`act1.src_${source}`)}</span>}
             </div>
 
-            {/* Deux courbes d'anomalie */}
-            <div className="act2__charts">
-              <section className="act2__chart">
-                <div className="act2__chart-head">
-                  <h2 className="act2__chart-title">{t("act2.sea_title")}</h2>
-                  <span className="act2__chart-sub">
-                    {t("act2.sea_sub")} · {t("act2.sea_unit")}
-                  </span>
-                </div>
+            {/* Disposition des deux courbes */}
+            <div className="act2__layout" role="group" aria-label={t("act2.layout_label")}>
+              <span className="act2__layout-lbl">{t("act2.layout_label")}</span>
+              <div className="act2__layout-pills">
+                <button
+                  className={`act2__pill ${pairLayout === "stacked" ? "is-active" : ""}`}
+                  onClick={() => setPairLayout("stacked")}
+                  aria-pressed={pairLayout === "stacked"}
+                >
+                  {t("act2.layout_stacked")}
+                </button>
+                <button
+                  className={`act2__pill ${pairLayout === "cols" ? "is-active" : ""}`}
+                  onClick={() => setPairLayout("cols")}
+                  aria-pressed={pairLayout === "cols"}
+                >
+                  {t("act2.layout_cols")}
+                </button>
+              </div>
+            </div>
+
+            {/* Les deux courbes — empilées par défaut, agrandissables */}
+            <div className={`act2__charts act2__charts--${pairLayout}`}>
+              <ExpandableCard
+                title={t("act2.sea_title")}
+                sub={`${t("act2.sea_sub")} · ${t("act2.sea_unit")}`}
+                {...xc}
+              >
                 <AnomalyTrend
                   data={seaMean}
-                  currentYear={
-                    currentYear != null
-                      ? clampYear(sea.data, currentYear)
-                      : null
-                  }
+                  currentYear={currentYear != null ? clampYear(sea.data, currentYear) : null}
                   unit={t("act2.sea_unit")}
                   tone="sea"
                   baselineLabel={t("act2.baseline")}
                   meanLabel={t("act2.mean_label")}
+                  bandLabel={t("act2.band_label")}
                 />
-              </section>
+              </ExpandableCard>
 
-              <section className="act2__chart">
-                <div className="act2__chart-head">
-                  <h2 className="act2__chart-title">{t("act2.sst_title")}</h2>
-                  <span className="act2__chart-sub">
-                    {t("act2.sst_sub")} · {t("act2.sst_unit")}
-                  </span>
-                </div>
+              <ExpandableCard
+                title={t("act2.sst_title")}
+                sub={`${t("act2.sst_sub")} · ${t("act2.sst_unit")}`}
+                {...xc}
+              >
                 <AnomalyTrend
                   data={sstMean}
-                  currentYear={
-                    currentYear != null
-                      ? clampYear(sst.data, currentYear)
-                      : null
-                  }
+                  currentYear={currentYear != null ? clampYear(sst.data, currentYear) : null}
                   unit={t("act2.sst_unit")}
                   tone="warm"
                   baselineLabel={t("act2.baseline")}
                   meanLabel={t("act2.mean_label")}
+                  bandLabel={t("act2.band_label")}
                 />
-              </section>
+              </ExpandableCard>
             </div>
 
-            {/* Sélecteur de métrique pour carte / tableau / évolution */}
+            {/* Sélecteur de métrique pour les vues par territoire */}
             <div className="act2__metric">
               <span className="act2__metric-label">{t("act2.explore")}</span>
               <div className="act2__toggle">
@@ -291,7 +310,24 @@ export default function Act2Ocean() {
               </div>
             </div>
 
-            {/* Carte satellite divergente */}
+            {/* Écart à la référence par territoire (divergent) */}
+            <ExpandableCard
+              title={t("act2.anom_title")}
+              sub={`${t("act2.anom_sub")} · ${selYear}`}
+              {...xc}
+            >
+              <ChangeBars
+                rows={anomalyRows}
+                unit={selUnit}
+                labels={{
+                  up: t("act2.anom_up"),
+                  down: t("act2.anom_down"),
+                  empty: t("act1.change.empty"),
+                }}
+              />
+            </ExpandableCard>
+
+            {/* Carte satellite divergente (pleine largeur) */}
             <div className="act2__map-head">
               <h3 className="act2__map-title">{t("act2.map_title")}</h3>
               <span className="act2__chart-sub">
@@ -299,17 +335,9 @@ export default function Act2Ocean() {
               </span>
             </div>
             <ErrorBoundary
-              fallback={
-                <div className="act2__state act2__state--err">
-                  {t("scene.error")}
-                </div>
-              }
+              fallback={<div className="act2__state act2__state--err">{t("scene.error")}</div>}
             >
-              <Suspense
-                fallback={
-                  <div className="act2__state">{t("scene.loading")}</div>
-                }
-              >
+              <Suspense fallback={<div className="act2__state">{t("scene.loading")}</div>}>
                 <OceanMap
                   data={selPoints}
                   unit={selUnit}
@@ -327,13 +355,7 @@ export default function Act2Ocean() {
               <h3 className="act2__map-title">{t("act2.evo_title")}</h3>
               <span className="act2__chart-sub">{t("act2.evo_sub")}</span>
             </div>
-            <EvolutionPanel
-              series={selAll}
-              labels={evoLabels}
-              unit={selUnit}
-              mode="absolute"
-              topN={5}
-            />
+            <EvolutionPanel series={selAll} labels={evoLabels} unit={selUnit} mode="absolute" topN={5} />
 
             {/* Tableau */}
             <div className="act2__map-head">
@@ -342,12 +364,7 @@ export default function Act2Ocean() {
                 {t("act2.table_sub")} · {selYear}
               </span>
             </div>
-            <DataTable
-              rows={selPoints}
-              labels={tableLabels}
-              unit={selUnit}
-              refValue={selRegionalMean}
-            />
+            <DataTable rows={selPoints} labels={tableLabels} unit={selUnit} refValue={selRegionalMean} />
           </>
         )}
 

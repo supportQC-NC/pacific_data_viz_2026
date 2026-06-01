@@ -23,6 +23,7 @@ const ACTS = [
   { id: "a3", to: "/territory" },
   { id: "a4", to: "/impact" },
   { id: "a5", to: "/momentum" },
+  { id: "a6", to: "/agriculture" },
 ];
 
 // Sévérité régionale (0..1) → hauteur d'eau du hero. Reste douce pour

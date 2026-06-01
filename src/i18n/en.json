@@ -31,7 +31,10 @@
       "a4_text": "Behind the anomalies: displaced people, economic losses, lives upended by disasters.",
       "a5_tag": "Act 05 — The response",
       "a5_title": "The momentum",
-      "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience."
+      "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience.",
+      "a6_tag": "Act 06 — The plate",
+      "a6_title": "The food-growing land",
+      "a6_text": "As the ocean rises, the Pacific's plate wobbles: crop yields, territory by territory and crop by crop."
     },
     "act_explore": "Explore",
     "act_soon": "Soon",
@@ -235,7 +238,25 @@
     "map_sub": "by territory",
     "map_low": "below reference",
     "map_mid": "reference",
-    "map_high": "above"
+    "map_high": "above",
+    "layout_label": "Layout",
+    "layout_stacked": "Stacked",
+    "layout_cols": "Side by side",
+    "expand": "Enlarge",
+    "close": "Close",
+    "band_label": "spread (min–max)",
+    "anom_title": "Deviation from baseline by territory",
+    "anom_sub": "current year · above / below normal",
+    "anom_up": "above",
+    "anom_down": "below",
+    "heatmap_title": "The big picture",
+    "heatmap_sub": "each row = a territory · each column = a year · colour = deviation from normal",
+    "heatmap_below": "below normal",
+    "heatmap_above": "above",
+    "change_title": "Change over the period",
+    "change_sub": "difference between the first and last available years",
+    "change_up": "rise",
+    "change_down": "fall"
   },
   "act3": {
     "lead": "As the sea advances, the human map is redrawn. Population growth is slowing almost everywhere — and several islands are already losing inhabitants, while others crowd a growing population onto a threatened shore.",
@@ -384,5 +405,82 @@
     "period": "period",
     "lead": "The Pacific does not suffer in silence. Against rising seas and the human cost, a trajectory is taking hold: the share of renewable energy is climbing, territory by territory.",
     "coming": "Data retrieved ✓"
+  },
+  "act6": {
+    "tag": "Act 06 — The plate",
+    "title": "The food-growing land under pressure",
+    "lead": "As the ocean rises and warms, the Pacific's plate wobbles too. Crop yields, territory by territory — what the region harvests, and how it shifts.",
+    "guide": {
+      "title": "Reading guide",
+      "intro": "We look at agricultural yield (kg harvested per hectare), summarised per territory as the MEDIAN across every crop tracked by the Pacific Data Hub — read with care (see the caveat below).",
+      "steps": [
+        {
+          "k": "Yield, not area",
+          "v": "Everything is in kg per hectare: the land's productivity, not total output."
+        },
+        {
+          "k": "Sub-region filter",
+          "v": "Melanesia, Polynesia, Micronesia — to compare neighbouring territories."
+        },
+        {
+          "k": "Trend + heatmap",
+          "v": "The line shows each territory over time; the heatmap sums it all up on a colour grid."
+        },
+        {
+          "k": "By crop",
+          "v": "The explorer drills down to each product (banana, taro, coconut…) via the icons."
+        }
+      ],
+      "takeaway": "Yields move — sometimes sharply — but rarely for a single reason. Climate is one factor among many."
+    },
+    "unit": "kg/ha",
+    "pac_ref": "Pacific median",
+    "sub1_title": "The food-growing land",
+    "sub1_sub": "Median yield per territory, across all crops — computed from real Pacific Data Hub data.",
+    "trend_title": "Yield over time",
+    "heatmap_title": "The big picture",
+    "heatmap_sub": "each row = a territory · each column = a year · colour = yield",
+    "heatmap_low": "low",
+    "heatmap_high": "high",
+    "heatmap_mode_row": "per-territory trend",
+    "heatmap_mode_abs": "absolute level",
+    "change_title": "Change over the period",
+    "change_sub": "difference between the first and last available years",
+    "change_up": "rise",
+    "change_down": "fall",
+    "map_title": "Yield mapping",
+    "map_sub": "by territory",
+    "map_low": "low",
+    "map_mid": "median",
+    "map_high": "high",
+    "table_title": "The data in detail",
+    "table_sub": "click a header to sort",
+    "value_label": "Yield",
+    "vs_median": "vs median",
+    "explorer_title": "Explore by crop",
+    "explorer_lead": "Pick a product to see its yield by territory and the most recent ranking.",
+    "explorer_pick": "Pick a crop",
+    "explorer_empty": "Per-crop data momentarily unavailable (live source).",
+    "explorer_trend": "Yield by territory",
+    "explorer_rank": "Ranking",
+    "caveat_title": "Read before you conclude",
+    "caveat_body": "Agricultural yield does not depend on climate alone: farming practices, inputs, prices, planted area, pests and the estimation method weigh at least as much. Several series are also partly modelled (constant values) or have gaps. So we present this data as 'food systems under pressure', not as proof of a direct climate cause-and-effect.",
+    "next": "Coming next: livestock yield, then climate × yield cross-analysis.",
+    "unavailable": "Agricultural data momentarily unavailable from the Pacific Data Hub. Try again in a moment.",
+    "trend_sub": "One mini-chart per territory · each with its own scale (read the trend, not the level) · 1990–2024",
+    "smallmult_last": "latest",
+    "crop_rank_title": "The most productive crops",
+    "crop_rank_sub": "Median yield per crop across all territories, latest available year (kg/ha)",
+    "explorer_country": "Filter by country",
+    "explorer_all": "All",
+    "regional_title": "Regional trajectory",
+    "regional_sub": "Median yield across all territories, year by year (kg/ha)",
+    "regional_name": "Pacific (median)",
+    "diversity_title": "Crop diversity by territory",
+    "diversity_sub": "Number of distinct crops tracked per territory — higher means a more varied agricultural basket",
+    "diversity_unit": "crops",
+    "volatility_title": "Yield instability",
+    "volatility_sub": "Coefficient of variation of yields over time, by territory — higher means more exposed to shocks",
+    "median_ref": "median"
   }
 }

@@ -1,0 +1,63 @@
+// src/components/CropRanking/CropRanking.scss
+@use "../../index.scss" as *;
+
+.croprank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 0.5rem);
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1.5rem 1.5rem minmax(120px, 1.4fr) minmax(90px, 2fr) auto;
+    align-items: center;
+    gap: var(--sp-2, 0.5rem);
+  }
+
+  &__rank {
+    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-size: var(--fs-xs, 0.6875rem);
+    color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+    text-align: right;
+  }
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+    color: var(--c-accent, #46d3e6);
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: var(--fs-sm, 0.8125rem);
+    color: var(--c-text, #fff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__bar {
+    width: 100%;
+    height: 8px;
+    display: block;
+  }
+
+  &__bar-bg { fill: var(--c-surface, rgba(255, 255, 255, 0.06)); }
+
+  &__bar-fill { fill: var(--c-accent, #46d3e6); }
+
+  &__val {
+    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-size: var(--fs-sm, 0.8125rem);
+    color: var(--c-text, #fff);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  &__unit {
+    color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+    font-size: var(--fs-xs, 0.6875rem);
+  }
+}
