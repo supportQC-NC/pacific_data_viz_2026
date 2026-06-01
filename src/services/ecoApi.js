@@ -77,16 +77,35 @@ function headersFor(lang) {
   };
 }
 
-// parseur locale-aware : FR → point = millier, virgule = décimale ; EN → virgule = millier, point = décimale
-function makeNum(lang) {
-  return function num(s) {
-    let c = String(s == null ? "" : s).replace(/[^0-9.,-]/g, "");
-    if (!c || c === "-") return NaN;
-    if (lang === "fr") c = c.replace(/\./g, "").replace(/,/g, ".");
-    else c = c.replace(/,/g, "");
-    const v = parseFloat(c);
-    return Number.isFinite(v) ? v : NaN;
-  };
+// parseur UNIVERSEL : auto-détecte point/virgule, milliers vs décimale.
+// Robuste quelle que soit la locale renvoyée par l'API (l'API SDMX renvoie
+// en réalité un point décimal, mais on couvre aussi le format français).
+// Règle : si les deux séparateurs sont présents, le DERNIER est la décimale ;
+// si un seul est présent, 3 chiffres après = millier, sinon = décimale.
+function num(s) {
+  let c = String(s == null ? "" : s).replace(/[^0-9.,-]/g, "");
+  if (!c || c === "-") return NaN;
+  const neg = c[0] === "-";
+  c = c.replace(/-/g, "");
+  const hasComma = c.includes(",");
+  const hasDot = c.includes(".");
+  if (hasComma && hasDot) {
+    const dec = c.lastIndexOf(",") > c.lastIndexOf(".") ? "," : ".";
+    const thou = dec === "," ? "." : ",";
+    c = c.split(thou).join("").replace(dec, ".");
+  } else if (hasComma || hasDot) {
+    const sep = hasComma ? "," : ".";
+    const parts = c.split(sep);
+    if (parts.length > 2) c = parts.join(""); // séparateurs multiples = milliers
+    else if (parts[1].length === 3) c = parts.join(""); // 3 chiffres = millier
+    else c = `${parts[0]}.${parts[1]}`; // 1, 2 ou 4+ chiffres = décimale
+  }
+  const v = parseFloat(c);
+  if (!Number.isFinite(v)) return NaN;
+  return neg ? -v : v;
+}
+function makeNum() {
+  return num;
 }
 
 const TOTAL_RE = /^(_T|_Z|TOT|TOTAL|ALL|_O|ENV)$/i;
