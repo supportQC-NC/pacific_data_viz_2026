@@ -34,7 +34,9 @@
       "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience."
     },
     "act_explore": "Explore",
-    "act_soon": "Soon"
+    "act_soon": "Soon",
+    "acts_kicker": "The descent",
+    "live_demo": "Demonstration data · sea level"
   },
   "footer": {
     "tagline": "Giving a face to climate-change data across the Pacific.",
@@ -57,7 +59,7 @@
     "world_avg": "World average",
     "scale_linear": "Linear",
     "scale_log": "Log",
-    "paradox": "A few territories show extreme per-capita values — tiny populations as denominator, tourism and diesel power. Yet their global footprint stays under 0.01%. Most Pacific nations sit well below the world average (4.76 t).",
+    "paradox": "Most Pacific territories emit little per capita, and their share of global emissions is tiny. Yet they are among the first exposed to rising seas and warming.",
     "year": "Year",
     "play": "▶ Play",
     "pause": "❚❚ Pause",
@@ -74,27 +76,27 @@
     "viz_trend_title": "Trajectories over time",
     "viz_trend_sub": "evolution of the biggest emitters · the cursor tracks the year",
     "guide": {
-      "title": "Reading guide",
-      "intro": "This act compares greenhouse-gas emissions per capita across Pacific countries and territories. Here is how to read the visualisations.",
+      "title": "How to read this",
+      "intro": "This act compares per-capita GHG emissions across Pacific territories, set against the climate impact they endure.",
       "steps": [
         {
-          "k": "The dot plot",
-          "v": "Each dot is a territory (SPC code). The further right, the higher its per-capita emissions. The scale is logarithmic to reveal differences despite extreme values."
+          "k": "The filter",
+          "v": "The subregion pills (Melanesia / Polynesia / Micronesia) refocus every per-territory view. \"All\" keeps the 17."
         },
         {
-          "k": "The two references",
-          "v": "The orange line is the world average, which CHANGES every year (≈3.1 t in 1960, ≈4.7 t today). The blue Ø line is the Pacific average for the displayed year."
+          "k": "The ranking",
+          "v": "Each bar is a territory (SPC code). Longer = more per capita. The scale is compressed to stay readable despite extremes (Palau, New Caledonia)."
         },
         {
-          "k": "Time",
-          "v": "The year slider (or ▶ play) animates every chart at once: dot plot, ranking, trajectories and map."
+          "k": "The reference",
+          "v": "The line marks the Pacific MEDIAN — more robust than a mean skewed by a few outliers."
         },
         {
-          "k": "Ranking & trajectories",
-          "v": "The ranking shows who leads in a given year; the trajectories show the evolution over the period."
+          "k": "The paradox",
+          "v": "The scatter crosses what a territory emits (x) with what it endures (y): most emit little yet are highly exposed."
         }
       ],
-      "takeaway": "The paradox: most territories emit far below the world average, yet they are the first to bear the effects of climate change."
+      "takeaway": "The paradox: emitting little, yet first to face climate change."
     },
     "evo": {
       "title": "Evolution over time",
@@ -107,6 +109,57 @@
     "table": {
       "title": "The data in detail",
       "sub": "click a header to sort"
+    },
+    "pac_ref": "Pacific median",
+    "vs_ref": "vs Pacific median",
+    "src_live": "live data (PDH)",
+    "src_snapshot": "real snapshot (PDH)",
+    "outlier_note": "sit off the scale: tiny population denominators, diesel electricity and industry. Yet their combined share of global emissions stays negligible.",
+    "stats": {
+      "title": "Key figures",
+      "count": "territories",
+      "median": "median per capita",
+      "lowest": "lowest",
+      "highest": "highest"
+    },
+    "filter": {
+      "title": "Filter by subregion",
+      "all": "All",
+      "melanesia": "Melanesia",
+      "polynesia": "Polynesia",
+      "micronesia": "Micronesia"
+    },
+    "subregion": {
+      "title": "Average by subregion",
+      "sub": "average trajectory of the three Pacific subregions"
+    },
+    "change": {
+      "title": "Biggest movers since",
+      "sub": "change in per-capita emissions between first and last available year",
+      "up": "rising",
+      "down": "falling",
+      "empty": "Not enough history."
+    },
+    "scatter": {
+      "title": "Emit little, suffer most",
+      "sub": "each bubble = a territory · left = low emitter · higher = more exposed",
+      "x": "Emissions per capita",
+      "y_sea": "Sea-level rise",
+      "y_sst": "Surface warming",
+      "y_dis": "People affected",
+      "u_sea": "mm",
+      "u_sst": "°C",
+      "u_dis": "ppl",
+      "empty": "Per-territory impact data unavailable — run \"node scripts/fetch-pdh.mjs\" or retry.",
+      "paradox": "The paradox"
+    },
+    "heatmap": {
+      "title": "The big picture",
+      "sub": "each row = a territory · each column = a year · colour = emission intensity",
+      "low": "low",
+      "high": "high",
+      "mode_row": "per-territory trend",
+      "mode_abs": "absolute level"
     }
   },
   "export": {

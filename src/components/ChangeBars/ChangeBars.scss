@@ -1,0 +1,86 @@
+// src/components/ChangeBars/ChangeBars.scss
+// ============================================================
+// Barres divergentes. Tokens uniquement → light/dark.
+// ============================================================
+
+.cb {
+  margin: 0;
+  width: 100%;
+}
+
+.cb__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--font-mono);
+}
+
+.cb--empty {
+  padding: var(--sp-8);
+  text-align: center;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.cb__zero {
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+
+.cb__name {
+  fill: var(--c-text-soft);
+  font-size: 12px;
+  text-anchor: end;
+}
+
+.cb__bar {
+  transition: opacity var(--t-fast) var(--ease-out);
+  opacity: 0.85;
+}
+.cb__row.is-up .cb__bar {
+  fill: color-mix(in srgb, var(--c-warm) 80%, transparent);
+}
+.cb__row.is-down .cb__bar {
+  fill: color-mix(in srgb, var(--c-accent) 80%, transparent);
+}
+.cb__row.is-on .cb__bar {
+  opacity: 1;
+}
+.cb__row.is-on .cb__name {
+  fill: var(--c-text);
+}
+
+.cb__val {
+  fill: var(--c-text-mute);
+  font-size: 11px;
+}
+.cb__row.is-up .cb__val {
+  fill: var(--c-warm);
+}
+.cb__row.is-down .cb__val {
+  fill: var(--c-accent);
+}
+
+.cb__legend {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cb__legend--up {
+  fill: var(--c-warm);
+}
+.cb__legend--down {
+  fill: var(--c-accent);
+}
+
+.cb__cap {
+  margin-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-soft);
+
+  strong {
+    color: var(--c-text);
+  }
+}

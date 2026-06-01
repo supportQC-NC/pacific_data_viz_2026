@@ -1,0 +1,75 @@
+// src/components/HeroOcean/HeroOcean.scss
+// ============================================================
+// L'océan WebGL occupe tout le hero, en arrière-plan.
+// Le fallback (no-WebGL) est un océan CSS ANIMÉ — jamais l'image
+// statique — pour qu'un échec ne ressemble jamais à « rien n'a changé ».
+// ============================================================
+
+.hero-ocean {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+}
+
+// Fallback sans WebGL : dégradé abyssal + « houle » animée + ligne d'eau.
+.hero-ocean--fallback {
+  background:
+    radial-gradient(
+      120% 70% at 62% 46%,
+      color-mix(in srgb, var(--c-accent) 22%, transparent) 0%,
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      var(--c-bg-2) 0%,
+      color-mix(in srgb, var(--c-accent-deep) 18%, var(--c-bg)) 50%,
+      var(--c-bg) 100%
+    );
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: -20%;
+    right: -20%;
+    height: 42%;
+    bottom: 18%;
+    background: repeating-linear-gradient(
+      100deg,
+      transparent 0,
+      color-mix(in srgb, var(--c-accent) 14%, transparent) 12px,
+      transparent 26px
+    );
+    filter: blur(2px);
+    animation: heroSwell 9s ease-in-out infinite;
+  }
+  &::after {
+    bottom: 6%;
+    height: 30%;
+    opacity: 0.6;
+    animation-duration: 13s;
+    animation-direction: reverse;
+  }
+}
+
+@keyframes heroSwell {
+  0%,
+  100% {
+    transform: translateX(-4%) translateY(0);
+  }
+  50% {
+    transform: translateX(4%) translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ocean--fallback::before,
+  .hero-ocean--fallback::after {
+    animation: none;
+  }
+}

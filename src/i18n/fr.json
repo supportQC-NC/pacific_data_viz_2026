@@ -34,7 +34,9 @@
       "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience."
     },
     "act_explore": "Explorer",
-    "act_soon": "Bientôt"
+    "act_soon": "Bientôt",
+    "acts_kicker": "La descente",
+    "live_demo": "Données de démonstration · niveau de la mer"
   },
   "footer": {
     "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",
@@ -57,7 +59,7 @@
     "world_avg": "Moyenne mondiale",
     "scale_linear": "Linéaire",
     "scale_log": "Log",
-    "paradox": "Quelques territoires affichent un per-capita extrême — population minuscule au dénominateur, tourisme et électricité au diesel. Pourtant leur empreinte mondiale reste sous 0,01 %. La plupart des nations du Pacifique se situent bien en dessous de la moyenne mondiale (4,76 t).",
+    "paradox": "La plupart des territoires du Pacifique émettent peu par habitant, et leur part dans les émissions mondiales est minuscule. Ils figurent pourtant parmi les premiers exposés à la montée des eaux et au réchauffement.",
     "year": "Année",
     "play": "▶ Lire",
     "pause": "❚❚ Pause",
@@ -75,26 +77,26 @@
     "viz_trend_sub": "évolution des plus gros émetteurs · le curseur suit l'année",
     "guide": {
       "title": "Guide de lecture",
-      "intro": "Cet acte compare les émissions de gaz à effet de serre par habitant des pays et territoires du Pacifique. Voici comment lire les visualisations.",
+      "intro": "Cet acte compare les émissions de GES par habitant des territoires du Pacifique, et les met en regard de l'impact climatique subi.",
       "steps": [
         {
-          "k": "Le nuage de points",
-          "v": "Chaque point est un territoire (acronyme SPC). Plus il est à droite, plus il émet par habitant. L'échelle est logarithmique pour révéler les écarts malgré les valeurs extrêmes."
+          "k": "Le filtre",
+          "v": "Les pastilles de sous-région (Mélanésie / Polynésie / Micronésie) recentrent toutes les vues par territoire. « Tous » garde les 17."
         },
         {
-          "k": "Les deux repères",
-          "v": "La ligne orange est la moyenne mondiale, qui ÉVOLUE chaque année (≈3,1 t en 1960, ≈4,7 t aujourd'hui). La ligne bleue Ø est la moyenne du Pacifique pour l'année affichée."
+          "k": "Le classement",
+          "v": "Chaque barre est un territoire (code SPC). Plus elle est longue, plus il émet par habitant. L'échelle est compressée pour rester lisible malgré les extrêmes (Palau, Nouvelle-Calédonie)."
         },
         {
-          "k": "Le temps",
-          "v": "Le curseur d'années (ou la lecture ▶) anime tous les graphes en même temps : nuage, classement, trajectoires et carte."
+          "k": "Le repère",
+          "v": "La ligne marque la MÉDIANE du Pacifique — plus robuste qu'une moyenne, faussée par quelques outliers."
         },
         {
-          "k": "Classement & trajectoires",
-          "v": "Le classement montre qui domine une année donnée ; les trajectoires montrent l'évolution sur la période."
+          "k": "Le paradoxe",
+          "v": "Le nuage croise ce qu'un territoire émet (horizontal) et ce qu'il subit (vertical) : la plupart émettent peu mais sont fortement exposés."
         }
       ],
-      "takeaway": "Le paradoxe : la plupart des territoires émettent bien moins que la moyenne mondiale, alors qu'ils subissent les premiers les effets du changement climatique."
+      "takeaway": "Le paradoxe : émettre peu, subir les premiers les effets du changement climatique."
     },
     "evo": {
       "title": "Évolution dans le temps",
@@ -107,6 +109,57 @@
     "table": {
       "title": "Les données en détail",
       "sub": "cliquez sur un en-tête pour trier"
+    },
+    "pac_ref": "Médiane Pacifique",
+    "vs_ref": "vs médiane Pacifique",
+    "src_live": "données en direct (PDH)",
+    "src_snapshot": "instantané réel (PDH)",
+    "outlier_note": "sortent de l'échelle : population minuscule au dénominateur, électricité au diesel et industrie. Leur part cumulée dans les émissions mondiales reste pourtant infime.",
+    "stats": {
+      "title": "Repères",
+      "count": "territoires",
+      "median": "médiane par habitant",
+      "lowest": "le plus faible",
+      "highest": "le plus élevé"
+    },
+    "filter": {
+      "title": "Filtrer par sous-région",
+      "all": "Tous",
+      "melanesia": "Mélanésie",
+      "polynesia": "Polynésie",
+      "micronesia": "Micronésie"
+    },
+    "subregion": {
+      "title": "Moyenne par sous-région",
+      "sub": "trajectoire moyenne des trois sous-régions du Pacifique"
+    },
+    "change": {
+      "title": "Qui a le plus changé depuis",
+      "sub": "variation des émissions par habitant entre la première et la dernière année",
+      "up": "en hausse",
+      "down": "en baisse",
+      "empty": "Pas assez d'historique."
+    },
+    "scatter": {
+      "title": "Émettre peu, subir beaucoup",
+      "sub": "chaque bulle = un territoire · à gauche = faible émetteur · plus haut = plus exposé",
+      "x": "Émissions par habitant",
+      "y_sea": "Montée du niveau de la mer",
+      "y_sst": "Réchauffement de surface",
+      "y_dis": "Personnes affectées",
+      "u_sea": "mm",
+      "u_sst": "°C",
+      "u_dis": "pers.",
+      "empty": "Données d'impact par territoire indisponibles — lancez « node scripts/fetch-pdh.mjs » ou réessayez.",
+      "paradox": "Le paradoxe"
+    },
+    "heatmap": {
+      "title": "Vue d'ensemble",
+      "sub": "chaque ligne = un territoire · chaque colonne = une année · couleur = intensité des émissions",
+      "low": "faible",
+      "high": "élevé",
+      "mode_row": "tendance par territoire",
+      "mode_abs": "niveau absolu"
     }
   },
   "export": {
