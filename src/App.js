@@ -16,6 +16,7 @@ import Act3Territory from './pages/Act3Territory/Act3Territory';
 import Act4Impact from './pages/Act4Impact/Act4Impact';
 import Act5Momentum from './pages/Act5Momentum/Act5Momentum';
 import Act6Agriculture from './pages/Act6Agriculture/Act6Agriculture';
+import Act7Vivant from './pages/Act7Vivant/Act7Vivant';
 
 function AppContent() {
   return (
@@ -29,6 +30,7 @@ function AppContent() {
         <Route path="/impact" element={<Act4Impact />} />
         <Route path="/momentum" element={<Act5Momentum />} />
         <Route path="/agriculture" element={<Act6Agriculture />} />
+        <Route path="/vivant" element={<Act7Vivant />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

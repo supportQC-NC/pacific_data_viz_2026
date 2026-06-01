@@ -34,7 +34,10 @@
       "a5_text": "The Pacific does not suffer in silence: the rise of renewable energy traces a path of resilience.",
       "a6_tag": "Act 06 — The plate",
       "a6_title": "The food-growing land",
-      "a6_text": "As the ocean rises, the Pacific's plate wobbles: crop yields, territory by territory and crop by crop."
+      "a6_text": "As the ocean rises, the Pacific's plate wobbles: crop yields, territory by territory and crop by crop.",
+      "a7_tag": "Act 07 — The living world",
+      "a7_title": "The living world retreats",
+      "a7_text": "Species fade, tracked by the Red List Index; in response, territories ramp up fisheries management measures."
     },
     "act_explore": "Explore",
     "act_soon": "Soon",
@@ -500,5 +503,29 @@
     "explorer_animal_title": "Explore by animal",
     "explorer_animal_lead": "Pick an animal to see its yield by territory and the latest ranking.",
     "explorer_animal_pick": "Pick an animal"
+  },
+  "act7": {
+    "tag": "Act 07 — The living world",
+    "title": "The living world retreats",
+    "lead": "As species fade, territories step up management measures. Two opposing curves: loss and response.",
+    "redlist_title": "Advancing extinction",
+    "redlist_sub": "Red List Index (IUCN/BirdLife): 1 = pristine, 0 = all species extinct. It tracks aggregate extinction risk and declines across nearly every territory. Source: Pacific Data Hub.",
+    "redlist_unit": "index",
+    "fish_title": "The response: managing fisheries",
+    "fish_sub": "Number of fisheries management measures in place (multilateral and bilateral agreements), cumulative per territory — steadily rising. Source: Pacific Data Hub.",
+    "fish_unit": "measures",
+    "unavailable": "Living-world data temporarily unavailable from the Pacific Data Hub.",
+    "rl_heatmap_title": "The retreat, territory by territory",
+    "rl_heatmap_sub": "Heatmap of the index by territory and year (\"trend\" mode: each row on its own scale).",
+    "rl_rank_title": "Index ranking (latest year)",
+    "rl_rank_sub": "From least to most threatened. The lower the index, the higher the extinction risk.",
+    "rl_compare_title": "Before / after — 1993 → 2024",
+    "rl_compare_sub": "Change in the index over three decades. ▼ = worsening (biodiversity loss).",
+    "fish_heatmap_title": "The build-up, territory by territory",
+    "fish_heatmap_sub": "Heatmap of measures in place by territory and year.",
+    "fish_rank_title": "Measures ranking (latest year)",
+    "fish_rank_sub": "From most to least equipped. Larger Melanesia leads, smaller territories follow.",
+    "fish_compare_title": "Before / after — 2000 → latest year",
+    "fish_compare_sub": "Growth in the number of measures since 2000. ▲ = stronger management."
   }
 }

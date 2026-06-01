@@ -34,7 +34,10 @@
       "a5_text": "Le Pacifique ne subit pas en silence : la montée des énergies renouvelables dessine une trajectoire de résilience.",
       "a6_tag": "Acte 06 — L'assiette",
       "a6_title": "La terre nourricière",
-      "a6_text": "Quand l'océan monte, l'assiette du Pacifique vacille : rendements des cultures, territoire par territoire et culture par culture."
+      "a6_text": "Quand l'océan monte, l'assiette du Pacifique vacille : rendements des cultures, territoire par territoire et culture par culture.",
+      "a7_tag": "Acte 07 — Le vivant",
+      "a7_title": "Le vivant recule",
+      "a7_text": "Les espèces s'effacent, mesurées par la Liste Rouge ; en face, les territoires multiplient les mesures de gestion des pêches."
     },
     "act_explore": "Explorer",
     "act_soon": "Bientôt",
@@ -500,5 +503,29 @@
     "explorer_animal_title": "Explorer par animal",
     "explorer_animal_lead": "Choisis un animal pour voir son rendement par territoire et le dernier classement.",
     "explorer_animal_pick": "Choisir un animal"
+  },
+  "act7": {
+    "tag": "Acte 07 — Le vivant",
+    "title": "Le vivant recule",
+    "lead": "Pendant que les espèces s'effacent, les territoires multiplient les mesures de gestion. Deux courbes opposées : la perte et la riposte.",
+    "redlist_title": "L'extinction qui avance",
+    "redlist_sub": "Indice de la Liste Rouge (UICN/BirdLife) : 1 = situation intacte, 0 = toutes les espèces éteintes. Il mesure le risque d'extinction agrégé et recule dans la quasi-totalité des territoires. Source : Pacific Data Hub.",
+    "redlist_unit": "indice",
+    "fish_title": "La riposte : gérer les pêches",
+    "fish_sub": "Nombre de mesures de gestion des pêches en place (accords multilatéraux et bilatéraux), cumul par territoire — en hausse continue. Source : Pacific Data Hub.",
+    "fish_unit": "mesures",
+    "unavailable": "Données du vivant momentanément indisponibles depuis le Pacific Data Hub.",
+    "rl_heatmap_title": "Le recul, territoire par territoire",
+    "rl_heatmap_sub": "Carte de chaleur de l'indice par territoire et par année (mode « tendance » : chaque ligne à sa propre échelle).",
+    "rl_rank_title": "Classement de l'indice (dernière année)",
+    "rl_rank_sub": "Du moins menacé au plus menacé. Plus l'indice est bas, plus le risque d'extinction est élevé.",
+    "rl_compare_title": "Avant / après — 1993 → 2024",
+    "rl_compare_sub": "Variation de l'indice sur trois décennies. ▼ = aggravation (perte de biodiversité).",
+    "fish_heatmap_title": "La montée en puissance, territoire par territoire",
+    "fish_heatmap_sub": "Carte de chaleur des mesures en place par territoire et par année.",
+    "fish_rank_title": "Classement des mesures (dernière année)",
+    "fish_rank_sub": "Du plus au moins équipé. La grande Mélanésie mène, les petits territoires suivent.",
+    "fish_compare_title": "Avant / après — 2000 → dernière année",
+    "fish_compare_sub": "Progression du nombre de mesures depuis 2000. ▲ = renforcement de la gestion."
   }
 }

@@ -1,20 +1,16 @@
 // src/pages/Home/Home.jsx
 // ============================================================
-// Accueil — hero OCÉAN WebGL (la mer monte) + récit en 5 actes
-// pensé comme une DESCENTE (cartes, révélation au scroll, jauge de
-// profondeur). L'indicateur de données est HONNÊTE : il distingue
-// les données « en direct » (Pacific Data Hub) des données de
-// démonstration, et n'affiche jamais l'un pour l'autre.
-// Aucun style inline (GSAP/refs). Respecte prefers-reduced-motion.
+// Accueil — hero (image + entrée GSAP + parallax) + récit en 5 actes
+// (cartes éditoriales, révélation au scroll, jauge de profondeur).
+// Aucun style inline en JSX (GSAP/refs). Respecte prefers-reduced-motion.
 // ============================================================
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
-import HeroOcean from "../../components/HeroOcean/HeroOcean";
 import "./Home.scss";
 
 const ACTS = [
@@ -24,30 +20,8 @@ const ACTS = [
   { id: "a4", to: "/impact" },
   { id: "a5", to: "/momentum" },
   { id: "a6", to: "/agriculture" },
+  { id: "a7", to: "/vivant" },
 ];
-
-// Sévérité régionale (0..1) → hauteur d'eau du hero. Reste douce pour
-// que la mer soit toujours belle, mais « plus haut = plus de hausse ».
-function computeRise(seaLevel) {
-  const DEFAULT = 0.46;
-  if (!seaLevel || seaLevel.status !== "succeeded" || !seaLevel.data) return DEFAULT;
-  const { byArea } = seaLevel.data;
-  const areas = Object.values(byArea || {});
-  if (!areas.length) return DEFAULT;
-  let sum = 0;
-  let n = 0;
-  areas.forEach((serie) => {
-    const last = serie[serie.length - 1];
-    if (last && Number.isFinite(last.value)) {
-      sum += last.value;
-      n += 1;
-    }
-  });
-  if (!n) return DEFAULT;
-  const mean = sum / n; // niveau cumulé moyen (mm)
-  const severity = Math.max(0, Math.min(1, mean / 220)); // ~220 mm → plafond
-  return 0.4 + severity * 0.32; // 0.40 → 0.72
-}
 
 export default function Home() {
   const { t } = useLang();
@@ -63,7 +37,6 @@ export default function Home() {
   const [activeAct, setActiveAct] = useState(-1);
 
   const seaLevel = useSelector(selectDataset("seaLevel"));
-  const rise = useMemo(() => computeRise(seaLevel), [seaLevel]);
 
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
@@ -77,7 +50,6 @@ export default function Home() {
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Entrée GSAP du hero.
   useLayoutEffect(() => {
     if (reduced) return undefined;
     const ctx = gsap.context(() => {
@@ -87,7 +59,7 @@ export default function Home() {
         .from(
           ".home__title span",
           { y: 46, opacity: 0, duration: 0.9, stagger: 0.12 },
-          "-=0.2"
+          "-=0.2",
         )
         .from(".home__subtitle", { y: 24, opacity: 0, duration: 0.7 }, "-=0.45")
         .from(".home__hero-foot", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4")
@@ -96,7 +68,6 @@ export default function Home() {
     return () => ctx.revert();
   }, [reduced]);
 
-  // Parallaxe + fondu du contenu hero au scroll.
   useEffect(() => {
     if (reduced || !contentRef.current) return undefined;
     const setY = gsap.quickSetter(contentRef.current, "y", "px");
@@ -121,7 +92,6 @@ export default function Home() {
     };
   }, [reduced]);
 
-  // Révélation des actes + acte actif (pour la jauge).
   useEffect(() => {
     const nodes = actsRef.current.filter(Boolean);
     if (!nodes.length) return undefined;
@@ -133,17 +103,17 @@ export default function Home() {
             revealObs.unobserve(e.target);
           }
         }),
-      { threshold: 0.18 }
+      { threshold: 0.18 },
     );
     const activeObs = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting)
             setActiveAct((p) =>
-              Math.max(p, Number(e.target.getAttribute("data-idx")))
+              Math.max(p, Number(e.target.getAttribute("data-idx"))),
             );
         }),
-      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
     );
     nodes.forEach((n) => {
       revealObs.observe(n);
@@ -155,7 +125,6 @@ export default function Home() {
     };
   }, []);
 
-  // Remplissage de la jauge de profondeur.
   useEffect(() => {
     if (!railFillRef.current) return;
     const ratio = activeAct < 0 ? 0 : (activeAct + 1) / ACTS.length;
@@ -166,12 +135,10 @@ export default function Home() {
     });
   }, [activeAct, reduced]);
 
-  // Indicateur de données — HONNÊTE selon la source réelle.
   let live;
-  const status = seaLevel.status;
-  if (status === "loading" || status === "idle") {
+  if (seaLevel.status === "loading" || seaLevel.status === "idle") {
     live = <span className="home__live-text">{t("home.live_loading")}</span>;
-  } else if (status === "failed") {
+  } else if (seaLevel.status === "failed") {
     live = (
       <span className="home__live-text home__live-text--err">
         {t("home.live_error")}
@@ -179,27 +146,19 @@ export default function Home() {
     );
   } else {
     const d = seaLevel.data;
-    const isLive = d?.source === "live";
-    const span = d?.firstYear && d?.lastYear ? ` · ${d.firstYear}–${d.lastYear}` : "";
     live = (
       <span className="home__live-text">
-        {isLive ? t("home.live_label") : t("home.live_demo")} —{" "}
-        <strong>{d.areas.length}</strong> {t("home.live_coverage")}
-        {span}
+        {t("home.live_label")} — <strong>{d.areas.length}</strong>{" "}
+        {t("home.live_coverage")}
+        {d.firstYear && d.lastYear ? ` · ${d.firstYear}–${d.lastYear}` : ""}
       </span>
     );
   }
-  const dotStatus =
-    status === "succeeded" && seaLevel.data?.source !== "live"
-      ? "demo"
-      : status;
 
   return (
     <main className="home">
       <section className="home__hero" ref={heroRef}>
-        <HeroOcean riseTarget={rise} />
-        <div className="home__hero-veil" aria-hidden="true" />
-
+        <div className="home__hero-overlay" aria-hidden="true" />
         <div className="home__hero-content container" ref={contentRef}>
           <p className="eyebrow home__eyebrow">{t("home.kicker")}</p>
           <h1 className="home__title">
@@ -213,14 +172,13 @@ export default function Home() {
             </button>
             <span className="home__live">
               <span
-                className={`home__live-dot home__live-dot--${dotStatus}`}
+                className={`home__live-dot home__live-dot--${seaLevel.status}`}
                 aria-hidden="true"
               />
               {live}
             </span>
           </div>
         </div>
-
         <button
           className="home__scrollcue"
           onClick={scrollToStory}
@@ -228,8 +186,6 @@ export default function Home() {
         >
           <span className="home__scrollcue-line" />
         </button>
-
-        <div className="home__waterline" aria-hidden="true" />
       </section>
 
       <section className="home__story container" ref={storyRef}>
@@ -249,10 +205,7 @@ export default function Home() {
           </ol>
         </div>
 
-        <header className="home__story-head">
-          <p className="eyebrow">{t("home.acts_kicker")}</p>
-          <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
-        </header>
+        <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
 
         <ol className="home__acts">
           {ACTS.map((a, i) => (
@@ -282,7 +235,9 @@ export default function Home() {
                   <span className="act__index">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <p className="eyebrow act__tag">{t(`home.acts.${a.id}_tag`)}</p>
+                  <p className="eyebrow act__tag">
+                    {t(`home.acts.${a.id}_tag`)}
+                  </p>
                 </div>
                 <h3 className="act__title">{t(`home.acts.${a.id}_title`)}</h3>
                 <p className="act__text">{t(`home.acts.${a.id}_text`)}</p>
