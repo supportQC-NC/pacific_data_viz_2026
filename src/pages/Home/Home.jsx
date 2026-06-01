@@ -14,6 +14,8 @@ import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
+import StatRotator from "../../components/StatRotator/StatRotator";
+import "../../components/StatRotator/StatRotator.scss";
 import "./Home.scss";
 
 // Récit complet : 11 actes répartis en 3 chapitres narratifs.
@@ -91,7 +93,7 @@ export default function Home() {
           "-=0.2",
         )
         .from(".home__thesis", { y: 24, opacity: 0, duration: 0.7 }, "-=0.4")
-        .from(".home__shock", { y: 22, opacity: 0, duration: 0.7 }, "-=0.45")
+        .from(".statrot", { y: 22, opacity: 0, duration: 0.7 }, "-=0.45")
         .from(".home__hero-foot", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4")
         .from(".home__scrollcue", { opacity: 0, duration: 0.6 }, "-=0.1");
     }, heroRef);
@@ -209,10 +211,14 @@ export default function Home() {
             <span className="home__title-accent">{t("home.title_l2")}</span>
           </h1>
           <p className="home__thesis">{t("home.thesis")}</p>
-          <p className="home__shock">
-            <span className="home__shock-num">{t("home.shock_num")}</span>
-            <span className="home__shock-text">{t("home.shock_text")}</span>
-          </p>
+          <StatRotator
+            items={[
+              { num: t("home.stat1_num"), text: t("home.stat1_text") },
+              { num: t("home.stat2_num"), text: t("home.stat2_text") },
+              { num: t("home.stat3_num"), text: t("home.stat3_text") },
+              { num: t("home.stat4_num"), text: t("home.stat4_text") },
+            ]}
+          />
           <div className="home__hero-foot">
             <button
               className="home__cta home__cta--primary"

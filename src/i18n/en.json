@@ -69,7 +69,15 @@
     "c3_kicker": "Chapter III",
     "c3_title": "Chart",
     "c3_desc": "Reading the future closest to people — water, health — then the synthesis that lights the way: what's advancing, and where to focus effort.",
-    "begin": "Start the experience"
+    "begin": "Start the experience",
+    "stat1_num": "0.03%",
+    "stat1_text": "of global CO₂ emissions",
+    "stat2_num": "+3.4 mm/yr",
+    "stat2_text": "average sea-level rise",
+    "stat3_num": "22",
+    "stat3_text": "Pacific territories tracked",
+    "stat4_num": "11 acts",
+    "stat4_text": "to read a region that adapts"
   },
   "footer": {
     "tagline": "Giving a face to climate-change data across the Pacific.",

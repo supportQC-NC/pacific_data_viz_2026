@@ -69,7 +69,15 @@
     "c3_kicker": "Chapitre III",
     "c3_title": "Tracer",
     "c3_desc": "Lire l'avenir au plus près des habitants — l'eau, la santé — puis la synthèse qui éclaire la voie : ce qui avance, et où porter l'effort.",
-    "begin": "Commencer l'expérience"
+    "begin": "Commencer l'expérience",
+    "stat1_num": "0,03 %",
+    "stat1_text": "des émissions mondiales de CO₂",
+    "stat2_num": "+3,4 mm/an",
+    "stat2_text": "de montée moyenne du niveau de la mer",
+    "stat3_num": "22",
+    "stat3_text": "territoires du Pacifique suivis",
+    "stat4_num": "11 actes",
+    "stat4_text": "pour lire une région qui s'adapte"
   },
   "footer": {
     "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",
