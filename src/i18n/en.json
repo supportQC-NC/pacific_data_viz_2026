@@ -468,9 +468,9 @@
     "next": "Coming next: livestock yield, then climate × yield cross-analysis.",
     "unavailable": "Agricultural data momentarily unavailable from the Pacific Data Hub. Try again in a moment.",
     "trend_sub": "One mini-chart per territory · each with its own scale (read the trend, not the level) · 1990–2024",
-    "smallmult_last": "latest",
+    "smallmult_last": "year",
     "crop_rank_title": "The most productive crops",
-    "crop_rank_sub": "Median yield per crop across all territories, latest available year (kg/ha)",
+    "crop_rank_sub": "Median yield per crop across the displayed territories (kg/ha) — moves with the timeline",
     "explorer_country": "Filter by country",
     "explorer_all": "All",
     "regional_title": "Regional trajectory",
@@ -481,6 +481,14 @@
     "diversity_unit": "crops",
     "volatility_title": "Yield instability",
     "volatility_sub": "Coefficient of variation of yields over time, by territory — higher means more exposed to shocks",
-    "median_ref": "median"
+    "median_ref": "median",
+    "crop_rank_scope": "Scope",
+    "crop_rank_scope_all": "All territories (region filter)",
+    "compare_title": "Before / after",
+    "compare_sub": "Median yield per territory between two chosen years — the bar links both values",
+    "compare_from": "From",
+    "compare_to": "To",
+    "compare_up": "increase",
+    "compare_down": "decrease"
   }
 }

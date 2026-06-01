@@ -27,6 +27,7 @@ import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import CropRanking from "../../components/CropRanking/CropRanking";
+import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RankBars from "../../components/RankBars/RankBars";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
@@ -132,6 +133,9 @@ export default function Act6Agriculture() {
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
+  const [rankScope, setRankScope] = useState("all");
+  const [cmpA, setCmpA] = useState(null);
+  const [cmpB, setCmpB] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -157,6 +161,11 @@ export default function Act6Agriculture() {
     if (years.length && yearIdx === null) setYearIdx(years.length - 1);
   }, [years, yearIdx]);
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
+
+  useEffect(() => {
+    if (years.length && cmpA == null) setCmpA(years[0]);
+    if (years.length && cmpB == null) setCmpB(years[years.length - 1]);
+  }, [years, cmpA, cmpB]);
 
   useEffect(() => {
     if (!playing || !years.length) return undefined;
@@ -203,23 +212,60 @@ export default function Act6Agriculture() {
     [vSeries],
   );
 
-  const cropRankRows = useMemo(() => {
+  const rankCountries = useMemo(() => {
     if (!agri.data) return [];
+    const set = new Set();
+    (agri.data.commodities || [])
+      .filter((c) => c.kind === "crop")
+      .forEach((c) => {
+        const d = agri.data.byCommodity[c.code];
+        if (!d) return;
+        d.areas.filter(isPict).forEach((a) => {
+          if ((d.byArea[a] || []).some((p) => Number.isFinite(p.value))) set.add(a);
+        });
+      });
+    return [...set]
+      .map((a) => ({ code: a, name: pictName(a, lang) }))
+      .sort((x, y) => x.name.localeCompare(y.name));
+  }, [agri.data, lang]);
+
+  const cropRankRows = useMemo(() => {
+    if (!agri.data || currentYear == null) return [];
     return (agri.data.commodities || [])
       .filter((c) => c.kind === "crop")
       .map((c) => {
         const d = agri.data.byCommodity[c.code];
-        if (!d || d.lastYear == null) return null;
-        const vals = d.areas
-          .filter((a) => isPict(a))
-          .map((a) => (d.byArea[a] || []).find((p) => p.year === d.lastYear))
-          .filter((p) => p && Number.isFinite(p.value))
-          .map((p) => p.value);
+        if (!d) return null;
+        let vals;
+        if (rankScope === "all") {
+          vals = d.areas
+            .filter((a) => isPict(a) && areaVisible(a))
+            .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
+            .filter((p) => p && Number.isFinite(p.value))
+            .map((p) => p.value);
+        } else {
+          const p = (d.byArea[rankScope] || []).find((q) => q.year === currentYear);
+          vals = p && Number.isFinite(p.value) ? [p.value] : [];
+        }
         if (!vals.length) return null;
-        return { code: c.code, label: c.label, value: median(vals), year: d.lastYear };
+        return { code: c.code, label: c.label, value: median(vals), year: currentYear };
       })
       .filter(Boolean);
-  }, [agri.data]);
+  }, [agri.data, currentYear, areaVisible, rankScope]);
+
+  const dumbbellRows = useMemo(() => {
+    if (!agg || cmpA == null || cmpB == null) return [];
+    return allSeries(agg, lang)
+      .filter((s) => areaVisible(s.area))
+      .map((s) => {
+        const pa = s.values.find((p) => p.year === cmpA);
+        const pb = s.values.find((p) => p.year === cmpB);
+        return pa && pb && Number.isFinite(pa.value) && Number.isFinite(pb.value)
+          ? { area: s.area, name: s.name, a: pa.value, b: pb.value }
+          : null;
+      })
+      .filter(Boolean);
+  }, [agg, lang, areaVisible, cmpA, cmpB]);
 
   const regionalSeries = useMemo(() => {
     if (!agg) return [];
@@ -365,6 +411,7 @@ export default function Act6Agriculture() {
                   series={vSeries}
                   years={years}
                   unit={unit}
+                  currentYear={currentYear}
                   labels={{ last: t("act6.smallmult_last") }}
                 />
               </ExpandableCard>
@@ -397,8 +444,64 @@ export default function Act6Agriculture() {
                 />
               </ExpandableCard>
 
-              <ExpandableCard title={t("act6.crop_rank_title")} sub={t("act6.crop_rank_sub")} {...xc}>
-                <CropRanking rows={cropRankRows} unit={unit} max={12} />
+              <ExpandableCard title={t("act6.crop_rank_title")} sub={`${t("act6.crop_rank_sub")} · ${currentYear}`} {...xc}>
+                <CropRanking
+                  rows={cropRankRows}
+                  unit={unit}
+                  max={12}
+                  controls={
+                    <>
+                      <span className="croprank__select-lbl">{t("act6.crop_rank_scope")}</span>
+                      <select
+                        className="croprank__select"
+                        value={rankScope}
+                        onChange={(e) => setRankScope(e.target.value)}
+                        aria-label={t("act6.crop_rank_scope")}
+                      >
+                        <option value="all">{t("act6.crop_rank_scope_all")}</option>
+                        {rankCountries.map((c) => (
+                          <option key={c.code} value={c.code}>{c.name}</option>
+                        ))}
+                      </select>
+                    </>
+                  }
+                />
+              </ExpandableCard>
+
+              <ExpandableCard title={t("act6.compare_title")} sub={t("act6.compare_sub")} {...xc}>
+                <DumbbellChart
+                  rows={dumbbellRows}
+                  yearA={cmpA}
+                  yearB={cmpB}
+                  unit={unit}
+                  labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }}
+                  controls={
+                    <>
+                      <span className="dumbbell__select-lbl">{t("act6.compare_from")}</span>
+                      <select
+                        className="dumbbell__select"
+                        value={cmpA ?? ""}
+                        onChange={(e) => setCmpA(Number(e.target.value))}
+                        aria-label={t("act6.compare_from")}
+                      >
+                        {years.map((y) => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                      <span className="dumbbell__select-lbl">{t("act6.compare_to")}</span>
+                      <select
+                        className="dumbbell__select"
+                        value={cmpB ?? ""}
+                        onChange={(e) => setCmpB(Number(e.target.value))}
+                        aria-label={t("act6.compare_to")}
+                      >
+                        {years.map((y) => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </>
+                  }
+                />
               </ExpandableCard>
 
               <ExpandableCard title={t("act6.regional_title")} sub={t("act6.regional_sub")} {...xc}>

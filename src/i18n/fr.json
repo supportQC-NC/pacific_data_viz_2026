@@ -468,9 +468,9 @@
     "next": "À suivre : rendement du bétail, puis croisement climat × rendement.",
     "unavailable": "Données agricoles momentanément indisponibles depuis le Pacific Data Hub. Réessaie dans un instant.",
     "trend_sub": "Une mini-courbe par territoire · chacune à sa propre échelle (on lit la tendance, pas le niveau) · 1990–2024",
-    "smallmult_last": "dernier point",
+    "smallmult_last": "année",
     "crop_rank_title": "Les cultures les plus productives",
-    "crop_rank_sub": "Rendement médian par culture sur l'ensemble des territoires, dernière année disponible (kg/ha)",
+    "crop_rank_sub": "Rendement médian par culture sur les territoires affichés (kg/ha) — bouge avec la timeline",
     "explorer_country": "Filtrer par pays",
     "explorer_all": "Tous",
     "regional_title": "Trajectoire régionale",
@@ -481,6 +481,14 @@
     "diversity_unit": "cultures",
     "volatility_title": "Instabilité des rendements",
     "volatility_sub": "Coefficient de variation des rendements dans le temps, par territoire — plus c'est élevé, plus le territoire est exposé aux chocs",
-    "median_ref": "médiane"
+    "median_ref": "médiane",
+    "crop_rank_scope": "Périmètre",
+    "crop_rank_scope_all": "Tous les territoires (filtre région)",
+    "compare_title": "Avant / après",
+    "compare_sub": "Rendement médian par territoire entre deux années au choix — le trait relie les deux valeurs",
+    "compare_from": "De",
+    "compare_to": "À",
+    "compare_up": "en hausse",
+    "compare_down": "en baisse"
   }
 }

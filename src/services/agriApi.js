@@ -120,9 +120,20 @@ function group(rows) {
     const key = com.code || com.label;
     if (!byCommodity[key]) {
       const u = `${unit.label} ${unit.code}`.toLowerCase();
-      const kind = /hectare|\bha\b|kg\/ha/.test(u)
+      const cl = (com.label || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      // Unité = signal principal (rendement « par animal » vs « par hectare »).
+      const CROP_UNIT = /hectare|kg\/ha|\bha\b/;
+      const ANIMAL_UNIT = /animal|head|carcass|t[eê]te|abattu/;
+      // Mots-clés produit = secours, uniquement non ambigus (on évite « egg »
+      // qui matcherait « eggplant », ou « meat » qui matcherait « coconut meat »).
+      const ANIMAL_COM =
+        /\bcattle\b|\bcow\b|buffalo|\bgoat\b|\bsheep\b|\bpig\b|swine|poultry|chicken|\bmilk\b|honey|\bwool\b|\bbeef\b|\bpork\b|mutton|bovin|porc|volaille|mouton|chevre|b(o|\u0153)uf|viande|lait|miel|laine|cheptel/;
+      const kind = CROP_UNIT.test(u)
         ? "crop"
-        : /animal|head|t[eê]te|carcass|\ban\b/.test(u)
+        : ANIMAL_UNIT.test(u) || ANIMAL_COM.test(cl)
           ? "livestock"
           : "crop";
       byCommodity[key] = {
