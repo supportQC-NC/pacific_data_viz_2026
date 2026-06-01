@@ -1,0 +1,142 @@
+@charset "UTF-8";
+.ps {
+  margin: 0;
+  width: 100%;
+}
+
+.ps__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--font-mono);
+}
+
+.ps--empty {
+  padding: var(--sp-8);
+  text-align: center;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-md);
+}
+
+/* Quadrant « paradoxe » (peu émis / fort impact) */
+.ps__quad rect {
+  fill: color-mix(in srgb, var(--c-accent) 8%, transparent);
+}
+
+.ps__quad-lbl {
+  fill: var(--c-accent);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Grille & axes */
+.ps__grid line {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+
+.ps__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+
+.ps__tick {
+  fill: var(--c-text-mute);
+  font-size: 12px;
+  text-anchor: end;
+}
+
+.ps__tick--x {
+  text-anchor: middle;
+}
+
+.ps__axlabel {
+  fill: var(--c-text-soft);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Médianes */
+.ps__median line {
+  stroke: var(--c-accent);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+
+.ps__median-lbl {
+  fill: var(--c-accent);
+  font-size: 11px;
+  text-anchor: middle;
+  letter-spacing: 0.04em;
+}
+
+.ps__median-h {
+  stroke: var(--c-text-mute);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+  opacity: 0.5;
+}
+
+/* Bulles */
+.ps__pt {
+  cursor: pointer;
+}
+
+.ps__dot {
+  transition: r var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out);
+}
+
+.ps__pt.is-low .ps__dot {
+  fill: color-mix(in srgb, var(--c-accent) 78%, transparent);
+  stroke: var(--c-accent);
+}
+
+.ps__pt.is-high .ps__dot {
+  fill: color-mix(in srgb, var(--c-warm) 72%, transparent);
+  stroke: var(--c-warm);
+}
+
+.ps__pt.is-dim {
+  opacity: 0.28;
+}
+
+.ps__pt.is-on .ps__dot {
+  filter: drop-shadow(0 0 8px var(--c-accent-glow));
+}
+
+.ps__code {
+  fill: var(--c-text-soft);
+  font-size: 11px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.ps__pt.is-on .ps__code {
+  fill: var(--c-text);
+  opacity: 1;
+  font-weight: var(--fw-semi);
+}
+
+/* Tooltip */
+.ps__tip rect {
+  fill: var(--c-surface);
+  stroke: var(--c-line-strong);
+}
+
+.ps__tip-name {
+  fill: var(--c-text);
+  font-size: 13px;
+  font-weight: var(--fw-semi);
+}
+
+.ps__tip-val {
+  fill: var(--c-text-soft);
+  font-size: 12px;
+}/*# sourceMappingURL=ParadoxScatter.css.map */

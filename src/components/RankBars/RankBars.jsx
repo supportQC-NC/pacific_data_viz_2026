@@ -5,6 +5,14 @@
 // (largeur) à chaque changement d'année → on VOIT qui monte/descend.
 // Échelle racine (pow 0.5) pour garder les petites valeurs visibles
 // malgré l'outlier ; valeur exacte affichée en bout de barre.
+//
+// COULEUR SÉMANTIQUE (optionnelle) via la prop `good` :
+//   • good="up"   → valeur forte = positif (vert), faible = négatif (rouge)
+//   • good="down" → valeur forte = négatif (rouge), faible = positif (vert)
+//   • absent      → dégradé identité bleu → corail (comportement historique,
+//                   les actes non modifiés restent inchangés)
+// Les couleurs sont lues depuis les tokens CSS (--c-positive/--c-negative…)
+// → bascule light/dark automatique.
 // ============================================================
 
 import React, { useMemo, useRef, useLayoutEffect } from "react";
@@ -17,7 +25,22 @@ const BAR_H = 22;
 const GAP = 8;
 const M = { top: 10, right: 70, bottom: 34, left: 178 };
 
-export default function RankBars({ data, unit, worldAvg, refLabel }) {
+// Lit un token CSS au runtime (avec repli si indisponible).
+function cssVar(name, fallback) {
+  if (typeof window === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return v || fallback;
+}
+
+export default function RankBars({
+  data,
+  unit,
+  worldAvg,
+  refLabel,
+  good = null,
+}) {
   const rowsRef = useRef(new Map()); // area -> <g>
   const barsRef = useRef(new Map()); // area -> <rect>
   const valsRef = useRef(new Map()); // area -> <text>
@@ -35,14 +58,28 @@ export default function RankBars({ data, unit, worldAvg, refLabel }) {
     () => d3.scalePow().exponent(0.5).domain([0, max]).range([0, innerW]),
     [max, innerW],
   );
-  const color = useMemo(
-    () =>
-      d3
+
+  // Échelle de couleur : sémantique (vert↔rouge) si `good` fourni, sinon
+  // dégradé identité bleu→corail. Recalculée si le thème change (good/max).
+  const color = useMemo(() => {
+    if (good === "up" || good === "down") {
+      const pos = cssVar("--c-positive", "#25e09a");
+      const neg = cssVar("--c-negative", "#ff4d6d");
+      // good="up" : valeur haute = vert → interpole rouge(0) → vert(max)
+      // good="down": valeur haute = rouge → interpole vert(0) → rouge(max)
+      const lo = good === "up" ? neg : pos;
+      const hi = good === "up" ? pos : neg;
+      return d3
         .scaleSequential()
         .domain([0, max])
-        .interpolator(d3.interpolateRgb("#1f9bc9", "#ff6b4a")),
-    [max],
-  );
+        .interpolator(d3.interpolateRgb(lo, hi));
+    }
+    return d3
+      .scaleSequential()
+      .domain([0, max])
+      .interpolator(d3.interpolateRgb("#1f9bc9", "#ff6b4a"));
+  }, [max, good]);
+
   const fmt2 = d3.format(".2~f");
   const refX = worldAvg != null ? xScale(worldAvg) : null;
 

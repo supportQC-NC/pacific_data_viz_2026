@@ -218,4 +218,238 @@ svg {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
-}/*# sourceMappingURL=index.css.map */
+}
+.scatter {
+  width: 100%;
+}
+.scatter--empty {
+  min-height: 220px;
+}
+.scatter__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.scatter__zone {
+  fill: var(--c-warm);
+  opacity: 0.07;
+}
+.scatter__grid {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.scatter__grid--v {
+  opacity: 0.45;
+}
+.scatter__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.4;
+}
+.scatter__median {
+  stroke: var(--c-text-dim);
+  stroke-width: 1.1;
+  stroke-dasharray: 5 5;
+  opacity: 0.6;
+}
+.scatter__ref {
+  stroke: var(--c-accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 2 4;
+  opacity: 0.9;
+}
+.scatter__ref-lbl {
+  fill: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+}
+.scatter__quadrant {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+}
+.scatter__quadrant--hero {
+  fill: var(--c-warm);
+  font-size: 13px;
+  font-weight: var(--fw-bold);
+  opacity: 1;
+}
+.scatter__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.scatter__axis-label {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+}
+.scatter__legend {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.scatter__pt {
+  cursor: pointer;
+  transition: opacity var(--t-fast) var(--ease-out);
+  animation: scatterPop 0.5s var(--ease-out) backwards;
+}
+.scatter__pt .scatter__dot {
+  transition: r var(--t-fast) var(--ease-out);
+  stroke: var(--c-bg);
+  stroke-width: 1.5;
+}
+.scatter__pt .scatter__halo {
+  opacity: 0;
+  transition: opacity var(--t-med) var(--ease-out);
+}
+.scatter__pt.is-on .scatter__halo {
+  opacity: 0.22;
+}
+.scatter__pt.is-on .scatter__pt-lbl {
+  fill: var(--c-text);
+  font-weight: var(--fw-bold);
+  opacity: 1;
+}
+.scatter__pt.is-dim {
+  opacity: 0.26;
+}
+.scatter__pt-lbl {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.78;
+  transition: opacity var(--t-fast) var(--ease-out);
+  pointer-events: none;
+}
+.scatter__pts .scatter__pt:nth-child(1) {
+  animation-delay: 0.025s;
+}
+.scatter__pts .scatter__pt:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.scatter__pts .scatter__pt:nth-child(3) {
+  animation-delay: 0.075s;
+}
+.scatter__pts .scatter__pt:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.scatter__pts .scatter__pt:nth-child(5) {
+  animation-delay: 0.125s;
+}
+.scatter__pts .scatter__pt:nth-child(6) {
+  animation-delay: 0.15s;
+}
+.scatter__pts .scatter__pt:nth-child(7) {
+  animation-delay: 0.175s;
+}
+.scatter__pts .scatter__pt:nth-child(8) {
+  animation-delay: 0.2s;
+}
+.scatter__pts .scatter__pt:nth-child(9) {
+  animation-delay: 0.225s;
+}
+.scatter__pts .scatter__pt:nth-child(10) {
+  animation-delay: 0.25s;
+}
+.scatter__pts .scatter__pt:nth-child(11) {
+  animation-delay: 0.275s;
+}
+.scatter__pts .scatter__pt:nth-child(12) {
+  animation-delay: 0.3s;
+}
+.scatter__pts .scatter__pt:nth-child(13) {
+  animation-delay: 0.325s;
+}
+.scatter__pts .scatter__pt:nth-child(14) {
+  animation-delay: 0.35s;
+}
+.scatter__pts .scatter__pt:nth-child(15) {
+  animation-delay: 0.375s;
+}
+.scatter__pts .scatter__pt:nth-child(16) {
+  animation-delay: 0.4s;
+}
+.scatter__pts .scatter__pt:nth-child(17) {
+  animation-delay: 0.425s;
+}
+.scatter__pts .scatter__pt:nth-child(18) {
+  animation-delay: 0.45s;
+}
+.scatter__pts .scatter__pt:nth-child(19) {
+  animation-delay: 0.475s;
+}
+.scatter__pts .scatter__pt:nth-child(20) {
+  animation-delay: 0.5s;
+}
+.scatter__pts .scatter__pt:nth-child(21) {
+  animation-delay: 0.525s;
+}
+.scatter__pts .scatter__pt:nth-child(22) {
+  animation-delay: 0.55s;
+}
+.scatter__pts .scatter__pt:nth-child(23) {
+  animation-delay: 0.575s;
+}
+.scatter__pts .scatter__pt:nth-child(24) {
+  animation-delay: 0.6s;
+}
+.scatter__pts .scatter__pt:nth-child(25) {
+  animation-delay: 0.625s;
+}
+.scatter__pts .scatter__pt:nth-child(26) {
+  animation-delay: 0.65s;
+}
+.scatter__pts .scatter__pt:nth-child(27) {
+  animation-delay: 0.675s;
+}
+.scatter__pts .scatter__pt:nth-child(28) {
+  animation-delay: 0.7s;
+}
+.scatter__pts .scatter__pt:nth-child(29) {
+  animation-delay: 0.725s;
+}
+.scatter__pts .scatter__pt:nth-child(30) {
+  animation-delay: 0.75s;
+}
+.scatter__tip {
+  pointer-events: none;
+}
+.scatter__tip-bg {
+  fill: var(--c-surface);
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+.scatter__tip-name {
+  fill: var(--c-text);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: var(--fw-bold);
+}
+.scatter__tip-val {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+@keyframes scatterPop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scatter__pt {
+    animation: none;
+  }
+}/*# sourceMappingURL=ScatterPlot.css.map */

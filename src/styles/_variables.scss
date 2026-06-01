@@ -83,6 +83,15 @@
   --c-warm: #ff6b4a;
   --c-warm-soft: #ffb38a;
 
+  /* Sémantique — UNIQUEMENT pour les jugements (mieux / pire).
+     L'identité reste portée par --c-accent (cyan) et --c-warm (corail). */
+  --c-positive: #25e09a;
+  --c-positive-soft: #8ff0cc;
+  --c-positive-glow: rgba(37, 224, 154, 0.4);
+  --c-negative: #ff4d6d;
+  --c-negative-soft: #ff9bb0;
+  --c-negative-glow: rgba(255, 77, 109, 0.4);
+
   --grad-abyss: radial-gradient(
     120% 90% at 50% -10%,
     #08233a 0%,
@@ -112,6 +121,14 @@
 
   --c-warm: #e0502c;
   --c-warm-soft: #c2410c;
+
+  /* Sémantique — versions assombries pour le contraste sur fond clair. */
+  --c-positive: #0f9d6b;
+  --c-positive-soft: #0b7a52;
+  --c-positive-glow: rgba(15, 157, 107, 0.3);
+  --c-negative: #d92d4e;
+  --c-negative-soft: #b01e3a;
+  --c-negative-glow: rgba(217, 45, 78, 0.3);
 
   --grad-abyss: radial-gradient(
     120% 90% at 50% -10%,

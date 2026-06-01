@@ -218,4 +218,91 @@ svg {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
-}/*# sourceMappingURL=index.css.map */
+}
+.croprank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 0.5rem);
+}
+.croprank__row {
+  display: grid;
+  grid-template-columns: 1.5rem 1.5rem minmax(120px, 1.4fr) minmax(90px, 2fr) auto;
+  align-items: center;
+  gap: var(--sp-2, 0.5rem);
+}
+.croprank__rank {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: var(--fs-xs, 0.6875rem);
+  color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+  text-align: right;
+}
+.croprank__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--c-accent, #46d3e6);
+  flex-shrink: 0;
+}
+.croprank__label {
+  font-size: var(--fs-sm, 0.8125rem);
+  color: var(--c-text, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.croprank__bar {
+  width: 100%;
+  height: 8px;
+  display: block;
+}
+.croprank__bar-bg {
+  fill: var(--c-surface, rgba(255, 255, 255, 0.06));
+}
+.croprank__bar-fill {
+  fill: var(--c-accent, #46d3e6);
+}
+.croprank__val {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: var(--fs-sm, 0.8125rem);
+  color: var(--c-text, #fff);
+  white-space: nowrap;
+  text-align: right;
+}
+.croprank__unit {
+  color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+  font-size: var(--fs-xs, 0.6875rem);
+}
+
+.croprank-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3, 0.75rem);
+}
+
+.croprank__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2, 0.5rem);
+}
+
+.croprank__select-lbl {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: var(--fs-xs, 0.6875rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-dim, rgba(255, 255, 255, 0.6));
+}
+
+.croprank__select {
+  padding: var(--sp-1, 0.25rem) var(--sp-2, 0.5rem);
+  border: var(--border-hair, 1px) solid var(--c-line, rgba(255, 255, 255, 0.12));
+  border-radius: var(--r-pill, 999px);
+  background: var(--c-surface, rgba(255, 255, 255, 0.04));
+  color: var(--c-text, #fff);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: var(--fs-xs, 0.6875rem);
+  cursor: pointer;
+}/*# sourceMappingURL=CropRanking.css.map */
