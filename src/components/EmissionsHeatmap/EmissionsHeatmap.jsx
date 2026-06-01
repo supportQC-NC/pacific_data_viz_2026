@@ -1,13 +1,13 @@
 // src/components/EmissionsHeatmap/EmissionsHeatmap.jsx
 // ============================================================
-// Heatmap territoire × année. Deux modes pour rester LISIBLE malgré
-// l'outlier (Palau, ~10× les autres) :
-//  • "row" (défaut) : chaque ligne colorée selon SA PROPRE plage →
-//    on lit la trajectoire de chaque territoire ; l'outlier ne domine plus.
-//  • "abs" : échelle globale LOGARITHMIQUE → étale les faibles valeurs.
-// Couleur des cellules = attribut `fill` calculé (pas de style inline).
+// Heatmap territoire x annee. Couleur SEMANTIQUE divergente centree sur
+// la mediane Pacifique : sous la mediane = vert (favorable), a la mediane
+// = cyan (neutre/identite), au-dessus = rouge (defavorable). La borne haute
+// est ecretee (90e centile) pour que l'outlier ne sature pas la matrice.
+// Valeurs brutes par habitant (aucune transformation) ; seule la couleur
+// compare a la mediane. Fill calcule (pas de style inline).
 // Props : series [{area,name,values:[{year,value}]}], years[], unit,
-//         labels {low, high, empty, mode_row, mode_abs}
+//         labels {low, high, empty}, refValue (optionnel), refLabel (opt.)
 // ============================================================
 
 import React, { useMemo, useState } from "react";
@@ -18,65 +18,84 @@ const VW = 920;
 const M = { top: 16, right: 16, bottom: 30, left: 52 };
 const ROW_H = 18;
 const GAP = 2;
-const RAMP = d3.interpolateRgbBasis(["#082a3f", "#0c6f86", "#16c0c8", "#e6e36b", "#ff6b4a"]);
 
-export default function EmissionsHeatmap({ series = [], years = [], unit, labels = {} }) {
+// Lit un token CSS au runtime (avec repli si indisponible).
+function cssVar(name, fallback) {
+  if (typeof window === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return v || fallback;
+}
+
+export default function EmissionsHeatmap({
+  series = [],
+  years = [],
+  unit,
+  labels = {},
+  refValue = null,
+  refLabel = null,
+}) {
   const [hover, setHover] = useState(null);
-  const [mode, setMode] = useState("row"); // "row" | "abs"
 
   const rows = useMemo(() => {
     const last = (s) => s.values[s.values.length - 1]?.value ?? -Infinity;
-    return [...series].filter((s) => s.values.length).sort((a, b) => last(b) - last(a));
+    return [...series]
+      .filter((s) => s.values.length)
+      .sort((a, b) => last(b) - last(a));
   }, [series]);
-
-  const rowStats = useMemo(() => {
-    const m = {};
-    series.forEach((s) => {
-      const vs = s.values.map((p) => p.value);
-      m[s.area] = { min: d3.min(vs), max: d3.max(vs) };
-    });
-    return m;
-  }, [series]);
-
-  const { gMin, gMax } = useMemo(() => {
-    let mn = Infinity;
-    let mx = -Infinity;
-    series.forEach((s) =>
-      s.values.forEach((p) => {
-        if (p.value < mn) mn = p.value;
-        if (p.value > mx) mx = p.value;
-      }),
-    );
-    return { gMin: mn === Infinity ? 0.1 : mn, gMax: mx === -Infinity ? 1 : mx };
-  }, [series]);
-
-  const tLog = useMemo(
-    () => d3.scaleLog().domain([Math.max(0.05, gMin), gMax]).range([0, 1]).clamp(true),
-    [gMin, gMax],
-  );
-
-  const color = (v, area) => {
-    if (!Number.isFinite(v)) return "transparent";
-    if (mode === "row") {
-      const r = rowStats[area];
-      const t = r && r.max > r.min ? (v - r.min) / (r.max - r.min) : 0.5;
-      return RAMP(t);
-    }
-    return RAMP(tLog(Math.max(0.05, v)));
-  };
-
-  const innerW = VW - M.left - M.right;
-  const cellW = years.length ? innerW / years.length : 0;
-  const VH = M.top + M.bottom + rows.length * (ROW_H + GAP);
 
   const lookup = useMemo(() => {
     const map = {};
     series.forEach((s) => {
       map[s.area] = {};
-      s.values.forEach((p) => (map[s.area][p.year] = p.value));
+      s.values.forEach((p) => {
+        map[s.area][p.year] = p.value;
+      });
     });
     return map;
   }, [series]);
+
+  // Echelle divergente centree sur la mediane (ou refValue si fournie).
+  const scale = useMemo(() => {
+    const all = [];
+    series.forEach((s) => {
+      s.values.forEach((p) => {
+        if (Number.isFinite(p.value)) all.push(p.value);
+      });
+    });
+    const green = cssVar("--c-positive", "#25e09a");
+    const cyan = cssVar("--c-accent", "#00e6ff");
+    const red = cssVar("--c-negative", "#ff4d6d");
+    const interp = d3.interpolateRgbBasis([green, cyan, red]);
+    if (!all.length) {
+      return d3.scaleDiverging().domain([0, 0.5, 1]).interpolator(interp);
+    }
+    const sorted = all.slice().sort((a, b) => a - b);
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    const med =
+      refValue != null && Number.isFinite(refValue)
+        ? refValue
+        : d3.median(sorted);
+    const p90 = d3.quantile(sorted, 0.9) ?? max;
+    let lo = min;
+    let pivot = med;
+    let hi = Math.max(pivot * 1.5, p90, pivot + 1e-6);
+    if (!(lo < pivot)) lo = pivot - Math.max(1e-6, Math.abs(pivot) * 0.5);
+    if (!(pivot < hi)) hi = pivot + Math.max(1e-6, Math.abs(pivot) * 0.5);
+    return d3
+      .scaleDiverging()
+      .domain([lo, pivot, hi])
+      .interpolator(interp)
+      .clamp(true);
+  }, [series, refValue]);
+
+  const color = (v) => (Number.isFinite(v) ? scale(v) : "transparent");
+
+  const innerW = VW - M.left - M.right;
+  const cellW = years.length ? innerW / years.length : 0;
+  const VH = M.top + M.bottom + rows.length * (ROW_H + GAP);
 
   if (!rows.length) return <div className="hm hm--empty">{labels.empty}</div>;
 
@@ -84,25 +103,6 @@ export default function EmissionsHeatmap({ series = [], years = [], unit, labels
 
   return (
     <figure className="hm">
-      <div className="hm__bar">
-        <div className="hm__modes" role="group">
-          <button
-            className={`hm__mode ${mode === "row" ? "is-active" : ""}`}
-            onClick={() => setMode("row")}
-            aria-pressed={mode === "row"}
-          >
-            {labels.mode_row}
-          </button>
-          <button
-            className={`hm__mode ${mode === "abs" ? "is-active" : ""}`}
-            onClick={() => setMode("abs")}
-            aria-pressed={mode === "abs"}
-          >
-            {labels.mode_abs}
-          </button>
-        </div>
-      </div>
-
       <svg className="hm__svg" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid meet" role="img">
         {rows.map((s, ri) => {
           const ry = M.top + ri * (ROW_H + GAP);
@@ -123,7 +123,7 @@ export default function EmissionsHeatmap({ series = [], years = [], unit, labels
                     y={ry}
                     width={Math.max(1, cellW - 0.5)}
                     height={ROW_H}
-                    fill={color(v, s.area)}
+                    fill={color(v)}
                     onMouseEnter={() => setHover({ area: s.area, name: s.name, year: yr, value: v })}
                     onMouseLeave={() => setHover(null)}
                   />
@@ -147,11 +147,14 @@ export default function EmissionsHeatmap({ series = [], years = [], unit, labels
         <span className="hm__legend">
           {labels.low}
           <span className="hm__legend-bar" aria-hidden="true" />
-          {labels.high} <em>{mode === "row" ? `(${labels.mode_row})` : `(${unit}, log)`}</em>
+          {labels.high}
+          {unit ? <em>{unit}</em> : null}
+          {refLabel ? <em className="hm__legend-ref">{refLabel}</em> : null}
         </span>
         {hover && (
           <span className="hm__detail">
-            <strong>{hover.name}</strong> · {hover.year} · {hover.value} {unit}
+            <strong>{hover.name}</strong> {"\u00b7"} {hover.year} {"\u00b7"}{" "}
+            {hover.value} {unit}
           </span>
         )}
       </figcaption>

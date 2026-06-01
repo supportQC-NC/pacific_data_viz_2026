@@ -1,18 +1,19 @@
 // src/components/RankBars/RankBars.jsx
 // ============================================================
 // Classement animé (« bar chart race ») — réutilisable.
-// Les barres se réordonnent (position Y) et se redimensionnent
-// (largeur) à chaque changement d'année → on VOIT qui monte/descend.
-// Échelle racine (pow 0.5) pour garder les petites valeurs visibles
-// malgré l'outlier ; valeur exacte affichée en bout de barre.
+// Les barres se réordonnent (Y) et se redimensionnent (largeur) à chaque
+// année → on VOIT qui monte/descend. Échelle racine (pow 0.5) pour garder
+// les petites valeurs lisibles malgré l'outlier.
 //
-// COULEUR SÉMANTIQUE (optionnelle) via la prop `good` :
-//   • good="up"   → valeur forte = positif (vert), faible = négatif (rouge)
-//   • good="down" → valeur forte = négatif (rouge), faible = positif (vert)
-//   • absent      → dégradé identité bleu → corail (comportement historique,
-//                   les actes non modifiés restent inchangés)
-// Les couleurs sont lues depuis les tokens CSS (--c-positive/--c-negative…)
-// → bascule light/dark automatique.
+// COULEUR SÉMANTIQUE :
+//   • betterWhen="low"  → DIVERGENT centré sur le repère (worldAvg) :
+//                         sous le repère = vert (favorable), au repère =
+//                         cyan (neutre/identité), au-dessus = rouge.
+//   • betterWhen="high" → miroir (sous = rouge, au-dessus = vert).
+//   • good="up"/"down"  → ancien dégradé vert↔rouge séquentiel (compat).
+//   • aucun             → dégradé identité bleu → corail (comportement
+//                         historique ; les actes non modifiés inchangés).
+// Couleurs lues depuis les tokens CSS → bascule light/dark automatique.
 // ============================================================
 
 import React, { useMemo, useRef, useLayoutEffect } from "react";
@@ -40,6 +41,7 @@ export default function RankBars({
   worldAvg,
   refLabel,
   good = null,
+  betterWhen = null,
 }) {
   const rowsRef = useRef(new Map()); // area -> <g>
   const barsRef = useRef(new Map()); // area -> <rect>
@@ -59,14 +61,49 @@ export default function RankBars({
     [max, innerW],
   );
 
-  // Échelle de couleur : sémantique (vert↔rouge) si `good` fourni, sinon
-  // dégradé identité bleu→corail. Recalculée si le thème change (good/max).
+  // Échelle de couleur.
   const color = useMemo(() => {
+    const accent = cssVar("--c-accent", "#00e6ff");
+    const pos = cssVar("--c-positive", "#25e09a");
+    const neg = cssVar("--c-negative", "#ff4d6d");
+
+    // DIVERGENT centré sur le repère (worldAvg).
+    if (betterWhen === "low" || betterWhen === "high") {
+      const lo = betterWhen === "low" ? pos : neg; // sous le repère
+      const hi = betterWhen === "low" ? neg : pos; // au-dessus du repère
+      const minV = d3.min(data, (d) => d.value);
+      const maxV = d3.max(data, (d) => d.value);
+      const pivot = worldAvg;
+      if (
+        pivot != null &&
+        Number.isFinite(pivot) &&
+        Number.isFinite(minV) &&
+        Number.isFinite(maxV) &&
+        minV < pivot &&
+        pivot < maxV
+      ) {
+        return d3
+          .scaleLinear()
+          .domain([minV, pivot, maxV])
+          .range([lo, accent, hi])
+          .interpolate(d3.interpolateRgb)
+          .clamp(true);
+      }
+      // Repère hors de la plage → simple écart cyan → couleur dominante.
+      const dmin = Number.isFinite(minV) ? minV : 0;
+      const dmax = Number.isFinite(maxV) ? maxV : 1;
+      const a = pivot != null && pivot <= dmin ? accent : lo;
+      const b = pivot != null && pivot >= dmax ? accent : hi;
+      return d3
+        .scaleLinear()
+        .domain([dmin, dmax === dmin ? dmin + 1 : dmax])
+        .range([a, b])
+        .interpolate(d3.interpolateRgb)
+        .clamp(true);
+    }
+
+    // Compat : ancien dégradé vert↔rouge séquentiel.
     if (good === "up" || good === "down") {
-      const pos = cssVar("--c-positive", "#25e09a");
-      const neg = cssVar("--c-negative", "#ff4d6d");
-      // good="up" : valeur haute = vert → interpole rouge(0) → vert(max)
-      // good="down": valeur haute = rouge → interpole vert(0) → rouge(max)
       const lo = good === "up" ? neg : pos;
       const hi = good === "up" ? pos : neg;
       return d3
@@ -74,11 +111,13 @@ export default function RankBars({
         .domain([0, max])
         .interpolator(d3.interpolateRgb(lo, hi));
     }
+
+    // Défaut : dégradé identité bleu → corail.
     return d3
       .scaleSequential()
       .domain([0, max])
       .interpolator(d3.interpolateRgb("#1f9bc9", "#ff6b4a"));
-  }, [max, good]);
+  }, [data, max, good, betterWhen, worldAvg]);
 
   const fmt2 = d3.format(".2~f");
   const refX = worldAvg != null ? xScale(worldAvg) : null;
@@ -146,7 +185,7 @@ export default function RankBars({
   }, [targets, color]);
 
   return (
-    <div className="rank">
+    <div className={`rank ${betterWhen ? "rank--pivot" : ""}`}>
       <svg className="rank__svg" viewBox={`0 0 ${W} ${H}`} role="img">
         {refX != null && (
           <g

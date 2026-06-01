@@ -7,6 +7,8 @@
 //   1) repères  2) classement (RankBars)  3) trajectoires (TrendLines)
 //   4) moyenne par sous-région  5) qui a le plus changé (ChangeBars)
 //   6) graphe croisé (ParadoxScatter)  7) carte 3D (OceanMap)  8) tableau.
+// Couleur sémantique : émissions = jugement vs médiane (vert sous, rouge
+// au-dessus). Guide enrichi d'un panneau « Source & méthode ».
 // ============================================================
 
 import React, {
@@ -23,6 +25,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
+import { getDatasetSource } from "../../data/datasetSources";
+import sourceLabels from "../../i18n/sourceLabels";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import RankBars from "../../components/RankBars/RankBars";
 import TrendLines from "../../components/TrendLines/TrendLines";
@@ -310,6 +314,9 @@ export default function Act1Emissions() {
 
   const retry = useCallback(() => dispatch(loadDataset("emissions")), [dispatch]);
 
+  // Provenance du jeu principal (émissions) pour le panneau « Source & méthode ».
+  const guideSource = useMemo(() => getDatasetSource("emissions", lang), [lang]);
+
   return (
     <main className="act1">
       <div className="container">
@@ -324,6 +331,8 @@ export default function Act1Emissions() {
           intro={t("act1.guide.intro")}
           steps={t("act1.guide.steps")}
           takeaway={t("act1.guide.takeaway")}
+          source={guideSource}
+          sourceLabels={sourceLabels[lang] || sourceLabels.fr}
         />
 
         {!ready && !failed && <p className="act1__state">{t("scene.loading")}</p>}
@@ -425,13 +434,14 @@ export default function Act1Emissions() {
               <span className="act1__year">{currentYear}</span>
             </div>
 
-            {/* 2 — Classement par habitant */}
+            {/* 2 — Classement par habitant (vert = sous la médiane, rouge = au-dessus) */}
             <div ref={chartRef} className="act1__capture">
               <RankBars
                 data={points}
                 unit={t("act1.unit")}
                 worldAvg={pacRef}
                 refLabel={t("act1.pac_ref")}
+                betterWhen="low"
               />
             </div>
 
@@ -482,7 +492,7 @@ export default function Act1Emissions() {
               unit={t("act1.unit")}
             />
 
-            {/* 5 — Qui a le plus changé */}
+            {/* 5 — Qui a le plus changé (hausse = rouge, baisse = vert) */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">
                 {t("act1.change.title")} {firstYear ?? ""}
@@ -492,6 +502,7 @@ export default function Act1Emissions() {
             <ChangeBars
               rows={changeRows}
               unit={t("act1.unit")}
+              betterWhen="low"
               labels={{
                 up: t("act1.change.up"),
                 down: t("act1.change.down"),

@@ -4,10 +4,13 @@
 // son contenu en children, ActFlow ajoute autour :
 //   • une barre de progression FIXE en haut (toujours visible) : Acte X / 11
 //   • en MODE GUIDÉ et si l'intro n'a pas été vue : un écran d'intro plein
-//     cadre (titre + accroche) avec un bouton « Voir les données » qui révèle
-//     le contenu ; sinon le contenu s'affiche directement
+//     cadre (titre + accroche) avec un bouton « Plonger dans l'acte » qui
+//     révèle le contenu ; sinon le contenu s'affiche directement
 //   • un PIED de navigation : ← précédent · Acte suivant → (+ rappel position)
-// L'exploration libre reste possible : hors mode guidé, l'intro est sautée.
+// Sur une page d'acte, le header et le footer GLOBAUX s'effacent en permanence :
+// la barre du haut et le pied de navigation d'ActFlow suffisent (← accueil,
+// précédent / suivant, retour au récit). L'exploration libre reste possible :
+// hors mode guidé, l'intro est sautée.
 // Aucun style inline. Textes via i18n (réutilise home.acts.* déjà traduits).
 // ============================================================
 
@@ -114,12 +117,14 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
       rootRef.current.style.setProperty("--flow-ratio", String(ratio));
   }, [index, total, revealed]);
 
-  // Immersion = intro plein écran (pas encore révélé) OU mode présentation.
-  // Quand actif, le header et le footer s'effacent (pilotés via le contexte).
+  // Sur une page d'acte, le header et le footer GLOBAUX s'effacent en
+  // permanence (pilotés via le contexte) : la barre de progression (haut) et
+  // le pied de navigation d'ActFlow (← précédent · suivant → · retour à
+  // l'accueil) suffisent. On rétablit l'affichage au démontage (retour Home).
   useEffect(() => {
-    setImmersive(!revealed || presentation);
+    setImmersive(true);
     return () => setImmersive(false);
-  }, [revealed, presentation, setImmersive]);
+  }, [setImmersive]);
 
   const reveal = () => {
     markSeen(actId);

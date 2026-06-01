@@ -1,24 +1,86 @@
-// src/components/ReadingGuide/ReadingGuide.scss
+/* src/components/ReadingGuide/ReadingGuide.scss
+   ============================================================
+   Guide de lecture en ACCORDÉON (fermé par défaut) + sous-panneau
+   repliable « Source & méthode ». Transitions fluides via
+   grid-template-rows (0fr → 1fr). Variables globales via :root.
+   ============================================================ */
+
 .guide {
   border: var(--border-hair) solid var(--c-line);
   border-left: 3px solid var(--c-accent);
   border-radius: var(--r-md);
   background: var(--c-surface);
-  padding: var(--sp-6);
   margin-bottom: var(--sp-8);
+  overflow: hidden;
 }
+
+/* En-tête cliquable sur toute la largeur */
+.guide__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.guide__head:hover {
+  background: color-mix(in srgb, var(--c-accent) 6%, transparent);
+}
+.guide__head:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
 .guide__title {
   font-family: var(--font-display);
   font-size: var(--fs-lg);
   color: var(--c-text);
-  margin: 0 0 var(--sp-2);
+  margin: 0;
 }
+
+/* Chevron principal */
+.guide__chevron {
+  flex: 0 0 auto;
+  width: 0.7em;
+  height: 0.7em;
+  border-right: 2px solid var(--c-accent);
+  border-bottom: 2px solid var(--c-accent);
+  transform: rotate(45deg);
+  transition: transform var(--t-base) var(--ease-out);
+}
+.guide--open .guide__chevron {
+  transform: rotate(-135deg);
+}
+
+/* Corps repliable */
+.guide__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-base) var(--ease-out);
+}
+.guide--open .guide__body {
+  grid-template-rows: 1fr;
+}
+
+.guide__body-inner {
+  overflow: hidden;
+  min-height: 0;
+  padding: 0 var(--sp-6) var(--sp-6);
+}
+
 .guide__intro {
   color: var(--c-text-soft);
   font-size: var(--fs-sm);
   line-height: var(--lh-base);
   margin: 0 0 var(--sp-4);
 }
+
 .guide__steps {
   list-style: none;
   margin: 0;
@@ -26,11 +88,13 @@
   display: grid;
   gap: var(--sp-3);
 }
+
 .guide__step {
   display: flex;
   gap: var(--sp-3);
   align-items: flex-start;
 }
+
 .guide__num {
   flex: 0 0 auto;
   width: 1.6em;
@@ -44,21 +108,25 @@
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
 }
+
 .guide__step-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
+
 .guide__step-k {
   color: var(--c-text);
   font-weight: var(--fw-semi);
   font-size: var(--fs-sm);
 }
+
 .guide__step-v {
   color: var(--c-text-mute);
   font-size: var(--fs-sm);
   line-height: var(--lh-base);
 }
+
 .guide__takeaway {
   margin: var(--sp-6) 0 0;
   padding: var(--sp-4);
@@ -71,11 +139,140 @@
   gap: var(--sp-3);
   align-items: baseline;
 }
+
 .guide__takeaway-tag {
   color: var(--c-warm);
   font-size: var(--fs-md);
 }
 
+/* ---- Sous-panneau « Source & méthode » ---- */
+.guide__src {
+  margin-top: var(--sp-6);
+  border-top: var(--border-hair) solid var(--c-line);
+  padding-top: var(--sp-4);
+}
+
+.guide__src-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--c-accent);
+}
+
+.guide__src-heading {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+.guide__src-chevron {
+  flex: 0 0 auto;
+  width: 0.55em;
+  height: 0.55em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--t-base) var(--ease-out);
+}
+.guide__src--open .guide__src-chevron {
+  transform: rotate(-135deg);
+}
+
+.guide__src-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-base) var(--ease-out);
+}
+.guide__src--open .guide__src-body {
+  grid-template-rows: 1fr;
+}
+.guide__src-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.guide__src-list {
+  margin: var(--sp-4) 0 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.guide__src-row {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: var(--sp-3);
+  align-items: baseline;
+}
+
+.guide__src-dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.guide__src-dd {
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+}
+
+.guide__src-note {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+.guide__src-note--ex {
+  color: var(--c-text-mute);
+}
+
+.guide__src-tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-1);
+}
+
+.guide__src-link {
+  display: inline-block;
+  margin-top: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-accent);
+  border-bottom: 1px solid color-mix(in srgb, var(--c-accent) 50%, transparent);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.guide__src-link:hover {
+  color: var(--c-text);
+}
+
 [data-theme="light"] .guide__num {
   color: #ffffff;
+}
+
+@media (max-width: 720px) {
+  .guide__src-row {
+    grid-template-columns: 1fr;
+    gap: var(--sp-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide__body,
+  .guide__chevron,
+  .guide__src-body,
+  .guide__src-chevron {
+    transition: none;
+  }
 }
