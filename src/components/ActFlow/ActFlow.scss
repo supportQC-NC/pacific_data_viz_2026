@@ -102,6 +102,10 @@
 }
 
 /* ---- Écran d'intro plein cadre ---- */
+.actflow__bar--hidden {
+  display: none;
+}
+
 .actflow__intro {
   position: relative;
   min-height: 100vh;
@@ -117,10 +121,37 @@
     linear-gradient(180deg, var(--c-bg-2), var(--c-bg));
 }
 
+/* Grand numéro d'acte détouré, en filigrane derrière le texte */
+.actflow__intro-ghost {
+  position: absolute;
+  right: clamp(-2rem, 2vw, 4rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: clamp(16rem, 42vw, 40rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--c-accent) 22%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
 .actflow__intro-inner {
   position: relative;
   z-index: 1;
-  animation: flowIntroIn 0.8s var(--ease-out) both;
+}
+
+.actflow__intro-chapter {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-6);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--c-accent);
 }
 
 .actflow__intro-tag {
@@ -129,7 +160,7 @@
 
 .actflow__intro-title {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 8vw, 6rem);
+  font-size: clamp(2.8rem, 9vw, 7rem);
   font-weight: var(--fw-light);
   line-height: var(--lh-tight);
   margin: 0 0 var(--sp-6);
@@ -300,20 +331,9 @@
   }
 }
 
-@keyframes flowIntroIn {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .actflow__intro-inner {
-    animation: none;
+  .actflow__intro-ghost {
+    opacity: 1;
   }
 }
 

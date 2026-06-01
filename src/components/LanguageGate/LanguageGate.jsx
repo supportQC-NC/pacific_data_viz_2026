@@ -52,7 +52,7 @@ export default function LanguageGate({ open, onClose }) {
     >
       <div className="langgate__inner">
         <p className="langgate__kicker">
-          Te Moana · Pacific Dataviz Challenge 2026
+          Datamoana · Pacific Dataviz Challenge 2026
         </p>
         <h2 className="langgate__title">
           <span lang="fr">Choisissez votre langue</span>

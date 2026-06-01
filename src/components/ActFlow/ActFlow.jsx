@@ -11,11 +11,27 @@
 // Aucun style inline. Textes via i18n (réutilise home.acts.* déjà traduits).
 // ============================================================
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import "./ActFlow.scss";
+
+// À quel chapitre appartient chaque acte (pour l'ouvre-chapitre cinématique).
+const CHAPTER_OF = {
+  a1: "c1",
+  a2: "c1",
+  a3: "c1",
+  a4: "c1",
+  a5: "c2",
+  a6: "c2",
+  a7: "c2",
+  a8: "c2",
+  a9: "c2",
+  a10: "c3",
+  a11: "c3",
+};
 
 export default function ActFlow({ actId, hasDeck = false, children }) {
   const { t } = useLang();
@@ -38,11 +54,58 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
   const [revealed, setRevealed] = useState(!needsIntro);
 
   const rootRef = useRef(null);
+  const introRef = useRef(null);
 
   // Si on change d'acte (remontage), on recalcule l'état d'intro.
   useEffect(() => {
     setRevealed(!(guided && !seen[actId]));
   }, [actId, guided, seen]);
+
+  // Entrée cinématique de l'ouvre-chapitre (GSAP, échelonnée).
+  useLayoutEffect(() => {
+    if (revealed || !introRef.current) return undefined;
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return undefined;
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .from(".actflow__intro-ghost", {
+          opacity: 0,
+          scale: 1.15,
+          duration: 1.1,
+        })
+        .from(
+          ".actflow__intro-chapter",
+          { y: 18, opacity: 0, duration: 0.6 },
+          "-=0.7",
+        )
+        .from(
+          ".actflow__intro-tag",
+          { y: 16, opacity: 0, duration: 0.5 },
+          "-=0.4",
+        )
+        .from(
+          ".actflow__intro-title",
+          { y: 40, opacity: 0, duration: 0.8 },
+          "-=0.3",
+        )
+        .from(
+          ".actflow__intro-text",
+          { y: 24, opacity: 0, duration: 0.6 },
+          "-=0.45",
+        )
+        .from(
+          ".actflow__intro-actions > *",
+          { y: 18, opacity: 0, duration: 0.5, stagger: 0.1 },
+          "-=0.35",
+        )
+        .from(".actflow__intro-step", { opacity: 0, duration: 0.5 }, "-=0.2");
+    }, introRef);
+    return () => ctx.revert();
+  }, [revealed, actId]);
 
   // Largeur des barres pilotée par une variable CSS (aucun style inline JSX).
   useEffect(() => {
@@ -74,9 +137,9 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
 
   return (
     <div className="actflow" ref={rootRef}>
-      {/* Barre de progression fixe (toujours) */}
+      {/* Barre de progression : masquée pendant l'ouvre-chapitre plein écran */}
       <div
-        className="actflow__bar"
+        className={`actflow__bar ${revealed ? "" : "actflow__bar--hidden"}`}
         role="navigation"
         aria-label={t("flow.progress_aria")}
       >
@@ -119,10 +182,17 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
         </div>
       </div>
 
-      {/* Écran d'intro (mode guidé, intro non vue) */}
+      {/* Écran d'intro / ouvre-chapitre (mode guidé, intro non vue) */}
       {!revealed && (
-        <section className="actflow__intro">
+        <section className="actflow__intro" ref={introRef}>
+          <span className="actflow__intro-ghost" aria-hidden="true">
+            {num}
+          </span>
           <div className="actflow__intro-inner container">
+            <p className="actflow__intro-chapter">
+              {t(`home.${CHAPTER_OF[actId]}_kicker`)} ·{" "}
+              {t(`home.${CHAPTER_OF[actId]}_title`)}
+            </p>
             <p className="eyebrow actflow__intro-tag">
               {t(`home.acts.${actId}_tag`)}
             </p>

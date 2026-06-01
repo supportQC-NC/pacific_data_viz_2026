@@ -1,7 +1,7 @@
 {
-  "brand": "Te Moana",
+  "brand": "Datamoana",
   "header": {
-    "tagline": "Pacifique · Changement climatique",
+    "tagline": "Lire le Pacifique par ses données",
     "theme": "Changer de thème",
     "lang": "EN"
   },
@@ -61,14 +61,14 @@
     "acts_lead": "Des émissions aux solutions, chaque acte croise les données ouvertes du Pacifique pour montrer une réalité — et la réponse qu'on lui oppose. Suivez le fil : il mène à l'action.",
     "closing": "« Là où d'autres voient une menace, le Pacifique trace déjà des solutions. »",
     "c1_kicker": "Chapitre I",
-    "c1_title": "Le constat, sans détour",
-    "c1_desc": "Mesurer pour agir. Ce que le Pacifique émet, ce que l'océan lui renvoie, et le défi humain qui se dessine — des faits clairs, base de toute solution.",
+    "c1_title": "Déchiffrer",
+    "c1_desc": "Lire ce que disent les chiffres bruts : ce que le Pacifique émet, ce que l'océan lui renvoie, le défi humain qui se dessine. Des faits clairs, base de toute solution.",
     "c2_kicker": "Chapitre II",
-    "c2_title": "L'ingéniosité en marche",
-    "c2_desc": "Énergie, agriculture, biodiversité, atmosphère, économie : cinq fronts où le Pacifique innove, s'adapte et construit sa résilience.",
+    "c2_title": "Décoder",
+    "c2_desc": "Comprendre la riposte derrière les données : énergie, agriculture, biodiversité, atmosphère, économie. Cinq fronts où le Pacifique innove et s'adapte.",
     "c3_kicker": "Chapitre III",
-    "c3_title": "Des progrès, un cap",
-    "c3_desc": "Au plus près des habitants — l'eau, la santé — puis la synthèse qui éclaire la voie : ce qui avance, et où porter l'effort.",
+    "c3_title": "Tracer",
+    "c3_desc": "Lire l'avenir au plus près des habitants — l'eau, la santé — puis la synthèse qui éclaire la voie : ce qui avance, et où porter l'effort.",
     "begin": "Commencer l'expérience"
   },
   "footer": {

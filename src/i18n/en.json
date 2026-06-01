@@ -1,7 +1,7 @@
 {
-  "brand": "Te Moana",
+  "brand": "Datamoana",
   "header": {
-    "tagline": "Pacific · Climate change",
+    "tagline": "Reading the Pacific through its data",
     "theme": "Toggle theme",
     "lang": "FR"
   },
@@ -61,14 +61,14 @@
     "acts_lead": "From emissions to solutions, each act crosses the Pacific's open data to show a reality — and the response rising to meet it. Follow the thread: it leads to action.",
     "closing": "“Where others see a threat, the Pacific is already charting solutions.”",
     "c1_kicker": "Chapter I",
-    "c1_title": "The facts, head-on",
-    "c1_desc": "Measure to act. What the Pacific emits, what the ocean sends back, and the human challenge taking shape — clear facts, the basis of every solution.",
+    "c1_title": "Decipher",
+    "c1_desc": "Reading what the raw numbers say: what the Pacific emits, what the ocean sends back, the human challenge taking shape. Clear facts, the basis of every solution.",
     "c2_kicker": "Chapter II",
-    "c2_title": "Ingenuity in motion",
-    "c2_desc": "Energy, agriculture, biodiversity, atmosphere, economy: five fronts where the Pacific innovates, adapts and builds its resilience.",
+    "c2_title": "Decode",
+    "c2_desc": "Understanding the response behind the data: energy, agriculture, biodiversity, atmosphere, economy. Five fronts where the Pacific innovates and adapts.",
     "c3_kicker": "Chapter III",
-    "c3_title": "Progress, and a course",
-    "c3_desc": "As close to people as it gets — water, health — then the synthesis that lights the way: what's advancing, and where to focus effort.",
+    "c3_title": "Chart",
+    "c3_desc": "Reading the future closest to people — water, health — then the synthesis that lights the way: what's advancing, and where to focus effort.",
     "begin": "Start the experience"
   },
   "footer": {
