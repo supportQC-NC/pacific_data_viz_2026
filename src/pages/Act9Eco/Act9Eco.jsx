@@ -17,7 +17,6 @@ import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchEco } from "../../services/ecoApi";
-import ActFlow from "../../components/ActFlow/ActFlow";
 import PresentationDeck from "../../components/PresentationDeck/PresentationDeck";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
@@ -530,7 +529,7 @@ export default function Act9Eco() {
   ]);
 
   return (
-    <ActFlow actId="a9">
+    <>
       {presentation && state.status === "ready" && deckScenes.length > 0 && (
         <PresentationDeck actId="a9" scenes={deckScenes} />
       )}
@@ -840,6 +839,6 @@ export default function Act9Eco() {
           </Link>
         </div>
       </main>
-    </ActFlow>
+    </>
   );
 }

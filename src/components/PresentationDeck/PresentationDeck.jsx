@@ -21,7 +21,7 @@ export default function PresentationDeck({ actId, scenes = [] }) {
   const { t } = useLang();
   const navigate = useNavigate();
   const { neighbors, closePresentation } = useJourney();
-  const { next } = neighbors(actId);
+  const { prev, next } = neighbors(actId);
 
   const scrollerRef = useRef(null);
   const refs = useRef([]);
@@ -49,15 +49,24 @@ export default function PresentationDeck({ actId, scenes = [] }) {
   const goTo = useCallback(
     (i) => {
       const c = refs.current.length || count;
-      const clamped = Math.max(0, Math.min(c - 1, i));
-      const el = refs.current[clamped];
+      // Débordement : au-delà de la dernière scène → acte suivant ;
+      // avant la première → acte précédent. L'enchaînement ne s'arrête jamais.
+      if (i >= c) {
+        if (next) navigate(next.to);
+        return;
+      }
+      if (i < 0) {
+        if (prev) navigate(prev.to);
+        return;
+      }
+      const el = refs.current[i];
       if (el)
         el.scrollIntoView({
           behavior: reduced ? "auto" : "smooth",
           block: "start",
         });
     },
-    [count, reduced],
+    [count, reduced, next, prev, navigate],
   );
 
   useEffect(() => {
@@ -184,6 +193,15 @@ export default function PresentationDeck({ actId, scenes = [] }) {
                         <span aria-hidden="true">✦</span>
                       </button>
                     )}
+                    {prev && (
+                      <button
+                        type="button"
+                        className="deck__ghost"
+                        onClick={() => navigate(prev.to)}
+                      >
+                        ← {t(`home.acts.${prev.id}_title`)}
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="deck__ghost"
@@ -222,7 +240,7 @@ export default function PresentationDeck({ actId, scenes = [] }) {
           type="button"
           className="deck__arrow"
           onClick={() => goTo(active - 1)}
-          disabled={active === 0}
+          disabled={active === 0 && !prev}
           aria-label={t("flow.deck_prev")}
         >
           ↑
@@ -231,7 +249,7 @@ export default function PresentationDeck({ actId, scenes = [] }) {
           type="button"
           className="deck__arrow"
           onClick={() => goTo(active + 1)}
-          disabled={active === count - 1}
+          disabled={active === count - 1 && !next}
           aria-label={t("flow.deck_next")}
         >
           ↓

@@ -17,7 +17,7 @@ import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import "./ActFlow.scss";
 
-export default function ActFlow({ actId, children }) {
+export default function ActFlow({ actId, hasDeck = false, children }) {
   const { t } = useLang();
   const navigate = useNavigate();
   const {
@@ -28,6 +28,8 @@ export default function ActFlow({ actId, children }) {
     neighbors,
     togglePresentation,
     closePresentation,
+    presentation,
+    setImmersive,
   } = useJourney();
   const { index, total, prev, next } = neighbors(actId);
 
@@ -48,6 +50,13 @@ export default function ActFlow({ actId, children }) {
     if (rootRef.current)
       rootRef.current.style.setProperty("--flow-ratio", String(ratio));
   }, [index, total, revealed]);
+
+  // Immersion = intro plein écran (pas encore révélé) OU mode présentation.
+  // Quand actif, le header et le footer s'effacent (pilotés via le contexte).
+  useEffect(() => {
+    setImmersive(!revealed || presentation);
+    return () => setImmersive(false);
+  }, [revealed, presentation, setImmersive]);
 
   const reveal = () => {
     markSeen(actId);
@@ -86,13 +95,15 @@ export default function ActFlow({ actId, children }) {
           <span className="actflow__count">
             {t("flow.act")} <strong>{num}</strong> / {total}
           </span>
-          <button
-            type="button"
-            className="actflow__present"
-            onClick={togglePresentation}
-          >
-            {t("flow.present_mode")} <span aria-hidden="true">▷</span>
-          </button>
+          {hasDeck && (
+            <button
+              type="button"
+              className="actflow__present"
+              onClick={togglePresentation}
+            >
+              {t("flow.present_mode")} <span aria-hidden="true">▷</span>
+            </button>
+          )}
           {guided && (
             <button
               type="button"
@@ -202,8 +213,9 @@ export default function ActFlow({ actId, children }) {
                 </button>
               ) : (
                 <Link
-                  to="/synthese"
+                  to="/"
                   className="actflow__navbtn actflow__navbtn--next actflow__navbtn--end"
+                  onClick={exitJourney}
                 >
                   <span className="actflow__navbtn-dir">{t("flow.end")} ✦</span>
                   <span className="actflow__navbtn-name">

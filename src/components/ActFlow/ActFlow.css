@@ -300,7 +300,7 @@ svg {
 /* ---- Écran d'intro plein cadre ---- */
 .actflow__intro {
   position: relative;
-  min-height: calc(100vh - var(--nav-h));
+  min-height: 100vh;
   display: flex;
   align-items: center;
   overflow: hidden;

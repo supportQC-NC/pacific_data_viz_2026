@@ -1,7 +1,9 @@
 // src/App.js
 // ============================================================
 // Racine applicative : providers thème + langue + parcours guidé,
-// header, ScrollToTop, routes, footer.
+// header, ScrollToTop, routes. Chaque acte est enveloppé par <ActFlow>
+// au niveau de la route → barre de progression + navigation suivant/
+// précédent + intro plein écran sur TOUS les actes, sans toucher aux pages.
 // ============================================================
 
 import React from 'react';
@@ -10,6 +12,7 @@ import { ThemeProvider } from './store/context/themeContext';
 import { LangProvider } from './store/context/langContext';
 import { JourneyProvider } from './store/context/journeyContext';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
+import ActFlow from './components/ActFlow/ActFlow';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
@@ -32,17 +35,17 @@ function AppContent() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/emissions" element={<Act1Emissions />} />
-        <Route path="/ocean" element={<Act2Ocean />} />
-        <Route path="/territory" element={<Act3Territory />} />
-        <Route path="/impact" element={<Act4Impact />} />
-        <Route path="/momentum" element={<Act5Momentum />} />
-        <Route path="/agriculture" element={<Act6Agriculture />} />
-        <Route path="/vivant" element={<Act7Vivant />} />
-        <Route path="/ciel" element={<Act8Ciel />} />
-        <Route path="/economie" element={<Act9Eco />} />
-        <Route path="/sante" element={<Act10Sante />} />
-        <Route path="/synthese" element={<Act11Synthese />} />
+        <Route path="/emissions" element={<ActFlow actId="a1"><Act1Emissions /></ActFlow>} />
+        <Route path="/ocean" element={<ActFlow actId="a2"><Act2Ocean /></ActFlow>} />
+        <Route path="/territory" element={<ActFlow actId="a3"><Act3Territory /></ActFlow>} />
+        <Route path="/impact" element={<ActFlow actId="a4"><Act4Impact /></ActFlow>} />
+        <Route path="/momentum" element={<ActFlow actId="a5"><Act5Momentum /></ActFlow>} />
+        <Route path="/agriculture" element={<ActFlow actId="a6"><Act6Agriculture /></ActFlow>} />
+        <Route path="/vivant" element={<ActFlow actId="a7"><Act7Vivant /></ActFlow>} />
+        <Route path="/ciel" element={<ActFlow actId="a8"><Act8Ciel /></ActFlow>} />
+        <Route path="/economie" element={<ActFlow actId="a9" hasDeck><Act9Eco /></ActFlow>} />
+        <Route path="/sante" element={<ActFlow actId="a10"><Act10Sante /></ActFlow>} />
+        <Route path="/synthese" element={<ActFlow actId="a11"><Act11Synthese /></ActFlow>} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

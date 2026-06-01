@@ -1,18 +1,21 @@
 // src/components/Header/Header.jsx
 // ============================================================
 // En-tête global : marque, bascule de thème, bascule de langue.
-// Branché sur les deux contextes (theme + lang). Zéro chaîne en dur.
+// S'efface pendant l'immersion (intro plein écran / mode présentation).
+// Branché sur les contextes theme + lang + journey. Zéro chaîne en dur.
 // ============================================================
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../store/context/themeContext";
 import { useLang } from "../../store/context/langContext";
+import { useJourney } from "../../store/context/journeyContext";
 import "./Header.scss";
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const { lang, toggleLang, t } = useLang();
+  const { immersive } = useJourney();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -21,6 +24,9 @@ export default function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // En immersion, l'en-tête disparaît pour laisser toute la place au récit.
+  if (immersive) return null;
 
   return (
     <header className={`header ${scrolled ? "header--scrolled" : ""}`}>

@@ -128,7 +128,7 @@
   display: flex;
   align-items: center;
   position: relative;
-  padding-block: calc(var(--nav-h) + var(--sp-8)) var(--sp-12);
+  padding-block: calc(var(--sp-16) + var(--sp-8)) var(--sp-12);
 }
 
 .deck__scene-inner {
@@ -305,7 +305,7 @@
     bottom: var(--sp-4);
   }
   .deck__scene {
-    padding-block: calc(var(--nav-h) + var(--sp-6)) var(--sp-16);
+    padding-block: calc(var(--sp-16) + var(--sp-6)) var(--sp-16);
   }
 }
 

@@ -2,15 +2,20 @@
 // ============================================================
 // Pied de page : marque, accroche, périmètre, sources de données
 // (citation obligatoire au règlement). Tout traduit via t().
+// S'efface pendant l'immersion (intro plein écran / mode présentation).
 // ============================================================
 
 import React from "react";
 import { useLang } from "../../store/context/langContext";
+import { useJourney } from "../../store/context/journeyContext";
 import "./Footer.scss";
 
 export default function Footer() {
   const { t } = useLang();
+  const { immersive } = useJourney();
   const year = new Date().getFullYear();
+
+  if (immersive) return null;
 
   return (
     <footer className="footer">

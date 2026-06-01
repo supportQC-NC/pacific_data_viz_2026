@@ -12,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
-import { useJourney } from "../../store/context/journeyContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
+import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import "./Home.scss";
 
 // Récit complet : 11 actes répartis en 3 chapitres narratifs.
@@ -49,9 +49,10 @@ const ACTS = CHAPTERS.flatMap((c) => c.acts);
 
 export default function Home() {
   const { t } = useLang();
-  const { startJourney, journey } = useJourney();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [gateOpen, setGateOpen] = useState(false);
 
   const heroRef = useRef(null);
   const contentRef = useRef(null);
@@ -71,10 +72,7 @@ export default function Home() {
   const scrollToStory = () =>
     storyRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  const beginExperience = () => {
-    startJourney();
-    navigate(journey[0].to);
-  };
+  const beginExperience = () => setGateOpen(true);
 
   const reduced =
     typeof window !== "undefined" &&
@@ -196,6 +194,7 @@ export default function Home() {
 
   return (
     <main className="home">
+      <LanguageGate open={gateOpen} onClose={() => setGateOpen(false)} />
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
         <div

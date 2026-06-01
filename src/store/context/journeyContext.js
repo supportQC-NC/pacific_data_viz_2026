@@ -48,6 +48,7 @@ export function JourneyProvider({ children }) {
   const [guided, setGuided] = useState(loadMode);
   const [seen, setSeen] = useState(loadSeen);
   const [presentation, setPresentation] = useState(false);
+  const [immersive, setImmersive] = useState(false);
 
   useEffect(() => {
     window.localStorage.setItem(MODE_KEY, guided ? "1" : "0");
@@ -66,7 +67,7 @@ export function JourneyProvider({ children }) {
   const startJourney = useCallback(() => {
     setGuided(true);
     setSeen({}); // on rejoue le parcours depuis le début
-    setPresentation(true); // l'expérience démarre en plein écran
+    setPresentation(false);
   }, []);
 
   const exitJourney = useCallback(() => {
@@ -96,6 +97,8 @@ export function JourneyProvider({ children }) {
       guided,
       seen,
       presentation,
+      immersive,
+      setImmersive,
       startJourney,
       exitJourney,
       markSeen,
@@ -110,6 +113,7 @@ export function JourneyProvider({ children }) {
       guided,
       seen,
       presentation,
+      immersive,
       startJourney,
       exitJourney,
       markSeen,

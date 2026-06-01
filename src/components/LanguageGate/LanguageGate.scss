@@ -1,0 +1,163 @@
+// src/components/LanguageGate/LanguageGate.scss
+@use "../../index.scss" as *;
+
+.langgate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-8);
+  background:
+    radial-gradient(
+      120% 90% at 50% 30%,
+      color-mix(in srgb, var(--c-accent-deep) 22%, transparent),
+      transparent 60%
+    ),
+    color-mix(in srgb, var(--c-bg) 94%, transparent);
+  backdrop-filter: blur(14px);
+  animation: langgateIn 0.5s var(--ease-out);
+}
+
+.langgate__inner {
+  width: 100%;
+  max-width: 760px;
+  text-align: center;
+  animation: langgateRise 0.6s var(--ease-out);
+}
+
+.langgate__kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-6);
+}
+
+.langgate__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--sp-12);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--sp-3);
+}
+
+.langgate__title-sep {
+  color: var(--c-text-mute);
+}
+
+.langgate__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-6);
+}
+
+@media (max-width: 560px) {
+  .langgate__choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+.langgate__choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-12) var(--sp-8);
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition:
+    transform var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-4px);
+    border-color: var(--c-accent);
+    background: var(--c-bg-2);
+    box-shadow: var(--shadow-glow);
+    outline: none;
+  }
+}
+
+.langgate__code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
+  color: var(--c-accent);
+  line-height: 1;
+}
+
+.langgate__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--c-text);
+}
+
+.langgate__go {
+  margin-top: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.langgate__choice:hover .langgate__go,
+.langgate__choice:focus-visible .langgate__go {
+  color: var(--c-accent);
+  transform: translateX(4px);
+}
+
+.langgate__skip {
+  margin-top: var(--sp-12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  transition: color var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-text-soft);
+  }
+}
+
+@keyframes langgateIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes langgateRise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .langgate,
+  .langgate__inner {
+    animation: none;
+  }
+}
