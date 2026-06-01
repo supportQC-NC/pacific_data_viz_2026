@@ -18,6 +18,8 @@ import Act5Momentum from './pages/Act5Momentum/Act5Momentum';
 import Act6Agriculture from './pages/Act6Agriculture/Act6Agriculture';
 import Act7Vivant from './pages/Act7Vivant/Act7Vivant';
 import Act8Ciel from './pages/Act8Ciel/Act8Ciel';
+import Act9Eco from './pages/Act9Eco/Act9Eco';
+import Act10Sante from './pages/Act10Sante/Act10Sante';
 
 function AppContent() {
   return (
@@ -33,6 +35,8 @@ function AppContent() {
         <Route path="/agriculture" element={<Act6Agriculture />} />
         <Route path="/vivant" element={<Act7Vivant />} />
         <Route path="/ciel" element={<Act8Ciel />} />
+        <Route path="/economie" element={<Act9Eco />} />
+        <Route path="/sante" element={<Act10Sante />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
