@@ -489,6 +489,16 @@
     "compare_from": "From",
     "compare_to": "To",
     "compare_up": "increase",
-    "compare_down": "decrease"
+    "compare_down": "decrease",
+    "sub2_title": "Livestock",
+    "sub2_sub": "Median yield per animal (kg/animal), territory by territory — from the same disaggregated dataset",
+    "livestock_unit": "kg/animal",
+    "ls_trend_title": "Animal yield over time",
+    "ls_heatmap_title": "Overview — livestock",
+    "animal_rank_title": "The most productive livestock",
+    "animal_rank_sub": "Median yield per animal across the displayed territories (kg/animal)",
+    "explorer_animal_title": "Explore by animal",
+    "explorer_animal_lead": "Pick an animal to see its yield by territory and the latest ranking.",
+    "explorer_animal_pick": "Pick an animal"
   }
 }

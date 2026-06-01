@@ -57,12 +57,13 @@ const median = (arr) => {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
 
-// Agrégat calculé : rendement MÉDIAN par territoire-année (toutes cultures).
-function buildAggregate(data) {
+// Agrégat calculé : rendement MÉDIAN par territoire-année pour un type donné
+// ("crop" = cultures kg/ha, "livestock" = bétail kg/animal).
+function buildAggregate(data, kind = "crop") {
   if (!data || !data.commodities) return null;
-  const cropCodes = data.commodities.filter((c) => c.kind === "crop").map((c) => c.code);
+  const codes = data.commodities.filter((c) => c.kind === kind).map((c) => c.code);
   const bucket = {}; // geo -> year -> [values]
-  cropCodes.forEach((code) => {
+  codes.forEach((code) => {
     const d = data.byCommodity[code];
     if (!d) return;
     Object.entries(d.byArea).forEach(([geo, serie]) => {
@@ -323,6 +324,33 @@ export default function Act6Agriculture() {
     () => median(volatilityRows.map((r) => r.value)) ?? 0,
     [volatilityRows],
   );
+
+  const lsAgg = useMemo(
+    () => (agri.data ? buildAggregate(agri.data, "livestock") : null),
+    [agri.data],
+  );
+  const lsUnit = t("act6.livestock_unit");
+  const lsSeries = useMemo(
+    () => allSeries(lsAgg, lang).filter((s) => areaVisible(s.area) && s.values.length),
+    [lsAgg, lang, areaVisible],
+  );
+  const lsRankRows = useMemo(() => {
+    if (!agri.data || !lsAgg || lsAgg.lastYear == null) return [];
+    return (agri.data.commodities || [])
+      .filter((c) => c.kind === "livestock")
+      .map((c) => {
+        const d = agri.data.byCommodity[c.code];
+        if (!d) return null;
+        const vals = d.areas
+          .filter((a) => isPict(a) && areaVisible(a))
+          .map((a) => (d.byArea[a] || []).find((p) => p.year === lsAgg.lastYear))
+          .filter((p) => p && Number.isFinite(p.value))
+          .map((p) => p.value);
+        if (!vals.length) return null;
+        return { code: c.code, label: c.label, value: median(vals), year: lsAgg.lastYear };
+      })
+      .filter(Boolean);
+  }, [agri.data, lsAgg, areaVisible]);
 
   const unit = t("act6.unit");
   const tableLabels = useMemo(
@@ -588,6 +616,56 @@ export default function Act6Agriculture() {
               </div>
               <CropExplorer data={agri.data} />
             </section>
+
+            {/* ---------- Sous-acte 2 : le bétail (même donnée désagrégée) ---------- */}
+            {lsSeries.length > 0 && (
+              <section className="act6__sub">
+                <div className="act6__sub-head">
+                  <h2 className="act6__sub-title">{t("act6.sub2_title")}</h2>
+                  <p className="act6__sub-sub">{t("act6.sub2_sub")}</p>
+                </div>
+
+                <ExpandableCard title={t("act6.ls_trend_title")} sub={t("act6.trend_sub")} {...xc}>
+                  <SmallMultiples
+                    series={lsSeries}
+                    years={lsAgg.years}
+                    unit={lsUnit}
+                    currentYear={lsAgg.lastYear}
+                    labels={{ last: t("act6.smallmult_last") }}
+                  />
+                </ExpandableCard>
+
+                <ExpandableCard title={t("act6.ls_heatmap_title")} sub={t("act6.heatmap_sub")} {...xc}>
+                  <EmissionsHeatmap
+                    series={lsSeries}
+                    years={lsAgg.years}
+                    unit={lsUnit}
+                    scale="sequential"
+                    labels={{
+                      low: t("act6.heatmap_low"),
+                      high: t("act6.heatmap_high"),
+                      empty: t("act1.change.empty"),
+                      mode_row: t("act6.heatmap_mode_row"),
+                      mode_abs: t("act6.heatmap_mode_abs"),
+                    }}
+                  />
+                </ExpandableCard>
+
+                <ExpandableCard title={t("act6.animal_rank_title")} sub={`${t("act6.animal_rank_sub")} · ${lsAgg.lastYear}`} {...xc}>
+                  <CropRanking rows={lsRankRows} unit={lsUnit} max={10} />
+                </ExpandableCard>
+
+                <div className="act6__sub-head act6__sub-head--explorer">
+                  <h3 className="act6__sub-title">{t("act6.explorer_animal_title")}</h3>
+                  <p className="act6__sub-sub">{t("act6.explorer_animal_lead")}</p>
+                </div>
+                <CropExplorer
+                  data={agri.data}
+                  kind="livestock"
+                  labels={{ pick: t("act6.explorer_animal_pick") }}
+                />
+              </section>
+            )}
 
             {/* ---------- Avertissement de rigueur ---------- */}
             <aside className="act6__caveat">

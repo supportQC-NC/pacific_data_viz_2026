@@ -489,6 +489,16 @@
     "compare_from": "De",
     "compare_to": "À",
     "compare_up": "en hausse",
-    "compare_down": "en baisse"
+    "compare_down": "en baisse",
+    "sub2_title": "Le bétail",
+    "sub2_sub": "Rendement médian par animal (kg/animal), territoire par territoire — issu du même jeu désagrégé",
+    "livestock_unit": "kg/animal",
+    "ls_trend_title": "Rendement animal dans le temps",
+    "ls_heatmap_title": "Vue d'ensemble — bétail",
+    "animal_rank_title": "Les élevages les plus productifs",
+    "animal_rank_sub": "Rendement médian par animal sur les territoires affichés (kg/animal)",
+    "explorer_animal_title": "Explorer par animal",
+    "explorer_animal_lead": "Choisis un animal pour voir son rendement par territoire et le dernier classement.",
+    "explorer_animal_pick": "Choisir un animal"
   }
 }

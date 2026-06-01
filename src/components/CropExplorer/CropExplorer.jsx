@@ -30,7 +30,7 @@ function stateFrom(res) {
   return { status: ok ? "ready" : "empty", data: ok ? res : null };
 }
 
-export default function CropExplorer({ data: dataProp = null }) {
+export default function CropExplorer({ data: dataProp = null, kind = "crop", labels = {} }) {
   const { t, lang } = useLang();
   const [state, setState] = useState(() =>
     dataProp ? stateFrom(dataProp) : { status: "loading", data: null },
@@ -54,13 +54,13 @@ export default function CropExplorer({ data: dataProp = null }) {
     };
   }, [dataProp, lang]);
 
-  // Cultures (hors bétail) ayant au moins 2 territoires PICT avec données.
+  // Produits du type demandé ayant au moins 2 territoires PICT avec données.
   const allCrops = useMemo(() => {
     if (!state.data) return [];
     return state.data.commodities
-      .filter((c) => c.kind === "crop")
+      .filter((c) => c.kind === kind)
       .filter((c) => pictAreas(state.data.byCommodity[c.code]).length >= 2);
-  }, [state.data]);
+  }, [state.data, kind]);
 
   // Liste des pays présents (sur l'ensemble des cultures), triée par nom.
   const countries = useMemo(() => {
@@ -151,7 +151,7 @@ export default function CropExplorer({ data: dataProp = null }) {
 
       <div className="cropx__pickbar">
         <span className="cropx__pick-lbl">
-          {t("act6.explorer_pick")} · {crops.length}
+          {(labels.pick || t("act6.explorer_pick"))} · {crops.length}
         </span>
         <div className="cropx__grid">
           {crops.map((c) => (
