@@ -5,7 +5,7 @@
   width: 100%;
 
   &--empty {
-    min-height: 200px;
+    min-height: 220px;
   }
 
   &__svg {
@@ -15,13 +15,18 @@
     overflow: visible;
   }
 
+  // quadrant de l'injustice (peu responsables / très exposés)
+  &__zone {
+    fill: var(--c-warm);
+    opacity: 0.07;
+  }
+
   &__grid {
     stroke: var(--c-line);
     stroke-width: 1;
 
     &--v {
-      stroke: var(--c-line);
-      opacity: 0.5;
+      opacity: 0.45;
     }
   }
 
@@ -32,17 +37,39 @@
 
   &__median {
     stroke: var(--c-text-dim);
-    stroke-width: 1.2;
+    stroke-width: 1.1;
     stroke-dasharray: 5 5;
-    opacity: 0.7;
+    opacity: 0.6;
+  }
+
+  &__ref {
+    stroke: var(--c-accent);
+    stroke-width: 1.6;
+    stroke-dasharray: 2 4;
+    opacity: 0.9;
+  }
+
+  &__ref-lbl {
+    fill: var(--c-accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
   }
 
   &__quadrant {
-    fill: var(--c-warm);
+    fill: var(--c-text-mute);
     font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: var(--fw-bold);
+    font-size: 12px;
     letter-spacing: 0.02em;
+    opacity: 0.75;
+
+    &--hero {
+      fill: var(--c-warm);
+      font-size: 13px;
+      font-weight: var(--fw-bold);
+      opacity: 1;
+    }
   }
 
   &__tick {
@@ -64,32 +91,53 @@
     font-size: 12px;
   }
 
+  // points + halo + animation d'entrée
   &__pt {
     cursor: pointer;
     transition: opacity var(--t-fast) var(--ease-out);
+    animation: scatterPop 0.5s var(--ease-out) backwards;
 
-    circle {
+    .scatter__dot {
       transition: r var(--t-fast) var(--ease-out);
       stroke: var(--c-bg);
       stroke-width: 1.5;
+    }
+
+    .scatter__halo {
+      opacity: 0;
+      transition: opacity var(--t-med) var(--ease-out);
+    }
+
+    &.is-on {
+      .scatter__halo {
+        opacity: 0.22;
+      }
+
+      .scatter__pt-lbl {
+        fill: var(--c-text);
+        font-weight: var(--fw-bold);
+        opacity: 1;
+      }
+    }
+
+    &.is-dim {
+      opacity: 0.26;
     }
 
     &-lbl {
       fill: var(--c-text-mute);
       font-family: var(--font-mono);
       font-size: 11px;
-      opacity: 0;
+      opacity: 0.78;
       transition: opacity var(--t-fast) var(--ease-out);
+      pointer-events: none;
     }
+  }
 
-    &.is-on &-lbl {
-      opacity: 1;
-      fill: var(--c-text);
-      font-weight: var(--fw-bold);
-    }
-
-    &.is-dim {
-      opacity: 0.28;
+  // entrée échelonnée (CSS pur, sans style inline)
+  @for $i from 1 through 30 {
+    &__pts .scatter__pt:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.025}s;
     }
   }
 
@@ -114,5 +162,23 @@
       font-family: var(--font-mono);
       font-size: 11px;
     }
+  }
+}
+
+@keyframes scatterPop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scatter__pt {
+    animation: none;
   }
 }

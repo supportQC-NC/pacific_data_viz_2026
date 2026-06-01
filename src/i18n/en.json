@@ -783,6 +783,17 @@
     "guide_s2_v": "Right of the scatter = emits more per head; up = more exposed. The top-left quadrant gathers those who weigh little on the climate yet suffer it most — the heart of the injustice.",
     "guide_s3_k": "The limits",
     "guide_s3_v": "This is not an official index: equal weights by choice, normalisation relative to the Pacific (not the world), volatile small populations, and a territory missing a dimension is averaged over the others. Read it as a narrative, not a verdict.",
-    "guide_takeaway": "The overall pattern fits in one line: the smallest emitters are rarely the least exposed — often the opposite."
+    "guide_takeaway": "The overall pattern fits in one line: the smallest emitters are rarely the least exposed — often the opposite.",
+    "world_ref_label": "world average",
+    "q_tl": "◤ low responsibility · high exposure",
+    "q_tr": "high responsibility · high exposure",
+    "q_bl": "low responsibility · low exposure",
+    "q_br": "high responsibility · low exposure",
+    "stat_emi_label": "Pacific median GHG",
+    "stat_emi_sub": "below the world per-capita average",
+    "stat_inj_label": "Low responsibility, high exposure",
+    "stat_inj_sub": "territories below the world average AND above the vulnerability median",
+    "stat_vuln_label": "Most exposed",
+    "stat_vuln_sub": "highest vulnerability index"
   }
 }

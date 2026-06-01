@@ -783,6 +783,17 @@
     "guide_s2_v": "À droite du nuage = émet davantage par habitant ; en haut = plus exposé. Le quadrant haut-gauche réunit ceux qui pèsent peu sur le climat mais le subissent le plus — le cœur de l'injustice.",
     "guide_s3_k": "Les limites",
     "guide_s3_v": "Ce n'est pas un indice officiel : poids égaux par choix, normalisation relative au Pacifique (et non au monde), petites populations volatiles, et un territoire sans donnée pour une dimension est moyenné sur les autres. À lire comme un récit, pas comme un verdict.",
-    "guide_takeaway": "Le motif d'ensemble tient en une phrase : les plus petits émetteurs sont rarement les moins exposés — souvent l'inverse."
+    "guide_takeaway": "Le motif d'ensemble tient en une phrase : les plus petits émetteurs sont rarement les moins exposés — souvent l'inverse.",
+    "world_ref_label": "moyenne mondiale",
+    "q_tl": "◤ peu responsables · très exposés",
+    "q_tr": "très responsables · très exposés",
+    "q_bl": "peu responsables · peu exposés",
+    "q_br": "très responsables · peu exposés",
+    "stat_emi_label": "GES médian du Pacifique",
+    "stat_emi_sub": "sous la moyenne mondiale par habitant",
+    "stat_inj_label": "Peu responsables, très exposés",
+    "stat_inj_sub": "territoires sous la moyenne mondiale ET au-dessus de la médiane de vulnérabilité",
+    "stat_vuln_label": "Le plus exposé",
+    "stat_vuln_sub": "indice de vulnérabilité le plus élevé"
   }
 }

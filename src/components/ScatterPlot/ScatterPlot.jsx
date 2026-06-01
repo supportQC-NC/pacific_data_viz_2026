@@ -1,13 +1,15 @@
 // src/components/ScatterPlot/ScatterPlot.jsx
 // ============================================================
-// Nuage de points réutilisable pour la synthèse.
+// Nuage de points « pro » pour la synthèse.
 // • x = responsabilité (GES/hab), y = indice de vulnérabilité (0–100)
-// • lignes médianes → 4 quadrants ; le quadrant « peu responsables / très
-//   exposés » est souligné par un libellé
-// • points colorés par sous-région, étiquetés (code), survol → nom + valeurs
-// • un territoire peut être mis en évidence (sélection)
+// • séparateur vertical = repère MONDIAL (moyenne mondiale CO₂/hab) ; séparateur
+//   horizontal = médiane de vulnérabilité → 4 quadrants, celui de l'« injustice »
+//   (peu responsables / très exposés) est teinté et libellé
+// • points colorés par sous-région, étiquetés en permanence, halo + animation
+//   d'entrée échelonnée, survol → infobulle, territoire sélectionné mis en avant
 // Props : points [{area,name,x,y,region}], xLabel, yLabel, xUnit,
-//         medians {x,y}, quadrantLabel, highlight (area), regionLabels {}
+//   xRef {value,label}, yDivider, quadrants {tl,tr,bl,br},
+//   highlight (area), regionLabels {}
 // ============================================================
 
 import React, { useMemo, useState } from "react";
@@ -15,8 +17,8 @@ import * as d3 from "d3";
 import "./ScatterPlot.scss";
 
 const W = 1000;
-const H = 520;
-const M = { top: 28, right: 28, bottom: 56, left: 64 };
+const H = 540;
+const M = { top: 30, right: 30, bottom: 58, left: 66 };
 
 const REGION_COLORS = {
   melanesia: "#ff7a59",
@@ -30,21 +32,24 @@ export default function ScatterPlot({
   xLabel,
   yLabel,
   xUnit,
-  medians = {},
-  quadrantLabel,
+  xRef = null,
+  yDivider = null,
+  quadrants = {},
   highlight = null,
   regionLabels = {},
 }) {
   const [hover, setHover] = useState(null);
 
-  const pts = useMemo(() => points.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)), [points]);
+  const pts = useMemo(
+    () => points.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)),
+    [points],
+  );
 
   const x = useMemo(() => {
-    const ext = d3.extent(pts, (p) => p.x);
-    const lo = Math.min(0, ext[0] ?? 0);
-    const hi = (ext[1] ?? 1) * 1.08 || 1;
-    return d3.scaleLinear().domain([lo, hi]).nice().range([M.left, W - M.right]);
-  }, [pts]);
+    const maxData = d3.max(pts, (p) => p.x) ?? 1;
+    const hi = Math.max(maxData, Number.isFinite(xRef && xRef.value) ? xRef.value : 0) * 1.08 || 1;
+    return d3.scaleLinear().domain([0, hi]).nice().range([M.left, W - M.right]);
+  }, [pts, xRef]);
 
   const y = useMemo(
     () => d3.scaleLinear().domain([0, 100]).range([H - M.bottom, M.top]),
@@ -56,15 +61,24 @@ export default function ScatterPlot({
   const xTicks = x.ticks(6);
   const yTicks = y.ticks(5);
   const fmtX = (v) => (Math.abs(v) >= 1000 ? d3.format("~s")(v) : d3.format("~r")(v));
-  const mx = Number.isFinite(medians.x) ? x(medians.x) : null;
-  const my = Number.isFinite(medians.y) ? y(medians.y) : null;
+  const vx = xRef && Number.isFinite(xRef.value) ? x(xRef.value) : null;
+  const hy = Number.isFinite(yDivider) ? y(yDivider) : null;
   const colorOf = (p) => REGION_COLORS[p.region] || REGION_COLORS.other;
   const hp = hover ? pts.find((p) => p.area === hover) : null;
 
   return (
     <div className="scatter">
       <svg className="scatter__svg" viewBox={`0 0 ${W} ${H}`} role="img">
-        {/* grille */}
+        {vx != null && hy != null && (
+          <rect
+            className="scatter__zone"
+            x={M.left}
+            y={M.top}
+            width={Math.max(0, vx - M.left)}
+            height={Math.max(0, hy - M.top)}
+          />
+        )}
+
         {yTicks.map((tk) => (
           <g key={`y${tk}`} transform={`translate(0,${y(tk)})`}>
             <line className="scatter__grid" x1={M.left} x2={W - M.right} />
@@ -82,20 +96,39 @@ export default function ScatterPlot({
           </g>
         ))}
 
-        {/* médianes (quadrants) */}
-        {mx != null && (
-          <line className="scatter__median" x1={mx} x2={mx} y1={M.top} y2={H - M.bottom} />
+        {hy != null && (
+          <line className="scatter__median" x1={M.left} x2={W - M.right} y1={hy} y2={hy} />
         )}
-        {my != null && (
-          <line className="scatter__median" x1={M.left} x2={W - M.right} y1={my} y2={my} />
+        {vx != null && (
+          <g>
+            <line className="scatter__ref" x1={vx} x2={vx} y1={M.top} y2={H - M.bottom} />
+            <text className="scatter__ref-lbl" x={vx + 6} y={H - M.bottom - 8}>
+              {xRef.label}
+            </text>
+          </g>
         )}
-        {quadrantLabel && (
-          <text className="scatter__quadrant" x={M.left + 12} y={M.top + 18}>
-            {quadrantLabel}
+
+        {quadrants.tl && (
+          <text className="scatter__quadrant scatter__quadrant--hero" x={M.left + 12} y={M.top + 20}>
+            {quadrants.tl}
+          </text>
+        )}
+        {quadrants.tr && (
+          <text className="scatter__quadrant" x={W - M.right - 12} y={M.top + 20} textAnchor="end">
+            {quadrants.tr}
+          </text>
+        )}
+        {quadrants.bl && (
+          <text className="scatter__quadrant" x={M.left + 12} y={H - M.bottom - 12}>
+            {quadrants.bl}
+          </text>
+        )}
+        {quadrants.br && (
+          <text className="scatter__quadrant" x={W - M.right - 12} y={H - M.bottom - 12} textAnchor="end">
+            {quadrants.br}
           </text>
         )}
 
-        {/* axes */}
         <line className="scatter__axis" x1={M.left} y1={H - M.bottom} x2={W - M.right} y2={H - M.bottom} />
         <line className="scatter__axis" x1={M.left} y1={M.top} x2={M.left} y2={H - M.bottom} />
         {xLabel && (
@@ -107,35 +140,36 @@ export default function ScatterPlot({
         {yLabel && (
           <text
             className="scatter__axis-label"
-            transform={`translate(16,${(M.top + H - M.bottom) / 2}) rotate(-90)`}
+            transform={`translate(18,${(M.top + H - M.bottom) / 2}) rotate(-90)`}
             textAnchor="middle"
           >
             {yLabel}
           </text>
         )}
 
-        {/* points */}
-        {pts.map((p) => {
-          const on = hover === p.area || highlight === p.area;
-          const dim = (hover && hover !== p.area) || (highlight && highlight !== p.area && !hover);
-          return (
-            <g
-              key={p.area}
-              className={`scatter__pt ${on ? "is-on" : ""} ${dim ? "is-dim" : ""}`}
-              onMouseEnter={() => setHover(p.area)}
-              onMouseLeave={() => setHover(null)}
-            >
-              <circle cx={x(p.x)} cy={y(p.y)} r={on ? 9 : 6} fill={colorOf(p)} />
-              <text className="scatter__pt-lbl" x={x(p.x) + 9} y={y(p.y)} dy="0.32em">
-                {p.area}
-              </text>
-            </g>
-          );
-        })}
+        <g className="scatter__pts">
+          {pts.map((p) => {
+            const on = hover === p.area || highlight === p.area;
+            const dim = (hover && hover !== p.area) || (highlight && highlight !== p.area && !hover);
+            return (
+              <g
+                key={p.area}
+                className={`scatter__pt ${on ? "is-on" : ""} ${dim ? "is-dim" : ""}`}
+                onMouseEnter={() => setHover(p.area)}
+                onMouseLeave={() => setHover(null)}
+              >
+                <circle className="scatter__halo" cx={x(p.x)} cy={y(p.y)} r={16} fill={colorOf(p)} />
+                <circle className="scatter__dot" cx={x(p.x)} cy={y(p.y)} r={on ? 9 : 6} fill={colorOf(p)} />
+                <text className="scatter__pt-lbl" x={x(p.x) + 9} y={y(p.y)} dy="0.32em">
+                  {p.area}
+                </text>
+              </g>
+            );
+          })}
+        </g>
 
-        {/* légende sous-régions */}
         {Object.keys(REGION_COLORS).map((r, i) => (
-          <g key={r} transform={`translate(${W - M.right - 150},${M.top + 4 + i * 18})`}>
+          <g key={r} transform={`translate(${W - M.right - 150},${M.top + 6 + i * 18})`}>
             <circle cx={0} cy={0} r={5} fill={REGION_COLORS[r]} />
             <text className="scatter__legend" x={10} dy="0.32em">
               {regionLabels[r] || r}
@@ -143,10 +177,12 @@ export default function ScatterPlot({
           </g>
         ))}
 
-        {/* infobulle */}
         {hp && (
-          <g className="scatter__tip" transform={`translate(${Math.min(x(hp.x) + 14, W - 220)},${Math.max(y(hp.y) - 10, M.top + 10)})`}>
-            <rect className="scatter__tip-bg" width={206} height={56} rx={8} />
+          <g
+            className="scatter__tip"
+            transform={`translate(${Math.min(x(hp.x) + 14, W - 224)},${Math.max(y(hp.y) - 10, M.top + 10)})`}
+          >
+            <rect className="scatter__tip-bg" width={210} height={58} rx={8} />
             <text className="scatter__tip-name" x={12} y={20}>
               {hp.name}
             </text>

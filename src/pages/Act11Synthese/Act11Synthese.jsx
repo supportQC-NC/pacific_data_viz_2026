@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSynthese } from "../../services/syntheseApi";
+import { worldAvgFor } from "../../data/worldAvg";
 import ScatterPlot from "../../components/ScatterPlot/ScatterPlot";
 import RankBars from "../../components/RankBars/RankBars";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
@@ -189,6 +190,23 @@ export default function Act11Synthese() {
     [scatterPoints],
   );
 
+  // repère mondial mobile (moyenne mondiale CO₂/hab à l'année la plus récente)
+  const worldRef = useMemo(() => {
+    const yr = data && data.emissions ? data.emissions.lastYear : null;
+    return worldAvgFor(yr) ?? worldAvgFor(2023);
+  }, [data]);
+
+  // chiffres-chocs (agrégats réels)
+  const stats = useMemo(() => {
+    if (scatterPoints.length < 3 || !Number.isFinite(worldRef)) return null;
+    const pacMed = median(scatterPoints.map((p) => p.x));
+    const ratio = pacMed > 0 ? worldRef / pacMed : null;
+    const yMed = medians.y;
+    const below = scatterPoints.filter((p) => p.x < worldRef && Number.isFinite(yMed) && p.y > yMed).length;
+    const most = scatterPoints.reduce((m, p) => (!m || p.y > m.y ? p : m), null);
+    return { pacMed, ratio, below, total: scatterPoints.length, most };
+  }, [scatterPoints, worldRef, medians]);
+
   // classement composite (mode « tous ») filtré région
   const rankComposite = useMemo(() => {
     return Object.keys(composite)
@@ -276,14 +294,45 @@ export default function Act11Synthese() {
               </label>
             </div>
 
+            {stats && (
+              <div className="act11__stats">
+                <div className="act11__stat">
+                  <span className="act11__stat-num">
+                    {stats.pacMed.toFixed(1)}
+                    <span className="act11__stat-u"> t/hab</span>
+                  </span>
+                  <span className="act11__stat-lbl">{t("act11.stat_emi_label")}</span>
+                  <span className="act11__stat-sub">
+                    {stats.ratio ? `≈ ${stats.ratio.toFixed(1)}× ${t("act11.stat_emi_sub")}` : ""}
+                  </span>
+                </div>
+                <div className="act11__stat">
+                  <span className="act11__stat-num">
+                    {stats.below}
+                    <span className="act11__stat-u"> / {stats.total}</span>
+                  </span>
+                  <span className="act11__stat-lbl">{t("act11.stat_inj_label")}</span>
+                  <span className="act11__stat-sub">{t("act11.stat_inj_sub")}</span>
+                </div>
+                <div className="act11__stat">
+                  <span className="act11__stat-num act11__stat-num--name">{stats.most ? stats.most.name : "—"}</span>
+                  <span className="act11__stat-lbl">{t("act11.stat_vuln_label")}</span>
+                  <span className="act11__stat-sub">
+                    {stats.most ? `${t("act11.stat_vuln_sub")} · ${Math.round(stats.most.y)}/100` : ""}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <ExpandableCard title={t("act11.scatter_title")} sub={t("act11.scatter_sub")} {...xc}>
               <ScatterPlot
                 points={scatterPoints}
                 xLabel={t("act11.scatter_x")}
                 yLabel={t("act11.scatter_y")}
                 xUnit={t("act11.scatter_x_unit")}
-                medians={medians}
-                quadrantLabel={t("act11.scatter_quadrant")}
+                xRef={{ value: worldRef, label: t("act11.world_ref_label") }}
+                yDivider={medians.y}
+                quadrants={{ tl: t("act11.q_tl"), tr: t("act11.q_tr"), bl: t("act11.q_bl"), br: t("act11.q_br") }}
                 highlight={single ? country : null}
                 regionLabels={regionLabels}
               />
