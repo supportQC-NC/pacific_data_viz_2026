@@ -20,6 +20,7 @@ import Act7Vivant from './pages/Act7Vivant/Act7Vivant';
 import Act8Ciel from './pages/Act8Ciel/Act8Ciel';
 import Act9Eco from './pages/Act9Eco/Act9Eco';
 import Act10Sante from './pages/Act10Sante/Act10Sante';
+import Act11Synthese from './pages/Act11Synthese/Act11Synthese';
 
 function AppContent() {
   return (
@@ -37,6 +38,7 @@ function AppContent() {
         <Route path="/ciel" element={<Act8Ciel />} />
         <Route path="/economie" element={<Act9Eco />} />
         <Route path="/sante" element={<Act10Sante />} />
+        <Route path="/synthese" element={<Act11Synthese />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

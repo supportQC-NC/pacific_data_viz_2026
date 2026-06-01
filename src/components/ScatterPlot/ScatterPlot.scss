@@ -1,0 +1,118 @@
+// src/components/ScatterPlot/ScatterPlot.scss
+@use "../../index.scss" as *;
+
+.scatter {
+  width: 100%;
+
+  &--empty {
+    min-height: 200px;
+  }
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  &__grid {
+    stroke: var(--c-line);
+    stroke-width: 1;
+
+    &--v {
+      stroke: var(--c-line);
+      opacity: 0.5;
+    }
+  }
+
+  &__axis {
+    stroke: var(--c-line-strong);
+    stroke-width: 1.4;
+  }
+
+  &__median {
+    stroke: var(--c-text-dim);
+    stroke-width: 1.2;
+    stroke-dasharray: 5 5;
+    opacity: 0.7;
+  }
+
+  &__quadrant {
+    fill: var(--c-warm);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
+  }
+
+  &__tick {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  &__axis-label {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+  }
+
+  &__legend {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  &__pt {
+    cursor: pointer;
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    circle {
+      transition: r var(--t-fast) var(--ease-out);
+      stroke: var(--c-bg);
+      stroke-width: 1.5;
+    }
+
+    &-lbl {
+      fill: var(--c-text-mute);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity var(--t-fast) var(--ease-out);
+    }
+
+    &.is-on &-lbl {
+      opacity: 1;
+      fill: var(--c-text);
+      font-weight: var(--fw-bold);
+    }
+
+    &.is-dim {
+      opacity: 0.28;
+    }
+  }
+
+  &__tip {
+    pointer-events: none;
+
+    &-bg {
+      fill: var(--c-surface);
+      stroke: var(--c-line-strong);
+      stroke-width: 1;
+    }
+
+    &-name {
+      fill: var(--c-text);
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: var(--fw-bold);
+    }
+
+    &-val {
+      fill: var(--c-text-soft);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+  }
+}

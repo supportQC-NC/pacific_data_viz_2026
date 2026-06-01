@@ -24,6 +24,7 @@ const ACTS = [
   { id: "a8", to: "/ciel" },
   { id: "a9", to: "/economie" },
   { id: "a10", to: "/sante" },
+  { id: "a11", to: "/synthese" },
 ];
 
 export default function Home() {
