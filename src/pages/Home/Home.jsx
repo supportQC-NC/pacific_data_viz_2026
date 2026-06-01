@@ -21,6 +21,7 @@ const ACTS = [
   { id: "a5", to: "/momentum" },
   { id: "a6", to: "/agriculture" },
   { id: "a7", to: "/vivant" },
+  { id: "a8", to: "/ciel" },
 ];
 
 export default function Home() {
