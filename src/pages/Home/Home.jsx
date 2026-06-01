@@ -1,8 +1,10 @@
 // src/pages/Home/Home.jsx
 // ============================================================
-// Accueil — hero (image + entrée GSAP + parallax) + récit en 5 actes
-// (cartes éditoriales, révélation au scroll, jauge de profondeur).
-// Aucun style inline en JSX (GSAP/refs). Respecte prefers-reduced-motion.
+// Accueil — ouverture cinématique (thèse + chiffre-choc + ligne de flottaison
+// animée) puis récit en 3 CHAPITRES regroupant les 11 actes.
+// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation et
+// la jauge de progression. Aucun style inline en JSX. Respecte
+// prefers-reduced-motion.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -10,30 +12,50 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
+import { useJourney } from "../../store/context/journeyContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import "./Home.scss";
 
-const ACTS = [
-  { id: "a1", to: "/emissions" },
-  { id: "a2", to: "/ocean" },
-  { id: "a3", to: "/territory" },
-  { id: "a4", to: "/impact" },
-  { id: "a5", to: "/momentum" },
-  { id: "a6", to: "/agriculture" },
-  { id: "a7", to: "/vivant" },
-  { id: "a8", to: "/ciel" },
-  { id: "a9", to: "/economie" },
-  { id: "a10", to: "/sante" },
-  { id: "a11", to: "/synthese" },
+// Récit complet : 11 actes répartis en 3 chapitres narratifs.
+const CHAPTERS = [
+  {
+    id: "c1",
+    acts: [
+      { id: "a1", to: "/emissions" },
+      { id: "a2", to: "/ocean" },
+      { id: "a3", to: "/territory" },
+      { id: "a4", to: "/impact" },
+    ],
+  },
+  {
+    id: "c2",
+    acts: [
+      { id: "a5", to: "/momentum" },
+      { id: "a6", to: "/agriculture" },
+      { id: "a7", to: "/vivant" },
+      { id: "a8", to: "/ciel" },
+      { id: "a9", to: "/economie" },
+    ],
+  },
+  {
+    id: "c3",
+    acts: [
+      { id: "a10", to: "/sante" },
+      { id: "a11", to: "/synthese" },
+    ],
+  },
 ];
+const ACTS = CHAPTERS.flatMap((c) => c.acts);
 
 export default function Home() {
   const { t } = useLang();
+  const { startJourney, journey } = useJourney();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const heroRef = useRef(null);
   const contentRef = useRef(null);
+  const waterlineRef = useRef(null);
   const storyRef = useRef(null);
   const railFillRef = useRef(null);
   const actsRef = useRef([]);
@@ -49,6 +71,11 @@ export default function Home() {
   const scrollToStory = () =>
     storyRef.current?.scrollIntoView({ behavior: "smooth" });
 
+  const beginExperience = () => {
+    startJourney();
+    navigate(journey[0].to);
+  };
+
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia &&
@@ -62,20 +89,25 @@ export default function Home() {
         .from(".home__eyebrow", { y: 18, opacity: 0, duration: 0.6 })
         .from(
           ".home__title span",
-          { y: 46, opacity: 0, duration: 0.9, stagger: 0.12 },
+          { y: 52, opacity: 0, duration: 0.9, stagger: 0.12 },
           "-=0.2",
         )
-        .from(".home__subtitle", { y: 24, opacity: 0, duration: 0.7 }, "-=0.45")
+        .from(".home__thesis", { y: 24, opacity: 0, duration: 0.7 }, "-=0.4")
+        .from(".home__shock", { y: 22, opacity: 0, duration: 0.7 }, "-=0.45")
         .from(".home__hero-foot", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4")
         .from(".home__scrollcue", { opacity: 0, duration: 0.6 }, "-=0.1");
     }, heroRef);
     return () => ctx.revert();
   }, [reduced]);
 
+  // Parallax du contenu + montée lente de la ligne de flottaison au scroll.
   useEffect(() => {
     if (reduced || !contentRef.current) return undefined;
     const setY = gsap.quickSetter(contentRef.current, "y", "px");
     const setA = gsap.quickSetter(contentRef.current, "opacity");
+    const setWater = waterlineRef.current
+      ? gsap.quickSetter(waterlineRef.current, "scaleY")
+      : null;
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -86,6 +118,7 @@ export default function Home() {
         const p = Math.min(1, Math.max(0, y / h));
         setY(y * 0.22);
         setA(1 - p * 0.9);
+        if (setWater) setWater(0.12 + p * 0.5);
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -107,7 +140,7 @@ export default function Home() {
             revealObs.unobserve(e.target);
           }
         }),
-      { threshold: 0.18 },
+      { threshold: 0.16 },
     );
     const activeObs = new IntersectionObserver(
       (entries) =>
@@ -159,19 +192,39 @@ export default function Home() {
     );
   }
 
+  let globalIdx = -1;
+
   return (
     <main className="home">
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
+        <div
+          className="home__waterline"
+          ref={waterlineRef}
+          aria-hidden="true"
+        />
         <div className="home__hero-content container" ref={contentRef}>
           <p className="eyebrow home__eyebrow">{t("home.kicker")}</p>
           <h1 className="home__title">
             <span>{t("home.title_l1")}</span>
             <span className="home__title-accent">{t("home.title_l2")}</span>
           </h1>
-          <p className="home__subtitle">{t("home.subtitle")}</p>
+          <p className="home__thesis">{t("home.thesis")}</p>
+          <p className="home__shock">
+            <span className="home__shock-num">{t("home.shock_num")}</span>
+            <span className="home__shock-text">{t("home.shock_text")}</span>
+          </p>
           <div className="home__hero-foot">
-            <button className="home__cta" onClick={scrollToStory}>
+            <button
+              className="home__cta home__cta--primary"
+              onClick={beginExperience}
+            >
+              {t("home.begin")} <span aria-hidden="true">✦</span>
+            </button>
+            <button
+              className="home__cta home__cta--ghost"
+              onClick={scrollToStory}
+            >
               {t("home.cta")} <span aria-hidden="true">↓</span>
             </button>
             <span className="home__live">
@@ -209,55 +262,78 @@ export default function Home() {
           </ol>
         </div>
 
-        <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
+        <header className="home__story-head">
+          <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
+          <p className="home__story-lead">{t("home.acts_lead")}</p>
+        </header>
 
-        <ol className="home__acts">
-          {ACTS.map((a, i) => (
-            <li
-              key={a.id}
-              data-idx={i}
-              ref={(el) => {
-                actsRef.current[i] = el;
-              }}
-              className={`act ${a.to ? "act--link" : "act--soon"}`}
-              onClick={a.to ? () => navigate(a.to) : undefined}
-              role={a.to ? "link" : undefined}
-              tabIndex={a.to ? 0 : undefined}
-              onKeyDown={
-                a.to
-                  ? (e) => {
-                      if (e.key === "Enter") navigate(a.to);
-                    }
-                  : undefined
-              }
-            >
-              <span className="act__ghost" aria-hidden="true">
-                {String(i + 1).padStart(2, "0")}
+        {CHAPTERS.map((chap, ci) => (
+          <section className="home__chapter" key={chap.id}>
+            <div className="home__chapter-head">
+              <span className="home__chapter-num">
+                {String(ci + 1).padStart(2, "0")}
               </span>
-              <div className="act__inner">
-                <div className="act__meta">
-                  <span className="act__index">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <p className="eyebrow act__tag">
-                    {t(`home.acts.${a.id}_tag`)}
-                  </p>
-                </div>
-                <h3 className="act__title">{t(`home.acts.${a.id}_title`)}</h3>
-                <p className="act__text">{t(`home.acts.${a.id}_text`)}</p>
-                {a.to ? (
-                  <span className="act__action">
-                    {t("home.act_explore")} <span aria-hidden="true">→</span>
-                  </span>
-                ) : (
-                  <span className="act__action act__action--soon">
-                    {t("home.act_soon")}
-                  </span>
-                )}
+              <div>
+                <p className="eyebrow home__chapter-kicker">
+                  {t(`home.${chap.id}_kicker`)}
+                </p>
+                <h3 className="home__chapter-title">
+                  {t(`home.${chap.id}_title`)}
+                </h3>
+                <p className="home__chapter-desc">
+                  {t(`home.${chap.id}_desc`)}
+                </p>
               </div>
-            </li>
-          ))}
-        </ol>
+            </div>
+
+            <ol className="home__acts">
+              {chap.acts.map((a) => {
+                globalIdx += 1;
+                const idx = globalIdx;
+                return (
+                  <li
+                    key={a.id}
+                    data-idx={idx}
+                    ref={(el) => {
+                      actsRef.current[idx] = el;
+                    }}
+                    className="act act--link"
+                    onClick={() => navigate(a.to)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") navigate(a.to);
+                    }}
+                  >
+                    <span className="act__ghost" aria-hidden="true">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <div className="act__inner">
+                      <div className="act__meta">
+                        <span className="act__index">
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                        <p className="eyebrow act__tag">
+                          {t(`home.acts.${a.id}_tag`)}
+                        </p>
+                      </div>
+                      <h4 className="act__title">
+                        {t(`home.acts.${a.id}_title`)}
+                      </h4>
+                      <p className="act__text">{t(`home.acts.${a.id}_text`)}</p>
+                      <span className="act__action">
+                        {t("home.act_explore")}{" "}
+                        <span aria-hidden="true">→</span>
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))}
+
+        <p className="home__closing">{t("home.closing")}</p>
       </section>
     </main>
   );

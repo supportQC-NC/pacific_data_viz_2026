@@ -1,0 +1,519 @@
+@charset "UTF-8";
+/* src/index.scss
+   ============================================================
+   Feuille globale : importe les variables puis pose le reset
+   et les styles de base. Importée une seule fois dans index.js.
+   ============================================================ */
+/* src/styles/_variables.scss
+   ============================================================
+   Tokens du design system + variantes de thème (light / dark).
+   Tout est en custom properties CSS : les composants utilisent
+   var(--x) directement (pas besoin d'importer ce fichier), ce qui
+   permet la bascule de thème instantanée à l'exécution.
+   ============================================================ */
+/* Les polices sont chargées via <link> dans public/index.html
+   (et NON ici : un @import distant dans un fichier @use casse Sass). */
+/* ---------- Tokens non chromatiques (communs) ---------- */
+:root {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.25rem;
+  --fs-lg: 1.75rem;
+  --fs-xl: 2.5rem;
+  --fs-2xl: clamp(2.5rem, 6vw, 4.5rem);
+  --fw-light: 300;
+  --fw-reg: 400;
+  --fw-med: 500;
+  --fw-semi: 600;
+  --fw-bold: 700;
+  --lh-tight: 1.1;
+  --lh-base: 1.6;
+  --ls-tight: -0.03em;
+  --ls-wide: 0.18em;
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-24: 6rem;
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-pill: 999px;
+  --border-hair: 1px;
+  --maxw: 1320px;
+  --maxw-text: 720px;
+  --nav-h: 72px;
+  --z-base: 1;
+  --z-nav: 100;
+  --z-overlay: 1000;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 0.2s;
+  --t-base: 0.45s;
+  --t-slow: 0.9s;
+}
+
+/* ---------- Thème DARK (défaut) ---------- */
+:root,
+[data-theme=dark] {
+  --c-bg: #020912;
+  --c-bg-2: #051421;
+  --c-surface: #081a2b;
+  --c-line: rgba(120, 200, 230, 0.14);
+  --c-line-strong: rgba(120, 200, 230, 0.32);
+  --c-text: #e8f4f8;
+  --c-text-soft: #9fc0cf;
+  --c-text-mute: #5e8295;
+  --c-accent: #00e6ff;
+  --c-accent-deep: #0090c8;
+  --c-accent-glow: rgba(0, 230, 255, 0.45);
+  --c-warm: #ff6b4a;
+  --c-warm-soft: #ffb38a;
+  --grad-abyss: radial-gradient(
+    120% 90% at 50% -10%,
+    #08233a 0%,
+    #04101d 45%,
+    #020912 100%
+  );
+  --shadow-glow: 0 0 40px -8px var(--c-accent-glow);
+  color-scheme: dark;
+}
+
+/* ---------- Thème LIGHT ---------- */
+[data-theme=light] {
+  --c-bg: #eef4f6;
+  --c-bg-2: #e2edf1;
+  --c-surface: #ffffff;
+  --c-line: rgba(8, 40, 60, 0.12);
+  --c-line-strong: rgba(8, 40, 60, 0.28);
+  --c-text: #06222f;
+  --c-text-soft: #2f5566;
+  --c-text-mute: #6b8895;
+  --c-accent: #0086b3;
+  --c-accent-deep: #005f86;
+  --c-accent-glow: rgba(0, 134, 179, 0.3);
+  --c-warm: #e0502c;
+  --c-warm-soft: #c2410c;
+  --grad-abyss: radial-gradient(
+    120% 90% at 50% -10%,
+    #ffffff 0%,
+    #e8f1f4 50%,
+    #dbe8ec 100%
+  );
+  --shadow-glow: 0 0 30px -10px var(--c-accent-glow);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--t-slow) var(--ease-out), color var(--t-base) var(--ease-out);
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+img,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+.app-root {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Conteneur centré réutilisable */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: clamp(var(--sp-4), 5vw, var(--sp-16));
+}
+
+/* Étiquette technique mono */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+.actflow {
+  --flow-ratio: 0;
+  position: relative;
+}
+
+/* ---- Barre de progression fixe ---- */
+.actflow__bar {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 40;
+  background: color-mix(in srgb, var(--c-bg) 86%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.actflow__bar-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-3);
+}
+
+.actflow__home {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  color: var(--c-text-soft);
+  line-height: 1;
+  transition: color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+}
+.actflow__home:hover {
+  color: var(--c-accent);
+  transform: translateX(-2px);
+}
+
+.actflow__track {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.actflow__track-fill {
+  display: block;
+  height: 100%;
+  width: calc(var(--flow-ratio) * 100%);
+  background: var(--c-accent);
+  border-radius: var(--r-pill);
+  box-shadow: 0 0 10px 1px var(--c-accent-glow);
+  transition: width var(--t-base) var(--ease-out);
+}
+
+.actflow__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+  white-space: nowrap;
+}
+.actflow__count strong {
+  color: var(--c-accent);
+}
+
+.actflow__exit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  padding: var(--sp-1) var(--sp-3);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.actflow__exit:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+
+/* fine ligne de progression sous la barre (rappel visuel discret) */
+.actflow__bar-progress {
+  height: 2px;
+  background: transparent;
+}
+
+.actflow__bar-progress-fill {
+  display: block;
+  height: 100%;
+  width: calc(var(--flow-ratio) * 100%);
+  background: color-mix(in srgb, var(--c-accent) 60%, transparent);
+  transition: width var(--t-base) var(--ease-out);
+}
+
+/* ---- Écran d'intro plein cadre ---- */
+.actflow__intro {
+  position: relative;
+  min-height: calc(100vh - var(--nav-h));
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 20% 25%, color-mix(in srgb, var(--c-accent-deep) 16%, transparent), transparent 60%), linear-gradient(180deg, var(--c-bg-2), var(--c-bg));
+}
+
+.actflow__intro-inner {
+  position: relative;
+  z-index: 1;
+  animation: flowIntroIn 0.8s var(--ease-out) both;
+}
+
+.actflow__intro-tag {
+  margin-bottom: var(--sp-4);
+}
+
+.actflow__intro-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--sp-6);
+  max-width: 18ch;
+}
+
+.actflow__intro-text {
+  max-width: var(--maxw-text);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0 0 var(--sp-12);
+}
+
+.actflow__intro-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+
+.actflow__reveal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-bg);
+  background: var(--c-accent);
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-glow);
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.actflow__reveal span {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.actflow__reveal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 28px 2px var(--c-accent-glow);
+}
+.actflow__reveal:hover span {
+  transform: translateY(3px);
+}
+
+.actflow__intro-prev {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.actflow__intro-prev:hover {
+  color: var(--c-text-soft);
+}
+
+.actflow__intro-step {
+  display: block;
+  margin-top: var(--sp-12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  color: var(--c-text-mute);
+}
+
+/* ---- Pied de navigation ---- */
+.actflow__foot {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-4);
+  margin-block: var(--sp-16) var(--sp-24);
+  padding-top: var(--sp-8);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+
+.actflow__foot-side {
+  flex: 1;
+  display: flex;
+}
+.actflow__foot-side--right {
+  justify-content: flex-end;
+}
+
+.actflow__foot-count {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  white-space: nowrap;
+}
+
+.actflow__navbtn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4) var(--sp-6);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  min-width: 0;
+  max-width: 22rem;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.actflow__navbtn--next {
+  text-align: right;
+  align-items: flex-end;
+}
+.actflow__navbtn:hover {
+  border-color: color-mix(in srgb, var(--c-accent) 45%, var(--c-line));
+  background: var(--c-bg-2);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px -28px var(--c-accent-glow);
+}
+.actflow__navbtn--end {
+  border-color: color-mix(in srgb, var(--c-accent) 40%, var(--c-line));
+  box-shadow: var(--shadow-glow);
+}
+.actflow__navbtn-dir {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.actflow__navbtn-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .actflow__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actflow__foot-count {
+    order: -1;
+    text-align: center;
+    margin-bottom: var(--sp-2);
+  }
+  .actflow__navbtn {
+    max-width: none;
+  }
+  .actflow__bar-inner {
+    gap: var(--sp-3);
+  }
+}
+@keyframes flowIntroIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .actflow__intro-inner {
+    animation: none;
+  }
+}
+/* bouton Mode présentation dans la barre */
+.actflow__present {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-accent);
+  border-radius: var(--r-pill);
+  padding: var(--sp-1) var(--sp-4);
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+
+.actflow__present:hover {
+  background: var(--c-accent);
+  color: var(--c-bg);
+  box-shadow: var(--shadow-glow);
+}
+
+@media (max-width: 720px) {
+  .actflow__present span {
+    display: none;
+  }
+}/*# sourceMappingURL=ActFlow.css.map */

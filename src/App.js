@@ -1,12 +1,15 @@
 // src/App.js
 // ============================================================
-// Racine applicative : providers thème + langue, header, routes, footer.
+// Racine applicative : providers thème + langue + parcours guidé,
+// header, ScrollToTop, routes, footer.
 // ============================================================
 
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './store/context/themeContext';
 import { LangProvider } from './store/context/langContext';
+import { JourneyProvider } from './store/context/journeyContext';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
@@ -25,6 +28,7 @@ import Act11Synthese from './pages/Act11Synthese/Act11Synthese';
 function AppContent() {
   return (
     <div className="app-root">
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -50,7 +54,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <LangProvider>
-        <AppContent />
+        <JourneyProvider>
+          <AppContent />
+        </JourneyProvider>
       </LangProvider>
     </ThemeProvider>
   );
