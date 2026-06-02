@@ -199,7 +199,7 @@ export default function Home() {
       <LanguageGate open={gateOpen} onClose={() => setGateOpen(false)} />
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
-        <h1>TEST PUSH</h1>
+
         <div
           className="home__waterline"
           ref={waterlineRef}
