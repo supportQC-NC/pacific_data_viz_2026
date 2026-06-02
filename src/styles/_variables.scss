@@ -1,19 +1,24 @@
-/* src/styles/_variables.scss
-   ============================================================
-   Tokens du design system + variantes de thème (light / dark).
-   Tout est en custom properties CSS : les composants utilisent
-   var(--x) directement (pas besoin d'importer ce fichier), ce qui
-   permet la bascule de thème instantanée à l'exécution.
-   ============================================================ */
-
-/* Les polices sont chargées via <link> dans public/index.html
-   (et NON ici : un @import distant dans un fichier @use casse Sass). */
+// src/styles/_variables.scss
+// ============================================================
+//  Tokens du design system + variantes de thème (light / dark).
+//
+//  Custom properties CSS → bascule de thème instantanée via
+//  [data-theme] sur <html>/<body>. Les composants consomment var(--x).
+//
+//  PALETTE — charte appliquée, mais CONTRASTÉE pour l'accessibilité :
+//  les teintes restent dans les familles de la charte (lavande /
+//  terracotta / rose poudré) mais avec une chroma et un contraste
+//  relevés pour rester lisibles sur photo comme sur aplat (≥ WCAG AA).
+//
+//  Noms de variables historiques conservés → rien ne casse ailleurs.
+//  Polices via <link> dans public/index.html.
+// ============================================================
 
 /* ---------- Tokens non chromatiques (communs) ---------- */
 :root {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Hanken Grotesk", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -21,7 +26,15 @@
   --fs-md: 1.25rem;
   --fs-lg: 1.75rem;
   --fs-xl: 2.5rem;
-  --fs-2xl: clamp(2.5rem, 6vw, 4.5rem);
+  --fs-2xl: clamp(2.2rem, 4.5vw, 3.4rem);
+
+  // Échelle éditoriale (dégonflée par rapport au fichier FONTS d'origine)
+  --fs-h1: clamp(2.3rem, 5.2vw, 4.2rem);
+  --fs-h2: clamp(1.9rem, 3.6vw, 2.6rem);
+  --fs-h3: clamp(1.5rem, 2.6vw, 1.9rem);
+  --fs-h4: clamp(1.25rem, 1.9vw, 1.5rem);
+  --fs-h5: 1.2rem;
+  --fs-small: 0.75rem;
 
   --fw-light: 300;
   --fw-reg: 400;
@@ -29,10 +42,10 @@
   --fw-semi: 600;
   --fw-bold: 700;
 
-  --lh-tight: 1.1;
+  --lh-tight: 1.08;
   --lh-base: 1.6;
-  --ls-tight: -0.03em;
-  --ls-wide: 0.18em;
+  --ls-tight: -0.02em;
+  --ls-wide: 0.16em;
 
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
@@ -46,97 +59,105 @@
 
   --r-sm: 4px;
   --r-md: 10px;
+  --r-lg: 16px;
   --r-pill: 999px;
-  --border-hair: 1px;
 
+  --border-hair: 1px;
   --maxw: 1320px;
-  --maxw-text: 720px;
-  --nav-h: 72px;
+  --maxw-text: 680px;
+  --nav-h: 76px;
 
   --z-base: 1;
   --z-nav: 100;
   --z-overlay: 1000;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --t-fast: 0.2s;
   --t-base: 0.45s;
   --t-slow: 0.9s;
+
+  --grad-primary-secondary: linear-gradient(135deg, #6878a6, #caa5b5);
+  --grad-primary-accent: linear-gradient(135deg, #6878a6, #b58882);
+  --grad-secondary-accent: linear-gradient(135deg, #caa5b5, #b58882);
+  --grad-radial-primary-secondary: radial-gradient(circle at 30% 20%, #6878a6, #caa5b5);
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
-/* ---------- Thème DARK (défaut) ---------- */
+/* ---------- Thème DARK (défaut) ----------
+   Near-black à cast lavande, accents lumineux et CONTRASTÉS. */
 :root,
 [data-theme="dark"] {
-  --c-bg: #020912;
-  --c-bg-2: #051421;
-  --c-surface: #081a2b;
-  --c-line: rgba(120, 200, 230, 0.14);
-  --c-line-strong: rgba(120, 200, 230, 0.32);
+  --c-bg: #050811;
+  --c-bg-2: #0a0f1c;
+  --c-surface: #121828;
 
-  --c-text: #e8f4f8;
-  --c-text-soft: #9fc0cf;
-  --c-text-mute: #5e8295;
+  --c-line: rgba(196, 206, 234, 0.18);
+  --c-line-strong: rgba(196, 206, 234, 0.36);
 
-  --c-accent: #00e6ff;
-  --c-accent-deep: #0090c8;
-  --c-accent-glow: rgba(0, 230, 255, 0.45);
+  --c-text: #f6f9ff;
+  --c-text-soft: #ccd5ee;
+  --c-text-mute: #93a0c2;
 
-  --c-warm: #ff6b4a;
-  --c-warm-soft: #ffb38a;
+  --c-accent: #8fa1ea;
+  --c-accent-deep: #4b5a8f;
+  --c-accent-glow: rgba(143, 161, 234, 0.5);
 
-  /* Sémantique — UNIQUEMENT pour les jugements (mieux / pire).
-     L'identité reste portée par --c-accent (cyan) et --c-warm (corail). */
-  --c-positive: #25e09a;
-  --c-positive-soft: #8ff0cc;
-  --c-positive-glow: rgba(37, 224, 154, 0.4);
-  --c-negative: #ff4d6d;
-  --c-negative-soft: #ff9bb0;
-  --c-negative-glow: rgba(255, 77, 109, 0.4);
+  --c-warm: #e08a73;
+  --c-warm-soft: #f0b6a4;
 
-  --grad-abyss: radial-gradient(
-    120% 90% at 50% -10%,
-    #08233a 0%,
-    #04101d 45%,
-    #020912 100%
-  );
-  --shadow-glow: 0 0 40px -8px var(--c-accent-glow);
+  --c-secondary: #d293ac;
+  --c-secondary-soft: #e6c4d1;
+
+  --c-positive: #4fcf9a;
+  --c-positive-soft: #97ecc9;
+  --c-positive-glow: rgba(79, 207, 154, 0.4);
+  --c-negative: #ff6f7a;
+  --c-negative-soft: #ffb0b6;
+  --c-negative-glow: rgba(255, 111, 122, 0.4);
+
+  --grad-abyss: radial-gradient(120% 90% at 50% -10%, #1a2238 0%, #0c1322 46%, #050811 100%);
+  --shadow-glow: 0 0 44px -8px var(--c-accent-glow);
+  --shadow-soft: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
 
   color-scheme: dark;
 }
 
-/* ---------- Thème LIGHT ---------- */
+/* ---------- Thème LIGHT ----------
+   Papier lumineux, accents ASSOMBRIS pour le contraste (≥ AA). */
 [data-theme="light"] {
-  --c-bg: #eef4f6;
-  --c-bg-2: #e2edf1;
+  --c-bg: #f6f8fb;
+  --c-bg-2: #e9eef5;
   --c-surface: #ffffff;
-  --c-line: rgba(8, 40, 60, 0.12);
-  --c-line-strong: rgba(8, 40, 60, 0.28);
 
-  --c-text: #06222f;
-  --c-text-soft: #2f5566;
-  --c-text-mute: #6b8895;
+  --c-line: rgba(18, 26, 48, 0.15);
+  --c-line-strong: rgba(18, 26, 48, 0.32);
 
-  --c-accent: #0086b3;
-  --c-accent-deep: #005f86;
-  --c-accent-glow: rgba(0, 134, 179, 0.3);
+  --c-text: #050b14;
+  --c-text-soft: #2c3a57;
+  --c-text-mute: #50607e;
 
-  --c-warm: #e0502c;
-  --c-warm-soft: #c2410c;
+  --c-accent: #43528a;
+  --c-accent-deep: #313c5c;
+  --c-accent-glow: rgba(67, 82, 138, 0.32);
 
-  /* Sémantique — versions assombries pour le contraste sur fond clair. */
-  --c-positive: #0f9d6b;
-  --c-positive-soft: #0b7a52;
-  --c-positive-glow: rgba(15, 157, 107, 0.3);
-  --c-negative: #d92d4e;
-  --c-negative-soft: #b01e3a;
-  --c-negative-glow: rgba(217, 45, 78, 0.3);
+  --c-warm: #9a4d40;
+  --c-warm-soft: #b66a5b;
 
-  --grad-abyss: radial-gradient(
-    120% 90% at 50% -10%,
-    #ffffff 0%,
-    #e8f1f4 50%,
-    #dbe8ec 100%
-  );
+  --c-secondary: #7e4259;
+  --c-secondary-soft: #9a5872;
+
+  --c-positive: #0f8a5f;
+  --c-positive-soft: #0b7250;
+  --c-positive-glow: rgba(15, 138, 95, 0.28);
+  --c-negative: #c12f44;
+  --c-negative-soft: #a22335;
+  --c-negative-glow: rgba(193, 47, 68, 0.28);
+
+  --grad-abyss: radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #eef1f7 50%, #e1e6f0 100%);
   --shadow-glow: 0 0 30px -10px var(--c-accent-glow);
+  --shadow-soft: 0 24px 60px -32px rgba(18, 26, 48, 0.24);
 
   color-scheme: light;
 }

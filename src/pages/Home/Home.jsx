@@ -1,10 +1,12 @@
 // src/pages/Home/Home.jsx
 // ============================================================
 // Accueil — ouverture cinématique (thèse + chiffre-choc + ligne de flottaison
-// animée) puis récit en 3 CHAPITRES regroupant les 11 actes.
-// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation et
-// la jauge de progression. Aucun style inline en JSX. Respecte
-// prefers-reduced-motion.
+// animée) puis récit en 3 CHAPITRES regroupant les 11 actes, présentés en
+// grille éditoriale.
+// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation des
+// actes. Aucun style inline en JSX. Respecte prefers-reduced-motion.
+//
+// NB : la jauge de progression latérale ("rail") a été retirée à la demande.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -47,7 +49,6 @@ const CHAPTERS = [
     ],
   },
 ];
-const ACTS = CHAPTERS.flatMap((c) => c.acts);
 
 export default function Home() {
   const { t } = useLang();
@@ -60,10 +61,7 @@ export default function Home() {
   const contentRef = useRef(null);
   const waterlineRef = useRef(null);
   const storyRef = useRef(null);
-  const railFillRef = useRef(null);
   const actsRef = useRef([]);
-
-  const [activeAct, setActiveAct] = useState(-1);
 
   const seaLevel = useSelector(selectDataset("seaLevel"));
 
@@ -81,6 +79,7 @@ export default function Home() {
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Intro : révélation orchestrée du hero.
   useLayoutEffect(() => {
     if (reduced) return undefined;
     const ctx = gsap.context(() => {
@@ -89,7 +88,7 @@ export default function Home() {
         .from(".home__eyebrow", { y: 18, opacity: 0, duration: 0.6 })
         .from(
           ".home__title span",
-          { y: 52, opacity: 0, duration: 0.9, stagger: 0.12 },
+          { y: 44, opacity: 0, duration: 0.9, stagger: 0.12 },
           "-=0.2",
         )
         .from(".home__thesis", { y: 24, opacity: 0, duration: 0.7 }, "-=0.4")
@@ -129,6 +128,7 @@ export default function Home() {
     };
   }, [reduced]);
 
+  // Révélation des actes au scroll.
   useEffect(() => {
     const nodes = actsRef.current.filter(Boolean);
     if (!nodes.length) return undefined;
@@ -142,35 +142,9 @@ export default function Home() {
         }),
       { threshold: 0.16 },
     );
-    const activeObs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting)
-            setActiveAct((p) =>
-              Math.max(p, Number(e.target.getAttribute("data-idx"))),
-            );
-        }),
-      { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
-    );
-    nodes.forEach((n) => {
-      revealObs.observe(n);
-      activeObs.observe(n);
-    });
-    return () => {
-      revealObs.disconnect();
-      activeObs.disconnect();
-    };
+    nodes.forEach((n) => revealObs.observe(n));
+    return () => revealObs.disconnect();
   }, []);
-
-  useEffect(() => {
-    if (!railFillRef.current) return;
-    const ratio = activeAct < 0 ? 0 : (activeAct + 1) / ACTS.length;
-    gsap.to(railFillRef.current, {
-      scaleY: ratio,
-      duration: reduced ? 0 : 0.6,
-      ease: "power2.out",
-    });
-  }, [activeAct, reduced]);
 
   let live;
   if (seaLevel.status === "loading" || seaLevel.status === "idle") {
@@ -197,14 +171,11 @@ export default function Home() {
   return (
     <main className="home">
       <LanguageGate open={gateOpen} onClose={() => setGateOpen(false)} />
+
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
+        <div className="home__waterline" ref={waterlineRef} aria-hidden="true" />
 
-        <div
-          className="home__waterline"
-          ref={waterlineRef}
-          aria-hidden="true"
-        />
         <div className="home__hero-content container" ref={contentRef}>
           <p className="eyebrow home__eyebrow">{t("home.kicker")}</p>
           <h1 className="home__title">
@@ -212,6 +183,7 @@ export default function Home() {
             <span className="home__title-accent">{t("home.title_l2")}</span>
           </h1>
           <p className="home__thesis">{t("home.thesis")}</p>
+
           <StatRotator
             items={[
               { num: t("home.stat1_num"), text: t("home.stat1_text") },
@@ -220,6 +192,7 @@ export default function Home() {
               { num: t("home.stat4_num"), text: t("home.stat4_text") },
             ]}
           />
+
           <div className="home__hero-foot">
             <button
               className="home__cta home__cta--primary"
@@ -242,6 +215,7 @@ export default function Home() {
             </span>
           </div>
         </div>
+
         <button
           className="home__scrollcue"
           onClick={scrollToStory}
@@ -252,22 +226,6 @@ export default function Home() {
       </section>
 
       <section className="home__story container" ref={storyRef}>
-        <div className="home__rail" aria-hidden="true">
-          <div className="home__rail-track">
-            <div className="home__rail-fill" ref={railFillRef} />
-          </div>
-          <ol className="home__rail-dots">
-            {ACTS.map((a, i) => (
-              <li
-                key={a.id}
-                className={`home__rail-dot ${i <= activeAct ? "is-passed" : ""}`}
-              >
-                <span>{String(i + 1).padStart(2, "0")}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
         <header className="home__story-head">
           <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
           <p className="home__story-lead">{t("home.acts_lead")}</p>
@@ -279,7 +237,7 @@ export default function Home() {
               <span className="home__chapter-num">
                 {String(ci + 1).padStart(2, "0")}
               </span>
-              <div>
+              <div className="home__chapter-meta">
                 <p className="eyebrow home__chapter-kicker">
                   {t(`home.${chap.id}_kicker`)}
                 </p>

@@ -1,70 +1,168 @@
-/* src/components/Footer/Footer.scss */
+// src/components/Footer/Footer.scss
+// ============================================================
+//  Pied de page — direction « eaux profondes éditoriales ».
+//    • Filet dégradé de marque en crête, atmosphère lavande diffuse.
+//    • Marque Fraunces + accroche + périmètre.
+//    • Bloc Données (citation obligatoire au règlement) mis en valeur.
+//    • Barre basse mono : crédit + label concours surligné terracotta.
+//  Toutes les chaînes proviennent de t() (aucun texte en dur).
+//  Variables locales pour les dimensions, var(--x) pour le reste.
+// ============================================================
+
+$crest-h: 1px;
+$glow-h: 220px;
 
 .footer {
+  position: relative;
   margin-top: auto;
-  padding-top: var(--sp-16);
+  padding-top: var(--sp-24);
+  overflow: hidden;
   background: var(--c-bg-2);
   border-top: var(--border-hair) solid var(--c-line);
 
+  // Filet dégradé de marque en crête
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $crest-h;
+    background: var(--grad-secondary-accent);
+    opacity: 0.8;
+  }
+
+  // Halo lavande diffus (atmosphère, profondeur)
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc($glow-h * -0.5);
+    left: 50%;
+    width: 80%;
+    height: $glow-h;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      60% 100% at 50% 0%,
+      var(--c-accent-glow) 0%,
+      transparent 70%
+    );
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   &__inner {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 1.6fr 1fr;
     gap: var(--sp-12);
     padding-bottom: var(--sp-16);
+  }
 
-    @media (max-width: 640px) {
+  @media (max-width: 720px) {
+    &__inner {
       grid-template-columns: 1fr;
       gap: var(--sp-8);
     }
   }
 
+  /* ---------- Marque ---------- */
   &__logo {
+    display: inline-block;
     font-family: var(--font-display);
-    font-size: var(--fs-lg);
+    font-size: var(--fs-h4);
     font-weight: var(--fw-semi);
     letter-spacing: var(--ls-tight);
+    color: var(--c-text);
+
+    // Soulignement dégradé de marque
+    background-image: var(--grad-primary-accent);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 2px;
+    padding-bottom: 4px;
   }
+
   &__tagline {
     margin-top: var(--sp-4);
     max-width: 38ch;
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-light);
+    line-height: 1.35;
     color: var(--c-text-soft);
   }
+
   &__scope {
-    margin-top: var(--sp-3);
+    margin-top: var(--sp-6);
+    padding-left: var(--sp-3);
+    border-left: 2px solid var(--c-secondary);
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
+    line-height: var(--lh-base);
     color: var(--c-text-mute);
+  }
+
+  /* ---------- Colonne Données ---------- */
+  &__col {
+    display: flex;
+    flex-direction: column;
   }
 
   &__title {
+    margin-bottom: var(--sp-4);
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
+    font-weight: var(--fw-med);
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     color: var(--c-accent);
-    margin-bottom: var(--sp-4);
-  }
-  &__meta {
-    color: var(--c-text-mute);
-    font-size: var(--fs-sm);
   }
 
+  &__meta {
+    position: relative;
+    padding: var(--sp-4);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+    background: color-mix(in srgb, var(--c-surface) 50%, transparent);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-base);
+    color: var(--c-text-soft);
+    transition: border-color var(--t-base) var(--ease-out);
+
+    &:hover {
+      border-color: var(--c-line-strong);
+    }
+  }
+
+  /* ---------- Barre basse ---------- */
   &__bar {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--sp-4);
     padding-block: var(--sp-6);
     border-top: var(--border-hair) solid var(--c-line);
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
     color: var(--c-text-mute);
-
-    @media (max-width: 560px) {
-      flex-direction: column;
-      gap: var(--sp-2);
-    }
   }
+
   &__pdc {
     color: var(--c-text-soft);
+    padding: var(--sp-1) var(--sp-3);
+    border-radius: var(--r-pill);
+    border: var(--border-hair) solid var(--c-line);
+    background: color-mix(in srgb, var(--c-warm) 10%, transparent);
+  }
+
+  @media (max-width: 560px) {
+    &__bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--sp-3);
+    }
   }
 }
