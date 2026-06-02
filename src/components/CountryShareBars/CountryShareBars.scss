@@ -1,0 +1,173 @@
+/* src/components/CountryShareBars/CountryShareBars.scss */
+
+.csb {
+  margin: var(--sp-8) 0;
+}
+
+.csb--state {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.csb__head {
+  margin-bottom: var(--sp-4);
+}
+
+/* Switch par habitant / part mondiale */
+.csb__switch {
+  display: inline-flex;
+  gap: var(--sp-1);
+  margin: var(--sp-3) 0 var(--sp-2);
+  padding: 3px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+}
+
+.csb__pill {
+  padding: var(--sp-1) var(--sp-4);
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+.csb__pill:hover {
+  color: var(--c-text);
+}
+.csb__pill.is-active {
+  background: color-mix(in srgb, var(--c-accent) 18%, transparent);
+  color: var(--c-accent);
+}
+.csb__pill:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.csb__lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  color: var(--c-text-soft);
+  line-height: var(--lh-base);
+  margin: var(--sp-2) 0 0;
+  max-width: 74ch;
+}
+
+.csb__chart {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.csb__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.csb__name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  fill: var(--c-text-soft);
+}
+
+.csb__val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--c-text-mute);
+}
+
+.csb__track-bg {
+  fill: var(--c-line);
+  opacity: 0.5;
+}
+
+.csb__bar--rest {
+  fill: var(--c-line-strong);
+}
+
+.csb__bar--pac {
+  fill: var(--c-positive);
+}
+
+.csb__g.is-pac .csb__name {
+  fill: var(--c-positive);
+  font-weight: var(--fw-semi);
+}
+
+.csb__g.is-pac .csb__val {
+  fill: var(--c-positive);
+}
+
+/* Histoire (explication NC / Palaos) — pleine largeur, padding reel, paragraphes */
+.csb__story {
+  box-sizing: border-box;
+  width: 100%;
+  margin: var(--sp-5) 0 0;
+  padding: var(--sp-6);
+  border-left: 3px solid var(--c-accent);
+  border-radius: var(--r-md, 10px);
+  background: color-mix(in srgb, var(--c-accent) 6%, var(--c-surface));
+}
+
+.csb__story-p {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  color: var(--c-text);
+}
+.csb__story-p:last-child {
+  margin-bottom: 0;
+}
+.csb__story-p:first-child {
+  font-weight: var(--fw-semi);
+}
+
+.csb__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin: var(--sp-3) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.csb__chip {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-left: var(--sp-3);
+}
+.csb__chip:first-child {
+  margin-left: 0;
+}
+.csb__chip--pac {
+  background: var(--c-positive);
+}
+.csb__chip--rest {
+  background: var(--c-line-strong);
+}
+
+.csb__src {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-3) var(--sp-6) 0;
+  border-top: var(--border-hair) solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  line-height: 1.6;
+}

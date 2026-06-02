@@ -1,59 +1,60 @@
-/* src/components/RankBars/RankBars.scss
-   ============================================================
-   Classement animé. Les remplissages de barres sont posés en JS
-   (GSAP) ; ici, le texte, l'axe et la ligne de repère. En mode
-   pivot (betterWhen), la ligne de repère devient cyan (neutre).
-   ============================================================ */
+/* src/components/RankBars/RankBars.scss */
 
 .rank {
   width: 100%;
+  overflow-x: auto;
 }
 
 .rank__svg {
   width: 100%;
   height: auto;
-  overflow: visible;
+  display: block;
+}
+
+/* Zones de jugement en arriere-plan */
+.rank__zone {
+  opacity: 0.06;
+}
+.rank__zone--good {
+  fill: var(--c-positive);
+}
+.rank__zone--bad {
+  fill: var(--c-negative);
+}
+
+/* Ligne de reference (mediane) */
+.rank__ref {
+  stroke: var(--c-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  opacity: 0.85;
+}
+.rank__ref-label {
+  fill: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 .rank__name {
-  fill: var(--c-text);
+  fill: var(--c-text-soft);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.rank__bar {
+  /* couleur appliquee par GSAP (divergente autour de la mediane) */
 }
 
 .rank__val {
-  fill: var(--c-text-mute);
+  fill: var(--c-text);
   font-family: var(--font-mono);
   font-size: 12px;
-}
-
-.rank__ref-g {
-  transition: transform 0.7s var(--ease-out);
-}
-
-.rank__ref {
-  stroke: var(--c-warm);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 4;
-}
-
-.rank__ref-label {
-  fill: var(--c-warm);
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-
-/* Mode pivot : le repère devient le point neutre (cyan). */
-.rank--pivot .rank__ref {
-  stroke: var(--c-accent);
-}
-.rank--pivot .rank__ref-label {
-  fill: var(--c-accent);
 }
 
 .rank__axis-title {
   fill: var(--c-text-mute);
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

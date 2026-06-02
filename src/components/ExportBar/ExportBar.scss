@@ -1,39 +1,74 @@
-/* src/components/ExportBar/ExportBar.scss */
+/* src/components/ExportBar/ExportBar.scss
+   ============================================================
+   Barre de telechargement : libelle + 2 boutons distincts (PDF / Excel).
+   Tokens globaux, aucune valeur en dur.
+   ============================================================ */
 
 .export {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   flex-wrap: wrap;
+}
 
-  &__label {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-  }
+.export__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  margin-right: var(--sp-1);
+}
 
-  &__btn {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.06em;
-    color: var(--c-text);
-    padding: var(--sp-2) var(--sp-4);
-    border: var(--border-hair) solid var(--c-line-strong);
-    border-radius: var(--r-pill);
-    transition:
-      border-color var(--t-fast) var(--ease-out),
-      color var(--t-fast) var(--ease-out),
-      background var(--t-fast) var(--ease-out);
+.export__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-pill);
+  border: var(--border-hair) solid var(--c-line-strong);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+.export__btn:hover {
+  transform: translateY(-1px);
+}
+.export__btn:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+.export__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
-    &:hover:not(:disabled) {
-      border-color: var(--c-accent);
-      color: var(--c-accent);
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-  }
+/* PDF : identite accent (cyan) */
+.export__btn--pdf {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 10%, var(--c-surface));
+}
+.export__btn--pdf:hover {
+  background: color-mix(in srgb, var(--c-accent) 20%, var(--c-surface));
+  box-shadow: var(--shadow-glow);
+}
+
+/* Excel : vert (favorable) */
+.export__btn--xls {
+  border-color: var(--c-positive);
+  color: var(--c-positive);
+  background: color-mix(in srgb, var(--c-positive) 10%, var(--c-surface));
+}
+.export__btn--xls:hover {
+  background: color-mix(in srgb, var(--c-positive) 20%, var(--c-surface));
+  box-shadow: 0 0 0 1px var(--c-positive), 0 6px 18px var(--c-positive-glow);
 }

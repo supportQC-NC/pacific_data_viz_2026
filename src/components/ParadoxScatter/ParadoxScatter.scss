@@ -1,96 +1,204 @@
-// src/components/ParadoxScatter/ParadoxScatter.scss
-// ============================================================
-// Tout via les tokens → light/dark automatique. Aucune valeur en dur.
-// ============================================================
+/* src/components/ParadoxScatter/ParadoxScatter.scss */
 
-.ps { margin: 0; width: 100%; }
+.ps {
+  width: 100%;
+}
+
+.ps--empty {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+/* En-tete : histoire + selecteur d'axe vertical */
+.ps__controls {
+  margin-bottom: var(--sp-4);
+}
+
+.ps__story {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  color: var(--c-text-soft);
+  line-height: var(--lh-base);
+  margin: 0 0 var(--sp-3);
+  max-width: 72ch;
+}
+
+.ps__pick {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.ps__pick-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: var(--sp-1);
+}
+
+.ps__pill {
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-pill);
+  border: var(--border-hair) solid var(--c-line-strong);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+.ps__pill:hover {
+  border-color: var(--c-accent);
+  color: var(--c-text);
+}
+.ps__pill.is-active {
+  border-color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 16%, transparent);
+  color: var(--c-accent);
+}
+.ps__pill:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
 
 .ps__svg {
   width: 100%;
   height: auto;
   display: block;
-  font-family: var(--font-mono);
 }
 
-.ps--empty {
-  padding: var(--sp-8);
-  text-align: center;
-  color: var(--c-text-mute);
+.ps__note {
+  margin: var(--sp-3) 0 0;
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  border: var(--border-hair) dashed var(--c-line-strong);
-  border-radius: var(--r-md);
+  font-size: var(--fs-xs);
+  color: var(--c-warm, var(--c-text-mute));
 }
 
-/* Quadrant « paradoxe » (peu émis / fort impact) */
+/* Quadrant paradoxe */
 .ps__quad rect {
-  fill: color-mix(in srgb, var(--c-accent) 8%, transparent);
+  fill: var(--c-negative);
+  opacity: 0.06;
 }
 .ps__quad-lbl {
-  fill: var(--c-accent);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  fill: var(--c-negative);
+  font-family: var(--font-mono);
+  font-size: 12px;
   opacity: 0.85;
 }
 
-/* Grille & axes */
-.ps__grid line { stroke: var(--c-line); stroke-width: 1; }
-.ps__axis { stroke: var(--c-line-strong); stroke-width: 1; }
-.ps__tick { fill: var(--c-text-mute); font-size: 12px; text-anchor: end; }
-.ps__tick--x { text-anchor: middle; }
-.ps__axlabel {
-  fill: var(--c-text-soft);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+/* Grille + ticks */
+.ps__grid line {
+  stroke: var(--c-line);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+.ps__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: end;
+}
+.ps__tick--x {
+  text-anchor: middle;
 }
 
-/* Médianes */
+/* Medianes */
 .ps__median line {
   stroke: var(--c-accent);
-  stroke-width: 1;
+  stroke-width: 1.25;
   stroke-dasharray: 4 4;
-  opacity: 0.6;
+  opacity: 0.75;
 }
 .ps__median-lbl {
   fill: var(--c-accent);
+  font-family: var(--font-mono);
   font-size: 11px;
   text-anchor: middle;
-  letter-spacing: 0.04em;
 }
 .ps__median-h {
-  stroke: var(--c-text-mute);
+  stroke: var(--c-accent);
   stroke-width: 1;
-  stroke-dasharray: 2 5;
-  opacity: 0.5;
+  stroke-dasharray: 3 5;
+  opacity: 0.4;
+}
+
+/* Axes */
+.ps__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.25;
+}
+.ps__axlabel {
+  fill: var(--c-text-soft);
+  font-family: var(--font-body);
+  font-size: 12px;
 }
 
 /* Bulles */
-.ps__pt { cursor: pointer; }
+.ps__pt {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
 .ps__dot {
-  transition: r var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out);
+  fill: var(--c-accent);
+  stroke: var(--c-bg);
+  stroke-width: 1.5;
+  transition: r 0.15s ease;
 }
 .ps__pt.is-low .ps__dot {
-  fill: color-mix(in srgb, var(--c-accent) 78%, transparent);
-  stroke: var(--c-accent);
+  fill: var(--c-positive);
 }
 .ps__pt.is-high .ps__dot {
-  fill: color-mix(in srgb, var(--c-warm) 72%, transparent);
-  stroke: var(--c-warm);
+  fill: var(--c-negative);
 }
-.ps__pt.is-dim { opacity: 0.28; }
-.ps__pt.is-on .ps__dot { filter: drop-shadow(0 0 8px var(--c-accent-glow)); }
-
+.ps__pt.is-paradox .ps__dot {
+  fill: var(--c-accent);
+  stroke: var(--c-accent);
+}
+.ps__ring {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: 2;
+  opacity: 0.9;
+}
+.ps__pt.is-dim {
+  opacity: 0.25;
+}
+.ps__pt.is-on .ps__dot {
+  stroke: var(--c-text);
+}
 .ps__code {
   fill: var(--c-text-soft);
+  font-family: var(--font-mono);
   font-size: 11px;
-  opacity: 0.8;
-  pointer-events: none;
 }
-.ps__pt.is-on .ps__code { fill: var(--c-text); opacity: 1; font-weight: var(--fw-semi); }
+.ps__pt.is-paradox .ps__code {
+  fill: var(--c-accent);
+  font-weight: var(--fw-semi);
+}
 
 /* Tooltip */
-.ps__tip rect { fill: var(--c-surface); stroke: var(--c-line-strong); }
-.ps__tip-name { fill: var(--c-text); font-size: 13px; font-weight: var(--fw-semi); }
-.ps__tip-val { fill: var(--c-text-soft); font-size: 12px; }
+.ps__tip rect {
+  fill: var(--c-surface);
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+}
+.ps__tip-name {
+  fill: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: var(--fw-semi);
+}
+.ps__tip-val {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}

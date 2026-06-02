@@ -1,99 +1,75 @@
-/* src/components/ChangeBars/ChangeBars.scss
-   ============================================================
-   Barres divergentes de variation. Par défaut : identité
-   (hausse = corail, baisse = cyan). Modificateurs sémantiques :
-   .cb--better-low  → hausse = rouge (défavorable), baisse = vert
-   .cb--better-high → hausse = vert,  baisse = rouge
-   ============================================================ */
+/* src/components/ChangeBars/ChangeBars.scss */
 
 .cb {
-  margin: 0;
   width: 100%;
+}
+
+.cb--empty {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
 }
 
 .cb__svg {
   width: 100%;
   height: auto;
   display: block;
-  font-family: var(--font-mono);
-}
-
-.cb--empty {
-  padding: var(--sp-8);
-  text-align: center;
-  color: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
 }
 
 .cb__zero {
   stroke: var(--c-line-strong);
-  stroke-width: 1;
+  stroke-width: 1.25;
 }
 
 .cb__name {
   fill: var(--c-text-soft);
+  font-family: var(--font-body);
   font-size: 12px;
-  text-anchor: end;
+}
+
+.cb__val {
+  fill: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 .cb__bar {
   transition: opacity var(--t-fast) var(--ease-out);
-  opacity: 0.85;
 }
 
-/* ---- Identité (par défaut) ---- */
-.cb__row.is-up .cb__bar {
-  fill: color-mix(in srgb, var(--c-warm) 80%, transparent);
+.cb__row.is-on .cb__bar {
+  opacity: 0.82;
 }
-.cb__row.is-down .cb__bar {
-  fill: color-mix(in srgb, var(--c-accent) 80%, transparent);
-}
-.cb__row.is-up .cb__val {
-  fill: var(--c-warm);
-}
-.cb__row.is-down .cb__val {
-  fill: var(--c-accent);
-}
-.cb__legend--up {
-  fill: var(--c-warm);
-}
-.cb__legend--down {
-  fill: var(--c-accent);
+.cb__row.is-on .cb__name {
+  fill: var(--c-text);
 }
 
-/* ---- Sémantique : baisse favorable (ex. émissions) ---- */
+/* Couleur semantique */
 .cb--better-low .cb__row.is-up .cb__bar {
-  fill: color-mix(in srgb, var(--c-negative) 82%, transparent);
-}
-.cb--better-low .cb__row.is-down .cb__bar {
-  fill: color-mix(in srgb, var(--c-positive) 82%, transparent);
-}
-.cb--better-low .cb__row.is-up .cb__val {
   fill: var(--c-negative);
 }
-.cb--better-low .cb__row.is-down .cb__val {
+.cb--better-low .cb__row.is-down .cb__bar {
   fill: var(--c-positive);
+}
+.cb--better-high .cb__row.is-up .cb__bar {
+  fill: var(--c-positive);
+}
+.cb--better-high .cb__row.is-down .cb__bar {
+  fill: var(--c-negative);
+}
+
+.cb__legend {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
 }
 .cb--better-low .cb__legend--up {
   fill: var(--c-negative);
 }
 .cb--better-low .cb__legend--down {
   fill: var(--c-positive);
-}
-
-/* ---- Sémantique : hausse favorable ---- */
-.cb--better-high .cb__row.is-up .cb__bar {
-  fill: color-mix(in srgb, var(--c-positive) 82%, transparent);
-}
-.cb--better-high .cb__row.is-down .cb__bar {
-  fill: color-mix(in srgb, var(--c-negative) 82%, transparent);
-}
-.cb--better-high .cb__row.is-up .cb__val {
-  fill: var(--c-positive);
-}
-.cb--better-high .cb__row.is-down .cb__val {
-  fill: var(--c-negative);
 }
 .cb--better-high .cb__legend--up {
   fill: var(--c-positive);
@@ -102,31 +78,9 @@
   fill: var(--c-negative);
 }
 
-/* ---- Commun ---- */
-.cb__row.is-on .cb__bar {
-  opacity: 1;
-}
-.cb__row.is-on .cb__name {
-  fill: var(--c-text);
-}
-
-.cb__val {
-  fill: var(--c-text-mute);
-  font-size: 11px;
-}
-
-.cb__legend {
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .cb__cap {
-  margin-top: var(--sp-3);
+  margin: var(--sp-3) 0 0;
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--c-text-soft);
-}
-.cb__cap strong {
-  color: var(--c-text);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
 }

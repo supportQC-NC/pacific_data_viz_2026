@@ -1,4 +1,9 @@
-/* src/components/ParadoxShare/ParadoxShare.scss */
+/* src/components/ParadoxShare/ParadoxShare.scss
+   ============================================================
+   Encart "part infime" : anneau (reste du monde) + arc Pacifique +
+   grand chiffre exact AU CENTRE (taille bornee pour ne jamais deborder
+   de l'anneau). Tokens globaux, aucune couleur en dur.
+   ============================================================ */
 
 .pshare {
   margin: var(--sp-8) 0;
@@ -16,8 +21,8 @@
 .pshare__viz {
   position: relative;
   flex: 0 0 auto;
-  width: 150px;
-  height: 150px;
+  width: 156px;
+  height: 156px;
   display: grid;
   place-items: center;
 }
@@ -42,19 +47,27 @@
   filter: drop-shadow(0 0 6px var(--c-positive-glow));
 }
 
+/* Chiffre centre : borne pour rester DANS l'anneau */
 .pshare__num {
   position: absolute;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1px;
+  max-width: 76%;
   font-family: var(--font-display);
-  font-size: var(--fs-xl);
+  font-size: clamp(1.05rem, 0.9rem + 1.2vw, 1.4rem);
   font-weight: var(--fw-semi);
   color: var(--c-positive);
   line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .pshare__num em {
   font-style: normal;
-  font-size: 0.5em;
-  margin-left: 2px;
-  color: var(--c-text-soft);
+  font-size: 0.6em;
+  margin-left: 1px;
 }
 
 .pshare__cap {

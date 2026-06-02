@@ -262,3 +262,25 @@
     outline-offset: 2px;
   }
 }
+
+
+/* Bande de telechargement mise en avant (remplace la timeline globale) */
+.act1__downloads {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: var(--sp-6) 0 var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  border: var(--border-hair) solid var(--c-accent);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--c-accent) 8%, var(--c-surface));
+}
+.act1__downloads-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}

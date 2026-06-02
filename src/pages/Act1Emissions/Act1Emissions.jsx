@@ -1,12 +1,15 @@
 // src/pages/Act1Emissions/Act1Emissions.jsx
 // ============================================================
 // Acte 01 — Le paradoxe. 100 % donnees reelles (Pacific Data Hub).
-// Repere = MEDIANE Pacifique (robuste). 17 territoires conserves ;
-// FILTRE par sous-region qui pilote toutes les vues par territoire.
-// Couleur semantique : emissions = jugement vs mediane (vert sous, rouge
-// au-dessus), y compris sur le globe Mapbox. Guide enrichi « Source & methode ».
-// Encart « part infime » : part du Pacifique dans les emissions mondiales
-// de CO2 (World Bank Data360 / OWID, CC BY 4.0).
+// Repere = MEDIANE Pacifique (robuste). FILTRE par sous-region qui pilote
+// toutes les vues par territoire. Couleur semantique vs mediane.
+// - Encart "part infime" + histogramme "part par pays" : World Bank Data360
+//   / OWID (OWID_CB, CC BY 4.0), une seule requete.
+// - Nuage paradoxe : SELECTEUR d'axe vertical (montee des eaux / temperature
+//   / population touchee), defaut = metrique qui varie le plus.
+// - Chaque visuel est encadre par VizFrame (plein ecran) ; les visuels
+//   pilotes par l'annee ont aussi un player. Plus de timeline globale ;
+//   le telechargement PDF/Excel est mis en avant.
 // ============================================================
 
 import React, {
@@ -25,7 +28,13 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { getDatasetSource } from "../../data/datasetSources";
 import sourceLabels from "../../i18n/sourceLabels";
-import { fetchPacificCO2Share } from "../../services/data360Api";
+import {
+  fetchCountryCO2Shares,
+  fetchWorldPerCapita,
+  pacificShareFromRows,
+  PICT_ISO3,
+} from "../../services/data360Api";
+import { countryName } from "../../data/countryNames";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import RankBars from "../../components/RankBars/RankBars";
 import TrendLines from "../../components/TrendLines/TrendLines";
@@ -33,8 +42,12 @@ import ChangeBars from "../../components/ChangeBars/ChangeBars";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
 import ParadoxScatter from "../../components/ParadoxScatter/ParadoxScatter";
 import ParadoxShare from "../../components/ParadoxShare/ParadoxShare";
+import CountryShareBars from "../../components/CountryShareBars/CountryShareBars";
+import KpiRow from "../../components/KpiRow/KpiRow";
+import kpiLabels from "../../i18n/kpiLabels";
 import DataTable from "../../components/DataTable/DataTable";
 import ExportBar from "../../components/ExportBar/ExportBar";
+import VizFrame from "../../components/VizFrame/VizFrame";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import "./Act1Emissions.scss";
 
@@ -85,7 +98,8 @@ export default function Act1Emissions() {
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [region, setRegion] = useState("all");
-  const [worldShare, setWorldShare] = useState(null);
+  const [shares, setShares] = useState(null);
+  const [worldPC, setWorldPC] = useState(null);
 
   useEffect(() => {
     dispatch(loadDataset("emissions"));
@@ -96,8 +110,11 @@ export default function Act1Emissions() {
 
   useEffect(() => {
     let alive = true;
-    fetchPacificCO2Share().then((r) => {
-      if (alive) setWorldShare(r);
+    fetchCountryCO2Shares().then((r) => {
+      if (alive) setShares(r);
+    });
+    fetchWorldPerCapita().then((r) => {
+      if (alive) setWorldPC(r);
     });
     return () => {
       alive = false;
@@ -168,7 +185,9 @@ export default function Act1Emissions() {
         area,
         code: area,
         name: pictName(area, lang),
-        values: series.filter((p) => Number.isFinite(p.value) && p.value > 0),
+        values: series
+          .filter((p) => Number.isFinite(p.value) && p.value > 0)
+          .sort((a, b) => a.year - b.year),
       }));
   }, [ready, emissions.data, lang]);
 
@@ -257,18 +276,19 @@ export default function Act1Emissions() {
   }, [points]);
 
   const emLast = useMemo(() => latestByArea(emissions), [emissions]);
-  const impact = useMemo(() => {
+
+  // Metriques "subies" pour le selecteur d'axe vertical du nuage.
+  const scatterMetrics = useMemo(() => {
     const entries = { seaLevel, sst, disastersAffected: disasters };
     const meta = {
-      seaLevel: { y: t("act1.scatter.y_sea"), unit: t("act1.scatter.u_sea") },
-      sst: { y: t("act1.scatter.y_sst"), unit: t("act1.scatter.u_sst") },
+      seaLevel: { label: t("act1.scatter.y_sea"), unit: t("act1.scatter.u_sea") },
+      sst: { label: t("act1.scatter.y_sst"), unit: t("act1.scatter.u_sst") },
       disastersAffected: {
-        y: t("act1.scatter.y_dis"),
+        label: t("act1.scatter.y_dis"),
         unit: t("act1.scatter.u_dis"),
       },
     };
-    let best = null;
-    IMPACT_CANDIDATES.forEach((id) => {
+    return IMPACT_CANDIDATES.map((id) => {
       const last = latestByArea(entries[id]);
       const rows = Object.keys(emLast)
         .filter(
@@ -283,12 +303,91 @@ export default function Act1Emissions() {
           x: emLast[a],
           y: last[a],
         }));
-      if (rows.length >= 3 && (!best || rows.length > best.rows.length)) {
-        best = { id, rows, ...meta[id] };
-      }
+      return { id, label: meta[id].label, unit: meta[id].unit, rows };
+    }).filter((m) => m.rows.length >= 3);
+  }, [seaLevel, sst, disasters, emLast, lang, t, areaVisible]);
+
+  // Part par pays (Data360 / OWID) -> histogramme + somme Pacifique.
+  const shareByIso = useMemo(() => {
+    const m = {};
+    if (shares) shares.rows.forEach((r) => { m[r.iso3] = r.share; });
+    return m;
+  }, [shares]);
+
+  // Comparaison : chaque ligne porte perCapita (NOS donnees pour le Pacifique,
+  // OWID pour les grands emetteurs) ET share (% mondial OWID, pour tous).
+  // Le composant bascule entre les deux via un switch.
+  const comparisonRows = useMemo(() => {
+    const out = allPoints.map((p) => {
+      const iso3 = PICT_ISO3[p.area] || p.area;
+      return {
+        iso3,
+        name: p.name,
+        pacific: true,
+        perCapita: p.value,
+        share: iso3 in shareByIso ? shareByIso[iso3] : null,
+      };
     });
-    return best;
-  }, [emissions, seaLevel, sst, disasters, emLast, lang, t, areaVisible]);
+    if (worldPC) {
+      worldPC.rows.forEach((r) => {
+        out.push({
+          iso3: r.iso3,
+          name: countryName(r.iso3, lang),
+          pacific: false,
+          perCapita: r.value,
+          share: r.iso3 in shareByIso ? shareByIso[r.iso3] : null,
+        });
+      });
+    }
+    return out;
+  }, [allPoints, worldPC, shareByIso, lang]);
+
+  const pacShare = useMemo(
+    () => (shares ? pacificShareFromRows(shares.rows) : null),
+    [shares],
+  );
+
+  // KPI : donnees officielles par habitant (table PDH) + 1 KPI mondial
+  // (part du Pacifique dans le CO2 mondial) pour la COMPARAISON.
+  const kpi = kpiLabels[lang] || kpiLabels.fr;
+  const kpiItems = useMemo(() => {
+    if (!stats) return [];
+    const med = stats.med;
+    const times = med > 0 ? Math.round(stats.hi.value / med) : null;
+    return [
+      {
+        key: "median",
+        value: med.toFixed(1),
+        unit: t("act1.unit"),
+        label: t("act1.stats.median"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: stats.hi.value,
+        unit: stats.hi.area,
+        label: t("act1.stats.highest"),
+        note: times ? `${times} ${kpi.timesMedian}` : null,
+        tone: "warm",
+      },
+      {
+        key: "low",
+        value: stats.lo.value,
+        unit: stats.lo.area,
+        label: t("act1.stats.lowest"),
+        tone: "positive",
+      },
+      {
+        key: "world",
+        value:
+          pacShare != null ? pacShare.toFixed(pacShare < 0.1 ? 3 : 2) : "\u2014",
+        unit: pacShare != null ? "%" : kpi.unavailable,
+        label: kpi.worldShare,
+        note: kpi.worldOf,
+        tone: "compare",
+      },
+    ];
+  }, [stats, pacShare, t, kpi]);
 
   const exportRows = useMemo(
     () =>
@@ -399,45 +498,8 @@ export default function Act1Emissions() {
 
         {ready && !empty && currentYear != null && (
           <>
-            {stats && (
-              <section
-                className="act1__stats"
-                aria-label={t("act1.stats.title")}
-              >
-                <div className="act1__stat">
-                  <span className="act1__stat-num">{stats.count}</span>
-                  <span className="act1__stat-lbl">
-                    {t("act1.stats.count")}
-                  </span>
-                </div>
-                <div className="act1__stat">
-                  <span className="act1__stat-num">
-                    {stats.med.toFixed(1)}
-                    <em>{t("act1.unit")}</em>
-                  </span>
-                  <span className="act1__stat-lbl">
-                    {t("act1.stats.median")}
-                  </span>
-                </div>
-                <div className="act1__stat">
-                  <span className="act1__stat-num">
-                    {stats.lo.value}
-                    <em>{stats.lo.area}</em>
-                  </span>
-                  <span className="act1__stat-lbl">
-                    {t("act1.stats.lowest")}
-                  </span>
-                </div>
-                <div className="act1__stat act1__stat--warm">
-                  <span className="act1__stat-num">
-                    {stats.hi.value}
-                    <em>{stats.hi.area}</em>
-                  </span>
-                  <span className="act1__stat-lbl">
-                    {t("act1.stats.highest")}
-                  </span>
-                </div>
-              </section>
+            {kpiItems.length > 0 && (
+              <KpiRow items={kpiItems} title={t("act1.stats.title")} />
             )}
 
             <div
@@ -460,14 +522,8 @@ export default function Act1Emissions() {
               </div>
             </div>
 
-            <div className="act1__chart-head">
-              <div>
-                <h2 className="act1__chart-title">{t("act1.chart_title")}</h2>
-                <span className="act1__chart-sub">
-                  {t("act1.chart_sub")}
-                  {source ? ` · ${t(`act1.src_${source}`)}` : ""}
-                </span>
-              </div>
+            <div className="act1__downloads">
+              <span className="act1__downloads-lbl">{t("export.title")}</span>
               <ExportBar
                 targetRef={chartRef}
                 rows={exportRows}
@@ -476,33 +532,24 @@ export default function Act1Emissions() {
               />
             </div>
 
-            <div className="act1__timeline">
-              <button className="act1__play" onClick={togglePlay}>
-                {playing ? t("act1.pause") : t("act1.play")}
-              </button>
-              <input
-                className="act1__slider"
-                type="range"
-                min={0}
-                max={years.length - 1}
-                value={yearIdx ?? 0}
-                onChange={(e) => {
-                  setPlaying(false);
-                  setYearIdx(Number(e.target.value));
-                }}
-                aria-label={t("act1.year")}
-              />
-              <span className="act1__year">{currentYear}</span>
-            </div>
-
-            <div ref={chartRef} className="act1__capture">
-              <RankBars
-                data={points}
-                unit={t("act1.unit")}
-                worldAvg={pacRef}
-                refLabel={t("act1.pac_ref")}
-                betterWhen="low"
-              />
+            <div ref={chartRef}>
+              <VizFrame
+                title={t("act1.chart_title")}
+                subtitle={`${t("act1.chart_sub")}${source ? ` · ${t(`act1.src_${source}`)}` : ""}`}
+                years={years}
+                yearIndex={yearIdx}
+                playing={playing}
+                onTogglePlay={togglePlay}
+                onScrub={scrubYear}
+              >
+                <RankBars
+                  data={points}
+                  unit={t("act1.unit")}
+                  worldAvg={pacRef}
+                  refLabel={t("act1.pac_ref")}
+                  betterWhen="low"
+                />
+              </VizFrame>
             </div>
 
             {stats?.outliers?.length > 0 && (
@@ -512,85 +559,98 @@ export default function Act1Emissions() {
               </p>
             )}
 
-            <div className="act1__map-head">
-              <h3 className="act1__map-title">{t("act1.viz_trend_title")}</h3>
-              <span className="act1__chart-sub">{t("act1.viz_trend_sub")}</span>
-            </div>
-            <TrendLines
-              series={trends}
+            <VizFrame
+              title={t("act1.viz_trend_title")}
+              subtitle={t("act1.viz_trend_sub")}
               years={years}
-              currentYear={currentYear}
-              unit={t("act1.unit")}
-            />
+              yearIndex={yearIdx}
+              playing={playing}
+              onTogglePlay={togglePlay}
+              onScrub={scrubYear}
+            >
+              <TrendLines
+                series={trends}
+                years={years}
+                currentYear={currentYear}
+                unit={t("act1.unit")}
+              />
+            </VizFrame>
 
-            <div className="act1__map-head">
-              <h3 className="act1__map-title">{t("act1.heatmap.title")}</h3>
-              <span className="act1__chart-sub">{t("act1.heatmap.sub")}</span>
-            </div>
-            <EmissionsHeatmap
-              series={vSeries}
+            <VizFrame title={t("act1.heatmap.title")} subtitle={t("act1.heatmap.sub")}>
+              <EmissionsHeatmap
+                series={vSeries}
+                years={years}
+                unit={t("act1.unit")}
+                labels={{
+                  low: t("act1.heatmap.low"),
+                  high: t("act1.heatmap.high"),
+                  empty: t("act1.change.empty"),
+                }}
+              />
+            </VizFrame>
+
+            <VizFrame
+              title={t("act1.subregion.title")}
+              subtitle={t("act1.subregion.sub")}
               years={years}
-              unit={t("act1.unit")}
-              labels={{
-                low: t("act1.heatmap.low"),
-                high: t("act1.heatmap.high"),
-                empty: t("act1.change.empty"),
-              }}
-            />
+              yearIndex={yearIdx}
+              playing={playing}
+              onTogglePlay={togglePlay}
+              onScrub={scrubYear}
+            >
+              <TrendLines
+                series={subregionSeries}
+                years={years}
+                currentYear={currentYear}
+                unit={t("act1.unit")}
+              />
+            </VizFrame>
 
-            <div className="act1__map-head">
-              <h3 className="act1__map-title">{t("act1.subregion.title")}</h3>
-              <span className="act1__chart-sub">{t("act1.subregion.sub")}</span>
-            </div>
-            <TrendLines
-              series={subregionSeries}
-              years={years}
-              currentYear={currentYear}
-              unit={t("act1.unit")}
-            />
-
-            <div className="act1__map-head">
-              <h3 className="act1__map-title">
-                {t("act1.change.title")} {firstYear ?? ""}
-              </h3>
-              <span className="act1__chart-sub">{t("act1.change.sub")}</span>
-            </div>
-            <ChangeBars
-              rows={changeRows}
-              unit={t("act1.unit")}
-              betterWhen="low"
-              labels={{
-                up: t("act1.change.up"),
-                down: t("act1.change.down"),
-                empty: t("act1.change.empty"),
-              }}
-            />
+            <VizFrame
+              title={`${t("act1.change.title")} ${firstYear ?? ""}`}
+              subtitle={t("act1.change.sub")}
+            >
+              <ChangeBars
+                rows={changeRows}
+                unit={t("act1.unit")}
+                betterWhen="low"
+                labels={{
+                  up: t("act1.change.up"),
+                  down: t("act1.change.down"),
+                  empty: t("act1.change.empty"),
+                }}
+              />
+            </VizFrame>
 
             <ParadoxShare
-              share={worldShare ? worldShare.share : null}
-              year={worldShare ? worldShare.year : null}
-              loading={!worldShare}
-              approx={worldShare ? worldShare.source === "fallback" : false}
+              share={pacShare}
+              year={shares ? shares.year : null}
+              loading={!shares}
+              approx={shares ? shares.source === "fallback" : false}
             />
 
-            <div className="act1__map-head">
-              <h3 className="act1__map-title">{t("act1.scatter.title")}</h3>
-              <span className="act1__chart-sub">{t("act1.scatter.sub")}</span>
-            </div>
-            <ParadoxScatter
-              rows={impact ? impact.rows : []}
-              xLabel={t("act1.scatter.x")}
-              yLabel={impact ? impact.y : t("act1.scatter.y_sea")}
-              xUnit={t("act1.unit")}
-              yUnit={impact ? impact.unit : ""}
-              xLog
-              medianX={pacRef}
-              labels={{
-                empty: t("act1.scatter.empty"),
-                hint: t("act1.pac_ref"),
-                paradox: t("act1.scatter.paradox"),
-              }}
-            />
+            <VizFrame>
+              <CountryShareBars
+                rows={comparisonRows}
+                year={currentYear}
+                loading={comparisonRows.length === 0}
+              />
+            </VizFrame>
+
+            <VizFrame title={t("act1.scatter.title")} subtitle={t("act1.scatter.sub")}>
+              <ParadoxScatter
+                metrics={scatterMetrics}
+                xLabel={t("act1.scatter.x")}
+                xUnit={t("act1.unit")}
+                xLog
+                medianX={pacRef}
+                labels={{
+                  empty: t("act1.scatter.empty"),
+                  hint: t("act1.pac_ref"),
+                  paradox: t("act1.scatter.paradox"),
+                }}
+              />
+            </VizFrame>
 
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.map_title")}</h3>

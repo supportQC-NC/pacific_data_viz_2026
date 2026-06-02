@@ -1,10 +1,10 @@
 // src/components/EmissionsHeatmap/EmissionsHeatmap.jsx
 // ============================================================
-// Heatmap territoire x annee. NORMALISATION PAR LIGNE : chaque territoire
-// est colore sur SA PROPRE plage min->max, donc l'outlier (Palau, NC) ne
-// domine plus et on lit la TRAJECTOIRE de chacun. Rampe semantique
-// vert (ses annees les plus basses) -> cyan -> rouge (ses pics).
-// Valeurs brutes par habitant (aucune transformation) ; fill calcule.
+// Heatmap territoire x annee. Rampe SEQUENTIELLE propre (intensite) :
+// cyan (faible/frais) -> vert -> ambre -> rouge (eleve/chaud), echelle
+// LOGARITHMIQUE (les emissions couvrent ~3 ordres de grandeur). Couleurs
+// lues sur les tokens ; legende = degrade SVG identique a l'echelle
+// (pas de style inline).
 // Props : series [{area,name,values:[{year,value}]}], years[], unit,
 //         labels {low, high, empty}
 // ============================================================
@@ -14,11 +14,10 @@ import * as d3 from "d3";
 import "./EmissionsHeatmap.scss";
 
 const VW = 920;
-const M = { top: 16, right: 16, bottom: 30, left: 52 };
+const M = { top: 16, right: 16, bottom: 30, left: 60 };
 const ROW_H = 18;
 const GAP = 2;
 
-// Lit un token CSS au runtime (avec repli si indisponible).
 function cssVar(name, fallback) {
   if (typeof window === "undefined") return fallback;
   const v = getComputedStyle(document.documentElement)
@@ -42,16 +41,6 @@ export default function EmissionsHeatmap({
       .sort((a, b) => last(b) - last(a));
   }, [series]);
 
-  // Plage propre a chaque territoire (pour la normalisation par ligne).
-  const rowStats = useMemo(() => {
-    const m = {};
-    series.forEach((s) => {
-      const vs = s.values.map((p) => p.value).filter((v) => Number.isFinite(v));
-      m[s.area] = { min: d3.min(vs), max: d3.max(vs) };
-    });
-    return m;
-  }, [series]);
-
   const lookup = useMemo(() => {
     const map = {};
     series.forEach((s) => {
@@ -63,20 +52,37 @@ export default function EmissionsHeatmap({
     return map;
   }, [series]);
 
-  // Rampe semantique vert -> cyan -> rouge (lue depuis les tokens CSS).
-  const ramp = useMemo(() => {
-    const green = cssVar("--c-positive", "#25e09a");
-    const cyan = cssVar("--c-accent", "#00e6ff");
-    const red = cssVar("--c-negative", "#ff4d6d");
-    return d3.interpolateRgbBasis([green, cyan, red]);
-  }, []);
+  // Palette sequentielle frais -> chaud (tokens).
+  const palette = useMemo(
+    () => [
+      cssVar("--c-accent", "#00e6ff"),
+      cssVar("--c-positive", "#25e09a"),
+      cssVar("--c-warm", "#f5a623"),
+      cssVar("--c-negative", "#ff4d6d"),
+    ],
+    [],
+  );
 
-  const color = (v, area) => {
-    if (!Number.isFinite(v)) return "transparent";
-    const r = rowStats[area];
-    const t = r && r.max > r.min ? (v - r.min) / (r.max - r.min) : 0.5;
-    return ramp(t);
-  };
+  // Echelle sequentielle LOGARITHMIQUE (les emissions couvrent ~3 ordres de
+  // grandeur : 0,1 a 86 t/hab). Domaine borne aux quantiles 3% / 90% pour
+  // etaler la masse des petits territoires ; les plus eleves saturent (rouge).
+  const color = useMemo(() => {
+    const all = [];
+    series.forEach((s) => {
+      s.values.forEach((p) => {
+        if (Number.isFinite(p.value) && p.value > 0) all.push(p.value);
+      });
+    });
+    const interp = d3.interpolateRgbBasis(palette);
+    if (!all.length) return () => "transparent";
+    const sorted = all.slice().sort((a, b) => a - b);
+    const lo = Math.max(d3.quantile(sorted, 0.03) ?? sorted[0], 1e-3);
+    let hi = d3.quantile(sorted, 0.9) ?? sorted[sorted.length - 1];
+    if (!(hi > lo)) hi = lo * 10;
+    const t = d3.scaleLog().domain([lo, hi]).range([0, 1]).clamp(true);
+    return (v) =>
+      Number.isFinite(v) && v > 0 ? interp(t(v)) : "transparent";
+  }, [series, palette]);
 
   const innerW = VW - M.left - M.right;
   const cellW = years.length ? innerW / years.length : 0;
@@ -93,7 +99,7 @@ export default function EmissionsHeatmap({
           const ry = M.top + ri * (ROW_H + GAP);
           return (
             <g key={s.area}>
-              <text className="hm__rowlbl" x={M.left - 8} y={ry + ROW_H / 2} dy="0.32em">
+              <text className="hm__rowlbl" x={M.left - 10} y={ry + ROW_H / 2} dy="0.32em">
                 {s.area}
               </text>
               {years.map((yr, ci) => {
@@ -108,7 +114,7 @@ export default function EmissionsHeatmap({
                     y={ry}
                     width={Math.max(1, cellW - 0.5)}
                     height={ROW_H}
-                    fill={color(v, s.area)}
+                    fill={color(v)}
                     onMouseEnter={() => setHover({ area: s.area, name: s.name, year: yr, value: v })}
                     onMouseLeave={() => setHover(null)}
                   />
@@ -131,7 +137,17 @@ export default function EmissionsHeatmap({
       <figcaption className="hm__foot">
         <span className="hm__legend">
           {labels.low}
-          <span className="hm__legend-bar" aria-hidden="true" />
+          <svg className="hm__legend-grad" width="130" height="10" viewBox="0 0 130 10" aria-hidden="true" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="hm-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={palette[0]} />
+                <stop offset="40%" stopColor={palette[1]} />
+                <stop offset="72%" stopColor={palette[2]} />
+                <stop offset="100%" stopColor={palette[3]} />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="130" height="10" rx="5" fill="url(#hm-grad)" />
+          </svg>
           {labels.high}
           {unit ? <em>{unit}</em> : null}
         </span>

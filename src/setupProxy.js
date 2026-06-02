@@ -1,19 +1,18 @@
 // src/setupProxy.js
 // ============================================================
-// Proxy de développement (utilisé automatiquement par `npm start` / CRA).
+// Proxy de developpement (utilise automatiquement par `npm start` / CRA).
 //
-// POURQUOI : le dataflow DF_AGRICULTURAL_PRODUCTION (source "SPC2") est servi
-// par un hôte PDH qui VÉRIFIE l'origine de la requête et REFUSE (403) les
-// appels directs depuis http://localhost. Les datasets climat, eux, sont sur
-// un hôte à CORS ouvert → pas besoin de proxy pour eux.
+// 1) /pdh        -> API Pacific Data Hub (source "SPC2"), qui refuse (403) les
+//                   appels directs depuis localhost.
+// 2) /wbdata360  -> API World Bank Data360 (OWID_CB), qui n'envoie pas
+//                   d'en-tetes CORS -> l'appel direct depuis le navigateur
+//                   echoue. On relaie cote serveur pour avoir les VRAIES
+//                   donnees (aucune donnee mondiale inventee cote app).
 //
-// Ici, le serveur de dev relaie `/pdh/...` vers l'API PDH CÔTÉ SERVEUR
-// (donc sans origine "localhost", avec un Referer/Origin légitimes), ce qui
-// débloque le 403. `agriApi.js` appelle donc le chemin relatif `/pdh/rest/...`.
+// `data360Api.js` appelle le chemin relatif `/wbdata360/data360/data?...`.
 //
-// Note : ce proxy ne s'applique qu'en développement (`npm start`). En
-// production, configure le même reverse-proxy côté serveur (Nginx, etc.)
-// ou sers les données via ta propre API.
+// Note : ces proxys ne s'appliquent qu'en developpement (`npm start`). En
+// production, configure le meme reverse-proxy cote serveur (Nginx, etc.).
 //
 // Requiert http-proxy-middleware (inclus avec react-scripts ; sinon :
 //   npm i -D http-proxy-middleware
@@ -22,14 +21,17 @@
 
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
-// Hôtes PDH possibles pour la source "SPC2". On garde nsi-stable en cible
-// principale (celui que documente PDH pour l'accès données).
 const PDH_TARGET =
-  process.env.REACT_APP_PDH_PROXY_TARGET || "https://stats-sdmx-disseminate.pacificdata.org";
+  process.env.REACT_APP_PDH_PROXY_TARGET ||
+  "https://stats-sdmx-disseminate.pacificdata.org";
+
+const DATA360_TARGET =
+  process.env.REACT_APP_DATA360_PROXY_TARGET ||
+  "https://data360api.worldbank.org";
 
 module.exports = function setupProxy(app) {
   // eslint-disable-next-line no-console
-  console.log("[proxy /pdh] actif → " + PDH_TARGET);
+  console.log("[proxy /pdh] actif -> " + PDH_TARGET);
   app.use(
     "/pdh",
     createProxyMiddleware({
@@ -38,7 +40,6 @@ module.exports = function setupProxy(app) {
       secure: true,
       pathRewrite: { "^/pdh": "" },
       onProxyReq(proxyReq) {
-        // On se présente comme le Data Explorer officiel (l'hôte l'autorise).
         proxyReq.setHeader("Origin", "https://stats.pacificdata.org");
         proxyReq.setHeader("Referer", "https://stats.pacificdata.org/");
         proxyReq.setHeader("Accept", "text/csv");
@@ -48,6 +49,27 @@ module.exports = function setupProxy(app) {
         console.error("[proxy /pdh] erreur:", err && err.message);
         if (res && !res.headersSent) res.writeHead(502);
         if (res) res.end("Proxy PDH indisponible");
+      },
+    }),
+  );
+
+  // eslint-disable-next-line no-console
+  console.log("[proxy /wbdata360] actif -> " + DATA360_TARGET);
+  app.use(
+    "/wbdata360",
+    createProxyMiddleware({
+      target: DATA360_TARGET,
+      changeOrigin: true,
+      secure: true,
+      pathRewrite: { "^/wbdata360": "" },
+      onProxyReq(proxyReq) {
+        proxyReq.setHeader("Accept", "application/json");
+      },
+      onError(err, req, res) {
+        // eslint-disable-next-line no-console
+        console.error("[proxy /wbdata360] erreur:", err && err.message);
+        if (res && !res.headersSent) res.writeHead(502);
+        if (res) res.end("Proxy Data360 indisponible");
       },
     }),
   );

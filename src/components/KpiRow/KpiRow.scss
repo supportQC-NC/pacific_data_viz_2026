@@ -1,0 +1,103 @@
+/* src/components/KpiRow/KpiRow.scss */
+
+.kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-4);
+  margin: var(--sp-6) 0 var(--sp-8);
+}
+
+.kpi__card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 104px;
+  padding: var(--sp-4) var(--sp-5);
+  border: var(--border-hair) solid var(--c-line);
+  border-left: 3px solid var(--c-line-strong);
+  border-radius: var(--r-md, 10px);
+  background: var(--c-surface);
+  transition: transform var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+    padding: 10px;
+}
+.kpi__card:hover {
+  transform: translateY(-2px);
+}
+
+/* l'ancienne barre absolue est remplacee par border-left (pas de chevauchement) */
+.kpi__bar {
+  display: none;
+}
+
+.kpi__value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2.3vw, 2rem);
+  font-weight: var(--fw-semi);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.kpi__unit {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-reg, 400);
+  color: var(--c-text-mute);
+  white-space: nowrap;
+}
+
+.kpi__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs, 0.72rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  line-height: 1.35;
+}
+
+.kpi__note {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs, 0.72rem);
+  color: var(--c-text-mute);
+  line-height: 1.25;
+}
+
+/* Tons : couleur de la bordure gauche + de la valeur */
+.kpi__card--accent,
+.kpi__card--compare {
+  border-left-color: var(--c-accent);
+}
+.kpi__card--accent .kpi__value,
+.kpi__card--compare .kpi__value {
+  color: var(--c-accent);
+}
+
+.kpi__card--warm {
+  border-left-color: var(--c-negative);
+}
+.kpi__card--warm .kpi__value {
+  color: var(--c-negative);
+}
+
+.kpi__card--positive {
+  border-left-color: var(--c-positive);
+}
+.kpi__card--positive .kpi__value {
+  color: var(--c-positive);
+}
+
+/* Le KPI mondial (comparaison) legerement mis en avant */
+.kpi__card--compare {
+  background: color-mix(in srgb, var(--c-accent) 7%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--c-accent) 30%, var(--c-line));
+}
