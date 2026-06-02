@@ -13,12 +13,16 @@
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
 import PICT_GEO from "../../data/pictGeo";
 import { useLang } from "../../store/context/langContext";
 import mapLabels from "../../i18n/mapLabels";
 import "./OceanMap.scss";
+
+// Mapbox GL est charge via le CDN officiel dans public/index.html
+// (build pre-compile par Mapbox, jamais minifie par Terser) -> evite le
+// bug "ReferenceError: x is not defined" au "npm run build". Identique en
+// dev et en prod : on lit l'instance globale window.mapboxgl.
+const mapboxgl = window.mapboxgl;
 
 const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 const RAMPS = {

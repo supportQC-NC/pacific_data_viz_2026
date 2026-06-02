@@ -17,6 +17,14 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Hanken+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
+
+  <!-- Mapbox GL JS chargé via CDN (build pré-compilé par Mapbox, jamais touché
+       par Terser) -> évite le bug "ReferenceError: x is not defined" au
+       "npm run build". On utilise unpkg, qui reflète exactement npm : la version
+       3.24.0 (celle du package.json) y est garantie. Expose window.mapboxgl,
+       utilisé par OceanMap.jsx et PacificMap.jsx. Identique en dev et en prod. -->
+  <link href="https://unpkg.com/mapbox-gl@3.24.0/dist/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/mapbox-gl@3.24.0/dist/mapbox-gl.js"></script>
 </head>
 
 <body>
