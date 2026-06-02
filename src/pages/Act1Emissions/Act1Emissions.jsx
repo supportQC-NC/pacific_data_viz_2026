@@ -1,14 +1,12 @@
 // src/pages/Act1Emissions/Act1Emissions.jsx
 // ============================================================
-// Acte 01 — Le paradoxe. 100 % données réelles (Pacific Data Hub).
-// Repère = MÉDIANE Pacifique (robuste). 17 territoires conservés ;
-// FILTRE par sous-région (Mélanésie / Polynésie / Micronésie) qui pilote
-// toutes les vues par territoire. Vues :
-//   1) repères  2) classement (RankBars)  3) trajectoires (TrendLines)
-//   4) moyenne par sous-région  5) qui a le plus changé (ChangeBars)
-//   6) graphe croisé (ParadoxScatter)  7) carte 3D (OceanMap)  8) tableau.
-// Couleur sémantique : émissions = jugement vs médiane (vert sous, rouge
-// au-dessus). Guide enrichi d'un panneau « Source & méthode ».
+// Acte 01 — Le paradoxe. 100 % donnees reelles (Pacific Data Hub).
+// Repere = MEDIANE Pacifique (robuste). 17 territoires conserves ;
+// FILTRE par sous-region qui pilote toutes les vues par territoire.
+// Couleur semantique : emissions = jugement vs mediane (vert sous, rouge
+// au-dessus), y compris sur le globe Mapbox. Guide enrichi « Source & methode ».
+// Encart « part infime » : part du Pacifique dans les emissions mondiales
+// de CO2 (World Bank Data360 / OWID, CC BY 4.0).
 // ============================================================
 
 import React, {
@@ -27,12 +25,14 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { getDatasetSource } from "../../data/datasetSources";
 import sourceLabels from "../../i18n/sourceLabels";
+import { fetchPacificCO2Share } from "../../services/data360Api";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import RankBars from "../../components/RankBars/RankBars";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ChangeBars from "../../components/ChangeBars/ChangeBars";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
 import ParadoxScatter from "../../components/ParadoxScatter/ParadoxScatter";
+import ParadoxShare from "../../components/ParadoxShare/ParadoxShare";
 import DataTable from "../../components/DataTable/DataTable";
 import ExportBar from "../../components/ExportBar/ExportBar";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
@@ -43,7 +43,6 @@ const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 const TREND_TOP = 7;
 const IMPACT_CANDIDATES = ["seaLevel", "sst", "disastersAffected"];
 
-// Sous-régions SPC.
 const SUBREGIONS = {
   melanesia: ["FJ", "PG", "SB", "VU", "NC"],
   polynesia: ["PF", "WS", "TO", "TV", "CK", "NU", "WF", "TK", "AS", "PN"],
@@ -86,6 +85,7 @@ export default function Act1Emissions() {
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [region, setRegion] = useState("all");
+  const [worldShare, setWorldShare] = useState(null);
 
   useEffect(() => {
     dispatch(loadDataset("emissions"));
@@ -93,6 +93,16 @@ export default function Act1Emissions() {
     dispatch(loadDataset("sst"));
     dispatch(loadDataset("disastersAffected"));
   }, [dispatch]);
+
+  useEffect(() => {
+    let alive = true;
+    fetchPacificCO2Share().then((r) => {
+      if (alive) setWorldShare(r);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const ready = emissions.status === "succeeded";
   const failed = emissions.status === "failed";
@@ -134,7 +144,12 @@ export default function Act1Emissions() {
       .map(([area, series]) => {
         const pt = series.find((p) => p.year === currentYear);
         return pt
-          ? { area, name: pictName(area, lang), value: pt.value, year: currentYear }
+          ? {
+              area,
+              name: pictName(area, lang),
+              value: pt.value,
+              year: currentYear,
+            }
           : null;
       })
       .filter((d) => d && Number.isFinite(d.value) && d.value > 0);
@@ -168,7 +183,8 @@ export default function Act1Emissions() {
     return [...vSeries]
       .map((s) => {
         const lp =
-          s.values.find((p) => p.year === latest) || s.values[s.values.length - 1];
+          s.values.find((p) => p.year === latest) ||
+          s.values[s.values.length - 1];
         return { ...s, latest: lp ? lp.value : 0 };
       })
       .filter((s) => s.values.length > 1)
@@ -227,7 +243,9 @@ export default function Act1Emissions() {
       med,
       lo: sorted[0],
       hi: sorted[sorted.length - 1],
-      outliers: points.filter((p) => p.value > med * 3).sort((a, b) => b.value - a.value),
+      outliers: points
+        .filter((p) => p.value > med * 3)
+        .sort((a, b) => b.value - a.value),
     };
   }, [points]);
   const pacRef = stats?.med ?? 0;
@@ -244,14 +262,27 @@ export default function Act1Emissions() {
     const meta = {
       seaLevel: { y: t("act1.scatter.y_sea"), unit: t("act1.scatter.u_sea") },
       sst: { y: t("act1.scatter.y_sst"), unit: t("act1.scatter.u_sst") },
-      disastersAffected: { y: t("act1.scatter.y_dis"), unit: t("act1.scatter.u_dis") },
+      disastersAffected: {
+        y: t("act1.scatter.y_dis"),
+        unit: t("act1.scatter.u_dis"),
+      },
     };
     let best = null;
     IMPACT_CANDIDATES.forEach((id) => {
       const last = latestByArea(entries[id]);
       const rows = Object.keys(emLast)
-        .filter((a) => areaVisible(a) && Number.isFinite(emLast[a]) && Number.isFinite(last[a]))
-        .map((a) => ({ area: a, name: pictName(a, lang), x: emLast[a], y: last[a] }));
+        .filter(
+          (a) =>
+            areaVisible(a) &&
+            Number.isFinite(emLast[a]) &&
+            Number.isFinite(last[a]),
+        )
+        .map((a) => ({
+          area: a,
+          name: pictName(a, lang),
+          x: emLast[a],
+          y: last[a],
+        }));
       if (rows.length >= 3 && (!best || rows.length > best.rows.length)) {
         best = { id, rows, ...meta[id] };
       }
@@ -260,7 +291,13 @@ export default function Act1Emissions() {
   }, [emissions, seaLevel, sst, disasters, emLast, lang, t, areaVisible]);
 
   const exportRows = useMemo(
-    () => points.map((p) => ({ name: p.name, code: p.area, value: p.value, year: p.year })),
+    () =>
+      points.map((p) => ({
+        name: p.name,
+        code: p.area,
+        value: p.value,
+        year: p.year,
+      })),
     [points],
   );
   const exportLabels = useMemo(
@@ -312,10 +349,20 @@ export default function Act1Emissions() {
     setPlaying((p) => !p);
   }, [years.length]);
 
-  const retry = useCallback(() => dispatch(loadDataset("emissions")), [dispatch]);
+  const retry = useCallback(
+    () => dispatch(loadDataset("emissions")),
+    [dispatch],
+  );
 
-  // Provenance du jeu principal (émissions) pour le panneau « Source & méthode ».
-  const guideSource = useMemo(() => getDatasetSource("emissions", lang), [lang]);
+  const scrubYear = useCallback((i) => {
+    setPlaying(false);
+    setYearIdx(i);
+  }, []);
+
+  const guideSource = useMemo(
+    () => getDatasetSource("emissions", lang),
+    [lang],
+  );
 
   return (
     <main className="act1">
@@ -335,7 +382,9 @@ export default function Act1Emissions() {
           sourceLabels={sourceLabels[lang] || sourceLabels.fr}
         />
 
-        {!ready && !failed && <p className="act1__state">{t("scene.loading")}</p>}
+        {!ready && !failed && (
+          <p className="act1__state">{t("scene.loading")}</p>
+        )}
 
         {failed && (
           <div className="act1__state act1__state--err">
@@ -350,39 +399,52 @@ export default function Act1Emissions() {
 
         {ready && !empty && currentYear != null && (
           <>
-            {/* 1 — Repères */}
             {stats && (
-              <section className="act1__stats" aria-label={t("act1.stats.title")}>
+              <section
+                className="act1__stats"
+                aria-label={t("act1.stats.title")}
+              >
                 <div className="act1__stat">
                   <span className="act1__stat-num">{stats.count}</span>
-                  <span className="act1__stat-lbl">{t("act1.stats.count")}</span>
+                  <span className="act1__stat-lbl">
+                    {t("act1.stats.count")}
+                  </span>
                 </div>
                 <div className="act1__stat">
                   <span className="act1__stat-num">
                     {stats.med.toFixed(1)}
                     <em>{t("act1.unit")}</em>
                   </span>
-                  <span className="act1__stat-lbl">{t("act1.stats.median")}</span>
+                  <span className="act1__stat-lbl">
+                    {t("act1.stats.median")}
+                  </span>
                 </div>
                 <div className="act1__stat">
                   <span className="act1__stat-num">
                     {stats.lo.value}
                     <em>{stats.lo.area}</em>
                   </span>
-                  <span className="act1__stat-lbl">{t("act1.stats.lowest")}</span>
+                  <span className="act1__stat-lbl">
+                    {t("act1.stats.lowest")}
+                  </span>
                 </div>
                 <div className="act1__stat act1__stat--warm">
                   <span className="act1__stat-num">
                     {stats.hi.value}
                     <em>{stats.hi.area}</em>
                   </span>
-                  <span className="act1__stat-lbl">{t("act1.stats.highest")}</span>
+                  <span className="act1__stat-lbl">
+                    {t("act1.stats.highest")}
+                  </span>
                 </div>
               </section>
             )}
 
-            {/* Filtre sous-région — pilote toutes les vues par territoire */}
-            <div className="act1__filter" role="group" aria-label={t("act1.filter.title")}>
+            <div
+              className="act1__filter"
+              role="group"
+              aria-label={t("act1.filter.title")}
+            >
               <span className="act1__filter-lbl">{t("act1.filter.title")}</span>
               <div className="act1__filter-pills">
                 {REGION_KEYS.map((k) => (
@@ -398,7 +460,6 @@ export default function Act1Emissions() {
               </div>
             </div>
 
-            {/* En-tête + export */}
             <div className="act1__chart-head">
               <div>
                 <h2 className="act1__chart-title">{t("act1.chart_title")}</h2>
@@ -434,7 +495,6 @@ export default function Act1Emissions() {
               <span className="act1__year">{currentYear}</span>
             </div>
 
-            {/* 2 — Classement par habitant (vert = sous la médiane, rouge = au-dessus) */}
             <div ref={chartRef} className="act1__capture">
               <RankBars
                 data={points}
@@ -452,7 +512,6 @@ export default function Act1Emissions() {
               </p>
             )}
 
-            {/* 3 — Trajectoires */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.viz_trend_title")}</h3>
               <span className="act1__chart-sub">{t("act1.viz_trend_sub")}</span>
@@ -464,7 +523,6 @@ export default function Act1Emissions() {
               unit={t("act1.unit")}
             />
 
-            {/* Vue d'ensemble — heatmap territoire × année */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.heatmap.title")}</h3>
               <span className="act1__chart-sub">{t("act1.heatmap.sub")}</span>
@@ -480,7 +538,6 @@ export default function Act1Emissions() {
               }}
             />
 
-            {/* 4 — Moyenne par sous-région */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.subregion.title")}</h3>
               <span className="act1__chart-sub">{t("act1.subregion.sub")}</span>
@@ -492,7 +549,6 @@ export default function Act1Emissions() {
               unit={t("act1.unit")}
             />
 
-            {/* 5 — Qui a le plus changé (hausse = rouge, baisse = vert) */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">
                 {t("act1.change.title")} {firstYear ?? ""}
@@ -510,7 +566,13 @@ export default function Act1Emissions() {
               }}
             />
 
-            {/* 6 — Le paradoxe (croisé) */}
+            <ParadoxShare
+              share={worldShare ? worldShare.share : null}
+              year={worldShare ? worldShare.year : null}
+              loading={!worldShare}
+              approx={worldShare ? worldShare.source === "fallback" : false}
+            />
+
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.scatter.title")}</h3>
               <span className="act1__chart-sub">{t("act1.scatter.sub")}</span>
@@ -530,30 +592,42 @@ export default function Act1Emissions() {
               }}
             />
 
-            {/* 7 — Carte 3D */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.map_title")}</h3>
               <span className="act1__chart-sub">{t("act1.map_sub")}</span>
             </div>
             <ErrorBoundary
-              fallback={<div className="act1__state act1__state--err">{t("scene.error")}</div>}
+              fallback={
+                <div className="act1__state act1__state--err">
+                  {t("scene.error")}
+                </div>
+              }
             >
-              <Suspense fallback={<div className="act1__state">{t("scene.loading")}</div>}>
+              <Suspense
+                fallback={
+                  <div className="act1__state">{t("scene.loading")}</div>
+                }
+              >
                 <OceanMap
                   data={points}
                   unit={t("act1.unit")}
                   range={mapRange}
                   logScale
-                  ramp="diverging"
+                  ramp="semantic"
+                  mid={pacRef}
                   lowLabel={t("act1.map_low")}
                   midLabel={t("act1.pac_ref")}
                   highLabel={t("act1.map_high")}
                   noTokenMsg={t("act1.map_no_token")}
+                  years={years}
+                  yearIndex={yearIdx}
+                  playing={playing}
+                  onTogglePlay={togglePlay}
+                  onScrub={scrubYear}
                 />
               </Suspense>
             </ErrorBoundary>
 
-            {/* 8 — Tableau */}
             <div className="act1__map-head">
               <h3 className="act1__map-title">{t("act1.table.title")}</h3>
               <span className="act1__chart-sub">{t("act1.table.sub")}</span>

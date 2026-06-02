@@ -1,13 +1,12 @@
 // src/components/EmissionsHeatmap/EmissionsHeatmap.jsx
 // ============================================================
-// Heatmap territoire x annee. Couleur SEMANTIQUE divergente centree sur
-// la mediane Pacifique : sous la mediane = vert (favorable), a la mediane
-// = cyan (neutre/identite), au-dessus = rouge (defavorable). La borne haute
-// est ecretee (90e centile) pour que l'outlier ne sature pas la matrice.
-// Valeurs brutes par habitant (aucune transformation) ; seule la couleur
-// compare a la mediane. Fill calcule (pas de style inline).
+// Heatmap territoire x annee. NORMALISATION PAR LIGNE : chaque territoire
+// est colore sur SA PROPRE plage min->max, donc l'outlier (Palau, NC) ne
+// domine plus et on lit la TRAJECTOIRE de chacun. Rampe semantique
+// vert (ses annees les plus basses) -> cyan -> rouge (ses pics).
+// Valeurs brutes par habitant (aucune transformation) ; fill calcule.
 // Props : series [{area,name,values:[{year,value}]}], years[], unit,
-//         labels {low, high, empty}, refValue (optionnel), refLabel (opt.)
+//         labels {low, high, empty}
 // ============================================================
 
 import React, { useMemo, useState } from "react";
@@ -33,8 +32,6 @@ export default function EmissionsHeatmap({
   years = [],
   unit,
   labels = {},
-  refValue = null,
-  refLabel = null,
 }) {
   const [hover, setHover] = useState(null);
 
@@ -43,6 +40,16 @@ export default function EmissionsHeatmap({
     return [...series]
       .filter((s) => s.values.length)
       .sort((a, b) => last(b) - last(a));
+  }, [series]);
+
+  // Plage propre a chaque territoire (pour la normalisation par ligne).
+  const rowStats = useMemo(() => {
+    const m = {};
+    series.forEach((s) => {
+      const vs = s.values.map((p) => p.value).filter((v) => Number.isFinite(v));
+      m[s.area] = { min: d3.min(vs), max: d3.max(vs) };
+    });
+    return m;
   }, [series]);
 
   const lookup = useMemo(() => {
@@ -56,42 +63,20 @@ export default function EmissionsHeatmap({
     return map;
   }, [series]);
 
-  // Echelle divergente centree sur la mediane (ou refValue si fournie).
-  const scale = useMemo(() => {
-    const all = [];
-    series.forEach((s) => {
-      s.values.forEach((p) => {
-        if (Number.isFinite(p.value)) all.push(p.value);
-      });
-    });
+  // Rampe semantique vert -> cyan -> rouge (lue depuis les tokens CSS).
+  const ramp = useMemo(() => {
     const green = cssVar("--c-positive", "#25e09a");
     const cyan = cssVar("--c-accent", "#00e6ff");
     const red = cssVar("--c-negative", "#ff4d6d");
-    const interp = d3.interpolateRgbBasis([green, cyan, red]);
-    if (!all.length) {
-      return d3.scaleDiverging().domain([0, 0.5, 1]).interpolator(interp);
-    }
-    const sorted = all.slice().sort((a, b) => a - b);
-    const min = sorted[0];
-    const max = sorted[sorted.length - 1];
-    const med =
-      refValue != null && Number.isFinite(refValue)
-        ? refValue
-        : d3.median(sorted);
-    const p90 = d3.quantile(sorted, 0.9) ?? max;
-    let lo = min;
-    let pivot = med;
-    let hi = Math.max(pivot * 1.5, p90, pivot + 1e-6);
-    if (!(lo < pivot)) lo = pivot - Math.max(1e-6, Math.abs(pivot) * 0.5);
-    if (!(pivot < hi)) hi = pivot + Math.max(1e-6, Math.abs(pivot) * 0.5);
-    return d3
-      .scaleDiverging()
-      .domain([lo, pivot, hi])
-      .interpolator(interp)
-      .clamp(true);
-  }, [series, refValue]);
+    return d3.interpolateRgbBasis([green, cyan, red]);
+  }, []);
 
-  const color = (v) => (Number.isFinite(v) ? scale(v) : "transparent");
+  const color = (v, area) => {
+    if (!Number.isFinite(v)) return "transparent";
+    const r = rowStats[area];
+    const t = r && r.max > r.min ? (v - r.min) / (r.max - r.min) : 0.5;
+    return ramp(t);
+  };
 
   const innerW = VW - M.left - M.right;
   const cellW = years.length ? innerW / years.length : 0;
@@ -123,7 +108,7 @@ export default function EmissionsHeatmap({
                     y={ry}
                     width={Math.max(1, cellW - 0.5)}
                     height={ROW_H}
-                    fill={color(v)}
+                    fill={color(v, s.area)}
                     onMouseEnter={() => setHover({ area: s.area, name: s.name, year: yr, value: v })}
                     onMouseLeave={() => setHover(null)}
                   />
@@ -149,7 +134,6 @@ export default function EmissionsHeatmap({
           <span className="hm__legend-bar" aria-hidden="true" />
           {labels.high}
           {unit ? <em>{unit}</em> : null}
-          {refLabel ? <em className="hm__legend-ref">{refLabel}</em> : null}
         </span>
         {hover && (
           <span className="hm__detail">

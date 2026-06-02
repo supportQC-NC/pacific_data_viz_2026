@@ -1,0 +1,82 @@
+/* src/components/ParadoxShare/ParadoxShare.scss */
+
+.pshare {
+  margin: var(--sp-8) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  padding: var(--sp-6);
+  border: var(--border-hair) solid var(--c-line);
+  border-left: 3px solid var(--c-positive);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+}
+
+.pshare__viz {
+  position: relative;
+  flex: 0 0 auto;
+  width: 150px;
+  height: 150px;
+  display: grid;
+  place-items: center;
+}
+
+.pshare__ring {
+  width: 100%;
+  height: 100%;
+  transform: none;
+}
+
+.pshare__rest {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 9;
+}
+
+.pshare__pac {
+  fill: none;
+  stroke: var(--c-positive);
+  stroke-width: 11;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--c-positive-glow));
+}
+
+.pshare__num {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semi);
+  color: var(--c-positive);
+  line-height: 1;
+}
+.pshare__num em {
+  font-style: normal;
+  font-size: 0.5em;
+  margin-left: 2px;
+  color: var(--c-text-soft);
+}
+
+.pshare__cap {
+  flex: 1;
+  min-width: 220px;
+}
+
+.pshare__eyebrow {
+  margin-bottom: var(--sp-2);
+}
+
+.pshare__lead {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-3);
+}
+
+.pshare__src {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  margin: 0;
+}
