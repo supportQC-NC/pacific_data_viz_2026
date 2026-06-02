@@ -2,11 +2,10 @@
 // ============================================================
 //  Pied de page — direction « eaux profondes éditoriales ».
 //    • Filet dégradé de marque en crête, atmosphère lavande diffuse.
-//    • Marque Fraunces + accroche + périmètre.
-//    • Bloc Données (citation obligatoire au règlement) mis en valeur.
-//    • Barre basse mono : crédit + label concours surligné terracotta.
-//  Toutes les chaînes proviennent de t() (aucun texte en dur).
-//  Variables locales pour les dimensions, var(--x) pour le reste.
+//    • Marque + accroche + périmètre + lien « À propos ».
+//    • Bloc Données (citation obligatoire au règlement).
+//    • Barre basse : crédit + lien externe vers le concours.
+//  Chaînes via t(). Variables locales pour les dimensions.
 // ============================================================
 
 $crest-h: 1px;
@@ -20,7 +19,6 @@ $glow-h: 220px;
   background: var(--c-bg-2);
   border-top: var(--border-hair) solid var(--c-line);
 
-  // Filet dégradé de marque en crête
   &::before {
     content: "";
     position: absolute;
@@ -32,7 +30,6 @@ $glow-h: 220px;
     opacity: 0.8;
   }
 
-  // Halo lavande diffus (atmosphère, profondeur)
   &::after {
     content: "";
     position: absolute;
@@ -41,11 +38,7 @@ $glow-h: 220px;
     width: 80%;
     height: $glow-h;
     transform: translateX(-50%);
-    background: radial-gradient(
-      60% 100% at 50% 0%,
-      var(--c-accent-glow) 0%,
-      transparent 70%
-    );
+    background: radial-gradient(60% 100% at 50% 0%, var(--c-accent-glow) 0%, transparent 70%);
     opacity: 0.5;
     pointer-events: none;
   }
@@ -74,8 +67,6 @@ $glow-h: 220px;
     font-weight: var(--fw-semi);
     letter-spacing: var(--ls-tight);
     color: var(--c-text);
-
-    // Soulignement dégradé de marque
     background-image: var(--grad-primary-accent);
     background-repeat: no-repeat;
     background-position: 0 100%;
@@ -101,6 +92,36 @@ $glow-h: 220px;
     font-size: var(--fs-xs);
     line-height: var(--lh-base);
     color: var(--c-text-mute);
+  }
+
+  &__links {
+    margin-top: var(--sp-6);
+    display: flex;
+    gap: var(--sp-4);
+  }
+
+  &__link {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    padding-bottom: 2px;
+    transition: color var(--t-fast) var(--ease-out);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 0;
+      height: 1px;
+      background: var(--c-accent);
+      transition: right var(--t-base) var(--ease-out);
+    }
+    &:hover { color: var(--c-warm); }
+    &:hover::after { right: 0; background: var(--c-warm); }
   }
 
   /* ---------- Colonne Données ---------- */
@@ -130,9 +151,7 @@ $glow-h: 220px;
     color: var(--c-text-soft);
     transition: border-color var(--t-base) var(--ease-out);
 
-    &:hover {
-      border-color: var(--c-line-strong);
-    }
+    &:hover { border-color: var(--c-line-strong); }
   }
 
   /* ---------- Barre basse ---------- */
@@ -156,6 +175,13 @@ $glow-h: 220px;
     border-radius: var(--r-pill);
     border: var(--border-hair) solid var(--c-line);
     background: color-mix(in srgb, var(--c-warm) 10%, transparent);
+    transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--c-warm);
+      border-color: var(--c-warm);
+      background: color-mix(in srgb, var(--c-warm) 16%, transparent);
+    }
   }
 
   @media (max-width: 560px) {

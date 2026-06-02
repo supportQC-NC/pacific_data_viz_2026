@@ -2,13 +2,14 @@
 // ============================================================
 // En-tête global — design éditorial premium.
 //   • Marque : pastille « sonar » qui pulse + nom (Fraunces) + tagline mono.
+//   • Navigation : lien « À propos ».
 //   • Langue : segmented control FR | EN (le segment actif glisse).
-//   • Thème : switch à rail, soleil/lune bien visibles, curseur lumineux.
+//   • Thème : switch à rail, soleil/lune visibles, curseur lumineux.
 // S'efface pendant l'immersion. react-icons. Aucune chaîne en dur, zéro inline.
 // ============================================================
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { FiSun, FiMoon } from "react-icons/fi";
 import { useTheme } from "../../store/context/themeContext";
 import { useLang } from "../../store/context/langContext";
@@ -47,6 +48,18 @@ export default function Header() {
         </Link>
 
         <div className="header__actions">
+          {/* Navigation */}
+          <nav className="header__nav" aria-label={t("header.nav_about")}>
+            <NavLink
+              to="/a-propos"
+              className={({ isActive }) =>
+                `header__navlink ${isActive ? "is-active" : ""}`
+              }
+            >
+              {t("header.nav_about")}
+            </NavLink>
+          </nav>
+
           {/* Segmented control langue */}
           <div
             className={`langseg langseg--${lang}`}

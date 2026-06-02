@@ -3,7 +3,8 @@
   "header": {
     "tagline": "Lire le Pacifique par ses données",
     "theme": "Changer de thème",
-    "lang": "EN"
+    "lang": "EN",
+    "nav_about": "À propos"
   },
   "home": {
     "kicker": "Pacific Dataviz Challenge 2026 · Changement climatique",
@@ -84,7 +85,9 @@
     "scope": "Périmètre : ensemble des pays et territoires du Pacifique (SPC).",
     "data_title": "Données",
     "data_sources": "Pacific Data Hub · .Stat Explorer (SPC)",
-    "credit": "Réalisé pour le Pacific Dataviz Challenge 2026."
+    "credit": "Réalisé pour le Pacific Dataviz Challenge 2026.",
+    "about": "À propos",
+    "challenge_aria": "Ouvrir le site du Pacific Dataviz Challenge 2026"
   },
   "scene": {
     "loading": "Chargement des données…",
@@ -839,5 +842,51 @@
     "deck_next": "Scène suivante",
     "deck_done": "Fin de l'acte",
     "deck_finish": "Terminer l'expérience"
+  },
+  "about": {
+    "eyebrow": "À propos",
+    "title": "Datamoana, et la main derrière les données",
+    "lead": "Un projet de datavisualisation indépendant réalisé pour le Pacific Dataviz Challenge 2026 : rendre lisible, à hauteur humaine, ce que les données climatiques du Pacifique racontent.",
+    "back": "Retour à l'accueil",
+    "author": {
+      "eyebrow": "L'auteur",
+      "name": "Votre nom",
+      "role": "Designer & développeur · Datavisualisation",
+      "body": "Décrivez ici votre parcours, ce qui vous a amené à ce projet et votre approche du récit par la donnée. Ce paragraphe est un espace réservé — à personnaliser avant le rendu au jury.",
+      "note": "Espace à personnaliser (clé about.author.*)"
+    },
+    "data": {
+      "eyebrow": "Les données",
+      "title": "Des sources ouvertes et vérifiables",
+      "lead": "Toutes les données de Datamoana proviennent de sources publiques et ouvertes, agrégées par le Pacific Data Hub .Stat de la Communauté du Pacifique (SPC). Chaque acte cite sa source et sa méthode.",
+      "platform_name": "Pacific Data Hub .Stat (SPC)",
+      "platform_desc": "Point d'accès unifié (API SDMX) aux statistiques régionales du Pacifique.",
+      "platform_cta": "Ouvrir la plateforme",
+      "col_topic": "Domaine",
+      "col_source": "Source d'origine",
+      "col_access": "Accès",
+      "link_label": "Consulter",
+      "note": "Accès technique via l'API SDMX : stats-sdmx-disseminate.pacificdata.org"
+    },
+    "challenge": {
+      "title": "Pacific Dataviz Challenge 2026",
+      "body": "Datamoana est une contribution au Pacific Dataviz Challenge 2026, le concours régional de datavisualisation du Pacifique.",
+      "cta": "Site officiel du concours"
+    },
+    "topics": {
+      "emissions": "Émissions de GES",
+      "seaLevel": "Niveau de la mer",
+      "sst": "Température de la mer",
+      "rain": "Précipitations",
+      "agriculture": "Production agricole",
+      "biodiversity": "Biodiversité — Liste Rouge",
+      "water": "Eau potable",
+      "health": "Santé — tuberculose",
+      "disasters": "Catastrophes & population",
+      "tourism": "Tourisme",
+      "energy": "Production d'électricité",
+      "envtaxes": "Fiscalité environnementale",
+      "meteo": "Réseau météorologique"
+    }
   }
 }

@@ -166,7 +166,7 @@
 }
 
 .home__thesis {
-  max-width: 70ch;
+  max-width: 40ch;
   font-family: var(--font-body);
   font-size: clamp(1.05rem, 1.6vw, 1.35rem);
   font-weight: var(--fw-reg);
@@ -322,22 +322,33 @@
 }
 
 .home__story-head {
-  max-width: var(--maxw-text);
+  display: grid;
+  gap: var(--sp-6) var(--sp-12);
   margin-bottom: var(--sp-16);
   padding-bottom: var(--sp-8);
   border-bottom: var(--border-hair) solid var(--c-line);
 }
 
+@media (min-width: 980px) {
+  .home__story-head {
+    grid-template-columns: 1.5fr 1fr;
+    align-items: end;
+  }
+}
+
 .home__story-intro {
   font-family: var(--font-display);
-  font-size: var(--fs-2xl);
+  font-size: clamp(2.4rem, 5.4vw, 4.6rem);
   font-weight: var(--fw-light);
-  line-height: var(--lh-tight);
+  line-height: 1;
   letter-spacing: var(--ls-tight);
-  margin: 0 0 var(--sp-4);
+  max-width: 16ch;
+  margin: 0;
+  color: var(--c-text);
 }
 
 .home__story-lead {
+  max-width: 46ch;
   font-size: var(--fs-md);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
@@ -402,11 +413,11 @@
   list-style: none;
   display: grid;
   gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
 @media (min-width: 860px) {
   .home__acts {
-    grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-6);
   }
 }

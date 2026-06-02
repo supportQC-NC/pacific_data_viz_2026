@@ -4,6 +4,7 @@
 // header, ScrollToTop, routes. Chaque acte est enveloppé par <ActFlow>
 // au niveau de la route → barre de progression + navigation suivant/
 // précédent + intro plein écran sur TOUS les actes, sans toucher aux pages.
+// La page « À propos » (/a-propos) est hors parcours guidé.
 // ============================================================
 
 import React from 'react';
@@ -16,6 +17,7 @@ import ActFlow from './components/ActFlow/ActFlow';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
+import About from './pages/About/About';
 import Act1Emissions from './pages/Act1Emissions/Act1Emissions';
 import Act2Ocean from './pages/Act2Ocean/Act2Ocean';
 import Act3Territory from './pages/Act3Territory/Act3Territory';
@@ -35,6 +37,7 @@ function AppContent() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/a-propos" element={<About />} />
         <Route path="/emissions" element={<ActFlow actId="a1"><Act1Emissions /></ActFlow>} />
         <Route path="/ocean" element={<ActFlow actId="a2"><Act2Ocean /></ActFlow>} />
         <Route path="/territory" element={<ActFlow actId="a3"><Act3Territory /></ActFlow>} />

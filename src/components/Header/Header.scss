@@ -1,17 +1,15 @@
 // src/components/Header/Header.scss
 // ============================================================
 //  En-tête global — direction « observatoire climatique éditorial ».
-//    • Transparent en haut de page, devient un verre dépoli teinté
-//      lavande au scroll, avec un filet dégradé de marque en pied.
-//    • Marque : balise « sonar » terracotta qui pulse + nom Fraunces
-//      + tagline mono.
-//    • Langue : segmented control FR | EN, le segment actif glisse.
-//    • Thème : rail soleil/lune, curseur lumineux qui coulisse.
-//  Aucune valeur en dur (variables locales pour les dimensions),
-//  aucun style inline en JSX.
+//    • Transparent en haut, verre dépoli teinté au scroll + filet
+//      dégradé de marque en pied.
+//    • Marque : balise « sonar » terracotta + nom Fraunces + tagline.
+//    • Nav : lien « À propos ».
+//    • Langue : segmented control FR | EN (segment glissant).
+//    • Thème : rail soleil/lune, curseur lumineux.
+//  Variables locales pour les dimensions, var(--x) pour le reste.
 // ============================================================
 
-// Dimensions propres au composant (pas de magic numbers dans les règles)
 $mark-size: 11px;
 $mark-ring: 26px;
 $seg-pad: 4px;
@@ -32,7 +30,6 @@ $switch-thumb: 22px;
     border-color var(--t-base) var(--ease-out),
     backdrop-filter var(--t-base) var(--ease-out);
 
-  // Filet dégradé de marque révélé au scroll
   &::after {
     content: "";
     position: absolute;
@@ -76,9 +73,7 @@ $switch-thumb: 22px;
     gap: var(--sp-3);
     transition: opacity var(--t-fast) var(--ease-out);
 
-    &:hover {
-      opacity: 0.92;
-    }
+    &:hover { opacity: 0.92; }
   }
 
   &__mark {
@@ -134,16 +129,57 @@ $switch-thumb: 22px;
   }
 
   @media (max-width: 640px) {
-    &__tagline {
-      display: none;
-    }
+    &__tagline { display: none; }
   }
 
   /* ---------- Actions ---------- */
   &__actions {
     display: flex;
     align-items: center;
-    gap: var(--sp-3);
+    gap: var(--sp-4);
+  }
+
+  /* ---------- Navigation ---------- */
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+
+  &__navlink {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-soft);
+    padding-bottom: 3px;
+    transition: color var(--t-fast) var(--ease-out);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 0;
+      height: 1px;
+      background: var(--c-accent);
+      transition: right var(--t-base) var(--ease-out);
+    }
+    &:hover {
+      color: var(--c-text);
+    }
+    &:hover::after,
+    &.is-active::after {
+      right: 0;
+    }
+    &.is-active {
+      color: var(--c-accent);
+    }
+  }
+
+  @media (max-width: 560px) {
+    &__navlink { display: none; }
   }
 }
 
@@ -171,9 +207,7 @@ $switch-thumb: 22px;
     transition: transform var(--t-base) var(--ease-out);
   }
 
-  &--en &__thumb {
-    transform: translateX(100%);
-  }
+  &--en &__thumb { transform: translateX(100%); }
 
   &__opt {
     position: relative;
@@ -215,9 +249,7 @@ $switch-thumb: 22px;
     transition: border-color var(--t-fast) var(--ease-out);
   }
 
-  &:hover &__track {
-    border-color: var(--c-line-strong);
-  }
+  &:hover &__track { border-color: var(--c-line-strong); }
 
   &__ico {
     display: inline-flex;
@@ -226,9 +258,7 @@ $switch-thumb: 22px;
     color: var(--c-text-mute);
     transition: color var(--t-base) var(--ease-out);
 
-    &--sun {
-      color: var(--c-warm);
-    }
+    &--sun { color: var(--c-warm); }
   }
 
   &__thumb {
@@ -244,26 +274,18 @@ $switch-thumb: 22px;
     transition: transform var(--t-base) var(--ease-out), background var(--t-base) var(--ease-out);
   }
 
-  // DARK actif → curseur à droite (sur la lune), icône lune éclairée
   &--dark &__thumb {
     transform: translateX(calc(#{$switch-w} - #{$switch-thumb} - 6px));
   }
-  &--dark &__ico--moon {
-    color: var(--c-accent);
-  }
-  &--dark &__ico--sun {
-    opacity: 0.45;
-  }
+  &--dark &__ico--moon { color: var(--c-accent); }
+  &--dark &__ico--sun { opacity: 0.45; }
 
-  // LIGHT actif → curseur à gauche (sur le soleil)
   &--light &__thumb {
     transform: translateX(0);
     background: var(--c-warm);
     box-shadow: 0 0 16px -2px var(--c-warm-soft);
   }
-  &--light &__ico--moon {
-    opacity: 0.45;
-  }
+  &--light &__ico--moon { opacity: 0.45; }
 }
 
 /* ---------- Keyframes ---------- */
@@ -280,7 +302,5 @@ $switch-thumb: 22px;
 
 @media (prefers-reduced-motion: reduce) {
   .header__mark-core,
-  .header__mark-ring {
-    animation: none;
-  }
+  .header__mark-ring { animation: none; }
 }
