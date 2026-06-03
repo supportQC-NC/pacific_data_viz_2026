@@ -1,0 +1,107 @@
+// src/components/ApexChart/ApexChart.scss
+// ============================================================
+// Habillage des éléments injectés par ApexCharts (tooltip, crosshair,
+// légende…) au thème de l'application. Toutes les valeurs proviennent des
+// variables globales --c-* (définies dans index.scss et basculées par
+// [data-theme="light|dark"]). Aucune couleur en dur. Les `!important`
+// ciblés servent à surcharger les styles inline qu'ApexCharts pose
+// lui-même dans le DOM.
+// ============================================================
+
+.apexchart {
+  width: 100%;
+  min-height: 260px;
+
+  // Le SVG occupe toute la largeur du panneau.
+  .apexcharts-canvas {
+    width: 100% !important;
+  }
+
+  // ---- Tooltip principal ----
+  .apexcharts-tooltip {
+    background: var(--c-surface) !important;
+    border: 1px solid var(--c-line) !important;
+    color: var(--c-text) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+    border-radius: 8px;
+  }
+
+  .apexcharts-tooltip-title {
+    background: var(--c-bg-2) !important;
+    border-bottom: 1px solid var(--c-line) !important;
+    color: var(--c-text-soft) !important;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+  }
+
+  .apexcharts-tooltip-series-group,
+  .apexcharts-tooltip-text-y-label,
+  .apexcharts-tooltip-text-y-value,
+  .apexcharts-tooltip-text-goals-label,
+  .apexcharts-tooltip-text-goals-value {
+    color: var(--c-text) !important;
+  }
+
+  // ---- Tooltips d'axe (valeurs sur X / Y au survol) ----
+  .apexcharts-xaxistooltip,
+  .apexcharts-yaxistooltip {
+    background: var(--c-surface) !important;
+    border-color: var(--c-line) !important;
+    color: var(--c-text-soft) !important;
+  }
+
+  .apexcharts-xaxistooltip-bottom::before,
+  .apexcharts-xaxistooltip-bottom::after {
+    border-bottom-color: var(--c-line) !important;
+  }
+
+  .apexcharts-yaxistooltip-left::before,
+  .apexcharts-yaxistooltip-left::after {
+    border-left-color: var(--c-line) !important;
+  }
+
+  // ---- Légende (en complément des `colors` passés en JS) ----
+  .apexcharts-legend-text {
+    color: var(--c-text-soft) !important;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  // ---- Textes SVG (axes, "no data", titre) ----
+  .apexcharts-text,
+  .apexcharts-title-text {
+    fill: var(--c-text-mute);
+  }
+
+  // ---- Tooltips HTML custom (scatter / heatmap / treemap) ----
+  .apexchart__tt {
+    padding: 8px 10px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: 8px;
+    color: var(--c-text);
+
+    &-title {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: var(--c-text-soft);
+      margin-bottom: 4px;
+    }
+
+    &-row {
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 12.5px;
+      line-height: 1.4;
+
+      strong {
+        color: var(--c-text);
+      }
+    }
+  }
+}
+
+// Variantes de hauteur (héritées des anciennes classes echart--tall / --xl
+// pour ne rien casser dans les pages qui les passaient encore).
+.apexchart--tall,
+.apexchart--xl {
+  width: 100%;
+}

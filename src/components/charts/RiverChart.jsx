@@ -1,40 +1,54 @@
 // src/components/charts/RiverChart.jsx
-// Flux (themeRiver) des moyennes par sous-région dans le temps.
+// Flux des moyennes par sous-région dans le temps.
+// MIGRÉ ECharts(themeRiver) -> ApexCharts : aire EMPILÉE lissée (baseline 0).
+// On exploite ApexCharts à fond (gradient, lissage) pour conserver la
+// sensation de « flux » tout en restant lisible.
 // subAvg : [{ name, values:[{year, value}] }]
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import EChart from "../Echart/Echart";
-import { paletteOf, tooltipStyle, MONO } from "./echartsBase";
+import ApexChart from "../ApexChart/ApexChart";
+import { fmt, apexPalette, baseChart, baseGrid, baseLegend, baseXaxis, baseYaxis, baseTooltip } from "./apexBase";
 
 export default function RiverChart({ subAvg = [], years = [] }) {
   const tk = useThemeTokens();
+
   const option = useMemo(() => {
-    const data = [];
-    subAvg.forEach((grp) => {
-      grp.values.forEach((p) => {
-        if (Number.isFinite(p.value)) data.push([p.year, Number(p.value.toFixed(3)), grp.name]);
-      });
-    });
+    const at = (grp, y) => {
+      const p = grp.values.find((d) => d.year === y);
+      return p && Number.isFinite(p.value) ? Number(p.value.toFixed(3)) : 0;
+    };
+    const series = subAvg.map((g) => ({
+      name: g.name,
+      data: years.map((y) => at(g, y)),
+    }));
+
     return {
-      color: paletteOf(tk),
-      tooltip: { trigger: "axis", ...tooltipStyle(tk), axisPointer: { type: "line", lineStyle: { color: tk.line } } },
-      legend: { top: 0, data: subAvg.map((g) => g.name), textStyle: { color: tk.textSoft, fontFamily: MONO, fontSize: 11 } },
-      singleAxis: {
-        type: "value",
-        min: years[0],
-        max: years[years.length - 1],
-        top: 48,
-        bottom: 24,
-        axisLabel: { color: tk.textMute, fontFamily: MONO, formatter: (v) => Math.round(v) },
-        axisLine: { lineStyle: { color: tk.line } },
-        axisTick: { lineStyle: { color: tk.line } },
-        splitLine: { show: false },
+      chart: baseChart(tk, { type: "area", stacked: true }),
+      colors: apexPalette(tk),
+      stroke: { curve: "smooth", width: 1.5 },
+      fill: {
+        type: "gradient",
+        gradient: { shadeIntensity: 0.4, opacityFrom: 0.55, opacityTo: 0.25, stops: [0, 100] },
       },
-      series: [
-        { type: "themeRiver", data, label: { show: false }, emphasis: { itemStyle: { shadowBlur: 10, shadowColor: tk.accentDeep } } },
-      ],
+      dataLabels: { enabled: false },
+      markers: { size: 0, hover: { size: 4 } },
+      legend: baseLegend(tk),
+      grid: baseGrid(tk),
+      series,
+      xaxis: baseXaxis(tk, {
+        type: "category",
+        categories: years,
+        tickAmount: Math.min(12, Math.max(2, years.length - 1)),
+      }),
+      yaxis: baseYaxis(tk, {
+        labels: {
+          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+          formatter: (v) => fmt(Number(v), 1),
+        },
+      }),
+      tooltip: baseTooltip({ shared: true, intersect: false, y: { formatter: (v) => fmt(v) } }),
     };
   }, [subAvg, years, tk]);
 
-  return <EChart option={option} className="echart--tall" />;
+  return <ApexChart options={option} className="apexchart--tall" />;
 }

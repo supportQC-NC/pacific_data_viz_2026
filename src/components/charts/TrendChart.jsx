@@ -1,53 +1,64 @@
 // src/components/charts/TrendChart.jsx
 // Trajectoires multi-territoires dans le temps (zoom temporel, focus au survol).
+// MIGRÉ ECharts -> ApexCharts. Props inchangées.
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import EChart from "../Echart/Echart";
-import { axisStyle, tooltipStyle, paletteOf, valAt, MONO } from "./echartsBase";
+import ApexChart from "../ApexChart/ApexChart";
+import { fmt, apexPalette, baseChart, baseGrid, baseLegend, baseXaxis, baseYaxis, baseTooltip, valAt } from "./apexBase";
 
 export default function TrendChart({ series = [], years = [], unit = "", scale = "lin" }) {
   const tk = useThemeTokens();
+
   const option = useMemo(() => {
     const last = years[years.length - 1];
     const ranked = [...series]
       .map((s) => ({ ...s, _last: valAt(s, last) ?? 0 }))
       .sort((a, b) => b._last - a._last);
+
+    const apexSeries = ranked.map((s) => ({
+      name: s.name,
+      data: years.map((y) => {
+        const v = valAt(s, y);
+        return Number.isFinite(v) ? Number(v) : null;
+      }),
+    }));
+
     return {
-      color: paletteOf(tk),
-      grid: { left: 8, right: 16, top: 28, bottom: 64, containLabel: true },
-      tooltip: { trigger: "axis", ...tooltipStyle(tk) },
-      legend: {
-        type: "scroll",
-        top: 0,
-        textStyle: { color: tk.textSoft, fontFamily: MONO, fontSize: 11 },
-        inactiveColor: tk.textMute,
-      },
-      xAxis: { type: "category", data: years, boundaryGap: false, ...axisStyle(tk) },
-      yAxis: { type: scale === "log" ? "log" : "value", name: unit, ...axisStyle(tk) },
-      dataZoom: [
-        { type: "inside" },
-        {
-          type: "slider",
-          height: 18,
-          bottom: 24,
-          borderColor: tk.line,
-          fillerColor: `${tk.accent}22`,
-          handleStyle: { color: tk.accent },
-          textStyle: { color: tk.textMute },
-          dataBackground: { lineStyle: { color: tk.line }, areaStyle: { color: tk.line } },
-        },
-      ],
-      series: ranked.map((s) => ({
-        name: s.name,
+      chart: baseChart(tk, {
         type: "line",
-        smooth: true,
-        showSymbol: false,
-        emphasis: { focus: "series" },
-        lineStyle: { width: 1.6 },
-        data: years.map((y) => valAt(s, y)),
-      })),
+        zoom: { enabled: true, type: "x", autoScaleYaxis: true },
+        toolbar: {
+          show: true,
+          tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true },
+        },
+      }),
+      colors: apexPalette(tk),
+      stroke: { curve: "smooth", width: 1.8 },
+      markers: { size: 0, hover: { size: 4 } },
+      dataLabels: { enabled: false },
+      legend: baseLegend(tk),
+      grid: baseGrid(tk),
+      series: apexSeries,
+      xaxis: baseXaxis(tk, {
+        type: "category",
+        categories: years,
+        tickAmount: Math.min(12, Math.max(2, years.length - 1)),
+      }),
+      yaxis: baseYaxis(tk, {
+        logarithmic: scale === "log",
+        title: { text: unit },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+          formatter: (v) => fmt(Number(v), 1),
+        },
+      }),
+      tooltip: baseTooltip({
+        shared: true,
+        intersect: false,
+        y: { formatter: (v) => (v == null ? "—" : `${fmt(v)} ${unit}`) },
+      }),
     };
   }, [series, years, unit, scale, tk]);
 
-  return <EChart option={option} className="echart--tall" />;
+  return <ApexChart options={option} className="apexchart--tall" />;
 }

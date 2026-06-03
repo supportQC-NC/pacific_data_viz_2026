@@ -4,7 +4,14 @@
 // territoire par territoire (données PDH/SPC — anomalies, 0 = référence).
 // Même expérience que l'Acte 1 : diaporama plein écran (texte -> graphique),
 // filtres repliables, navigation clavier/boutons, écran de fin.
-// Réutilise les composants charts et les styles de l'Acte 1.
+//
+// STRUCTURE : chaque vue « par métrique » est désormais affichée DEUX FOIS
+// (un panneau Niveau de la mer, puis un panneau Température) au lieu d'un
+// sélecteur. Seules les vues de COMPARAISON (corrélation, double-axe)
+// montrent les deux mesures ensemble. La carte 3D reste UNIQUE (sélecteur)
+// pour ne pas instancier deux moteurs WebGL. En fin d'acte : deux courses
+// de barres (BarRace) et deux courses de lignes (LineRace), une par mesure.
+// 100 % ApexCharts (hors carte Mapbox et BarRace ECharts réutilisé).
 // ============================================================
 
 import React, {
@@ -25,6 +32,8 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import KpiRow from "../../components/KpiRow/KpiRow";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
+import BarRace from "../../components/BarRace/BarRace";
+import LineRace from "../../components/LineRace/LineRace";
 import VizPanel from "../../components/charts/VizPanel";
 import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import RankChart from "../../components/charts/RankChart";
@@ -51,6 +60,7 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
+const METRICS = ["sea", "sst"];
 
 function Pills({ label, options, value, onChange, help }) {
   return (
@@ -117,27 +127,21 @@ export default function Act2Ocean() {
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
 
-  const [mBand, setMBand] = useState("sea");
+  // Filtres de RÉGION par vue (partagés entre les panneaux mer/temp d'une vue).
   const [rBand, setRBand] = useState("all");
-  const [mRank, setMRank] = useState("sea");
   const [rRank, setRRank] = useState("all");
   const [sortRank, setSortRank] = useState("desc");
-  const [mMap, setMMap] = useState("sea");
-  const [rMap, setRMap] = useState("all");
-  const [mHeat, setMHeat] = useState("sea");
   const [rHeat, setRHeat] = useState("all");
-  const [mBox, setMBox] = useState("sea");
   const [rBox, setRBox] = useState("all");
-  const [rCorr, setRCorr] = useState("all");
-  const [mChange, setMChange] = useState("sea");
   const [rChange, setRChange] = useState("all");
   const [dirChange, setDirChange] = useState("all");
-  const [mRiver, setMRiver] = useState("sea");
-  const [rDual, setRDual] = useState("all");
-  const [mShare, setMShare] = useState("sea");
   const [rShare, setRShare] = useState("all");
-  const [mDumb, setMDumb] = useState("sea");
   const [rDumb, setRDumb] = useState("all");
+  // Vues de comparaison + carte.
+  const [rCorr, setRCorr] = useState("all");
+  const [rDual, setRDual] = useState("all");
+  const [mMap, setMMap] = useState("sea");
+  const [rMap, setRMap] = useState("all");
 
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
@@ -174,6 +178,10 @@ export default function Act2Ocean() {
 
   const unitOf = useCallback(
     (m) => (m === "sea" ? t("act2.sea_unit") : t("act2.sst_unit")),
+    [t],
+  );
+  const metricLabel = useCallback(
+    (m) => (m === "sea" ? t("act2.f.sea") : t("act2.f.sst")),
     [t],
   );
 
@@ -296,27 +304,28 @@ export default function Act2Ocean() {
     [corrGroups],
   );
 
-  const changeRows = useMemo(
-    () =>
-      DATA[mChange].series
-        .filter((s) => inRegion(s.area, rChange) && s.values.length >= 2)
+  // Lignes de variation / dumbbell PARAMÉTRÉES par mesure + région.
+  const changeRowsFor = useCallback(
+    (m, region) =>
+      DATA[m].series
+        .filter((s) => inRegion(s.area, region) && s.values.length >= 2)
         .map((s) => ({
           name: s.name,
           delta: Number((s.values[s.values.length - 1].value - s.values[0].value).toFixed(3)),
         })),
-    [DATA, mChange, rChange, inRegion],
+    [DATA, inRegion],
   );
 
-  const dumbRows = useMemo(
-    () =>
-      DATA[mDumb].series
-        .filter((s) => inRegion(s.area, rDumb) && s.values.length >= 2)
+  const dumbRowsFor = useCallback(
+    (m, region) =>
+      DATA[m].series
+        .filter((s) => inRegion(s.area, region) && s.values.length >= 2)
         .map((s) => ({
           name: s.name,
           start: s.values[0].value,
           end: s.values[s.values.length - 1].value,
         })),
-    [DATA, mDumb, rDumb, inRegion],
+    [DATA, inRegion],
   );
 
   const kpiItems = useMemo(() => {
@@ -363,6 +372,7 @@ export default function Act2Ocean() {
     dispatch(loadDataset("sst"));
   }, [dispatch]);
 
+  // Diaporama : suit la diapo active via le scroll + navigation prev/next.
   useEffect(() => {
     if (!ready || empty) return undefined;
     const root = rootRef.current;
@@ -438,6 +448,45 @@ export default function Act2Ocean() {
     { v: "down", label: t("act1.f.dir_down") },
   ];
 
+  // Fabrique une PAIRE de panneaux (mer puis température) pour une vue donnée.
+  // region : valeur de filtre régional partagée ; extra : nœud de filtres
+  // supplémentaire (commun aux deux panneaux) ; chart : (m) => élément graphique.
+  const dualPanels = ({ titleKey, subKey, storyKey, region, setRegion, extra, chart }) =>
+    METRICS.map((m) => (
+      <VizPanel
+        key={`${titleKey}-${m}`}
+        title={`${t(titleKey)} · ${metricLabel(m)}`}
+        subtitle={t(subKey)}
+        story={t(storyKey)}
+        filtersLabel={t("act1.f.toggle")}
+        filters={
+          region != null || extra ? (
+            <>
+              {region != null ? (
+                <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+              ) : null}
+              {extra || null}
+            </>
+          ) : null
+        }
+      >
+        {chart(m)}
+      </VizPanel>
+    ));
+
+  const racePanels = (Comp, titleKey, storyKey) =>
+    METRICS.map((m) => (
+      <VizPanel key={`${titleKey}-${m}`} title={`${t(titleKey)} · ${metricLabel(m)}`} story={t(storyKey)}>
+        <Comp
+          series={seriesFor(m, "all")}
+          years={DATA[m].years}
+          unit={unitOf(m)}
+          tk={tk}
+          labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }}
+        />
+      </VizPanel>
+    ));
+
   return (
     <main className="act1 act2" ref={rootRef}>
       <div className="container">
@@ -465,45 +514,44 @@ export default function Act2Ocean() {
 
         {ready && !empty && currentYear != null && (
           <>
-            <VizPanel
-              title={t("act2.viz.band_title")}
-              subtitle={t("act2.viz.band_sub")}
-              story={t("act2.story.band")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mBand} onChange={setMBand} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rBand} onChange={setRBand} />
-                </>
-              }
-            >
-              <AnomalyBandChart series={seriesFor(mBand, rBand)} years={DATA[mBand].years} unit={unitOf(mBand)} />
-            </VizPanel>
+            {/* Bande d'anomalie — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.band_title",
+              subKey: "act2.viz.band_sub",
+              storyKey: "act2.story.band",
+              region: rBand,
+              setRegion: setRBand,
+              chart: (m) => (
+                <AnomalyBandChart series={seriesFor(m, rBand)} years={DATA[m].years} unit={unitOf(m)} />
+              ),
+            })}
 
-            <VizPanel
-              title={t("act2.viz.rank_title")}
-              subtitle={t("act2.viz.rank_sub")}
-              story={t("act2.story.rank")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
+            {/* Classement — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.rank_title",
+              subKey: "act2.viz.rank_sub",
+              storyKey: "act2.story.rank",
+              region: rRank,
+              setRegion: setRRank,
+              extra: (
                 <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mRank} onChange={setMRank} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rRank} onChange={setRRank} />
                   <Pills label={t("act1.f.sort")} options={sortOpts} value={sortRank} onChange={setSortRank} />
                   <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
                 </>
-              }
-            >
-              <RankChart
-                points={pointsFor(mRank, rRank, currentYear)}
-                unit={unitOf(mRank)}
-                median={0}
-                refLabel={t("act2.ref")}
-                sort={sortRank}
-                scale="lin"
-              />
-            </VizPanel>
+              ),
+              chart: (m) => (
+                <RankChart
+                  points={pointsFor(m, rRank, currentYear)}
+                  unit={unitOf(m)}
+                  median={0}
+                  refLabel={t("act2.ref")}
+                  sort={sortRank}
+                  scale="lin"
+                />
+              ),
+            })}
 
+            {/* Carte 3D — UNIQUE, avec sélecteur mer/température */}
             <VizPanel
               title={t("act2.viz.map_title")}
               subtitle={t("act2.viz.map_sub")}
@@ -539,27 +587,25 @@ export default function Act2Ocean() {
               </ErrorBoundary>
             </VizPanel>
 
-            <VizPanel
-              title={t("act2.viz.heat_title")}
-              subtitle={t("act2.viz.heat_sub")}
-              story={t("act2.story.heat")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mHeat} onChange={setMHeat} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rHeat} onChange={setRHeat} />
-                </>
-              }
-            >
-              <HeatmapChart
-                series={seriesFor(mHeat, rHeat)}
-                years={DATA[mHeat].years}
-                unit={unitOf(mHeat)}
-                mode="rank"
-                labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }}
-              />
-            </VizPanel>
+            {/* Heatmap — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.heat_title",
+              subKey: "act2.viz.heat_sub",
+              storyKey: "act2.story.heat",
+              region: rHeat,
+              setRegion: setRHeat,
+              chart: (m) => (
+                <HeatmapChart
+                  series={seriesFor(m, rHeat)}
+                  years={DATA[m].years}
+                  unit={unitOf(m)}
+                  mode="rank"
+                  labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }}
+                />
+              ),
+            })}
 
+            {/* Comparaison : corrélation mer × température (combiné) */}
             <VizPanel
               title={t("act2.viz.corr_title")}
               subtitle={t("act2.viz.corr_sub")}
@@ -581,49 +627,44 @@ export default function Act2Ocean() {
               />
             </VizPanel>
 
-            <VizPanel
-              title={t("act2.viz.box_title")}
-              subtitle={t("act2.viz.box_sub")}
-              story={t("act2.story.box")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mBox} onChange={setMBox} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rBox} onChange={setRBox} />
-                </>
-              }
-            >
-              <BoxplotChart series={seriesFor(mBox, rBox)} years={DATA[mBox].years} unit={unitOf(mBox)} scale="lin" />
-            </VizPanel>
+            {/* Boxplot — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.box_title",
+              subKey: "act2.viz.box_sub",
+              storyKey: "act2.story.box",
+              region: rBox,
+              setRegion: setRBox,
+              chart: (m) => (
+                <BoxplotChart series={seriesFor(m, rBox)} years={DATA[m].years} unit={unitOf(m)} scale="lin" />
+              ),
+            })}
 
-            <VizPanel
-              title={t("act2.viz.river_title")}
-              subtitle={t("act2.viz.river_sub")}
-              story={t("act2.story.river")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <Pills label={t("act2.f.metric")} options={metricOpts} value={mRiver} onChange={setMRiver} />
-              }
-            >
-              <RiverChart subAvg={subAvgFor(mRiver)} years={DATA[mRiver].years} />
-            </VizPanel>
+            {/* River (sous-régions) — mer puis température (sans filtre régional) */}
+            {dualPanels({
+              titleKey: "act2.viz.river_title",
+              subKey: "act2.viz.river_sub",
+              storyKey: "act2.story.river",
+              region: null,
+              setRegion: null,
+              chart: (m) => <RiverChart subAvg={subAvgFor(m)} years={DATA[m].years} />,
+            })}
 
-            <VizPanel
-              title={t("act2.viz.change_title")}
-              subtitle={t("act2.viz.change_sub")}
-              story={t("act2.story.change")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mChange} onChange={setMChange} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rChange} onChange={setRChange} />
-                  <Pills label={t("act1.f.dir")} options={dirOpts} value={dirChange} onChange={setDirChange} />
-                </>
-              }
-            >
-              <ChangeChart rows={changeRows} unit={unitOf(mChange)} direction={dirChange} />
-            </VizPanel>
+            {/* Variation — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.change_title",
+              subKey: "act2.viz.change_sub",
+              storyKey: "act2.story.change",
+              region: rChange,
+              setRegion: setRChange,
+              extra: (
+                <Pills label={t("act1.f.dir")} options={dirOpts} value={dirChange} onChange={setDirChange} />
+              ),
+              chart: (m) => (
+                <ChangeChart rows={changeRowsFor(m, rChange)} unit={unitOf(m)} direction={dirChange} />
+              ),
+            })}
 
+            {/* Comparaison : double axe mer + température (combiné) */}
             <VizPanel
               title={t("act2.viz.dual_title")}
               subtitle={t("act2.viz.dual_sub")}
@@ -645,40 +686,38 @@ export default function Act2Ocean() {
               />
             </VizPanel>
 
-            <VizPanel
-              title={t("act2.viz.share_title")}
-              subtitle={t("act2.viz.share_sub")}
-              story={t("act2.story.share")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mShare} onChange={setMShare} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rShare} onChange={setRShare} />
-                </>
-              }
-            >
-              <ShareAboveChart series={seriesFor(mShare, rShare)} years={DATA[mShare].years} />
-            </VizPanel>
+            {/* Part au-dessus de la référence — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.share_title",
+              subKey: "act2.viz.share_sub",
+              storyKey: "act2.story.share",
+              region: rShare,
+              setRegion: setRShare,
+              chart: (m) => <ShareAboveChart series={seriesFor(m, rShare)} years={DATA[m].years} />,
+            })}
 
-            <VizPanel
-              title={t("act2.viz.dumb_title")}
-              subtitle={t("act2.viz.dumb_sub")}
-              story={t("act2.story.dumb")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mDumb} onChange={setMDumb} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rDumb} onChange={setRDumb} />
-                </>
-              }
-            >
-              <DumbbellChart
-                rows={dumbRows}
-                unit={unitOf(mDumb)}
-                startLabel={t("act2.dumb.start")}
-                endLabel={t("act2.dumb.end")}
-              />
-            </VizPanel>
+            {/* Dumbbell début→fin — mer puis température */}
+            {dualPanels({
+              titleKey: "act2.viz.dumb_title",
+              subKey: "act2.viz.dumb_sub",
+              storyKey: "act2.story.dumb",
+              region: rDumb,
+              setRegion: setRDumb,
+              chart: (m) => (
+                <DumbbellChart
+                  rows={dumbRowsFor(m, rDumb)}
+                  unit={unitOf(m)}
+                  startLabel={t("act2.dumb.start")}
+                  endLabel={t("act2.dumb.end")}
+                />
+              ),
+            })}
+
+            {/* Courses de barres — mer puis température */}
+            {racePanels(BarRace, "act1.viz.race_title", "act1.story.race")}
+
+            {/* Courses de lignes — mer puis température */}
+            {racePanels(LineRace, "act1.viz.trend_title", "act1.story.trend")}
 
             <p className="act1__caption">{t("act2.caption")}</p>
 

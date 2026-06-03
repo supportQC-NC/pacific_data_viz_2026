@@ -1,58 +1,78 @@
 // src/components/charts/AnomalyBandChart.jsx
 // Anomalie dans le temps : ligne MOYENNE + bande min/max (dispersion entre
-// territoires). Repère 0 = référence. Idéal pour niveau de la mer / SST.
+// territoires) + repère 0. MIGRÉ ECharts -> ApexCharts (rangeArea + line).
+// Idéal niveau de la mer / SST. Props inchangées { series, years, unit }.
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import EChart from "../Echart/Echart";
-import { axisStyle, tooltipStyle, valAt, fmt, MONO } from "./echartsBase";
+import ApexChart from "../ApexChart/ApexChart";
+import { fmt, valAt, baseChart, baseGrid, baseLegend, baseXaxis, baseYaxis, baseTooltip, refLineY } from "./apexBase";
 
 export default function AnomalyBandChart({ series = [], years = [], unit = "" }) {
   const tk = useThemeTokens();
+
   const option = useMemo(() => {
     const rows = years.map((y) => {
       const vals = series.map((s) => valAt(s, y)).filter((v) => Number.isFinite(v));
       if (!vals.length) return { year: y, mean: null, min: null, max: null };
       const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-      return { year: y, mean: Number(mean.toFixed(3)), min: Math.min(...vals), max: Math.max(...vals) };
+      return {
+        year: y,
+        mean: Number(mean.toFixed(3)),
+        min: Number(Math.min(...vals).toFixed(3)),
+        max: Number(Math.max(...vals).toFixed(3)),
+      };
     });
-    const ys = rows.map((r) => r.year);
-    const mins = rows.map((r) => r.min);
-    const ranges = rows.map((r) => (r.max != null && r.min != null ? Number((r.max - r.min).toFixed(3)) : null));
-    const means = rows.map((r) => r.mean);
+
+    const bandData = rows.map((r) => ({
+      x: r.year,
+      y: r.min == null ? null : [r.min, r.max],
+    }));
+    const meanData = rows.map((r) => ({ x: r.year, y: r.mean }));
+
     return {
-      grid: { left: 8, right: 16, top: 24, bottom: 40, containLabel: true },
-      tooltip: {
-        trigger: "axis",
-        ...tooltipStyle(tk),
-        formatter: (ps) => {
-          const i = ps[0].dataIndex;
-          const r = rows[i];
-          if (!r || r.mean == null) return `${r ? r.year : ""}`;
-          return `${r.year}<br/>moy. <strong>${fmt(r.mean)}</strong> ${unit}<br/>min ${fmt(r.min)} · max ${fmt(r.max)}`;
-        },
-      },
-      xAxis: { type: "category", data: ys, boundaryGap: false, ...axisStyle(tk) },
-      yAxis: { type: "value", name: unit, ...axisStyle(tk) },
+      chart: baseChart(tk, { type: "rangeArea" }),
+      colors: [tk.accent, tk.accent],
       series: [
-        { name: "min", type: "line", stack: "band", symbol: "none", lineStyle: { opacity: 0 }, areaStyle: { opacity: 0 }, data: mins, silent: true },
-        { name: "band", type: "line", stack: "band", symbol: "none", lineStyle: { opacity: 0 }, areaStyle: { color: `${tk.accent}24` }, data: ranges, silent: true },
-        {
-          name: "mean",
-          type: "line",
-          smooth: true,
-          symbol: "none",
-          lineStyle: { color: tk.accent, width: 2.5 },
-          data: means,
-          markLine: {
-            symbol: "none",
-            data: [{ yAxis: 0 }],
-            lineStyle: { color: tk.lineStrong, type: "dashed" },
-            label: { color: tk.textMute, fontFamily: MONO, fontSize: 10, formatter: "réf. 0" },
-          },
-        },
+        { name: "dispersion", type: "rangeArea", data: bandData },
+        { name: "moyenne", type: "line", data: meanData },
       ],
+      stroke: { curve: "smooth", width: [0, 2.5] },
+      fill: { opacity: [0.16, 1] },
+      markers: { size: 0, hover: { size: 4 } },
+      dataLabels: { enabled: false },
+      legend: baseLegend(tk, {
+        show: true,
+        customLegendItems: ["dispersion", "moyenne"],
+      }),
+      grid: baseGrid(tk),
+      xaxis: baseXaxis(tk, {
+        type: "category",
+        categories: years,
+        tickAmount: Math.min(12, Math.max(2, years.length - 1)),
+      }),
+      yaxis: baseYaxis(tk, {
+        title: { text: unit },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+          formatter: (v) => fmt(Number(v), 1),
+        },
+      }),
+      tooltip: baseTooltip({
+        shared: true,
+        intersect: false,
+        custom: ({ dataPointIndex }) => {
+          const r = rows[dataPointIndex];
+          if (!r || r.mean == null) return "";
+          return `<div class="apexchart__tt">
+            <div class="apexchart__tt-title">${r.year}</div>
+            <div class="apexchart__tt-row">moy. <strong>${fmt(r.mean)}</strong> ${unit}</div>
+            <div class="apexchart__tt-row">min ${fmt(r.min)} · max ${fmt(r.max)}</div>
+          </div>`;
+        },
+      }),
+      annotations: { yaxis: [refLineY(tk, 0, "réf. 0", tk.lineStrong)] },
     };
   }, [series, years, unit, tk]);
 
-  return <EChart option={option} className="echart--tall" />;
+  return <ApexChart options={option} className="apexchart--tall" />;
 }
