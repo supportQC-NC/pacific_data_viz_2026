@@ -22,7 +22,7 @@
    ============================================================ */
 .actflow__bar {
   position: sticky;
-  top: var(--nav-h);
+  top: 0;
   z-index: 40;
   background: color-mix(in srgb, var(--c-bg) 86%, transparent);
   -webkit-backdrop-filter: blur(10px);
@@ -54,22 +54,8 @@
   }
 }
 
-.actflow__track {
+.actflow__spacer {
   flex: 1;
-  height: 4px;
-  border-radius: var(--r-pill);
-  background: var(--c-line);
-  overflow: hidden;
-}
-
-.actflow__track-fill {
-  display: block;
-  height: 100%;
-  width: calc(var(--flow-ratio) * 100%);
-  border-radius: var(--r-pill);
-  background: var(--c-accent);
-  box-shadow: 0 0 10px 1px var(--c-accent-glow);
-  transition: width var(--t-base) var(--ease-out);
 }
 
 .actflow__count {
@@ -131,7 +117,8 @@
   display: block;
   height: 100%;
   width: calc(var(--flow-ratio) * 100%);
-  background: color-mix(in srgb, var(--c-accent) 60%, transparent);
+  background: var(--c-accent);
+  box-shadow: 0 0 8px 1px var(--c-accent-glow);
   transition: width var(--t-base) var(--ease-out);
 }
 

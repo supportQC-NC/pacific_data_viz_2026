@@ -168,9 +168,7 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
           >
             ←
           </Link>
-          <div className="actflow__track" aria-hidden="true">
-            <span className="actflow__track-fill actflow__track-fill--w" />
-          </div>
+          <span className="actflow__spacer" aria-hidden="true" />
           <span className="actflow__count">
             {t("flow.act")} <strong>{num}</strong> / {total}
           </span>

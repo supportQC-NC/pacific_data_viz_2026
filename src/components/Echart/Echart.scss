@@ -1,0 +1,23 @@
+// src/components/EChart/EChart.scss
+// ============================================================
+//  Conteneur de graphique ECharts — la hauteur est fixée ici (CSS) pour
+//  qu'ECharts puisse se dimensionner (pas de hauteur inline en JSX).
+// ============================================================
+
+.echart {
+  width: 100%;
+  height: 380px;
+
+  &--short { height: 300px; }
+  &--tall  { height: 520px; }
+  &--xl    { height: 640px; }
+}
+
+@media (max-width: 640px) {
+  .echart {
+    height: 320px;
+
+    &--tall { height: 440px; }
+    &--xl { height: 520px; }
+  }
+}
