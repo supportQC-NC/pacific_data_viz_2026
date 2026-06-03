@@ -2,7 +2,15 @@
 // ============================================================
 // Acte 02. Tokens uniquement → light/dark.
 // ============================================================
+// src/pages/Act2Ocean/Act2Ocean.scss
+// ============================================================
+// Acte 02 — Océan. Réutilise INTÉGRALEMENT l'expérience visuelle de
+// l'Acte 1 (diaporama plein écran, panneaux de graphique, page de texte,
+// navigation, écran de fin) : la page porte la classe .act1 en plus de
+// .act2, donc toutes les règles ci-dessous s'appliquent.
+// ============================================================
 
+@import "../Act1Emissions/Act1Emissions.scss";
 .act2 {
   padding-block: var(--sp-16) var(--sp-24);
   min-height: 100vh;

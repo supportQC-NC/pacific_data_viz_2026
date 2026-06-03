@@ -1,9 +1,10 @@
 // src/components/BarRace/BarRace.jsx
 // ============================================================
 // Course de barres animée (ECharts realtimeSort).
-//   • HAUTEUR FORCÉE EN JS en mode diaporama (~74% de l'écran) → ne déborde
-//     jamais, indépendamment du CSS. Sinon suit le conteneur.
-//   • Démarre seul et BOUCLE. Bouton lecture/pause. Année en filigrane.
+//   • HAUTEUR FORCÉE EN JS en mode diaporama (~74% de l'écran).
+//   • Tous les appels protégés par isDisposed() + frames annulées au démontage
+//     pour éviter "layerStack" null quand le graphique est détruit pendant
+//     l'animation.
 // Props : series [{name, values:[{year,value}]}], years [], unit, tk, labels.
 // ============================================================
 
@@ -21,9 +22,14 @@ function targetHeight(el) {
   return el && el.clientHeight ? el.clientHeight : 420;
 }
 
+function alive(chart) {
+  return chart && !chart.isDisposed();
+}
+
 export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {} }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
+  const rafRef = useRef(0);
   const idxRef = useRef(0);
   const playingRef = useRef(true);
   const [idx, setIdx] = useState(0);
@@ -97,7 +103,7 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
     });
 
     const fit = () => {
-      if (!chartRef.current) return;
+      if (!alive(chartRef.current)) return;
       try {
         chartRef.current.resize({ height: targetHeight(el) });
       } catch (e) {
@@ -106,25 +112,31 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
     };
 
     const ro = new ResizeObserver(() => {
-      window.requestAnimationFrame(fit);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(fit);
     });
     ro.observe(el);
     window.addEventListener("resize", fit);
     fit();
 
     const timer = setInterval(() => {
-      if (!playingRef.current) return;
+      if (!playingRef.current || !alive(chartRef.current)) return;
       const ni = (idxRef.current + 1) % years.length;
       idxRef.current = ni;
       setIdx(ni);
-      chart.setOption({ series: [{ id: "race", data: valuesFor(ni) }] });
+      try {
+        chartRef.current.setOption({ series: [{ id: "race", data: valuesFor(ni) }] });
+      } catch (e) {
+        /* noop */
+      }
     }, TICK);
 
     return () => {
       clearInterval(timer);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", fit);
       ro.disconnect();
-      chart.dispose();
+      if (alive(chart)) chart.dispose();
       chartRef.current = null;
     };
   }, [series, years, unit, tk]);

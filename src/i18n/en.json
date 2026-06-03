@@ -385,7 +385,71 @@
     "change_title": "Change over the period",
     "change_sub": "difference between the first and last available years",
     "change_up": "rise",
-    "change_down": "fall"
+    "change_down": "fall",
+    "caption": "Sources: Pacific Data Hub / SPC — sea-level anomaly (ref. 1993–2012) and sea-surface temperature anomaly.",
+    "ref": "reference 0",
+    "heatmap_low": "cooler / lower",
+    "heatmap_high": "warmer / higher",
+    "f": {
+      "metric": "Measure",
+      "sea": "Sea level",
+      "sst": "Temperature"
+    },
+    "kpi": {
+      "sea_mean": "Median level (anomaly)",
+      "sst_mean": "Median temperature (anomaly)",
+      "most_exposed": "Most exposed",
+      "sea_change": "Sea-level change",
+      "since": "since"
+    },
+    "viz": {
+      "band_title": "The silent rise",
+      "band_sub": "Regional mean and spread across territories, year by year",
+      "rank_title": "Who is most exposed?",
+      "rank_sub": "Anomaly per territory for the selected year",
+      "map_title": "The ocean map",
+      "map_sub": "Anomaly per territory — blue below reference, red above",
+      "heat_title": "A decade of anomalies",
+      "heat_sub": "Every territory, every year, by intensity",
+      "corr_title": "Rising and warming",
+      "corr_sub": "Sea level (horizontal) against temperature (vertical)",
+      "box_title": "Regional spread",
+      "box_sub": "Distribution of anomalies across territories, per year",
+      "river_title": "Three sub-regions",
+      "river_sub": "Mean anomaly per sub-region over time",
+      "change_title": "How much more?",
+      "change_sub": "Gap between the first and last observed year",
+      "dual_title": "Two signals, one story",
+      "dual_sub": "Sea level (left axis) and surface temperature (right axis)",
+      "share_title": "Exposure spreads",
+      "share_sub": "Share of territories above reference, year by year",
+      "dumb_title": "How much each moved",
+      "dumb_sub": "First observed year → last, per territory"
+    },
+    "story": {
+      "band": "The line follows the territories' mean; the band shows the gap between lowest and highest. Above 0, the ocean exceeds its reference.",
+      "rank": "Most territories now sit above reference — exposure is uneven.",
+      "map": "Across the Pacific the anomaly reads at a glance: almost everywhere above normal.",
+      "heat": "Bands warm from left to right: the trend is clear over time.",
+      "corr": "Territories rising most are often those warming most — two signals of one disruption.",
+      "box": "Year after year the distribution shifts upward: median and extremes rise.",
+      "river": "The three sub-regions follow the same upward slope, at similar rates.",
+      "change": "Between the first and last year, nearly every territory shows an increase.",
+      "dual": "Both lines rise together: the Pacific warms as it rises. Two measures, one disruption.",
+      "share": "The share of territories above normal climbs over time — the anomaly no longer touches only a few islands.",
+      "dumb": "The muted dot marks the first year, the warm dot the last: the gap is the distance travelled."
+    },
+    "outro": {
+      "kicker": "End of act 02",
+      "title": "The ocean has spoken",
+      "text": "It rises and warms, everywhere. But what happens to land as the sea advances? On to the territory.",
+      "next": "Next act: the territory",
+      "home": "Back to home"
+    },
+    "dumb": {
+      "start": "first year",
+      "end": "last"
+    }
   },
   "act3": {
     "lead": "As the sea advances, the human map is redrawn. Population growth is slowing almost everywhere — and several islands are already losing inhabitants, while others crowd a growing population onto a threatened shore.",

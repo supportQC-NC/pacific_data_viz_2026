@@ -385,7 +385,71 @@
     "change_title": "Variation sur la période",
     "change_sub": "écart entre la première et la dernière année disponibles",
     "change_up": "hausse",
-    "change_down": "baisse"
+    "change_down": "baisse",
+    "caption": "Sources : Pacific Data Hub / SPC — anomalies du niveau de la mer (réf. 1993–2012) et de la température de surface.",
+    "ref": "référence 0",
+    "heatmap_low": "plus frais / plus bas",
+    "heatmap_high": "plus chaud / plus haut",
+    "f": {
+      "metric": "Mesure",
+      "sea": "Niveau de la mer",
+      "sst": "Température"
+    },
+    "kpi": {
+      "sea_mean": "Niveau médian (anomalie)",
+      "sst_mean": "Température médiane (anomalie)",
+      "most_exposed": "Le plus exposé",
+      "sea_change": "Évolution du niveau",
+      "since": "depuis"
+    },
+    "viz": {
+      "band_title": "La montée silencieuse",
+      "band_sub": "Moyenne régionale et écart entre territoires, année après année",
+      "rank_title": "Qui est le plus exposé ?",
+      "rank_sub": "Anomalie par territoire pour l'année sélectionnée",
+      "map_title": "La carte de l'océan",
+      "map_sub": "Anomalie par territoire — bleu sous la référence, rouge au-dessus",
+      "heat_title": "Une décennie d'anomalies",
+      "heat_sub": "Chaque territoire, chaque année, par intensité",
+      "corr_title": "Monter et chauffer",
+      "corr_sub": "Niveau de la mer (horizontal) face à la température (vertical)",
+      "box_title": "La dispersion régionale",
+      "box_sub": "Répartition des anomalies entre territoires, par année",
+      "river_title": "Trois sous-régions",
+      "river_sub": "Anomalie moyenne par sous-région dans le temps",
+      "change_title": "Combien en plus ?",
+      "change_sub": "Écart entre la première et la dernière année observée",
+      "dual_title": "Deux signaux, une histoire",
+      "dual_sub": "Niveau de la mer (axe gauche) et température de surface (axe droit)",
+      "share_title": "L'exposition se généralise",
+      "share_sub": "Part des territoires au-dessus de la référence, année après année",
+      "dumb_title": "De combien chacun a bougé",
+      "dumb_sub": "Première année observée → dernière, par territoire"
+    },
+    "story": {
+      "band": "La ligne suit la moyenne des territoires ; la bande montre l'écart entre le plus bas et le plus haut. Au-dessus de 0, l'océan dépasse sa référence.",
+      "rank": "La plupart des territoires sont désormais au-dessus de la référence — l'exposition n'est pas uniforme.",
+      "map": "D'un bout à l'autre du Pacifique, l'anomalie se lit d'un coup d'œil : presque partout au-dessus de la normale.",
+      "heat": "Les bandes se réchauffent de gauche à droite : la tendance est nette sur la durée.",
+      "corr": "Les territoires qui montent le plus sont souvent ceux qui chauffent le plus — deux signaux d'un même dérèglement.",
+      "box": "Année après année, la distribution glisse vers le haut : la médiane et les extrêmes augmentent.",
+      "river": "Les trois sous-régions suivent la même pente ascendante, à des rythmes proches.",
+      "change": "Entre la première et la dernière année, presque tous les territoires affichent une hausse.",
+      "dual": "Les deux courbes montent ensemble : le Pacifique se réchauffe en même temps qu'il monte. Deux mesures, un même dérèglement.",
+      "share": "La part de territoires au-dessus de la normale grimpe avec le temps — l'anomalie ne touche plus seulement quelques îles.",
+      "dumb": "Le point sourd marque la première année, le point chaud la dernière : l'écart, c'est le chemin parcouru."
+    },
+    "outro": {
+      "kicker": "Fin de l'acte 02",
+      "title": "L'océan a parlé",
+      "text": "Il monte et se réchauffe, partout. Mais que devient la terre quand la mer avance ? Direction le territoire.",
+      "next": "Acte suivant : le territoire",
+      "home": "Retour à l'accueil"
+    },
+    "dumb": {
+      "start": "1re année",
+      "end": "dernière"
+    }
   },
   "act3": {
     "lead": "Pendant que la mer avance, la carte humaine se redessine. La croissance démographique ralentit presque partout — et plusieurs îles perdent déjà leurs habitants, tandis que d'autres concentrent une population croissante sur un littoral menacé.",

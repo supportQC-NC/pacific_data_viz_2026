@@ -7,7 +7,7 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import EChart from "../Echart/Echart";
 import { fmt, axisStyle, tooltipStyle, MONO } from "./echartsBase";
 
-export default function ScatterChart({ groups = [], unit = "", medianX = 0 }) {
+export default function ScatterChart({ groups = [], unit = "", medianX = 0, xName, yName = "%" }) {
   const tk = useThemeTokens();
   const option = useMemo(() => {
     const series = groups.map((g, i) => ({
@@ -34,13 +34,13 @@ export default function ScatterChart({ groups = [], unit = "", medianX = 0 }) {
         trigger: "item",
         ...tooltipStyle(tk),
         formatter: (p) =>
-          `${p.name}<br/>${fmt(p.value[0])} ${unit}<br/>${p.value[1] > 0 ? "+" : ""}${p.value[1]} %`,
+          `${p.name}<br/>${fmt(p.value[0])} ${xName || unit}<br/>${p.value[1] > 0 ? "+" : ""}${p.value[1]} ${yName}`,
       },
-      xAxis: { type: "value", name: unit, ...axisStyle(tk) },
-      yAxis: { type: "value", name: "%", ...axisStyle(tk) },
+      xAxis: { type: "value", name: xName || unit, ...axisStyle(tk) },
+      yAxis: { type: "value", name: yName, ...axisStyle(tk) },
       series,
     };
-  }, [groups, unit, medianX, tk]);
+  }, [groups, unit, medianX, xName, yName, tk]);
 
   return <EChart option={option} className="echart--tall" />;
 }
