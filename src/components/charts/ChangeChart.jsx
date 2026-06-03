@@ -7,7 +7,9 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
 import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, refLineX, MONO } from "./apexBase";
 
-export default function ChangeChart({ rows = [], unit = "", direction = "all" }) {
+// polarity : "down_good" (défaut, ex. émissions : baisse = vert) ou
+// "up_good" (ex. population : hausse = vert, baisse = chaud/rouge).
+export default function ChangeChart({ rows = [], unit = "", direction = "all", polarity = "down_good" }) {
   const tk = useThemeTokens();
 
   const option = useMemo(() => {
@@ -17,7 +19,11 @@ export default function ChangeChart({ rows = [], unit = "", direction = "all" })
     // ApexCharts empile du bas vers le haut : tri ascendant -> plus négatif en bas.
     r.sort((a, b) => a.delta - b.delta);
 
-    const colors = r.map((x) => (x.delta <= 0 ? tk.positive : tk.warm));
+    const colorFor = (d) =>
+      polarity === "up_good"
+        ? (d >= 0 ? tk.positive : tk.warm)
+        : (d <= 0 ? tk.positive : tk.warm);
+    const colors = r.map((x) => colorFor(x.delta));
 
     return {
       chart: baseChart(tk, { type: "bar" }),
@@ -51,7 +57,7 @@ export default function ChangeChart({ rows = [], unit = "", direction = "all" })
       annotations: { xaxis: [refLineX(tk, 0, "", tk.lineStrong)] },
       states: { active: { filter: { type: "none" } } },
     };
-  }, [rows, unit, direction, tk]);
+  }, [rows, unit, direction, polarity, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

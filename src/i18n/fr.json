@@ -498,7 +498,40 @@
     "coverage": "territoires",
     "period": "période",
     "pop_unit": "%",
-    "coming": "Données récupérées ✓"
+    "coming": "Données récupérées ✓",
+    "diverge_title": "Qui grandit, qui se vide",
+    "diverge_sub": "taux de l'année courante — vert : gagne des habitants · rouge : en perd",
+    "dumb_title": "Le chemin démographique",
+    "dumb_sub": "première → dernière année observée, par territoire",
+    "heat_title": "Le rythme, territoire par territoire",
+    "heat_sub": "taux annuel — vert : croissance · rouge : déclin",
+    "heat_low": "déclin",
+    "heat_high": "croissance",
+    "story": {
+      "trend": "La moyenne régionale s'essouffle ; la bande montre l'écart entre les territoires qui grandissent et ceux qui se vident.",
+      "map": "Sur la carte, le relief dit l'ampleur : rouge, l'île se densifie sur un littoral exposé ; bleu, elle se dépeuple.",
+      "diverge": "À l'année choisie, certains territoires gagnent encore des habitants quand d'autres basculent déjà dans le déclin.",
+      "dumb": "D'une extrémité à l'autre de la période, mesurez le chemin parcouru : la plupart des trajectoires glissent vers le bas.",
+      "heat": "Année après année, le vert cède du terrain au rouge : le ralentissement se lit d'un coup d'œil.",
+      "evo": "Qui accélère, qui décroche : la variation du taux entre la première et la dernière année.",
+      "table": "Toutes les valeurs, triables, pour explorer territoire par territoire.",
+      "gauge": "Une minorité d'îles gagne encore des habitants ; faites glisser les années pour voir la part fondre.",
+      "balance": "Année après année, les colonnes plongent : le nombre de territoires en déclin l'emporte peu à peu sur ceux qui croissent."
+    },
+    "outro": {
+      "kicker": "Fin de l'acte 03",
+      "title": "La carte humaine se redessine",
+      "text": "La mer avance, la population se déplace et se concentre sur des côtes menacées. Quel en est le coût humain ?",
+      "next": "Acte 04 — L'impact",
+      "home": "Accueil"
+    },
+    "gauge_title": "Combien gagnent encore des habitants ?",
+    "gauge_sub": "part des territoires en croissance, à l'année courante",
+    "gauge_label": "en croissance",
+    "balance_title": "La bascule",
+    "balance_sub": "nombre de territoires en croissance vs en déclin, par année",
+    "balance_up": "En croissance",
+    "balance_down": "En déclin"
   },
   "act4": {
     "kpi_affected": "personnes affectées (cumul)",

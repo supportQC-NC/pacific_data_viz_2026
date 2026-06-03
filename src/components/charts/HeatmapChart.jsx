@@ -43,7 +43,22 @@ export default function HeatmapChart({
 
     // Construit des plages de couleur contiguës.
     let ranges;
-    if (mode === "rank" && sorted.length > 4) {
+    if (mode === "diverge") {
+      // Échelle DIVERGENTE ROBUSTE centrée sur 0. Un outlier ne doit pas
+      // écraser l'échelle : on borne au 90ᵉ centile des |valeurs| (plancher
+      // 0.5), et les bandes extrêmes vont jusqu'à ±∞ pour rester colorées.
+      // Rouge/orange = déclin (<0), teal/vert = croissance (>0). Pas de
+      // couleur neutre fantôme.
+      const absVals = all.map((v) => Math.abs(v)).sort((x, y) => x - y);
+      const t = Math.max(absVals.length ? quantile(absVals, 0.9) : 1, 0.5);
+      const t1 = t / 2;
+      ranges = [
+        { from: -1e9, to: -t1, color: tk.negative },   // déclin fort
+        { from: -t1, to: 0, color: tk.warm },           // déclin léger
+        { from: 0, to: t1, color: tk.accent },          // croissance légère
+        { from: t1, to: 1e9, color: tk.positive },      // croissance forte
+      ];
+    } else if (mode === "rank" && sorted.length > 4) {
       const ths = [...new Set([1, 2, 3, 4, 5].map((i) => Number(quantile(sorted, i / 6).toFixed(2))))].sort(
         (a, b) => a - b,
       );

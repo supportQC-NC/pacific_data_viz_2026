@@ -498,7 +498,40 @@
     "coverage": "territories",
     "period": "period",
     "pop_unit": "%",
-    "coming": "Data retrieved ✓"
+    "coming": "Data retrieved ✓",
+    "diverge_title": "Who grows, who empties out",
+    "diverge_sub": "current-year rate — green: gaining people · red: losing them",
+    "dumb_title": "The demographic path",
+    "dumb_sub": "first → last observed year, per territory",
+    "heat_title": "The rhythm, territory by territory",
+    "heat_sub": "annual rate — green: growth · red: decline",
+    "heat_low": "decline",
+    "heat_high": "growth",
+    "story": {
+      "trend": "The regional mean runs out of breath; the band shows the gap between territories that grow and those that empty out.",
+      "map": "On the map, relief tells the scale: red, the island densifies on an exposed coast; blue, it loses people.",
+      "diverge": "In the chosen year, some territories still gain inhabitants while others already tip into decline.",
+      "dumb": "From one end of the period to the other, read the distance travelled: most trajectories slide downward.",
+      "heat": "Year after year, green gives way to red: the slowdown reads at a glance.",
+      "evo": "Who accelerates, who falls behind: the change in rate between the first and last year.",
+      "table": "Every value, sortable, to explore territory by territory.",
+      "gauge": "Only a minority of islands still gain inhabitants; slide through the years to watch the share melt away.",
+      "balance": "Year after year the columns dip below the line: declining territories gradually outnumber growing ones."
+    },
+    "outro": {
+      "kicker": "End of act 03",
+      "title": "The human map is redrawn",
+      "text": "The sea advances, people move and concentrate on threatened coasts. What is the human cost?",
+      "next": "Act 04 — The impact",
+      "home": "Home"
+    },
+    "gauge_title": "How many still gain people?",
+    "gauge_sub": "share of territories growing, in the current year",
+    "gauge_label": "growing",
+    "balance_title": "The tipping point",
+    "balance_sub": "number of territories growing vs declining, per year",
+    "balance_up": "Growing",
+    "balance_down": "Declining"
   },
   "act4": {
     "kpi_affected": "people affected (total)",
