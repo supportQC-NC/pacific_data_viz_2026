@@ -242,3 +242,345 @@
 
   &:hover { color: var(--c-accent); }
 }
+
+/* ============================================================
+   MODE DIAPORAMA — une diapo = un écran (hauteur fixe, jamais coupé).
+   On alterne page de TEXTE puis page GRAPHIQUE. Largeur élargie.
+   ============================================================ */
+.act1 {
+  padding-block: 0;
+
+  .container {
+    max-width: min(1760px, 94vw);
+  }
+}
+
+.act1slide {
+  scroll-margin-top: 80px;
+}
+
+/* ---------- Page GRAPHIQUE : hauteur fixe, le chart remplit tout ---------- */
+.act1slide.act1viz {
+  box-sizing: border-box;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-block: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+// En-tête réduit à la commande Filtres, en HAUT À GAUCHE (pas de titre répété).
+.act1slide .act1viz__head {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.act1viz__toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover,
+  &.is-open {
+    color: var(--c-bg);
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+}
+
+// Zone graphique : conteneur borné ; le graphique le remplit en ABSOLU.
+// Un enfant en position:absolute ne peut jamais agrandir son parent, donc le
+// graphique est forcé à la taille exacte de la zone — débordement impossible.
+.act1viz__chart {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.act1viz__chart > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.act1viz__chart .echart {
+  width: 100%;
+  height: 100%;
+}
+
+.act1slide .barrace {
+  display: flex;
+  flex-direction: column;
+}
+.act1slide .barrace__canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---------- Diapo d'intro (titre acte + KPI) ---------- */
+.act1slide--intro {
+  min-height: 100dvh;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+
+  .eyebrow,
+  .act1__title,
+  .act1__lead {
+    max-width: var(--maxw-text, 62ch);
+  }
+
+  .kpi {
+    margin-top: var(--sp-8);
+    max-width: 1200px;
+  }
+}
+
+/* ---------- Navigation flottante suivant / précédent ---------- */
+.act1nav {
+  position: fixed;
+  right: var(--sp-6);
+  bottom: var(--sp-6);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.act1nav__btn {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  color: var(--c-text);
+  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-glow);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+
+  &:hover:not(:disabled) {
+    color: var(--c-bg);
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.act1nav__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+/* ============================================================
+   PAGE DE TEXTE — diapo éditoriale plein écran (on explique,
+   puis on montre). Grand titre, phrases soignées, plein écran.
+   ============================================================ */
+.act1slide.act1text {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-block: var(--sp-12);
+}
+
+.act1text__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  max-width: min(64ch, 72vw);
+
+  // Filet d'accent éditorial au-dessus du titre.
+  &::before {
+    content: "";
+    width: 56px;
+    height: 4px;
+    border-radius: var(--r-pill);
+    background: var(--c-accent);
+  }
+}
+
+.act1text__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5.5vw, 4.6rem);
+  font-weight: var(--fw-semi);
+  line-height: 1.03;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+
+.act1text__lead {
+  max-width: 54ch;
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+.act1text__story {
+  max-width: 54ch;
+  padding-left: var(--sp-5);
+  border-left: 3px solid var(--c-accent);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+  font-style: italic;
+  font-weight: var(--fw-light);
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+.act1text__hint {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-2xl);
+  line-height: 1;
+  color: var(--c-text-mute);
+  animation: act1hint 1.8s var(--ease-out) infinite;
+}
+
+@keyframes act1hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act1text__hint {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .act1slide.act1viz {
+    height: auto;
+    min-height: 100dvh;
+  }
+  .act1viz__chart {
+    min-height: 62vh;
+  }
+}
+
+/* ============================================================
+   ÉCRAN DE FIN — passage à l'acte suivant / retour accueil.
+   ============================================================ */
+.act1slide.act1outro {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-block: var(--sp-12);
+}
+
+.act1outro__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: min(60ch, 70vw);
+}
+
+.act1outro__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: var(--fw-semi);
+  line-height: 1.05;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+
+.act1outro__text {
+  max-width: 52ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+.act1outro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.act1outro__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--c-line-strong);
+  }
+
+  &--primary {
+    color: var(--c-bg);
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+
+    &:hover {
+      border-color: var(--c-accent);
+      opacity: 0.9;
+    }
+  }
+}

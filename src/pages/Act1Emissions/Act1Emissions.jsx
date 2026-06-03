@@ -3,13 +3,13 @@
 // Acte 01 — Les émissions du Pacifique (Pacific Data Hub / SPC).
 // Page de COMPOSITION : sélectionne la donnée (filtres par graphique) et
 // compose des composants de graphiques réutilisables (src/components/charts).
-// Aucune option ECharts ici — chaque composant construit la sienne et se
-// thématise tout seul. 100 % PDH, aucun téléchargement, aucun tableau.
+// Aucune option ECharts ici. 100 % PDH. Mode diaporama plein écran + nav.
 // ============================================================
 
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
   useCallback,
   lazy,
@@ -34,6 +34,7 @@ import RadarChart from "../../components/charts/RadarChart";
 import SunburstChart from "../../components/charts/SunburstChart";
 import ScatterChart from "../../components/charts/ScatterChart";
 import ChangeChart from "../../components/charts/ChangeChart";
+import VizPanel from "../../components/charts/VizPanel";
 import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
 import "./Act1Emissions.scss";
 
@@ -105,6 +106,10 @@ export default function Act1Emissions() {
   const { t, lang } = useLang();
   const dispatch = useDispatch();
   const tk = useThemeTokens();
+  const rootRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const [slideCount, setSlideCount] = useState(0);
+  const activeRef = useRef(0);
 
   const emissions = useSelector(selectDataset("emissions"));
 
@@ -315,6 +320,69 @@ export default function Act1Emissions() {
   }, []);
   const retry = useCallback(() => dispatch(loadDataset("emissions")), [dispatch]);
 
+  // Diaporama : suit la diapo active via le scroll (fiable même si une
+  // diapo dépasse la hauteur de l'écran), + navigation prev/next.
+  useEffect(() => {
+    if (!ready || empty) return undefined;
+    const root = rootRef.current;
+    if (!root) return undefined;
+    let raf = 0;
+    const compute = () => {
+      const nodes = Array.from(root.querySelectorAll(".act1slide"));
+      setSlideCount(nodes.length);
+      const mid = window.innerHeight * 0.4;
+      let idx = 0;
+      for (let i = 0; i < nodes.length; i += 1) {
+        const r = nodes[i].getBoundingClientRect();
+        if (r.top <= mid) idx = i;
+        else break;
+      }
+      setActive(idx);
+      activeRef.current = idx;
+    };
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(compute);
+    };
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [ready, empty, currentYear, lang]);
+
+  const goTo = useCallback((i) => {
+    const root = rootRef.current;
+    if (!root) return;
+    const nodes = Array.from(root.querySelectorAll(".act1slide"));
+    if (!nodes.length) return;
+    const idx = Math.max(0, Math.min(nodes.length - 1, i));
+    const el = nodes[idx];
+    const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, []);
+
+  // Navigation au clavier : flèches haut/bas (et Page précédente/suivante).
+  useEffect(() => {
+    if (!ready || empty) return undefined;
+    const onKey = (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        goTo(activeRef.current + 1);
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        goTo(activeRef.current - 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [ready, empty, goTo]);
+
   // Options de filtres
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
   const sortOpts = [
@@ -353,12 +421,15 @@ export default function Act1Emissions() {
   );
 
   return (
-    <main className="act1">
+    <main className="act1" ref={rootRef}>
       <div className="container">
-        <header className="act1__head">
+        <header className="act1__head act1slide act1slide--intro">
           <p className="eyebrow">{t("home.acts.a1_tag")}</p>
           <h1 className="act1__title">{t("home.acts.a1_title")}</h1>
           <p className="act1__lead">{t("act1.lead")}</p>
+          {kpiItems.length > 0 && (
+            <KpiRow items={kpiItems} title={t("act1.stats.title")} />
+          )}
         </header>
 
         {!ready && !failed && <Loader fullscreen label={t("scene.loading")} />}
@@ -376,21 +447,15 @@ export default function Act1Emissions() {
 
         {ready && !empty && currentYear != null && (
           <>
-            {kpiItems.length > 0 && (
-              <KpiRow items={kpiItems} title={t("act1.stats.title")} />
-            )}
-
-            {/* 0 — COURSE ANIMÉE (en tête, boucle) */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.race_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.race_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
+            <VizPanel
+              title={t("act1.viz.race_title")}
+              subtitle={t("act1.viz.race_sub")}
+              story={t("act1.story.race")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
                 <Pills label={t("act1.filter.title")} options={regionOpts} value={regionRace} onChange={setRegionRace} />
-              </div>
+              }
+            >
               <BarRace
                 series={raceSeries}
                 years={years}
@@ -398,23 +463,22 @@ export default function Act1Emissions() {
                 tk={tk}
                 labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }}
               />
-              <p className="act1viz__story">{t("act1.story.race")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 1 — CLASSEMENT */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.rank_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.rank_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionRank} onChange={setRegionRank} />
-                <Pills label={t("act1.f.sort")} options={sortOpts} value={sortRank} onChange={setSortRank} />
-                <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleRank} onChange={setScaleRank} help={t("act1.f.scale_help")} />
-                <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.rank_title")}
+              subtitle={t("act1.viz.rank_sub")}
+              story={t("act1.story.rank")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionRank} onChange={setRegionRank} />
+                  <Pills label={t("act1.f.sort")} options={sortOpts} value={sortRank} onChange={setSortRank} />
+                  <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleRank} onChange={setScaleRank} help={t("act1.f.scale_help")} />
+                  <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+                </>
+              }
+            >
               <RankChart
                 points={pointsFor(regionRank, currentYear)}
                 unit={t("act1.unit")}
@@ -423,52 +487,47 @@ export default function Act1Emissions() {
                 sort={sortRank}
                 scale={scaleRank}
               />
-              <p className="act1viz__story">{t("act1.story.rank")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 2 — TRAJECTOIRES */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.trend_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.trend_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionTrend} onChange={setRegionTrend} />
-                <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleTrend} onChange={setScaleTrend} help={t("act1.f.scale_help")} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.trend_title")}
+              subtitle={t("act1.viz.trend_sub")}
+              story={t("act1.story.trend")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionTrend} onChange={setRegionTrend} />
+                  <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleTrend} onChange={setScaleTrend} help={t("act1.f.scale_help")} />
+                </>
+              }
+            >
               <TrendChart series={trendSeries} years={years} unit={t("act1.unit")} scale={scaleTrend} />
-              <p className="act1viz__story">{t("act1.story.trend")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 3 — NUAGE niveau × évolution */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.scatter_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.scatter_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
+            <VizPanel
+              title={t("act1.viz.scatter_title")}
+              subtitle={t("act1.viz.scatter_sub")}
+              story={t("act1.story.scatter")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
                 <Pills label={t("act1.filter.title")} options={regionOpts} value={regionScatter} onChange={setRegionScatter} />
-              </div>
+              }
+            >
               <ScatterChart groups={scatterGroups} unit={t("act1.unit")} medianX={scatterMedianX} />
-              <p className="act1viz__story">{t("act1.story.scatter")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 4 — CARTE */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.map_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.map_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionMap} onChange={setRegionMap} />
-                <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.map_title")}
+              subtitle={t("act1.viz.map_sub")}
+              story={t("act1.story.map")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionMap} onChange={setRegionMap} />
+                  <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+                </>
+              }
+            >
               <ErrorBoundary fallback={<div className="act1__state act1__state--err">{t("scene.error")}</div>}>
                 <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <OceanMap
@@ -490,21 +549,20 @@ export default function Act1Emissions() {
                   />
                 </Suspense>
               </ErrorBoundary>
-              <p className="act1viz__story">{t("act1.story.map")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 5 — HEATMAP */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.heat_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.heat_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionHeat} onChange={setRegionHeat} />
-                <Pills label={t("act1.f.color")} options={colorOpts} value={colorHeat} onChange={setColorHeat} help={t("act1.f.color_help")} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.heat_title")}
+              subtitle={t("act1.viz.heat_sub")}
+              story={t("act1.story.heat")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionHeat} onChange={setRegionHeat} />
+                  <Pills label={t("act1.f.color")} options={colorOpts} value={colorHeat} onChange={setColorHeat} help={t("act1.f.color_help")} />
+                </>
+              }
+            >
               <HeatmapChart
                 series={heatSeries}
                 years={years}
@@ -512,82 +570,86 @@ export default function Act1Emissions() {
                 mode={colorHeat}
                 labels={{ low: t("act1.heatmap.low"), high: t("act1.heatmap.high") }}
               />
-              <p className="act1viz__story">{t("act1.story.heat")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 6 — RADAR sous-régions */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.radar_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.radar_sub")}</p>
-                </div>
-              </div>
+            <VizPanel
+              title={t("act1.viz.radar_title")}
+              subtitle={t("act1.viz.radar_sub")}
+              story={t("act1.story.radar")}
+            >
               <RadarChart subAvg={subAvg} years={years} />
-              <p className="act1viz__story">{t("act1.story.radar")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 7 — DISTRIBUTION (boxplot) */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.box_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.box_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionBox} onChange={setRegionBox} />
-                <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleBox} onChange={setScaleBox} help={t("act1.f.scale_help")} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.box_title")}
+              subtitle={t("act1.viz.box_sub")}
+              story={t("act1.story.box")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionBox} onChange={setRegionBox} />
+                  <Pills label={t("act1.f.scale")} options={scaleOpts} value={scaleBox} onChange={setScaleBox} help={t("act1.f.scale_help")} />
+                </>
+              }
+            >
               <BoxplotChart series={boxSeries} years={years} unit={t("act1.unit")} scale={scaleBox} />
-              <p className="act1viz__story">{t("act1.story.box")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 8 — FLUX (themeRiver) */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.river_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.river_sub")}</p>
-                </div>
-              </div>
+            <VizPanel
+              title={t("act1.viz.river_title")}
+              subtitle={t("act1.viz.river_sub")}
+              story={t("act1.story.river")}
+            >
               <RiverChart subAvg={subAvg} years={years} />
-              <p className="act1viz__story">{t("act1.story.river")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 9 — HIÉRARCHIE (sunburst) */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.tree_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.tree_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionTree} onChange={setRegionTree} />
-                <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.tree_title")}
+              subtitle={t("act1.viz.tree_sub")}
+              story={t("act1.story.tree")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionTree} onChange={setRegionTree} />
+                  <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+                </>
+              }
+            >
               <SunburstChart groups={sunburstGroups} unit={t("act1.unit")} />
-              <p className="act1viz__story">{t("act1.story.tree")}</p>
-            </section>
+            </VizPanel>
 
-            {/* 10 — CHANGEMENT */}
-            <section className="act1viz">
-              <div className="act1viz__head">
-                <div>
-                  <h3 className="act1viz__title">{t("act1.viz.change_title")}</h3>
-                  <p className="act1viz__sub">{t("act1.viz.change_sub")}</p>
-                </div>
-              </div>
-              <div className="act1viz__filters">
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={regionChange} onChange={setRegionChange} />
-                <Pills label={t("act1.f.dir")} options={dirOpts} value={dirChange} onChange={setDirChange} />
-              </div>
+            <VizPanel
+              title={t("act1.viz.change_title")}
+              subtitle={t("act1.viz.change_sub")}
+              story={t("act1.story.change")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  <Pills label={t("act1.filter.title")} options={regionOpts} value={regionChange} onChange={setRegionChange} />
+                  <Pills label={t("act1.f.dir")} options={dirOpts} value={dirChange} onChange={setDirChange} />
+                </>
+              }
+            >
               <ChangeChart rows={changeRows} unit={t("act1.unit")} direction={dirChange} />
-              <p className="act1viz__story">{t("act1.story.change")}</p>
-            </section>
+            </VizPanel>
 
             <p className="act1__caption">{t("act1.caption")}</p>
+
+            <section className="act1slide act1outro">
+              <div className="act1outro__inner">
+                <p className="eyebrow">{t("act1.outro.kicker")}</p>
+                <h2 className="act1outro__title">{t("act1.outro.title")}</h2>
+                <p className="act1outro__text">{t("act1.outro.text")}</p>
+                <div className="act1outro__actions">
+                  <Link to="/ocean" className="act1outro__btn act1outro__btn--primary">
+                    {t("act1.outro.next")} <span aria-hidden="true">→</span>
+                  </Link>
+                  <Link to="/" className="act1outro__btn">
+                    {t("act1.outro.home")}
+                  </Link>
+                </div>
+              </div>
+            </section>
           </>
         )}
 
@@ -595,6 +657,32 @@ export default function Act1Emissions() {
           ← {t("act1.back")}
         </Link>
       </div>
+
+      {ready && !empty && slideCount > 0 && (
+        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
+          <button
+            type="button"
+            className="act1nav__btn"
+            onClick={() => goTo(active - 1)}
+            disabled={active <= 0}
+            aria-label={t("act1.nav.prev")}
+          >
+            ↑
+          </button>
+          <span className="act1nav__count">
+            {active + 1}/{slideCount}
+          </span>
+          <button
+            type="button"
+            className="act1nav__btn"
+            onClick={() => goTo(active + 1)}
+            disabled={active >= slideCount - 1}
+            aria-label={t("act1.nav.next")}
+          >
+            ↓
+          </button>
+        </div>
+      )}
     </main>
   );
 }

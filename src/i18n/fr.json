@@ -270,7 +270,8 @@
       "color_rank": "Par rang",
       "color_abs": "Absolue",
       "scale_help": "Linéaire : l'axe respecte les écarts réels — un très gros émetteur écrase les petits. Log : chaque graduation multiplie l'échelle, ce qui rend visibles aussi les petites valeurs.",
-      "color_help": "Par rang : la couleur suit le classement (tous les territoires se distinguent). Absolue : la couleur suit la valeur brute (un extrême peut tout aplatir)."
+      "color_help": "Par rang : la couleur suit le classement (tous les territoires se distinguent). Absolue : la couleur suit la valeur brute (un extrême peut tout aplatir).",
+      "toggle": "Filtres"
     },
     "kpi": {
       "evolution": "évolution médiane",
@@ -280,6 +281,17 @@
       "play": "Lancer",
       "pause": "Pause",
       "replay": "Rejouer"
+    },
+    "nav": {
+      "prev": "Section précédente",
+      "next": "Section suivante"
+    },
+    "outro": {
+      "kicker": "Fin de l'acte 01",
+      "title": "La base est posée",
+      "text": "Le Pacifique émet peu par habitant — sauf rares exceptions. Reste à voir ce que ces émissions provoquent : l'océan, en première ligne.",
+      "next": "Acte suivant : l'océan",
+      "home": "Retour à l'accueil"
     }
   },
   "export": {

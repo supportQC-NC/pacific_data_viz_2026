@@ -1,17 +1,10 @@
 // src/components/ActFlow/ActFlow.jsx
 // ============================================================
-// Enveloppe de PARCOURS pour une page d'acte. Non invasif : la page passe
-// son contenu en children, ActFlow ajoute autour :
-//   • une barre de progression FIXE en haut (toujours visible) : Acte X / 11
-//   • en MODE GUIDÉ et si l'intro n'a pas été vue : un écran d'intro plein
-//     cadre (titre + accroche) avec un bouton « Plonger dans l'acte » qui
-//     révèle le contenu ; sinon le contenu s'affiche directement
-//   • un PIED de navigation : ← précédent · Acte suivant → (+ rappel position)
-// Sur une page d'acte, le header et le footer GLOBAUX s'effacent en permanence :
-// la barre du haut et le pied de navigation d'ActFlow suffisent (← accueil,
-// précédent / suivant, retour au récit). L'exploration libre reste possible :
-// hors mode guidé, l'intro est sautée.
-// Aucun style inline. Textes via i18n (réutilise home.acts.* déjà traduits).
+// Enveloppe de PARCOURS pour une page d'acte. La page passe son contenu en
+// children. Plus de barre de progression en haut (inutile) : en mode guidé,
+// un ouvre-chapitre plein cadre ; puis le contenu de l'acte ; puis un pied
+// de navigation (← précédent · suivant →). Le header/footer globaux sont
+// masqués sur une page d'acte. Aucun style inline. Textes via i18n.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -36,27 +29,17 @@ const CHAPTER_OF = {
   a11: "c3",
 };
 
-export default function ActFlow({ actId, hasDeck = false, children }) {
+export default function ActFlow({ actId, children }) {
   const { t } = useLang();
   const navigate = useNavigate();
-  const {
-    guided,
-    seen,
-    markSeen,
-    exitJourney,
-    neighbors,
-    togglePresentation,
-    closePresentation,
-    presentation,
-    setImmersive,
-  } = useJourney();
+  const { guided, seen, markSeen, exitJourney, neighbors, setImmersive } =
+    useJourney();
   const { index, total, prev, next } = neighbors(actId);
 
   // En mode guidé et intro pas encore vue → on montre l'intro d'abord.
   const needsIntro = guided && !seen[actId];
   const [revealed, setRevealed] = useState(!needsIntro);
 
-  const rootRef = useRef(null);
   const introRef = useRef(null);
 
   // Si on change d'acte (remontage), on recalcule l'état d'intro.
@@ -75,31 +58,11 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
     const ctx = gsap.context(() => {
       gsap
         .timeline({ defaults: { ease: "power3.out" } })
-        .from(".actflow__intro-ghost", {
-          opacity: 0,
-          scale: 1.15,
-          duration: 1.1,
-        })
-        .from(
-          ".actflow__intro-chapter",
-          { y: 18, opacity: 0, duration: 0.6 },
-          "-=0.7",
-        )
-        .from(
-          ".actflow__intro-tag",
-          { y: 16, opacity: 0, duration: 0.5 },
-          "-=0.4",
-        )
-        .from(
-          ".actflow__intro-title",
-          { y: 40, opacity: 0, duration: 0.8 },
-          "-=0.3",
-        )
-        .from(
-          ".actflow__intro-text",
-          { y: 24, opacity: 0, duration: 0.6 },
-          "-=0.45",
-        )
+        .from(".actflow__intro-ghost", { opacity: 0, scale: 1.15, duration: 1.1 })
+        .from(".actflow__intro-chapter", { y: 18, opacity: 0, duration: 0.6 }, "-=0.7")
+        .from(".actflow__intro-tag", { y: 16, opacity: 0, duration: 0.5 }, "-=0.4")
+        .from(".actflow__intro-title", { y: 40, opacity: 0, duration: 0.8 }, "-=0.3")
+        .from(".actflow__intro-text", { y: 24, opacity: 0, duration: 0.6 }, "-=0.45")
         .from(
           ".actflow__intro-actions > *",
           { y: 18, opacity: 0, duration: 0.5, stagger: 0.1 },
@@ -110,32 +73,20 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
     return () => ctx.revert();
   }, [revealed, actId]);
 
-  // Largeur des barres pilotée par une variable CSS (aucun style inline JSX).
-  useEffect(() => {
-    const ratio = total > 0 ? (index + 1) / total : 0;
-    if (rootRef.current)
-      rootRef.current.style.setProperty("--flow-ratio", String(ratio));
-  }, [index, total, revealed]);
-
-  // Image de fond de l'intro, par acte. Posée en custom property côté JS :
-  // l'URL n'est donc JAMAIS résolue par webpack (pas d'erreur si l'image
-  // n'existe pas encore). Déposer les visuels dans public/intro/aN.jpg.
-  useEffect(() => {
-    const el = introRef.current;
-    if (!el) return undefined;
-    const base = process.env.PUBLIC_URL || "";
-    el.style.setProperty("--intro-img", `url("${base}/intro/${actId}.jpg")`);
-    return undefined;
-  }, [actId, revealed]);
-
-  // Sur une page d'acte, le header et le footer GLOBAUX s'effacent en
-  // permanence (pilotés via le contexte) : la barre de progression (haut) et
-  // le pied de navigation d'ActFlow (← précédent · suivant → · retour à
-  // l'accueil) suffisent. On rétablit l'affichage au démontage (retour Home).
+  // Sur une page d'acte, header et footer globaux s'effacent (via le contexte).
   useEffect(() => {
     setImmersive(true);
     return () => setImmersive(false);
   }, [setImmersive]);
+
+  // Image de fond de l'ouvre-chapitre : public/intro/a{N}.jpg, exposée au
+  // SCSS via la variable --intro-img (consommée par .actflow__intro).
+  useEffect(() => {
+    if (revealed) return;
+    if (introRef.current) {
+      introRef.current.style.setProperty("--intro-img", `url("/intro/${actId}.jpg")`);
+    }
+  }, [actId, revealed]);
 
   const reveal = () => {
     markSeen(actId);
@@ -152,53 +103,10 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
   const num = String(index + 1).padStart(2, "0");
 
   return (
-    <div className="actflow" ref={rootRef}>
-      {/* Barre de progression : masquée pendant l'ouvre-chapitre plein écran */}
-      <div
-        className={`actflow__bar ${revealed ? "" : "actflow__bar--hidden"}`}
-        role="navigation"
-        aria-label={t("flow.progress_aria")}
-      >
-        <div className="actflow__bar-inner container">
-          <Link
-            to="/"
-            className="actflow__home"
-            aria-label={t("flow.home")}
-            onClick={closePresentation}
-          >
-            ←
-          </Link>
-          <span className="actflow__spacer" aria-hidden="true" />
-          <span className="actflow__count">
-            {t("flow.act")} <strong>{num}</strong> / {total}
-          </span>
-          {hasDeck && (
-            <button
-              type="button"
-              className="actflow__present"
-              onClick={togglePresentation}
-            >
-              {t("flow.present_mode")} <span aria-hidden="true">▷</span>
-            </button>
-          )}
-          {guided && (
-            <button
-              type="button"
-              className="actflow__exit"
-              onClick={exitJourney}
-            >
-              {t("flow.exit")}
-            </button>
-          )}
-        </div>
-        <div className="actflow__bar-progress">
-          <span className="actflow__bar-progress-fill" />
-        </div>
-      </div>
-
+    <div className="actflow">
       {/* Écran d'intro / ouvre-chapitre (mode guidé, intro non vue) */}
       {!revealed && (
-        <section className="actflow__intro" data-act={actId} ref={introRef}>
+        <section className="actflow__intro" ref={introRef}>
           <span className="actflow__intro-ghost" aria-hidden="true">
             {num}
           </span>
@@ -213,15 +121,9 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
             <h1 className="actflow__intro-title">
               {t(`home.acts.${actId}_title`)}
             </h1>
-            <p className="actflow__intro-text">
-              {t(`home.acts.${actId}_text`)}
-            </p>
+            <p className="actflow__intro-text">{t(`home.acts.${actId}_text`)}</p>
             <div className="actflow__intro-actions">
-              <button
-                type="button"
-                className="actflow__reveal"
-                onClick={reveal}
-              >
+              <button type="button" className="actflow__reveal" onClick={reveal}>
                 {t("flow.reveal")} <span aria-hidden="true">↓</span>
               </button>
               {prev && (
@@ -247,10 +149,7 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
           {children}
 
           {/* Pied de navigation */}
-          <nav
-            className="actflow__foot container"
-            aria-label={t("flow.nav_aria")}
-          >
+          <nav className="actflow__foot container" aria-label={t("flow.nav_aria")}>
             <div className="actflow__foot-side">
               {prev ? (
                 <button
@@ -258,21 +157,15 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
                   className="actflow__navbtn actflow__navbtn--prev"
                   onClick={goPrev}
                 >
-                  <span className="actflow__navbtn-dir">
-                    ← {t("flow.prev")}
-                  </span>
+                  <span className="actflow__navbtn-dir">← {t("flow.prev")}</span>
                   <span className="actflow__navbtn-name">
                     {t(`home.acts.${prev.id}_title`)}
                   </span>
                 </button>
               ) : (
                 <Link to="/" className="actflow__navbtn actflow__navbtn--prev">
-                  <span className="actflow__navbtn-dir">
-                    ← {t("flow.home")}
-                  </span>
-                  <span className="actflow__navbtn-name">
-                    {t("flow.home_name")}
-                  </span>
+                  <span className="actflow__navbtn-dir">← {t("flow.home")}</span>
+                  <span className="actflow__navbtn-name">{t("flow.home_name")}</span>
                 </Link>
               )}
             </div>
@@ -288,9 +181,7 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
                   className="actflow__navbtn actflow__navbtn--next"
                   onClick={goNext}
                 >
-                  <span className="actflow__navbtn-dir">
-                    {t("flow.next")} →
-                  </span>
+                  <span className="actflow__navbtn-dir">{t("flow.next")} →</span>
                   <span className="actflow__navbtn-name">
                     {t(`home.acts.${next.id}_title`)}
                   </span>
@@ -302,9 +193,7 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
                   onClick={exitJourney}
                 >
                   <span className="actflow__navbtn-dir">{t("flow.end")} ✦</span>
-                  <span className="actflow__navbtn-name">
-                    {t("flow.end_name")}
-                  </span>
+                  <span className="actflow__navbtn-name">{t("flow.end_name")}</span>
                 </Link>
               )}
             </div>

@@ -270,7 +270,8 @@
       "color_rank": "By rank",
       "color_abs": "Absolute",
       "scale_help": "Linear: the axis keeps the real gaps — one very large emitter dwarfs the small ones. Log: each gridline multiplies the scale, so small values become visible too.",
-      "color_help": "By rank: colour follows the ranking (every territory stands out). Absolute: colour follows the raw value (an extreme can flatten everything)."
+      "color_help": "By rank: colour follows the ranking (every territory stands out). Absolute: colour follows the raw value (an extreme can flatten everything).",
+      "toggle": "Filters"
     },
     "kpi": {
       "evolution": "median change",
@@ -280,6 +281,17 @@
       "play": "Play",
       "pause": "Pause",
       "replay": "Replay"
+    },
+    "nav": {
+      "prev": "Previous section",
+      "next": "Next section"
+    },
+    "outro": {
+      "kicker": "End of act 01",
+      "title": "The groundwork is laid",
+      "text": "The Pacific emits little per capita — bar a few exceptions. Now to what those emissions trigger: the ocean, on the front line.",
+      "next": "Next act: the ocean",
+      "home": "Back to home"
     }
   },
   "export": {
