@@ -1,19 +1,20 @@
 // src/components/LanguageGate/LanguageGate.jsx
 // ============================================================
 // Écran d'OUVERTURE de l'immersion. Au lancement de l'expérience, l'utilisateur
-// choisit d'abord sa langue (FR / EN) sur un panneau plein écran ; le voyage
-// démarre ensuite dans la langue choisie (Acte 1).
+// choisit d'abord sa langue (FR / EN) sur un panneau plein écran, sur fond de
+// pluie binaire lente (mêmes données qui « tombent » que le loader, mais
+// douces). Le voyage démarre ensuite dans la langue choisie (Acte 1).
 // - Applique la langue via le contexte (setLang), lance startJourney(),
-//   puis navigue vers le premier acte.
-// - Échap ferme sans démarrer.
-// Aucun style inline. Les libellés sont affichés dans les DEUX langues : c'est
-// l'écran de choix de langue lui-même, donc c'est volontaire et assumé.
+//   puis navigue vers le premier acte. Échap ferme sans démarrer.
+// Aucun style inline. Les libellés sont affichés dans les DEUX langues :
+// c'est l'écran de choix de langue lui-même, donc c'est volontaire.
 // ============================================================
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
+import BinaryRain from "../BinaryRain/BinaryRain";
 import "./LanguageGate.scss";
 
 export default function LanguageGate({ open, onClose }) {
@@ -50,15 +51,21 @@ export default function LanguageGate({ open, onClose }) {
       aria-modal="true"
       aria-label="Choose your language / Choisissez votre langue"
     >
+      <BinaryRain className="langgate__rain" stepMs={130} fontSize={18} fade={0.1} />
+      <div className="langgate__veil" aria-hidden="true" />
+
       <div className="langgate__inner">
+        <span className="langgate__mark" aria-hidden="true">
+          <span className="langgate__mark-core" />
+          <span className="langgate__mark-ring" />
+        </span>
+
         <p className="langgate__kicker">
           Datamoana · Pacific Dataviz Challenge 2026
         </p>
         <h2 className="langgate__title">
           <span lang="fr">Choisissez votre langue</span>
-          <span className="langgate__title-sep" aria-hidden="true">
-            ·
-          </span>
+          <span className="langgate__title-sep" aria-hidden="true" />
           <span lang="en">Choose your language</span>
         </h2>
 
@@ -71,7 +78,7 @@ export default function LanguageGate({ open, onClose }) {
             <span className="langgate__code">FR</span>
             <span className="langgate__name">Français</span>
             <span className="langgate__go" aria-hidden="true">
-              Commencer →
+              Commencer <span className="langgate__go-arrow">→</span>
             </span>
           </button>
           <button
@@ -82,7 +89,7 @@ export default function LanguageGate({ open, onClose }) {
             <span className="langgate__code">EN</span>
             <span className="langgate__name">English</span>
             <span className="langgate__go" aria-hidden="true">
-              Start →
+              Start <span className="langgate__go-arrow">→</span>
             </span>
           </button>
         </div>

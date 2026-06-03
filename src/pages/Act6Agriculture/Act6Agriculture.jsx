@@ -35,6 +35,7 @@ import ChangeBars from "../../components/ChangeBars/ChangeBars";
 import DataTable from "../../components/DataTable/DataTable";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act6Agriculture.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -396,7 +397,7 @@ export default function Act6Agriculture() {
           takeaway={t("act6.guide.takeaway")}
         />
 
-        {agri.status === "loading" && <p className="act6__state">{t("scene.loading")}</p>}
+        {agri.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {agri.status === "empty" && (
           <div className="act6__state act6__state--err">
             <span>{t("act6.unavailable")}</span>
@@ -585,7 +586,7 @@ export default function Act6Agriculture() {
                 </span>
               </div>
               <ErrorBoundary fallback={<div className="act6__state act6__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<div className="act6__state">{t("scene.loading")}</div>}>
+                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <OceanMap
                     data={points}
                     unit={unit}

@@ -25,6 +25,7 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import Loader from "../../components/Loader/Loader";
 import "./Act8Ciel.scss";
 
 const SUBREGIONS = {
@@ -227,7 +228,7 @@ export default function Act8Ciel() {
           <p className="act8__lead">{t("act8.lead")}</p>
         </header>
 
-        {state.status === "loading" && <p className="act8__state">{t("scene.loading")}</p>}
+        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {state.status === "empty" && <p className="act8__state act8__state--err">{t("act8.unavailable")}</p>}
 
         {state.status === "ready" && (

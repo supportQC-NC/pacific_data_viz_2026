@@ -1,29 +1,37 @@
-/* src/components/ActFlow/ActFlow.scss
-   ============================================================
-   Styles du parcours guidé (ActFlow) : barre de progression fixe,
-   écran d'intro plein cadre, pied de navigation entre actes.
-   Le header global étant masqué sur les actes, la barre se cale
-   en haut de page (top: 0). Variables via custom properties (:root).
-   ============================================================ */
+// src/components/ActFlow/ActFlow.scss
+// ============================================================
+//  Enveloppe de parcours d'un acte :
+//   • barre de progression fixe (haut)
+//   • ouvre-chapitre / intro PLEIN ÉCRAN cinématique avec IMAGE DE FOND
+//     par acte (public/intro/aN.jpg) + scrim de lisibilité + grain
+//   • pied de navigation (précédent / suivant)
+//  Tokens charte ; aucun style inline ; reduced-motion géré.
+//
+//  IMAGES PAR ACTE : déposer public/intro/a1.jpg … a11.jpg.
+//  Référencées en URL absolue (/intro/aN.jpg) → une image manquante
+//  ne casse pas le build ; le dégradé de secours reste affiché.
+// ============================================================
 
 .actflow {
   --flow-ratio: 0;
   position: relative;
 }
 
-/* ---- Barre de progression fixe ---- */
+/* ============================================================
+   BARRE DE PROGRESSION
+   ============================================================ */
 .actflow__bar {
   position: sticky;
-  top: 0;
+  top: var(--nav-h);
   z-index: 40;
   background: color-mix(in srgb, var(--c-bg) 86%, transparent);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
   border-bottom: var(--border-hair) solid var(--c-line);
-}
 
-/* masquée pendant l'ouvre-chapitre plein écran */
-.actflow__bar--hidden {
-  display: none;
+  &--hidden {
+    display: none;
+  }
 }
 
 .actflow__bar-inner {
@@ -36,14 +44,14 @@
 .actflow__home {
   font-family: var(--font-mono);
   font-size: var(--fs-md);
-  color: var(--c-text-soft);
   line-height: 1;
-  transition: color var(--t-fast) var(--ease-out),
-    transform var(--t-fast) var(--ease-out);
-}
-.actflow__home:hover {
-  color: var(--c-accent);
-  transform: translateX(-2px);
+  color: var(--c-text-soft);
+  transition: color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-accent);
+    transform: translateX(-2px);
+  }
 }
 
 .actflow__track {
@@ -58,8 +66,8 @@
   display: block;
   height: 100%;
   width: calc(var(--flow-ratio) * 100%);
-  background: var(--c-accent);
   border-radius: var(--r-pill);
+  background: var(--c-accent);
   box-shadow: 0 0 10px 1px var(--c-accent-glow);
   transition: width var(--t-base) var(--ease-out);
 }
@@ -68,14 +76,37 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: 0.04em;
-  color: var(--c-text-mute);
   white-space: nowrap;
+  color: var(--c-text-mute);
+
+  strong { color: var(--c-accent); }
 }
-.actflow__count strong {
+
+.actflow__present {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
   color: var(--c-accent);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-accent);
+  border-radius: var(--r-pill);
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+
+  &:hover {
+    background: var(--c-accent);
+    color: var(--c-bg);
+    box-shadow: var(--shadow-glow);
+  }
 }
 
 .actflow__exit {
+  padding: var(--sp-1) var(--sp-3);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: 0.05em;
@@ -83,16 +114,14 @@
   color: var(--c-text-mute);
   border: var(--border-hair) solid var(--c-line-strong);
   border-radius: var(--r-pill);
-  padding: var(--sp-1) var(--sp-3);
-  transition: color var(--t-fast) var(--ease-out),
-    border-color var(--t-fast) var(--ease-out);
-}
-.actflow__exit:hover {
-  color: var(--c-warm);
-  border-color: var(--c-warm);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-warm);
+    border-color: var(--c-warm);
+  }
 }
 
-/* fine ligne de progression sous la barre (rappel visuel discret) */
 .actflow__bar-progress {
   height: 2px;
   background: transparent;
@@ -106,50 +135,96 @@
   transition: width var(--t-base) var(--ease-out);
 }
 
-/* bouton Mode présentation dans la barre */
-.actflow__present {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--c-accent);
-  background: transparent;
-  border: var(--border-hair) solid var(--c-accent);
-  border-radius: var(--r-pill);
-  padding: var(--sp-1) var(--sp-4);
-  white-space: nowrap;
-  transition: background var(--t-fast) var(--ease-out),
-    color var(--t-fast) var(--ease-out),
-    box-shadow var(--t-fast) var(--ease-out);
-}
-.actflow__present:hover {
-  background: var(--c-accent);
-  color: var(--c-bg);
-  box-shadow: var(--shadow-glow);
-}
-
-/* ---- Écran d'intro plein cadre ---- */
+/* ============================================================
+   INTRO / OUVRE-CHAPITRE — image de fond par acte
+   ============================================================ */
 .actflow__intro {
   position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   overflow: hidden;
-  background: radial-gradient(
-      120% 90% at 20% 25%,
-      color-mix(in srgb, var(--c-accent-deep) 16%, transparent),
-      transparent 60%
-    ),
-    linear-gradient(180deg, var(--c-bg-2), var(--c-bg));
+  isolation: isolate;
+  background-color: var(--c-bg);
+  background-image: var(--intro-img, none);
+  background-size: cover;
+  background-position: center;
+
+  // Scrim de lisibilité : voile solide à gauche + fondu bas + vignette + teintes
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(70% 55% at 16% 12%,
+        color-mix(in srgb, var(--c-accent) 16%, transparent) 0%, transparent 55%),
+      radial-gradient(60% 50% at 92% 16%,
+        color-mix(in srgb, var(--c-warm) 12%, transparent) 0%, transparent 60%),
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--c-bg) 35%, transparent) 0%,
+        transparent 28%,
+        color-mix(in srgb, var(--c-bg) 60%, transparent) 80%,
+        var(--c-bg) 100%),
+      linear-gradient(100deg,
+        color-mix(in srgb, var(--c-bg) 92%, transparent) 0%,
+        color-mix(in srgb, var(--c-bg) 76%, transparent) 32%,
+        color-mix(in srgb, var(--c-bg) 28%, transparent) 58%,
+        transparent 76%);
+  }
+
+  // Grain filmique
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: var(--noise);
+    background-size: 180px 180px;
+    opacity: 0.1;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+}
+
+/* Numéro fantôme décoratif */
+.actflow__intro-ghost {
+  position: absolute;
+  right: clamp(-1rem, 2vw, 4rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: clamp(10rem, 34vw, 30rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--c-text) 12%, transparent);
+  pointer-events: none;
+  user-select: none;
 }
 
 .actflow__intro-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  max-width: 52rem;
+  padding-block: var(--nav-h);
   animation: flowIntroIn 0.8s var(--ease-out) both;
+}
+
+/* Ligne de chapitre */
+.actflow__intro-chapter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  margin-bottom: var(--sp-4);
 }
 
 .actflow__intro-tag {
@@ -158,17 +233,19 @@
 
 .actflow__intro-title {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 8vw, 6rem);
-  font-weight: var(--fw-light);
-  line-height: var(--lh-tight);
-  margin: 0 0 var(--sp-6);
+  font-size: clamp(2.4rem, 6.5vw, 5rem);
+  font-weight: var(--fw-reg);
+  line-height: 1.02;
+  letter-spacing: var(--ls-tight);
   max-width: 18ch;
+  margin: 0 0 var(--sp-6);
+  color: var(--c-text);
 }
 
 .actflow__intro-text {
-  max-width: var(--maxw-text);
-  font-size: var(--fs-md);
-  line-height: var(--lh-base);
+  max-width: 50ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.5;
   color: var(--c-text-soft);
   margin: 0 0 var(--sp-12);
 }
@@ -184,27 +261,24 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-8);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--c-bg);
   background: var(--c-accent);
-  padding: var(--sp-4) var(--sp-8);
   border-radius: var(--r-pill);
   box-shadow: var(--shadow-glow);
-  transition: transform var(--t-fast) var(--ease-out),
-    box-shadow var(--t-fast) var(--ease-out);
-}
-.actflow__reveal span {
-  transition: transform var(--t-fast) var(--ease-out);
-}
-.actflow__reveal:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 28px 2px var(--c-accent-glow);
-}
-.actflow__reveal:hover span {
-  transform: translateY(3px);
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+
+  span { transition: transform var(--t-fast) var(--ease-out); }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 34px -8px var(--c-accent-glow);
+  }
+  &:hover span { transform: translateY(3px); }
+  &:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
 }
 
 .actflow__intro-prev {
@@ -212,9 +286,8 @@
   font-size: var(--fs-sm);
   color: var(--c-text-mute);
   transition: color var(--t-fast) var(--ease-out);
-}
-.actflow__intro-prev:hover {
-  color: var(--c-text-soft);
+
+  &:hover { color: var(--c-text-soft); }
 }
 
 .actflow__intro-step {
@@ -226,7 +299,9 @@
   color: var(--c-text-mute);
 }
 
-/* ---- Pied de navigation ---- */
+/* ============================================================
+   PIED DE NAVIGATION
+   ============================================================ */
 .actflow__foot {
   display: flex;
   align-items: stretch;
@@ -239,49 +314,47 @@
 .actflow__foot-side {
   flex: 1;
   display: flex;
-}
-.actflow__foot-side--right {
-  justify-content: flex-end;
+
+  &--right { justify-content: flex-end; }
 }
 
 .actflow__foot-count {
   align-self: center;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  color: var(--c-text-mute);
   white-space: nowrap;
+  color: var(--c-text-mute);
 }
 
 .actflow__navbtn {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  min-width: 0;
+  max-width: 22rem;
   padding: var(--sp-4) var(--sp-6);
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-md);
   background: var(--c-surface);
-  min-width: 0;
-  max-width: 22rem;
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease-out),
-    background var(--t-fast) var(--ease-out),
-    transform var(--t-fast) var(--ease-out),
-    box-shadow var(--t-fast) var(--ease-out);
+  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+
+  &--next {
+    text-align: right;
+    align-items: flex-end;
+  }
+  &:hover {
+    border-color: color-mix(in srgb, var(--c-accent) 45%, var(--c-line));
+    background: var(--c-bg-2);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -28px var(--c-accent-glow);
+  }
+  &--end {
+    border-color: color-mix(in srgb, var(--c-accent) 40%, var(--c-line));
+    box-shadow: var(--shadow-glow);
+  }
 }
-.actflow__navbtn--next {
-  text-align: right;
-  align-items: flex-end;
-}
-.actflow__navbtn:hover {
-  border-color: color-mix(in srgb, var(--c-accent) 45%, var(--c-line));
-  background: var(--c-bg-2);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px -28px var(--c-accent-glow);
-}
-.actflow__navbtn--end {
-  border-color: color-mix(in srgb, var(--c-accent) 40%, var(--c-line));
-  box-shadow: var(--shadow-glow);
-}
+
 .actflow__navbtn-dir {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -289,25 +362,15 @@
   text-transform: uppercase;
   color: var(--c-accent);
 }
+
 .actflow__navbtn-name {
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  color: var(--c-text);
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
-}
-
-@keyframes flowIntroIn {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--c-text);
 }
 
 @media (max-width: 720px) {
@@ -320,19 +383,19 @@
     text-align: center;
     margin-bottom: var(--sp-2);
   }
-  .actflow__navbtn {
-    max-width: none;
-  }
-  .actflow__bar-inner {
-    gap: var(--sp-3);
-  }
-  .actflow__present span {
-    display: none;
-  }
+  .actflow__navbtn { max-width: none; }
+  .actflow__bar-inner { gap: var(--sp-3); }
+  .actflow__present span { display: none; }
+}
+
+/* ============================================================
+   KEYFRAMES / ACCESSIBILITÉ
+   ============================================================ */
+@keyframes flowIntroIn {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .actflow__intro-inner {
-    animation: none;
-  }
+  .actflow__intro-inner { animation: none; }
 }

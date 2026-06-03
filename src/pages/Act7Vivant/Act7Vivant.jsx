@@ -20,6 +20,7 @@ import RankBars from "../../components/RankBars/RankBars";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
+import Loader from "../../components/Loader/Loader";
 import "./Act7Vivant.scss";
 
 const SUBREGIONS = {
@@ -183,7 +184,7 @@ export default function Act7Vivant() {
           <p className="act7__lead">{t("act7.lead")}</p>
         </header>
 
-        {state.status === "loading" && <p className="act7__state">{t("scene.loading")}</p>}
+        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {state.status === "empty" && <p className="act7__state act7__state--err">{t("act7.unavailable")}</p>}
 
         {state.status === "ready" && (

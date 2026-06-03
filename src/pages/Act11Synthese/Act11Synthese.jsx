@@ -23,6 +23,7 @@ import ScatterPlot from "../../components/ScatterPlot/ScatterPlot";
 import RankBars from "../../components/RankBars/RankBars";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import Loader from "../../components/Loader/Loader";
 import "./Act11Synthese.scss";
 
 const SUBREGIONS = {
@@ -259,7 +260,7 @@ export default function Act11Synthese() {
           <p className="act11__lead">{t("act11.lead")}</p>
         </header>
 
-        {state.status === "loading" && <p className="act11__state">{t("scene.loading")}</p>}
+        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {state.status === "empty" && <p className="act11__state act11__state--err">{t("act11.unavailable")}</p>}
 
         {state.status === "ready" && (

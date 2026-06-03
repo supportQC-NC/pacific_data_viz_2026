@@ -26,6 +26,7 @@ import RankBars from "../../components/RankBars/RankBars";
 import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import DataTable from "../../components/DataTable/DataTable";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act5Momentum.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -215,7 +216,7 @@ export default function Act5Momentum() {
         />
 
         {!ready && !failed && (
-          <p className="act5__state">{t("scene.loading")}</p>
+          <Loader fullscreen label={t("scene.loading")} />
         )}
         {failed && (
           <div className="act5__state act5__state--err">
@@ -284,7 +285,7 @@ export default function Act5Momentum() {
             >
               <Suspense
                 fallback={
-                  <div className="act5__state">{t("scene.loading")}</div>
+                  <Loader compact label={t("scene.loading")} />
                 }
               >
                 <OceanMap

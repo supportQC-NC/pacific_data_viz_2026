@@ -2,7 +2,7 @@
 // ============================================================
 // Page « À propos » — présentation du projet et de l'auteur (pour le
 // jury) + catalogue complet des données utilisées, avec leurs sources
-// d'origine et leurs liens. Toutes les chaînes via t() (i18n).
+// d'origine, une icône par domaine et leurs liens. Tout via t() (i18n).
 //
 // Le catalogue reflète les jeux de données réellement mobilisés par
 // l'app, tous agrégés par le Pacific Data Hub .Stat (SPC).
@@ -10,14 +10,51 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiArrowUpRight, FiArrowLeft } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiArrowUpRight,
+  FiUser,
+  FiDatabase,
+  FiAward,
+  FiCloud,
+  FiActivity,
+  FiThermometer,
+  FiCloudRain,
+  FiSun,
+  FiFeather,
+  FiDroplet,
+  FiHeart,
+  FiAlertTriangle,
+  FiCompass,
+  FiZap,
+  FiPercent,
+  FiWind,
+} from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import "./About.scss";
 
 const PDH = "https://pacificdata.org";
 const PDH_STAT = "https://stats.pacificdata.org";
+const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
 
-// Topic = clé i18n (about.topics.*) ; org = nom propre ; link = source.
+// Icône par domaine (clé = about.topics.*).
+const TOPIC_ICONS = {
+  emissions: <FiCloud />,
+  seaLevel: <FiActivity />,
+  sst: <FiThermometer />,
+  rain: <FiCloudRain />,
+  agriculture: <FiSun />,
+  biodiversity: <FiFeather />,
+  water: <FiDroplet />,
+  health: <FiHeart />,
+  disasters: <FiAlertTriangle />,
+  tourism: <FiCompass />,
+  energy: <FiZap />,
+  envtaxes: <FiPercent />,
+  meteo: <FiWind />,
+};
+
+// Topic = clé i18n ; org = nom propre ; link = source.
 const SOURCES = [
   { id: "emissions", org: "Banque mondiale · World Bank", link: "https://data.worldbank.org" },
   { id: "seaLevel", org: "Copernicus Climate Change Service (C3S)", link: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global" },
@@ -33,8 +70,6 @@ const SOURCES = [
   { id: "envtaxes", org: "FMI · OCDE", link: PDH_STAT },
   { id: "meteo", org: "OMM · OSCAR / WMO", link: "https://oscar.wmo.int" },
 ];
-
-const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
 
 export default function About() {
   const { t } = useLang();
@@ -54,11 +89,22 @@ export default function About() {
 
         {/* Auteur */}
         <section className="about__author">
-          <p className="eyebrow">{t("about.author.eyebrow")}</p>
+          <p className="eyebrow about__sec-eyebrow">
+            <FiUser aria-hidden="true" /> {t("about.author.eyebrow")}
+          </p>
           <div className="about__author-card">
             <div className="about__author-id">
-              <span className="about__author-name">{t("about.author.name")}</span>
-              <span className="about__author-role">{t("about.author.role")}</span>
+              <span className="about__author-avatar" aria-hidden="true">
+                <FiUser />
+              </span>
+              <span className="about__author-text">
+                <span className="about__author-name">
+                  {t("about.author.name")}
+                </span>
+                <span className="about__author-role">
+                  {t("about.author.role")}
+                </span>
+              </span>
             </div>
             <p className="about__author-body">{t("about.author.body")}</p>
             <span className="about__author-note">{t("about.author.note")}</span>
@@ -67,7 +113,9 @@ export default function About() {
 
         {/* Données */}
         <section className="about__data">
-          <p className="eyebrow">{t("about.data.eyebrow")}</p>
+          <p className="eyebrow about__sec-eyebrow">
+            <FiDatabase aria-hidden="true" /> {t("about.data.eyebrow")}
+          </p>
           <h2 className="about__h2">{t("about.data.title")}</h2>
           <p className="about__data-lead">{t("about.data.lead")}</p>
 
@@ -77,6 +125,9 @@ export default function About() {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <span className="about__platform-icon" aria-hidden="true">
+              <FiDatabase />
+            </span>
             <span className="about__platform-meta">
               <span className="about__platform-name">
                 {t("about.data.platform_name")}
@@ -100,6 +151,9 @@ export default function About() {
             {SOURCES.map((s) => (
               <div className="about__row" role="row" key={s.id}>
                 <span className="about__cell about__cell--topic" role="cell">
+                  <span className="about__topic-icon" aria-hidden="true">
+                    {TOPIC_ICONS[s.id]}
+                  </span>
                   {t(`about.topics.${s.id}`)}
                 </span>
                 <span className="about__cell about__cell--source" role="cell">
@@ -121,7 +175,9 @@ export default function About() {
         {/* Concours */}
         <section className="about__challenge">
           <div className="about__challenge-text">
-            <h2 className="about__h2">{t("about.challenge.title")}</h2>
+            <p className="eyebrow about__sec-eyebrow">
+              <FiAward aria-hidden="true" /> {t("about.challenge.title")}
+            </p>
             <p>{t("about.challenge.body")}</p>
           </div>
           <a

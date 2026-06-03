@@ -23,6 +23,7 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import Loader from "../../components/Loader/Loader";
 import "./Act10Sante.scss";
 
 const SUBREGIONS = {
@@ -193,7 +194,7 @@ export default function Act10Sante() {
           <p className="act10__lead">{t("act10.lead")}</p>
         </header>
 
-        {state.status === "loading" && <p className="act10__state">{t("scene.loading")}</p>}
+        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {state.status === "empty" && <p className="act10__state act10__state--err">{t("act10.unavailable")}</p>}
 
         {state.status === "ready" && (

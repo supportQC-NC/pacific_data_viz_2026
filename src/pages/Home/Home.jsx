@@ -2,23 +2,49 @@
 // ============================================================
 // Accueil — ouverture cinématique (thèse + chiffre-choc + ligne de flottaison
 // animée) puis récit en 3 CHAPITRES regroupant les 11 actes, présentés en
-// grille éditoriale.
+// grille éditoriale avec une icône thématique par acte.
 // GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation des
 // actes. Aucun style inline en JSX. Respecte prefers-reduced-motion.
-//
-// NB : la jauge de progression latérale ("rail") a été retirée à la demande.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
+import {
+  FiCloud,
+  FiDroplet,
+  FiMap,
+  FiUsers,
+  FiTrendingUp,
+  FiSun,
+  FiFeather,
+  FiWind,
+  FiBarChart2,
+  FiHeart,
+  FiLayers,
+} from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import StatRotator from "../../components/StatRotator/StatRotator";
 import "../../components/StatRotator/StatRotator.scss";
 import "./Home.scss";
+
+// Icône thématique par acte.
+const ACT_ICONS = {
+  a1: <FiCloud />,
+  a2: <FiDroplet />,
+  a3: <FiMap />,
+  a4: <FiUsers />,
+  a5: <FiTrendingUp />,
+  a6: <FiSun />,
+  a7: <FiFeather />,
+  a8: <FiWind />,
+  a9: <FiBarChart2 />,
+  a10: <FiHeart />,
+  a11: <FiLayers />,
+};
 
 // Récit complet : 11 actes répartis en 3 chapitres narratifs.
 const CHAPTERS = [
@@ -274,6 +300,9 @@ export default function Home() {
                     </span>
                     <div className="act__inner">
                       <div className="act__meta">
+                        <span className="act__icon" aria-hidden="true">
+                          {ACT_ICONS[a.id]}
+                        </span>
                         <span className="act__index">
                           {String(idx + 1).padStart(2, "0")}
                         </span>

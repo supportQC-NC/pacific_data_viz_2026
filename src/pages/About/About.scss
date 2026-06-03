@@ -12,7 +12,16 @@ $card-w: 5px;
 }
 
 .about__inner {
-  max-width: 1040px;
+  max-width: 1200px;
+}
+
+/* Œilleton de section avec icône */
+.about__sec-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+
+  svg { font-size: 14px; }
 }
 
 /* ---------- En-tête ---------- */
@@ -58,7 +67,7 @@ $card-w: 5px;
 }
 
 .about__lead {
-  max-width: 56ch;
+  max-width: 64ch;
   font-size: var(--fs-md);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
@@ -103,8 +112,27 @@ $card-w: 5px;
 
 .about__author-id {
   display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+
+.about__author-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: var(--r-pill);
+  font-size: 22px;
+  color: var(--c-bg);
+  background: var(--grad-primary-accent);
+}
+
+.about__author-text {
+  display: flex;
   flex-direction: column;
-  margin-bottom: var(--sp-4);
 }
 
 .about__author-name {
@@ -155,7 +183,7 @@ $card-w: 5px;
 .about__platform {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--sp-6);
   flex-wrap: wrap;
   padding: var(--sp-6) var(--sp-8);
@@ -175,10 +203,25 @@ $card-w: 5px;
   }
 }
 
+.about__platform-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--r-md);
+  font-size: 20px;
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+}
+
 .about__platform-meta {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--sp-1);
+  min-width: 12rem;
 }
 
 .about__platform-name {
@@ -245,6 +288,9 @@ $card-w: 5px;
   color: var(--c-text-soft);
 
   &--topic {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
     font-weight: var(--fw-med);
     color: var(--c-text);
   }
@@ -263,6 +309,19 @@ $card-w: 5px;
     &:hover { color: var(--c-warm); }
     &:hover svg { transform: translate(2px, -2px); }
   }
+}
+
+.about__topic-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 12%, transparent);
 }
 
 .about__note {

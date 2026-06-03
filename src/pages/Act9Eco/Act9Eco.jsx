@@ -25,6 +25,7 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
 import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
+import Loader from "../../components/Loader/Loader";
 import "./Act9Eco.scss";
 
 const SUBREGIONS = {
@@ -542,7 +543,7 @@ export default function Act9Eco() {
           </header>
 
           {state.status === "loading" && (
-            <p className="act9__state">{t("scene.loading")}</p>
+            <Loader fullscreen label={t("scene.loading")} />
           )}
           {state.status === "empty" && (
             <p className="act9__state act9__state--err">

@@ -28,6 +28,7 @@ import ChangeBars from "../../components/ChangeBars/ChangeBars";
 import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import DataTable from "../../components/DataTable/DataTable";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act2Ocean.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -202,7 +203,7 @@ export default function Act2Ocean() {
           takeaway={t("act2.guide.takeaway")}
         />
 
-        {!ready && !failed && <p className="act2__state">{t("scene.loading")}</p>}
+        {!ready && !failed && <Loader fullscreen label={t("scene.loading")} />}
         {failed && (
           <div className="act2__state act2__state--err">
             <span>{t("scene.error")}</span>
@@ -337,7 +338,7 @@ export default function Act2Ocean() {
             <ErrorBoundary
               fallback={<div className="act2__state act2__state--err">{t("scene.error")}</div>}
             >
-              <Suspense fallback={<div className="act2__state">{t("scene.loading")}</div>}>
+              <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                 <OceanMap
                   data={selPoints}
                   unit={selUnit}

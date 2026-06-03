@@ -25,6 +25,7 @@ import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
 import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import DataTable from "../../components/DataTable/DataTable";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act3Territory.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -195,7 +196,7 @@ export default function Act3Territory() {
         />
 
         {!ready && !failed && (
-          <p className="act3__state">{t("scene.loading")}</p>
+          <Loader fullscreen label={t("scene.loading")} />
         )}
         {failed && (
           <div className="act3__state act3__state--err">
@@ -264,7 +265,7 @@ export default function Act3Territory() {
             >
               <Suspense
                 fallback={
-                  <div className="act3__state">{t("scene.loading")}</div>
+                  <Loader compact label={t("scene.loading")} />
                 }
               >
                 <OceanMap

@@ -1,57 +1,147 @@
 // src/components/LanguageGate/LanguageGate.scss
-@use "../../index.scss" as *;
+// ============================================================
+//  Écran d'ouverture (choix de langue) — design « salle de contrôle » :
+//  pluie binaire lente en fond + voile dégradé + panneau en verre, balise
+//  sonar, cartes de choix FR/EN premium. Tokens charte ; reduced-motion.
+// ============================================================
+
+$mark-size: 12px;
+$mark-ring: 30px;
 
 .langgate {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-overlay);
   display: grid;
   place-items: center;
   padding: var(--sp-8);
-  background:
-    radial-gradient(
-      120% 90% at 50% 30%,
-      color-mix(in srgb, var(--c-accent-deep) 22%, transparent),
-      transparent 60%
-    ),
-    color-mix(in srgb, var(--c-bg) 94%, transparent);
-  backdrop-filter: blur(14px);
+  overflow: hidden;
+  background: var(--c-bg);
   animation: langgateIn 0.5s var(--ease-out);
 }
 
-.langgate__inner {
+/* Pluie binaire (canvas) en fond, atténuée par un masque radial */
+.langgate__rain {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 760px;
+  height: 100%;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(110% 80% at 50% 40%, #000 18%, transparent 78%);
+          mask-image: radial-gradient(110% 80% at 50% 40%, #000 18%, transparent 78%);
+}
+
+/* Voile : glow de marque + vignette pour asseoir le panneau */
+.langgate__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 60% at 50% 28%,
+      color-mix(in srgb, var(--c-accent) 20%, transparent) 0%,
+      transparent 60%),
+    radial-gradient(120% 100% at 50% 50%,
+      transparent 30%,
+      color-mix(in srgb, var(--c-bg) 70%, transparent) 100%);
+}
+
+/* Panneau en verre */
+.langgate__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  padding: var(--sp-16) var(--sp-12);
   text-align: center;
+  border-radius: var(--r-lg);
+  border: var(--border-hair) solid var(--c-line);
+  background: color-mix(in srgb, var(--c-surface) 55%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+          backdrop-filter: blur(16px) saturate(130%);
+  box-shadow: var(--shadow-soft);
   animation: langgateRise 0.6s var(--ease-out);
+
+  // filet dégradé de marque en crête
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 56%;
+    height: 1px;
+    transform: translateX(-50%);
+    background: var(--grad-primary-accent);
+    opacity: 0.7;
+  }
+}
+
+/* Balise sonar */
+.langgate__mark {
+  position: relative;
+  display: inline-block;
+  width: $mark-size;
+  height: $mark-size;
+  margin-bottom: var(--sp-6);
+}
+
+.langgate__mark-core {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-pill);
+  background: var(--c-warm);
+  box-shadow: 0 0 16px 2px var(--c-warm-soft);
+  animation: langgatePulse 2.6s var(--ease-out) infinite;
+}
+
+.langgate__mark-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: $mark-ring;
+  height: $mark-ring;
+  margin: calc($mark-ring / -2) 0 0 calc($mark-ring / -2);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-warm);
+  opacity: 0;
+  animation: langgateSonar 2.6s var(--ease-out) infinite;
 }
 
 .langgate__kicker {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--ls-wide);
   text-transform: uppercase;
   color: var(--c-accent);
   margin-bottom: var(--sp-6);
 }
 
 .langgate__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-12);
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
   font-weight: var(--fw-light);
   line-height: var(--lh-tight);
-  margin: 0 0 var(--sp-12);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: baseline;
-  gap: var(--sp-3);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+
+  [lang="en"] {
+    font-style: italic;
+    color: var(--c-text-soft);
+  }
 }
 
 .langgate__title-sep {
-  color: var(--c-text-mute);
+  width: 44px;
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--grad-primary-accent);
 }
 
+/* Cartes de choix */
 .langgate__choices {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -65,14 +155,16 @@
 }
 
 .langgate__choice {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--sp-2);
   padding: var(--sp-12) var(--sp-8);
-  background: var(--c-surface);
   border: var(--border-hair) solid var(--c-line-strong);
   border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--c-surface) 60%, transparent);
   cursor: pointer;
   transition:
     transform var(--t-fast) var(--ease-out),
@@ -80,53 +172,82 @@
     box-shadow var(--t-fast) var(--ease-out),
     background var(--t-fast) var(--ease-out);
 
+  // voile lumineux qui balaie au survol
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--c-accent) 16%, transparent), transparent 55%);
+    opacity: 0;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
   &:hover,
   &:focus-visible {
     transform: translateY(-4px);
     border-color: var(--c-accent);
-    background: var(--c-bg-2);
+    background: color-mix(in srgb, var(--c-surface) 75%, transparent);
     box-shadow: var(--shadow-glow);
     outline: none;
+  }
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
   }
 }
 
 .langgate__code {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-mono);
   font-size: var(--fs-xl);
   font-weight: var(--fw-bold);
   letter-spacing: 0.08em;
-  color: var(--c-accent);
   line-height: 1;
+  color: var(--c-accent);
 }
 
 .langgate__name {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-size: var(--fs-md);
   color: var(--c-text);
 }
 
 .langgate__go {
+  position: relative;
+  z-index: 1;
   margin-top: var(--sp-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--c-text-mute);
-  transition:
-    color var(--t-fast) var(--ease-out),
-    transform var(--t-fast) var(--ease-out);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.langgate__go-arrow {
+  transition: transform var(--t-fast) var(--ease-out);
 }
 
 .langgate__choice:hover .langgate__go,
 .langgate__choice:focus-visible .langgate__go {
   color: var(--c-accent);
-  transform: translateX(4px);
+}
+.langgate__choice:hover .langgate__go-arrow,
+.langgate__choice:focus-visible .langgate__go-arrow {
+  transform: translateX(5px);
 }
 
 .langgate__skip {
   margin-top: var(--sp-12);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
+  letter-spacing: 0.04em;
   color: var(--c-text-mute);
   transition: color var(--t-fast) var(--ease-out);
 
@@ -135,29 +256,33 @@
   }
 }
 
+/* ---------- Keyframes ---------- */
 @keyframes langgateIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes langgateRise {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes langgatePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(0.8); opacity: 0.75; }
+}
+
+@keyframes langgateSonar {
+  0%   { transform: scale(0.35); opacity: 0.6; }
+  70%  { opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .langgate,
-  .langgate__inner {
+  .langgate__inner,
+  .langgate__mark-core,
+  .langgate__mark-ring {
     animation: none;
   }
 }

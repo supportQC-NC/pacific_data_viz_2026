@@ -49,6 +49,7 @@ import DataTable from "../../components/DataTable/DataTable";
 import ExportBar from "../../components/ExportBar/ExportBar";
 import VizFrame from "../../components/VizFrame/VizFrame";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act1Emissions.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -482,7 +483,7 @@ export default function Act1Emissions() {
         />
 
         {!ready && !failed && (
-          <p className="act1__state">{t("scene.loading")}</p>
+          <Loader fullscreen label={t("scene.loading")} />
         )}
 
         {failed && (
@@ -665,7 +666,7 @@ export default function Act1Emissions() {
             >
               <Suspense
                 fallback={
-                  <div className="act1__state">{t("scene.loading")}</div>
+                  <Loader compact label={t("scene.loading")} />
                 }
               >
                 <OceanMap

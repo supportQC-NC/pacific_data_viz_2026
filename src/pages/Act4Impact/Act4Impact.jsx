@@ -23,6 +23,7 @@ import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import EventTimeline from "../../components/EventTimeline/EventTimeline";
 import RankBars from "../../components/RankBars/RankBars";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import "./Act4Impact.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -161,7 +162,7 @@ export default function Act4Impact() {
         />
 
         {!ready && !failed && (
-          <p className="act4__state">{t("scene.loading")}</p>
+          <Loader fullscreen label={t("scene.loading")} />
         )}
         {failed && (
           <div className="act4__state act4__state--err">
@@ -244,7 +245,7 @@ export default function Act4Impact() {
             >
               <Suspense
                 fallback={
-                  <div className="act4__state">{t("scene.loading")}</div>
+                  <Loader compact label={t("scene.loading")} />
                 }
               >
                 <OceanMap

@@ -117,6 +117,17 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
       rootRef.current.style.setProperty("--flow-ratio", String(ratio));
   }, [index, total, revealed]);
 
+  // Image de fond de l'intro, par acte. Posée en custom property côté JS :
+  // l'URL n'est donc JAMAIS résolue par webpack (pas d'erreur si l'image
+  // n'existe pas encore). Déposer les visuels dans public/intro/aN.jpg.
+  useEffect(() => {
+    const el = introRef.current;
+    if (!el) return undefined;
+    const base = process.env.PUBLIC_URL || "";
+    el.style.setProperty("--intro-img", `url("${base}/intro/${actId}.jpg")`);
+    return undefined;
+  }, [actId, revealed]);
+
   // Sur une page d'acte, le header et le footer GLOBAUX s'effacent en
   // permanence (pilotés via le contexte) : la barre de progression (haut) et
   // le pied de navigation d'ActFlow (← précédent · suivant → · retour à
@@ -189,7 +200,7 @@ export default function ActFlow({ actId, hasDeck = false, children }) {
 
       {/* Écran d'intro / ouvre-chapitre (mode guidé, intro non vue) */}
       {!revealed && (
-        <section className="actflow__intro" ref={introRef}>
+        <section className="actflow__intro" data-act={actId} ref={introRef}>
           <span className="actflow__intro-ghost" aria-hidden="true">
             {num}
           </span>
