@@ -477,6 +477,34 @@
     "dumb": {
       "start": "1re année",
       "end": "dernière"
+    },
+    "thesis": "L'océan encaisse le premier choc : il monte et il se réchauffe — partout dans le Pacifique, sans exception.",
+    "board": {
+      "switch_hint": "← → pour changer de vue",
+      "signature": "graphe signature",
+      "takeaway_kicker": "À retenir",
+      "start": "Explorer les données",
+      "conclusion": "Conclusion",
+      "back_intro": "Intro",
+      "revise_data": "Revoir les données",
+      "tab_band": "Montée des eaux",
+      "tab_rank": "Classement",
+      "tab_map": "Carte 3D",
+      "tab_corr": "Mer × Temp.",
+      "tab_heat": "Chaleur",
+      "tab_dual": "Double axe",
+      "band_find": "L'anomalie moyenne et sa dispersion, année après année : la courbe ne redescend pas.",
+      "band_take": "La tendance est sans ambiguïté : ça monte, et ça s'accélère.",
+      "rank_find": "Écart à la référence, territoire par territoire, à l'année choisie.",
+      "rank_take": "Presque tous les territoires sont au-dessus de la référence — l'exposition est générale.",
+      "map_find": "La géographie de l'anomalie sur l'archipel, année après année.",
+      "map_take": "Aucun territoire n'est épargné ; les atolls les plus bas sont les plus vulnérables.",
+      "corr_find": "Chaque point un territoire : niveau de la mer (X) face au réchauffement de surface (Y).",
+      "corr_take": "Mer qui monte et eau qui chauffe vont de pair : un même forçage, deux symptômes.",
+      "heat_find": "Chaque ligne un territoire, chaque colonne une année : l'intensité dans le temps.",
+      "heat_take": "Les bandes s'assombrissent vers le présent — l'anomalie s'installe partout.",
+      "dual_find": "Les deux mesures sur un même graphique, chacune son axe.",
+      "dual_take": "Niveau de la mer et température montent ensemble, décennie après décennie."
     }
   },
   "act3": {

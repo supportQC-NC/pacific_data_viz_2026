@@ -1,50 +1,27 @@
 // src/pages/Act2Ocean/Act2Ocean.jsx
 // ============================================================
-// Acte 02 — L'océan. Niveau de la mer (m) & anomalie de température (°C),
-// territoire par territoire (données PDH/SPC — anomalies, 0 = référence).
-// Même expérience que l'Acte 1 : diaporama plein écran (texte -> graphique),
-// filtres repliables, navigation clavier/boutons, écran de fin.
-//
-// STRUCTURE : chaque vue « par métrique » est désormais affichée DEUX FOIS
-// (un panneau Niveau de la mer, puis un panneau Température) au lieu d'un
-// sélecteur. Seules les vues de COMPARAISON (corrélation, double-axe)
-// montrent les deux mesures ensemble. La carte 3D reste UNIQUE (sélecteur)
-// pour ne pas instancier deux moteurs WebGL. En fin d'acte : deux courses
-// de barres (BarRace) et deux courses de lignes (LineRace), une par mesure.
-// 100 % ApexCharts (hors carte Mapbox et BarRace ECharts réutilisé).
+// Acte 02 — L'océan en première ligne. Niveau de la mer (m) & anomalie de
+// température de surface (°C), anomalies (0 = référence) — données PDH/SPC.
+// Format DASHBOARD (ActBoard) : filtres GLOBAUX (sous-région + mesure
+// mer/température + année), un graphe à la fois via le rail, « la montée
+// des eaux » en SIGNATURE. 6 graphes, le reste est coupé.
+// 100 % ApexCharts (hors carte Mapbox).
 // ============================================================
 
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-  lazy,
-  Suspense,
-} from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import KpiRow from "../../components/KpiRow/KpiRow";
+import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
-import BarRace from "../../components/BarRace/BarRace";
-import LineRace from "../../components/LineRace/LineRace";
-import VizPanel from "../../components/charts/VizPanel";
 import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import RankChart from "../../components/charts/RankChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
-import BoxplotChart from "../../components/charts/BoxplotChart";
 import ScatterChart from "../../components/charts/ScatterChart";
-import ChangeChart from "../../components/charts/ChangeChart";
-import RiverChart from "../../components/charts/RiverChart";
 import DualAxisChart from "../../components/charts/DualAxisChart";
-import ShareAboveChart from "../../components/charts/ShareAboveChart";
-import DumbbellChart from "../../components/charts/DumbbellChart";
 import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
 
@@ -60,8 +37,8 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
-const METRICS = ["sea", "sst"];
 
+/* ---------- Contrôles de filtre (globaux à l'acte) ---------- */
 function Pills({ label, options, value, onChange, help }) {
   return (
     <div className="act1f" role="group" aria-label={label}>
@@ -69,9 +46,14 @@ function Pills({ label, options, value, onChange, help }) {
         <span className="act1f__lbl">
           {label}
           {help ? (
-            <button type="button" className="act1f__help" title={help} aria-label={help}>
-              ?
-            </button>
+            <span className="act1f__info">
+              <button type="button" className="act1f__help" aria-label={help}>
+                ?
+              </button>
+              <span className="act1f__tip" role="tooltip">
+                {help}
+              </span>
+            </span>
           ) : null}
         </span>
       ) : null}
@@ -116,32 +98,15 @@ export default function Act2Ocean() {
   const { t, lang } = useLang();
   const dispatch = useDispatch();
   const tk = useThemeTokens();
-  const rootRef = useRef(null);
-  const [active, setActive] = useState(0);
-  const [slideCount, setSlideCount] = useState(0);
-  const activeRef = useRef(0);
 
   const sea = useSelector(selectDataset("seaLevel"));
   const sst = useSelector(selectDataset("sst"));
 
+  // Filtres GLOBAUX.
+  const [region, setRegion] = useState("all");
+  const [metric, setMetric] = useState("sea");
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
-
-  // Filtres de RÉGION par vue (partagés entre les panneaux mer/temp d'une vue).
-  const [rBand, setRBand] = useState("all");
-  const [rRank, setRRank] = useState("all");
-  const [sortRank, setSortRank] = useState("desc");
-  const [rHeat, setRHeat] = useState("all");
-  const [rBox, setRBox] = useState("all");
-  const [rChange, setRChange] = useState("all");
-  const [dirChange, setDirChange] = useState("all");
-  const [rShare, setRShare] = useState("all");
-  const [rDumb, setRDumb] = useState("all");
-  // Vues de comparaison + carte.
-  const [rCorr, setRCorr] = useState("all");
-  const [rDual, setRDual] = useState("all");
-  const [mMap, setMMap] = useState("sea");
-  const [rMap, setRMap] = useState("all");
 
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
@@ -159,9 +124,7 @@ export default function Act2Ocean() {
         .map((a) => ({
           area: a,
           name: pictName(a, lang),
-          values: (data.byArea[a] || [])
-            .filter((p) => Number.isFinite(p.value))
-            .sort((x, y) => x.year - y.year),
+          values: (data.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year),
         }))
         .filter((s) => s.values.length);
     },
@@ -176,14 +139,8 @@ export default function Act2Ocean() {
     [sea.data, sst.data, seriesOf],
   );
 
-  const unitOf = useCallback(
-    (m) => (m === "sea" ? t("act2.sea_unit") : t("act2.sst_unit")),
-    [t],
-  );
-  const metricLabel = useCallback(
-    (m) => (m === "sea" ? t("act2.f.sea") : t("act2.f.sst")),
-    [t],
-  );
+  const unitOf = useCallback((m) => (m === "sea" ? t("act2.sea_unit") : t("act2.sst_unit")), [t]);
+  const metricLabel = useCallback((m) => (m === "sea" ? t("act2.f.sea") : t("act2.f.sst")), [t]);
 
   const masterYears = useMemo(() => {
     const set = new Set([...(DATA.sea.years || []), ...(DATA.sst.years || [])]);
@@ -213,18 +170,9 @@ export default function Act2Ocean() {
 
   const currentYear = masterYears.length && yearIdx != null ? masterYears[yearIdx] : null;
 
-  const inRegion = useCallback(
-    (area, region) => region === "all" || REGION_OF[area] === region,
-    [],
-  );
+  const inRegion = useCallback((area) => region === "all" || REGION_OF[area] === region, [region]);
+  const seriesFor = useCallback((m) => DATA[m].series.filter((s) => inRegion(s.area)), [DATA, inRegion]);
 
-  const seriesFor = useCallback(
-    (m, region) => DATA[m].series.filter((s) => inRegion(s.area, region)),
-    [DATA, inRegion],
-  );
-
-  // Dernière année RÉELLEMENT disponible pour une mesure (<= year, sinon la
-  // plus récente). Évite les graphiques vides quand une année manque.
   const yearForMetric = useCallback(
     (m, year) => {
       const ys = DATA[m].years;
@@ -237,10 +185,10 @@ export default function Act2Ocean() {
   );
 
   const pointsFor = useCallback(
-    (m, region, year) => {
+    (m, year) => {
       const yy = yearForMetric(m, year);
       return DATA[m].series
-        .filter((s) => inRegion(s.area, region))
+        .filter((s) => inRegion(s.area))
         .map((s) => ({ area: s.area, name: s.name, value: valAt(s, yy) }))
         .filter((p) => Number.isFinite(p.value));
     },
@@ -248,39 +196,16 @@ export default function Act2Ocean() {
   );
 
   const subNames = useMemo(
-    () => ({
-      melanesia: t("act1.filter.melanesia"),
-      polynesia: t("act1.filter.polynesia"),
-      micronesia: t("act1.filter.micronesia"),
-    }),
+    () => ({ melanesia: t("act1.filter.melanesia"), polynesia: t("act1.filter.polynesia"), micronesia: t("act1.filter.micronesia") }),
     [t],
   );
 
-  const subAvgFor = useCallback(
-    (m) => {
-      const yrs = DATA[m].years;
-      if (!yrs.length) return [];
-      return Object.keys(SUBREGIONS)
-        .map((reg) => {
-          const members = DATA[m].series.filter((s) => REGION_OF[s.area] === reg);
-          const values = yrs
-            .map((y) => {
-              const vs = members.map((s) => valAt(s, y)).filter((v) => Number.isFinite(v));
-              return vs.length ? { year: y, value: vs.reduce((a, b) => a + b, 0) / vs.length } : null;
-            })
-            .filter(Boolean);
-          return { name: subNames[reg], values };
-        })
-        .filter((g) => g.values.length);
-    },
-    [DATA, subNames],
-  );
-
+  // Corrélation mer × température (point dans le temps, combiné).
   const corrGroups = useMemo(() => {
     const palette = paletteOf(tk);
     const seaYear = yearForMetric("sea", currentYear);
     const sstYear = yearForMetric("sst", currentYear);
-    const seaSeries = DATA.sea.series.filter((s) => inRegion(s.area, rCorr));
+    const seaSeries = DATA.sea.series.filter((s) => inRegion(s.area));
     return Object.keys(SUBREGIONS)
       .map((reg, i) => ({
         name: subNames[reg],
@@ -297,62 +222,28 @@ export default function Act2Ocean() {
           .filter(Boolean),
       }))
       .filter((g) => g.points.length);
-  }, [DATA, rCorr, currentYear, subNames, inRegion, yearForMetric, tk]);
+  }, [DATA, currentYear, subNames, inRegion, yearForMetric, tk]);
 
-  const corrMedianX = useMemo(
-    () => median(corrGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
-    [corrGroups],
-  );
-
-  // Lignes de variation / dumbbell PARAMÉTRÉES par mesure + région.
-  const changeRowsFor = useCallback(
-    (m, region) =>
-      DATA[m].series
-        .filter((s) => inRegion(s.area, region) && s.values.length >= 2)
-        .map((s) => ({
-          name: s.name,
-          delta: Number((s.values[s.values.length - 1].value - s.values[0].value).toFixed(3)),
-        })),
-    [DATA, inRegion],
-  );
-
-  const dumbRowsFor = useCallback(
-    (m, region) =>
-      DATA[m].series
-        .filter((s) => inRegion(s.area, region) && s.values.length >= 2)
-        .map((s) => ({
-          name: s.name,
-          start: s.values[0].value,
-          end: s.values[s.values.length - 1].value,
-        })),
-    [DATA, inRegion],
-  );
+  const corrMedianX = useMemo(() => median(corrGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [corrGroups]);
 
   const kpiItems = useMemo(() => {
     if (!ready || !currentYear) return [];
-    const seaPts = pointsFor("sea", "all", currentYear);
-    const sstPts = pointsFor("sst", "all", currentYear);
+    const seaPts = pointsFor("sea", currentYear);
+    const sstPts = pointsFor("sst", currentYear);
     const seaMean = median(seaPts.map((p) => p.value));
     const sstMean = median(sstPts.map((p) => p.value));
     const top = [...seaPts].sort((a, b) => b.value - a.value)[0];
-    const seaFirst = median(pointsFor("sea", "all", DATA.sea.years[0]).map((p) => p.value));
+    const seaFirst = median(pointsFor("sea", DATA.sea.years[0]).map((p) => p.value));
     const change = Number.isFinite(seaMean) && Number.isFinite(seaFirst) ? seaMean - seaFirst : null;
     const items = [];
-    if (Number.isFinite(seaMean))
-      items.push({ key: "sea", value: `${seaMean > 0 ? "+" : ""}${fmt(seaMean)}`, unit: t("act2.sea_unit"), label: t("act2.kpi.sea_mean"), tone: "accent" });
-    if (Number.isFinite(sstMean))
-      items.push({ key: "sst", value: `${sstMean > 0 ? "+" : ""}${fmt(sstMean, 1)}`, unit: t("act2.sst_unit"), label: t("act2.kpi.sst_mean"), tone: "warm" });
-    if (top)
-      items.push({ key: "top", value: `+${fmt(top.value)}`, unit: top.name, label: t("act2.kpi.most_exposed"), tone: "warm" });
-    if (change != null)
-      items.push({ key: "chg", value: `${change > 0 ? "+" : ""}${fmt(change)}`, unit: `${t("act2.kpi.since")} ${DATA.sea.years[0]}`, label: t("act2.kpi.sea_change"), tone: change > 0 ? "warm" : "positive" });
+    if (Number.isFinite(seaMean)) items.push({ key: "sea", value: `${seaMean > 0 ? "+" : ""}${fmt(seaMean)}`, unit: t("act2.sea_unit"), label: t("act2.kpi.sea_mean"), tone: "accent" });
+    if (Number.isFinite(sstMean)) items.push({ key: "sst", value: `${sstMean > 0 ? "+" : ""}${fmt(sstMean, 1)}`, unit: t("act2.sst_unit"), label: t("act2.kpi.sst_mean"), tone: "warm" });
+    if (top) items.push({ key: "top", value: `+${fmt(top.value)}`, unit: top.name, label: t("act2.kpi.most_exposed"), tone: "warm" });
+    if (change != null) items.push({ key: "chg", value: `${change > 0 ? "+" : ""}${fmt(change)}`, unit: `${t("act2.kpi.since")} ${DATA.sea.years[0]}`, label: t("act2.kpi.sea_change"), tone: change > 0 ? "warm" : "positive" });
     return items;
   }, [ready, currentYear, pointsFor, DATA, t]);
 
-  const mapPoints = useMemo(
-    () => pointsFor(mMap, rMap, currentYear).map((p) => ({ ...p, year: currentYear })),
-    [pointsFor, mMap, rMap, currentYear],
-  );
+  const mapPoints = useMemo(() => pointsFor(metric, currentYear).map((p) => ({ ...p, year: currentYear })), [pointsFor, metric, currentYear]);
   const mapRange = useMemo(() => {
     if (!mapPoints.length) return { min: -1, max: 1 };
     const vals = mapPoints.map((p) => p.value);
@@ -372,204 +263,55 @@ export default function Act2Ocean() {
     dispatch(loadDataset("sst"));
   }, [dispatch]);
 
-  // Diaporama : suit la diapo active via le scroll + navigation prev/next.
-  useEffect(() => {
-    if (!ready || empty) return undefined;
-    const root = rootRef.current;
-    if (!root) return undefined;
-    let raf = 0;
-    const compute = () => {
-      const nodes = Array.from(root.querySelectorAll(".act1slide"));
-      setSlideCount(nodes.length);
-      const mid = window.innerHeight * 0.4;
-      let idx = 0;
-      for (let i = 0; i < nodes.length; i += 1) {
-        const r = nodes[i].getBoundingClientRect();
-        if (r.top <= mid) idx = i;
-        else break;
-      }
-      setActive(idx);
-      activeRef.current = idx;
-    };
-    const onScroll = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [ready, empty, currentYear, lang]);
-
-  const goTo = useCallback((i) => {
-    const root = rootRef.current;
-    if (!root) return;
-    const nodes = Array.from(root.querySelectorAll(".act1slide"));
-    if (!nodes.length) return;
-    const idx = Math.max(0, Math.min(nodes.length - 1, i));
-    const el = nodes[idx];
-    const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
-    window.scrollTo({ top, behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
-    if (!ready || empty) return undefined;
-    const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        goTo(activeRef.current + 1);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        goTo(activeRef.current - 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [ready, empty, goTo]);
-
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
   const metricOpts = [
     { v: "sea", label: t("act2.f.sea") },
     { v: "sst", label: t("act2.f.sst") },
   ];
-  const sortOpts = [
-    { v: "desc", label: t("act1.f.sort_desc") },
-    { v: "asc", label: t("act1.f.sort_asc") },
-  ];
-  const dirOpts = [
-    { v: "all", label: t("act1.f.dir_all") },
-    { v: "up", label: t("act1.f.dir_up") },
-    { v: "down", label: t("act1.f.dir_down") },
-  ];
 
-  // Fabrique une PAIRE de panneaux (mer puis température) pour une vue donnée.
-  // region : valeur de filtre régional partagée ; extra : nœud de filtres
-  // supplémentaire (commun aux deux panneaux) ; chart : (m) => élément graphique.
-  const dualPanels = ({ titleKey, subKey, storyKey, region, setRegion, extra, chart }) =>
-    METRICS.map((m) => (
-      <VizPanel
-        key={`${titleKey}-${m}`}
-        title={`${t(titleKey)} · ${metricLabel(m)}`}
-        subtitle={t(subKey)}
-        story={t(storyKey)}
-        filtersLabel={t("act1.f.toggle")}
-        filters={
-          region != null || extra ? (
-            <>
-              {region != null ? (
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-              ) : null}
-              {extra || null}
-            </>
-          ) : null
-        }
-      >
-        {chart(m)}
-      </VizPanel>
-    ));
+  const status = failed ? "error" : !ready ? "loading" : empty ? "empty" : "ready";
+  const ml = metricLabel(metric);
 
-  const racePanels = (Comp, titleKey, storyKey) =>
-    METRICS.map((m) => (
-      <VizPanel key={`${titleKey}-${m}`} title={`${t(titleKey)} · ${metricLabel(m)}`} story={t(storyKey)}>
-        <Comp
-          series={seriesFor(m, "all")}
-          years={DATA[m].years}
-          unit={unitOf(m)}
-          tk={tk}
-          labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }}
-        />
-      </VizPanel>
-    ));
+  const filtersEl = (
+    <>
+      <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+      <Pills label={t("act2.f.metric")} options={metricOpts} value={metric} onChange={setMetric} />
+      <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
+    </>
+  );
 
-  return (
-    <main className="act1 act2" ref={rootRef}>
-      <div className="container">
-        <header className="act1__head act1slide act1slide--intro">
-          <p className="eyebrow">{t("home.acts.a2_tag")}</p>
-          <h1 className="act1__title">{t("home.acts.a2_title")}</h1>
-          <p className="act1__lead">{t("act2.lead")}</p>
-          {kpiItems.length > 0 && (
-            <KpiRow items={kpiItems} title={t("act1.stats.title")} />
-          )}
-        </header>
-
-        {!ready && !failed && <Loader fullscreen label={t("scene.loading")} />}
-
-        {failed && (
-          <div className="act1__state act1__state--err">
-            <span>{t("scene.error")}</span>
-            <button className="act1__retry" onClick={retry}>
-              {t("act1.retry")}
-            </button>
-          </div>
-        )}
-
-        {empty && <p className="act1__state">{t("act1.empty")}</p>}
-
-        {ready && !empty && currentYear != null && (
-          <>
-            {/* Bande d'anomalie — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.band_title",
-              subKey: "act2.viz.band_sub",
-              storyKey: "act2.story.band",
-              region: rBand,
-              setRegion: setRBand,
-              chart: (m) => (
-                <AnomalyBandChart series={seriesFor(m, rBand)} years={DATA[m].years} unit={unitOf(m)} />
-              ),
-            })}
-
-            {/* Classement — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.rank_title",
-              subKey: "act2.viz.rank_sub",
-              storyKey: "act2.story.rank",
-              region: rRank,
-              setRegion: setRRank,
-              extra: (
-                <>
-                  <Pills label={t("act1.f.sort")} options={sortOpts} value={sortRank} onChange={setSortRank} />
-                  <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
-                </>
-              ),
-              chart: (m) => (
-                <RankChart
-                  points={pointsFor(m, rRank, currentYear)}
-                  unit={unitOf(m)}
-                  median={0}
-                  refLabel={t("act2.ref")}
-                  sort={sortRank}
-                  scale="lin"
-                />
-              ),
-            })}
-
-            {/* Carte 3D — UNIQUE, avec sélecteur mer/température */}
-            <VizPanel
-              title={t("act2.viz.map_title")}
-              subtitle={t("act2.viz.map_sub")}
-              story={t("act2.story.map")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act2.f.metric")} options={metricOpts} value={mMap} onChange={setMMap} />
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rMap} onChange={setRMap} />
-                  <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
-                </>
-              }
-            >
-              <ErrorBoundary fallback={<div className="act1__state act1__state--err">{t("scene.error")}</div>}>
+  const charts =
+    status === "ready" && currentYear != null
+      ? [
+          {
+            id: "band",
+            signature: true,
+            tab: t("act2.board.tab_band"),
+            title: `${t("act2.viz.band_title")} · ${ml}`,
+            finding: t("act2.board.band_find"),
+            takeaway: t("act2.board.band_take"),
+            node: <AnomalyBandChart series={seriesFor(metric)} years={DATA[metric].years} unit={unitOf(metric)} />,
+          },
+          {
+            id: "rank",
+            tab: t("act2.board.tab_rank"),
+            title: `${t("act2.viz.rank_title")} · ${ml}`,
+            finding: t("act2.board.rank_find"),
+            takeaway: t("act2.board.rank_take"),
+            node: <RankChart points={pointsFor(metric, currentYear)} unit={unitOf(metric)} median={0} refLabel={t("act2.ref")} sort="desc" scale="lin" />,
+          },
+          {
+            id: "map",
+            tab: t("act2.board.tab_map"),
+            title: `${t("act2.viz.map_title")} · ${ml}`,
+            finding: t("act2.board.map_find"),
+            takeaway: t("act2.board.map_take"),
+            node: (
+              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
                 <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <OceanMap
                     data={mapPoints}
-                    unit={unitOf(mMap)}
+                    unit={unitOf(metric)}
                     range={mapRange}
                     ramp="semantic"
                     mid={0}
@@ -585,190 +327,81 @@ export default function Act2Ocean() {
                   />
                 </Suspense>
               </ErrorBoundary>
-            </VizPanel>
-
-            {/* Heatmap — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.heat_title",
-              subKey: "act2.viz.heat_sub",
-              storyKey: "act2.story.heat",
-              region: rHeat,
-              setRegion: setRHeat,
-              chart: (m) => (
-                <HeatmapChart
-                  series={seriesFor(m, rHeat)}
-                  years={DATA[m].years}
-                  unit={unitOf(m)}
-                  mode="rank"
-                  labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }}
-                />
-              ),
-            })}
-
-            {/* Comparaison : corrélation mer × température (combiné) */}
-            <VizPanel
-              title={t("act2.viz.corr_title")}
-              subtitle={t("act2.viz.corr_sub")}
-              story={t("act2.story.corr")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  <Pills label={t("act1.filter.title")} options={regionOpts} value={rCorr} onChange={setRCorr} />
-                  <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
-                </>
-              }
-            >
-              <ScatterChart
-                groups={corrGroups}
-                unit={t("act2.sea_unit")}
-                medianX={corrMedianX}
-                xName={t("act2.sea_unit")}
-                yName={t("act2.sst_unit")}
-              />
-            </VizPanel>
-
-            {/* Boxplot — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.box_title",
-              subKey: "act2.viz.box_sub",
-              storyKey: "act2.story.box",
-              region: rBox,
-              setRegion: setRBox,
-              chart: (m) => (
-                <BoxplotChart series={seriesFor(m, rBox)} years={DATA[m].years} unit={unitOf(m)} scale="lin" />
-              ),
-            })}
-
-            {/* River (sous-régions) — mer puis température (sans filtre régional) */}
-            {dualPanels({
-              titleKey: "act2.viz.river_title",
-              subKey: "act2.viz.river_sub",
-              storyKey: "act2.story.river",
-              region: null,
-              setRegion: null,
-              chart: (m) => <RiverChart subAvg={subAvgFor(m)} years={DATA[m].years} />,
-            })}
-
-            {/* Variation — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.change_title",
-              subKey: "act2.viz.change_sub",
-              storyKey: "act2.story.change",
-              region: rChange,
-              setRegion: setRChange,
-              extra: (
-                <Pills label={t("act1.f.dir")} options={dirOpts} value={dirChange} onChange={setDirChange} />
-              ),
-              chart: (m) => (
-                <ChangeChart rows={changeRowsFor(m, rChange)} unit={unitOf(m)} direction={dirChange} />
-              ),
-            })}
-
-            {/* Comparaison : double axe mer + température (combiné) */}
-            <VizPanel
-              title={t("act2.viz.dual_title")}
-              subtitle={t("act2.viz.dual_sub")}
-              story={t("act2.story.dual")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <Pills label={t("act1.filter.title")} options={regionOpts} value={rDual} onChange={setRDual} />
-              }
-            >
+            ),
+          },
+          {
+            id: "corr",
+            tab: t("act2.board.tab_corr"),
+            title: t("act2.viz.corr_title"),
+            finding: t("act2.board.corr_find"),
+            takeaway: t("act2.board.corr_take"),
+            node: <ScatterChart groups={corrGroups} unit={t("act2.sea_unit")} medianX={corrMedianX} xName={t("act2.sea_unit")} yName={t("act2.sst_unit")} />,
+          },
+          {
+            id: "heat",
+            tab: t("act2.board.tab_heat"),
+            title: `${t("act2.viz.heat_title")} · ${ml}`,
+            finding: t("act2.board.heat_find"),
+            takeaway: t("act2.board.heat_take"),
+            node: <HeatmapChart series={seriesFor(metric)} years={DATA[metric].years} unit={unitOf(metric)} mode="rank" labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }} />,
+          },
+          {
+            id: "dual",
+            tab: t("act2.board.tab_dual"),
+            title: t("act2.viz.dual_title"),
+            finding: t("act2.board.dual_find"),
+            takeaway: t("act2.board.dual_take"),
+            node: (
               <DualAxisChart
-                seaSeries={seriesFor("sea", rDual)}
+                seaSeries={seriesFor("sea")}
                 seaYears={DATA.sea.years}
-                sstSeries={seriesFor("sst", rDual)}
+                sstSeries={seriesFor("sst")}
                 sstYears={DATA.sst.years}
                 seaName={t("act2.f.sea")}
                 sstName={t("act2.f.sst")}
                 seaUnit={t("act2.sea_unit")}
                 sstUnit={t("act2.sst_unit")}
               />
-            </VizPanel>
+            ),
+          },
+        ]
+      : [];
 
-            {/* Part au-dessus de la référence — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.share_title",
-              subKey: "act2.viz.share_sub",
-              storyKey: "act2.story.share",
-              region: rShare,
-              setRegion: setRShare,
-              chart: (m) => <ShareAboveChart series={seriesFor(m, rShare)} years={DATA[m].years} />,
-            })}
-
-            {/* Dumbbell début→fin — mer puis température */}
-            {dualPanels({
-              titleKey: "act2.viz.dumb_title",
-              subKey: "act2.viz.dumb_sub",
-              storyKey: "act2.story.dumb",
-              region: rDumb,
-              setRegion: setRDumb,
-              chart: (m) => (
-                <DumbbellChart
-                  rows={dumbRowsFor(m, rDumb)}
-                  unit={unitOf(m)}
-                  startLabel={t("act2.dumb.start")}
-                  endLabel={t("act2.dumb.end")}
-                />
-              ),
-            })}
-
-            {/* Courses de barres — mer puis température */}
-            {racePanels(BarRace, "act1.viz.race_title", "act1.story.race")}
-
-            {/* Courses de lignes — mer puis température */}
-            {racePanels(LineRace, "act1.viz.trend_title", "act1.story.trend")}
-
-            <p className="act1__caption">{t("act2.caption")}</p>
-
-            <section className="act1slide act1outro">
-              <div className="act1outro__inner">
-                <p className="eyebrow">{t("act2.outro.kicker")}</p>
-                <h2 className="act1outro__title">{t("act2.outro.title")}</h2>
-                <p className="act1outro__text">{t("act2.outro.text")}</p>
-                <div className="act1outro__actions">
-                  <Link to="/territory" className="act1outro__btn act1outro__btn--primary">
-                    {t("act2.outro.next")} <span aria-hidden="true">→</span>
-                  </Link>
-                  <Link to="/" className="act1outro__btn">
-                    {t("act2.outro.home")}
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        <Link to="/" className="act1__back">
-          ← {t("act1.back")}
-        </Link>
-      </div>
-
-      {ready && !empty && slideCount > 0 && (
-        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
-          <button
-            type="button"
-            className="act1nav__btn"
-            onClick={() => goTo(active - 1)}
-            disabled={active <= 0}
-            aria-label={t("act1.nav.prev")}
-          >
-            ↑
-          </button>
-          <span className="act1nav__count">
-            {active + 1}/{slideCount}
-          </span>
-          <button
-            type="button"
-            className="act1nav__btn"
-            onClick={() => goTo(active + 1)}
-            disabled={active >= slideCount - 1}
-            aria-label={t("act1.nav.next")}
-          >
-            ↓
-          </button>
-        </div>
-      )}
-    </main>
+  return (
+    <ActBoard
+      status={status}
+      onRetry={retry}
+      back={{ to: "/", label: t("act1.back") }}
+      eyebrow={t("home.acts.a2_tag")}
+      title={t("home.acts.a2_title")}
+      thesis={t("act2.thesis")}
+      kpis={kpiItems}
+      kpiTitle={t("act1.stats.title")}
+      filters={filtersEl}
+      charts={charts}
+      progress={{ index: 2, total: 11 }}
+      labels={{
+        loading: t("scene.loading"),
+        empty: t("act1.empty"),
+        error: t("scene.error"),
+        retry: t("act1.retry"),
+        switchHint: t("act2.board.switch_hint"),
+        signature: t("act2.board.signature"),
+        takeawayKicker: t("act2.board.takeaway_kicker"),
+        prev: t("act1.nav.prev"),
+        next: t("act1.nav.next"),
+        start: t("act2.board.start"),
+        conclusion: t("act2.board.conclusion"),
+        backIntro: t("act2.board.back_intro"),
+        reviseData: t("act2.board.revise_data"),
+      }}
+      outro={{
+        kicker: t("act2.outro.kicker"),
+        title: t("act2.outro.title"),
+        text: t("act2.outro.text"),
+        primary: { to: "/territory", label: t("act2.outro.next") },
+        secondary: { to: "/", label: t("act2.outro.home") },
+      }}
+    />
   );
 }

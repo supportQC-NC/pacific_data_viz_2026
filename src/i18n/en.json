@@ -477,6 +477,34 @@
     "dumb": {
       "start": "first year",
       "end": "last"
+    },
+    "thesis": "The ocean takes the first hit: it rises and it warms — everywhere in the Pacific, without exception.",
+    "board": {
+      "switch_hint": "← → to switch view",
+      "signature": "signature chart",
+      "takeaway_kicker": "Takeaway",
+      "start": "Explore the data",
+      "conclusion": "Conclusion",
+      "back_intro": "Intro",
+      "revise_data": "Review the data",
+      "tab_band": "Sea-level rise",
+      "tab_rank": "Ranking",
+      "tab_map": "3D map",
+      "tab_corr": "Sea × Temp.",
+      "tab_heat": "Heat",
+      "tab_dual": "Dual axis",
+      "band_find": "The mean anomaly and its spread, year by year: the curve does not come back down.",
+      "band_take": "The trend is unambiguous: it rises, and it accelerates.",
+      "rank_find": "Departure from the reference, territory by territory, at the chosen year.",
+      "rank_take": "Almost every territory sits above the reference — exposure is widespread.",
+      "map_find": "The geography of the anomaly across the archipelago, year by year.",
+      "map_take": "No territory is spared; the lowest atolls are the most vulnerable.",
+      "corr_find": "Each dot a territory: sea level (X) against surface warming (Y).",
+      "corr_take": "Rising seas and warming water go together: one forcing, two symptoms.",
+      "heat_find": "Each row a territory, each column a year: intensity over time.",
+      "heat_take": "Bands darken toward the present — the anomaly settles in everywhere.",
+      "dual_find": "Both measures on one chart, each with its own axis.",
+      "dual_take": "Sea level and temperature climb together, decade after decade."
     }
   },
   "act3": {
