@@ -46,5 +46,8 @@ export default function RadialGauge({ value = 0, label = "", color }) {
     };
   }, [value, label, color, tk]);
 
-  return <ApexChart options={option} className="apexchart--tall" />;
+  // ApexCharts `radialBar` ne rafraîchit pas sa valeur via updateOptions ;
+  // on remonte le graphe quand la valeur change pour refléter les filtres.
+  const v = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+  return <ApexChart key={`gauge-${v}`} options={option} className="apexchart--tall" />;
 }

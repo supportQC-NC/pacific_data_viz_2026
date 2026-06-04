@@ -1,28 +1,37 @@
 // src/pages/Act11Synthese/Act11Synthese.jsx
 // ============================================================
-// Acte 11 — « La Synthèse ». Croise les jeux utilisés en UNE histoire :
-//   responsabilité (GES/hab) confrontée à un INDICE DE VULNÉRABILITÉ composite
-//   (niveau de la mer + anomalie SST + |anomalie pluies| + eau potable + tuberculose
-//    + recul du vivant), normalisé 0–100, polarité orientée « 100 = le plus exposé ».
+// Acte 11 — « La Synthèse ». Le final : on croise TOUS les jeux utilisés.
+// Responsabilité (GES/hab) confrontée à un INDICE DE VULNÉRABILITÉ composite
+// (mer + SST + |pluies| + eau + tuberculose + recul du vivant), 0–100.
 //
-// • Nuage responsabilité × vulnérabilité (coloré par sous-région, quadrants médians).
-// • Classement composite (tous) OU profil détaillé d'un territoire (sélection).
-// • Guide de lecture avec la méthode ET ses limites (poids égaux, min-max, données
-//   manquantes, ce n'est pas un indice officiel).
-// 100 % données API. Aucune valeur inventée (agrégats = normalisations/médianes réelles).
-// Zéro style inline.
+// FORME : un EXPLORATEUR. Un seul graphe affiché à la fois ; on bascule
+// d'une lecture à l'autre via des onglets (ou les flèches ←/→). Chaque vue
+// a son titre, son sous-titre et son récit, à côté du graphe. Filtres
+// sous-région + territoire. Un MAXIMUM de types ApexCharts est déployé :
+// nuage à quadrants, bulles 3D, slope, anneau, treemap, Pareto, matrice
+// heatmap, radar, aire polaire, barres radiales, jauge, classement.
+// 100 % données API. Zéro style inline.
 // ============================================================
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSynthese } from "../../services/syntheseApi";
 import { worldAvgFor } from "../../data/worldAvg";
-import ScatterPlot from "../../components/ScatterPlot/ScatterPlot";
+import useThemeTokens from "../../hooks/UseThemeTokens";
+import SynthScatter from "../../components/charts/SynthScatter";
+import BubbleChart from "../../components/charts/BubbleChart";
+import SlopeChart from "../../components/charts/SlopeChart";
+import DonutChart from "../../components/charts/DonutChart";
+import PolarAreaChart from "../../components/charts/PolarAreaChart";
+import RadialBarsChart from "../../components/charts/RadialBarsChart";
+import MatrixHeatmap from "../../components/charts/MatrixHeatmap";
+import RadarProfileChart from "../../components/charts/RadarProfileChart";
+import TreemapChart from "../../components/charts/TreemapChart";
+import ParetoChart from "../../components/charts/ParetoChart";
+import RadialGauge from "../../components/charts/RadialGauge";
 import RankBars from "../../components/RankBars/RankBars";
-import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
-import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
 import Loader from "../../components/Loader/Loader";
 import "./Act11Synthese.scss";
 
@@ -36,8 +45,7 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
-
-// indicateurs de vulnérabilité et leur libellé i18n
+const REGIONS3 = ["melanesia", "polynesia", "micronesia"];
 const VULN = ["seaLevel", "sst", "rain", "water", "tb", "rli"];
 
 function valueAt(values, year) {
@@ -65,14 +73,16 @@ function median(nums) {
   const m = Math.floor(a.length / 2);
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
 }
-// transforme une valeur brute en « contribution de vulnérabilité » selon la polarité
+function mean(nums) {
+  const a = nums.filter((n) => Number.isFinite(n));
+  return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+}
 function vulnContribution(value, dir) {
   if (!Number.isFinite(value)) return NaN;
-  if (dir === "down") return -value; // bas = pire
-  if (dir === "abs") return Math.abs(value); // écart = pire
-  return value; // up : haut = pire
+  if (dir === "down") return -value;
+  if (dir === "abs") return Math.abs(value);
+  return value;
 }
-// min-max → 0..100 sur les territoires disponibles
 function normalizeMap(rawByArea) {
   const vals = Object.values(rawByArea).filter((v) => Number.isFinite(v));
   if (!vals.length) return {};
@@ -86,11 +96,42 @@ function normalizeMap(rawByArea) {
   return out;
 }
 
+function Pills({ label, isActive, labelOf, onChange }) {
+  return (
+    <div className="act1f" role="group" aria-label={label}>
+      <span className="act1f__lbl">{label}</span>
+      <div className="act1f__pills">
+        {REGION_KEYS.map((k) => (
+          <button key={k} type="button" className={`act1f__pill ${isActive(k) ? "is-active" : ""}`} onClick={() => onChange(k)} aria-pressed={isActive(k)}>
+            {labelOf(k)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+function Selecter({ label, value, options, onChange }) {
+  return (
+    <label className="act1f act1f--select">
+      <span className="act1f__lbl">{label}</span>
+      <select className="act1f__select" value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => (
+          <option key={String(o.v)} value={o.v}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default function Act11Synthese() {
   const { t, lang } = useLang();
+  const tk = useThemeTokens();
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [country, setCountry] = useState("all");
+  const [tab, setTab] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -98,8 +139,6 @@ export default function Act11Synthese() {
     setState((prev) => (prev.data ? prev : { status: "loading", data: null }));
     fetchSynthese({ lang, signal: ctrl.signal }).then((res) => {
       if (!alive) return;
-      // eslint-disable-next-line no-console
-      console.info("[Act11] reçu:", res.source);
       setState({ status: res.source === "live" ? "ready" : "empty", data: res });
     });
     return () => {
@@ -110,7 +149,6 @@ export default function Act11Synthese() {
 
   const data = state.data;
 
-  // valeurs les plus récentes par indicateur
   const latest = useMemo(() => {
     if (!data) return {};
     const out = {};
@@ -120,7 +158,6 @@ export default function Act11Synthese() {
     return out;
   }, [data]);
 
-  // normalisation des contributions de vulnérabilité (0..100, 100 = pire)
   const normByInd = useMemo(() => {
     if (!data) return {};
     const out = {};
@@ -132,6 +169,7 @@ export default function Act11Synthese() {
       }
       const raw = {};
       Object.entries(latest[k] || {}).forEach(([a, v]) => {
+        if (!isPict(a)) return;
         const c = vulnContribution(v, ind.dir);
         if (Number.isFinite(c)) raw[a] = c;
       });
@@ -140,7 +178,6 @@ export default function Act11Synthese() {
     return out;
   }, [data, latest]);
 
-  // indice composite par territoire = moyenne des indicateurs disponibles
   const composite = useMemo(() => {
     const acc = {};
     VULN.forEach((k) => {
@@ -156,209 +193,457 @@ export default function Act11Synthese() {
     return out;
   }, [normByInd]);
 
+  const emiNorm = useMemo(() => {
+    const raw = {};
+    Object.entries(latest.emissions || {}).forEach(([a, v]) => {
+      if (isPict(a) && Number.isFinite(v)) raw[a] = v;
+    });
+    return normalizeMap(raw);
+  }, [latest]);
+
   const activeVuln = useMemo(() => VULN.filter((k) => data && data[k] && data[k].status === "live"), [data]);
 
-  const onRegion = (k) => {
+  const onRegion = useCallback((k) => {
     setRegion(k);
     setCountry("all");
-  };
-  const inRegion = (a) => region === "all" || REGION_OF[a] === region;
+  }, []);
+  const single = country !== "all";
+  const inRegion = useCallback((a) => region === "all" || REGION_OF[a] === region, [region]);
+  const areaVisible = useCallback((a) => (single ? a === country : inRegion(a)), [single, country, inRegion]);
 
-  const countryOptions = useMemo(() => {
-    return Object.keys(composite)
-      .filter((a) => isPict(a))
-      .map((a) => ({ area: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [composite, lang]);
+  const countryOptions = useMemo(
+    () =>
+      Object.keys(composite)
+        .filter((a) => isPict(a))
+        .map((a) => ({ area: a, name: pictName(a, lang) }))
+        .sort((x, y) => x.name.localeCompare(y.name, lang)),
+    [composite, lang],
+  );
 
-  // points du nuage : x = GES/hab, y = indice composite
-  const scatterPoints = useMemo(() => {
+  const vis = useMemo(() => Object.keys(composite).filter((a) => isPict(a) && areaVisible(a)), [composite, areaVisible]);
+
+  const REGION_COLOR = useMemo(
+    () => ({ melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive, other: tk.secondary }),
+    [tk],
+  );
+  const dimLabel = useCallback((k) => t(`act11.ind_${k}`), [t]);
+
+  const pts = useMemo(() => {
     const emi = latest.emissions || {};
-    return Object.keys(composite)
-      .filter((a) => isPict(a) && Number.isFinite(emi[a]))
-      .filter((a) => (country !== "all" ? true : inRegion(a)))
+    return vis
+      .filter((a) => Number.isFinite(emi[a]) && Number.isFinite(composite[a]))
       .map((a) => ({
         area: a,
         name: pictName(a, lang),
         x: emi[a],
         y: composite[a],
+        z: Number.isFinite((normByInd.seaLevel || {})[a]) ? normByInd.seaLevel[a] : 40,
         region: REGION_OF[a] || "other",
       }));
-  }, [composite, latest, lang, region, country]);
+  }, [vis, latest, composite, normByInd, lang]);
 
-  const medians = useMemo(
-    () => ({ x: median(scatterPoints.map((p) => p.x)), y: median(scatterPoints.map((p) => p.y)) }),
-    [scatterPoints],
+  const groups = useMemo(
+    () =>
+      REGIONS3.map((rg) => ({
+        name: t(`act1.filter.${rg}`),
+        color: REGION_COLOR[rg],
+        points: pts.filter((p) => p.region === rg),
+      })).filter((g) => g.points.length),
+    [pts, t, REGION_COLOR],
   );
 
-  // repère mondial mobile (moyenne mondiale CO₂/hab à l'année la plus récente)
+  const medians = useMemo(() => ({ x: median(pts.map((p) => p.x)), y: median(pts.map((p) => p.y)) }), [pts]);
+
   const worldRef = useMemo(() => {
     const yr = data && data.emissions ? data.emissions.lastYear : null;
     return worldAvgFor(yr) ?? worldAvgFor(2023);
   }, [data]);
 
-  // chiffres-chocs (agrégats réels)
   const stats = useMemo(() => {
-    if (scatterPoints.length < 3 || !Number.isFinite(worldRef)) return null;
-    const pacMed = median(scatterPoints.map((p) => p.x));
+    if (pts.length < 3 || !Number.isFinite(worldRef)) return null;
+    const pacMed = median(pts.map((p) => p.x));
     const ratio = pacMed > 0 ? worldRef / pacMed : null;
     const yMed = medians.y;
-    const below = scatterPoints.filter((p) => p.x < worldRef && Number.isFinite(yMed) && p.y > yMed).length;
-    const most = scatterPoints.reduce((m, p) => (!m || p.y > m.y ? p : m), null);
-    return { pacMed, ratio, below, total: scatterPoints.length, most };
-  }, [scatterPoints, worldRef, medians]);
+    const below = pts.filter((p) => p.x < worldRef && Number.isFinite(yMed) && p.y > yMed).length;
+    const most = pts.reduce((m, p) => (!m || p.y > m.y ? p : m), null);
+    return { pacMed, ratio, below, total: pts.length, most };
+  }, [pts, worldRef, medians]);
 
-  // classement composite (mode « tous ») filtré région
-  const rankComposite = useMemo(() => {
-    return Object.keys(composite)
-      .filter((a) => isPict(a) && inRegion(a))
-      .map((a) => ({ area: a, name: pictName(a, lang), value: Math.round(composite[a]) }))
-      .sort((x, y) => y.value - x.value);
-  }, [composite, lang, region]);
+  const slopeRows = useMemo(
+    () =>
+      vis
+        .filter((a) => Number.isFinite(emiNorm[a]) && Number.isFinite(composite[a]))
+        .map((a) => ({ name: pictName(a, lang), left: emiNorm[a], right: composite[a] }))
+        .sort((x, y) => y.right - x.right),
+    [vis, emiNorm, composite, lang],
+  );
 
-  // profil d'un territoire (mode sélection) : ses indicateurs normalisés
-  const profile = useMemo(() => {
-    if (country === "all") return [];
-    return activeVuln
-      .map((k) => ({ area: k, name: t(`act11.ind_${k}`), value: Math.round((normByInd[k] || {})[country] ?? NaN) }))
-      .filter((r) => Number.isFinite(r.value))
-      .sort((x, y) => y.value - x.value);
-  }, [country, activeVuln, normByInd, t]);
+  const donutRows = useMemo(
+    () =>
+      REGIONS3.map((rg) => ({
+        name: t(`act1.filter.${rg}`),
+        color: REGION_COLOR[rg],
+        value: Object.keys(composite)
+          .filter((a) => isPict(a) && REGION_OF[a] === rg)
+          .reduce((s, a) => s + (composite[a] || 0), 0),
+      })).filter((r) => r.value > 0),
+    [composite, t, REGION_COLOR],
+  );
 
+  const treemapRows = useMemo(() => vis.map((a) => ({ name: pictName(a, lang), value: Math.round(composite[a]) })), [vis, composite, lang]);
+  const paretoRows = useMemo(() => {
+    const emi = latest.emissions || {};
+    return vis.filter((a) => Number.isFinite(emi[a])).map((a) => ({ name: pictName(a, lang), value: emi[a] }));
+  }, [vis, latest, lang]);
+
+  const matrixRows = useMemo(
+    () =>
+      vis
+        .map((a) => ({
+          name: pictName(a, lang),
+          cells: activeVuln.map((k) => ({ x: dimLabel(k), value: (normByInd[k] || {})[a] })).filter((c) => Number.isFinite(c.value)),
+        }))
+        .filter((r) => r.cells.length >= 3)
+        .sort((x, y) => mean(y.cells.map((c) => c.value)) - mean(x.cells.map((c) => c.value))),
+    [vis, activeVuln, normByInd, dimLabel, lang],
+  );
+
+  const radarCats = useMemo(() => activeVuln.map((k) => dimLabel(k)), [activeVuln, dimLabel]);
+  const radarSeries = useMemo(
+    () =>
+      REGIONS3.map((rg) => ({
+        name: t(`act1.filter.${rg}`),
+        data: activeVuln.map((k) => {
+          const m = mean(Object.keys(normByInd[k] || {}).filter((a) => REGION_OF[a] === rg).map((a) => normByInd[k][a]));
+          return m == null ? 0 : Math.round(m);
+        }),
+      })),
+    [activeVuln, normByInd, t],
+  );
+
+  const polarValues = useMemo(() => {
+    if (single) return activeVuln.map((k) => (normByInd[k] || {})[country]);
+    return activeVuln.map((k) => {
+      const m = mean(vis.map((a) => (normByInd[k] || {})[a]));
+      return m == null ? 0 : m;
+    });
+  }, [single, country, activeVuln, normByInd, vis]);
+
+  const radialRows = useMemo(
+    () =>
+      [...vis]
+        .sort((a, b) => composite[b] - composite[a])
+        .slice(0, 6)
+        .map((a) => ({ name: pictName(a, lang), value: composite[a] })),
+    [vis, composite, lang],
+  );
+
+  const rankComposite = useMemo(
+    () => vis.map((a) => ({ area: a, name: pictName(a, lang), value: Math.round(composite[a]) })).sort((x, y) => y.value - x.value),
+    [vis, composite, lang],
+  );
   const compMed = useMemo(() => {
     const m = median(rankComposite.map((r) => r.value));
     return m == null ? null : Math.round(m);
   }, [rankComposite]);
 
-  const xc = { expandLabel: t("act2.expand"), closeLabel: t("act2.close") };
-  const regionLabels = {
-    melanesia: t("act1.filter.melanesia"),
-    polynesia: t("act1.filter.polynesia"),
-    micronesia: t("act1.filter.micronesia"),
-    other: t("act11.region_other"),
-  };
+  const profile = useMemo(() => {
+    if (!single) return [];
+    return activeVuln
+      .map((k) => ({ area: k, name: dimLabel(k), value: Math.round((normByInd[k] || {})[country] ?? NaN) }))
+      .filter((r) => Number.isFinite(r.value))
+      .sort((x, y) => y.value - x.value);
+  }, [single, activeVuln, normByInd, country, dimLabel]);
 
-  const guide = {
-    title: t("act11.guide_title"),
-    intro: t("act11.guide_intro"),
-    steps: [
-      { k: t("act11.guide_s1_k"), v: t("act11.guide_s1_v") },
-      { k: t("act11.guide_s2_k"), v: t("act11.guide_s2_v") },
-      { k: t("act11.guide_s3_k"), v: t("act11.guide_s3_v") },
-    ],
-    takeaway: t("act11.guide_takeaway"),
-  };
+  const xRef = { value: worldRef, label: t("act11.world_ref_label") };
+  const idxUnit = t("act11.index_unit");
+  const fmt1 = (v) => (Math.round(Number(v) * 10) / 10).toLocaleString(lang === "en" ? "en-US" : "fr-FR");
+  const round0 = (v) => Math.round(v);
 
-  const single = country !== "all";
+  // ---------- Liste des vues disponibles (un graphe = un onglet) ----------
+  const charts = [];
+  if (pts.length >= 3) {
+    charts.push({
+      id: "scatter",
+      tab: t("act11.tab_scatter"),
+      title: t("act11.scatter_title"),
+      sub: t("act11.scatter_sub"),
+      story: t("act11.story.scatter"),
+      node: <SynthScatter groups={groups} xName={t("act11.scatter_x")} yName={t("act11.scatter_y")} xUnit={t("act11.scatter_x_unit")} xRef={xRef} yDivider={medians.y} />,
+    });
+    charts.push({
+      id: "bubble",
+      tab: t("act11.tab_bubble"),
+      title: t("act11.bubble_title"),
+      sub: t("act11.bubble_sub"),
+      story: t("act11.story.bubble"),
+      node: <BubbleChart groups={groups} xName={t("act11.scatter_x")} yName={t("act11.scatter_y")} zName={t("act11.bubble_z")} xUnit={t("act11.scatter_x_unit")} xRef={xRef} />,
+    });
+  }
+  if (!single && slopeRows.length >= 3) {
+    charts.push({
+      id: "slope",
+      tab: t("act11.tab_slope"),
+      title: t("act11.slope_title"),
+      sub: t("act11.slope_sub"),
+      story: t("act11.story.slope"),
+      node: <SlopeChart rows={slopeRows} leftLabel={t("act11.slope_left")} rightLabel={t("act11.slope_right")} unit={idxUnit} />,
+    });
+  }
+  if (!single && region === "all" && donutRows.length >= 2) {
+    charts.push({
+      id: "donut",
+      tab: t("act11.tab_donut"),
+      title: t("act11.donut_title"),
+      sub: t("act11.donut_sub"),
+      story: t("act11.story.donut"),
+      node: <DonutChart rows={donutRows} unit={idxUnit} centerLabel={t("act11.donut_center")} format={round0} />,
+    });
+  }
+  if (treemapRows.length >= 2) {
+    charts.push({
+      id: "treemap",
+      tab: t("act11.tab_treemap"),
+      title: t("act11.treemap_title"),
+      sub: t("act11.treemap_sub"),
+      story: t("act11.story.treemap"),
+      node: <TreemapChart rows={treemapRows} unit={idxUnit} format={round0} />,
+    });
+  }
+  if (paretoRows.length >= 2) {
+    charts.push({
+      id: "pareto",
+      tab: t("act11.tab_pareto"),
+      title: t("act11.pareto_title"),
+      sub: t("act11.pareto_sub"),
+      story: t("act11.story.pareto"),
+      node: <ParetoChart rows={paretoRows} unit={t("act11.scatter_x_unit")} cumulLabel={t("act4.pareto_cumul")} format={fmt1} />,
+    });
+  }
+  if (matrixRows.length >= 2 && activeVuln.length >= 3) {
+    charts.push({
+      id: "matrix",
+      tab: t("act11.tab_matrix"),
+      title: t("act11.matrix_title"),
+      sub: t("act11.matrix_sub"),
+      story: t("act11.story.matrix"),
+      node: <MatrixHeatmap rows={matrixRows} unit={idxUnit} format={round0} />,
+    });
+  }
+  if (activeVuln.length >= 3 && radarSeries.some((s) => s.data.some((v) => v > 0))) {
+    charts.push({
+      id: "radar",
+      tab: t("act11.tab_radar"),
+      title: t("act11.radar_title"),
+      sub: t("act11.radar_sub"),
+      story: t("act11.story.radar"),
+      node: <RadarProfileChart categories={radarCats} series={radarSeries} unit={idxUnit} max={100} />,
+    });
+  }
+  if (activeVuln.length >= 3 && polarValues.some((v) => Number.isFinite(v))) {
+    charts.push({
+      id: "polar",
+      tab: t("act11.tab_polar"),
+      title: single ? `${t("act11.polar_title_one")} — ${pictName(country, lang)}` : t("act11.polar_title"),
+      sub: t("act11.polar_sub"),
+      story: t("act11.story.polar"),
+      node: <PolarAreaChart categories={radarCats} values={polarValues} unit={idxUnit} max={100} />,
+    });
+  }
+  if (radialRows.length >= 2) {
+    charts.push({
+      id: "radial",
+      tab: t("act11.tab_radial"),
+      title: t("act11.radial_title"),
+      sub: t("act11.radial_sub"),
+      story: t("act11.story.radial"),
+      node: <RadialBarsChart rows={radialRows} unit={idxUnit} />,
+    });
+  }
+  charts.push({
+    id: "gauge",
+    tab: t("act11.tab_gauge"),
+    title: t("act11.gauge_title"),
+    sub: t("act11.gauge_sub"),
+    story: t("act11.story.gauge"),
+    node: <RadialGauge value={Math.round(compMed ?? 0)} label={t("act11.gauge_label")} color={tk.warm} />,
+  });
+  if (single && profile.length > 0) {
+    charts.push({
+      id: "rank",
+      tab: t("act11.tab_rank"),
+      title: `${t("act11.profile_title")} — ${pictName(country, lang)}`,
+      sub: t("act11.profile_sub"),
+      story: t("act11.story.rank"),
+      node: <RankBars data={profile} unit={idxUnit} worldAvg={50} refLabel={t("act11.profile_ref")} />,
+    });
+  } else if (!single && rankComposite.length > 0) {
+    charts.push({
+      id: "rank",
+      tab: t("act11.tab_rank"),
+      title: t("act11.rank_title"),
+      sub: t("act11.rank_sub"),
+      story: t("act11.story.rank"),
+      node: <RankBars data={rankComposite} unit={idxUnit} worldAvg={compMed} refLabel={t("act6.median_ref")} />,
+    });
+  }
+
+  const count = charts.length;
+  useEffect(() => {
+    setTab((i) => (i > count - 1 ? Math.max(0, count - 1) : i));
+  }, [count]);
+
+  const goTab = useCallback(
+    (i) => setTab((prev) => Math.max(0, Math.min(count - 1, typeof i === "function" ? i(prev) : i))),
+    [count],
+  );
+
+  useEffect(() => {
+    if (state.status !== "ready") return undefined;
+    const onKey = (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") {
+        e.preventDefault();
+        goTab((p) => p + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        goTab((p) => p - 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state.status, goTab]);
+
+  const activeIdx = Math.min(tab, Math.max(0, count - 1));
+  const activeChart = count ? charts[activeIdx] : null;
+
+  const filtersEl = (
+    <>
+      <Pills label={t("act1.filter.title")} isActive={(k) => !single && region === k} labelOf={(k) => t(`act1.filter.${k}`)} onChange={onRegion} />
+      <Selecter
+        label={t("act7.country_label")}
+        value={country}
+        options={[{ v: "all", label: t("act7.country_all") }].concat(countryOptions.map((c) => ({ v: c.area, label: c.name })))}
+        onChange={setCountry}
+      />
+    </>
+  );
 
   return (
-    <main className="act11">
+    <main className="synth">
       <div className="container">
-        <header className="act11__head">
+        <header className="synth__hero">
           <p className="eyebrow">{t("act11.tag")}</p>
-          <h1 className="act11__title">{t("act11.title")}</h1>
-          <p className="act11__lead">{t("act11.lead")}</p>
+          <h1 className="synth__title">{t("act11.title")}</h1>
+          <p className="synth__lead">{t("act11.lead")}</p>
+
+          {stats && (
+            <div className="synth__stats">
+              <div className="synth__stat">
+                <span className="synth__stat-num">
+                  {stats.pacMed.toFixed(1)}
+                  <span className="synth__stat-u"> t/hab</span>
+                </span>
+                <span className="synth__stat-lbl">{t("act11.stat_emi_label")}</span>
+                <span className="synth__stat-sub">{stats.ratio ? `≈ ${stats.ratio.toFixed(1)}× ${t("act11.stat_emi_sub")}` : ""}</span>
+              </div>
+              <div className="synth__stat synth__stat--warm">
+                <span className="synth__stat-num">
+                  {stats.below}
+                  <span className="synth__stat-u"> / {stats.total}</span>
+                </span>
+                <span className="synth__stat-lbl">{t("act11.stat_inj_label")}</span>
+                <span className="synth__stat-sub">{t("act11.stat_inj_sub")}</span>
+              </div>
+              <div className="synth__stat synth__stat--warm">
+                <span className="synth__stat-num synth__stat-num--name">{stats.most ? stats.most.name : "—"}</span>
+                <span className="synth__stat-lbl">{t("act11.stat_vuln_label")}</span>
+                <span className="synth__stat-sub">{stats.most ? `${t("act11.stat_vuln_sub")} · ${Math.round(stats.most.y)}/100` : ""}</span>
+              </div>
+            </div>
+          )}
         </header>
 
         {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
-        {state.status === "empty" && <p className="act11__state act11__state--err">{t("act11.unavailable")}</p>}
+        {state.status === "empty" && <p className="synth__state synth__state--err">{t("act11.unavailable")}</p>}
 
-        {state.status === "ready" && (
-          <>
-            <ReadingGuide {...guide} />
-
-            <div className="act11__controls">
-              <div className="act11__filter" role="group" aria-label={t("act1.filter.title")}>
-                <span className="act11__filter-lbl">{t("act1.filter.title")}</span>
-                {REGION_KEYS.map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    className={`act11__pill ${country === "all" && region === k ? "is-active" : ""}`}
-                    onClick={() => onRegion(k)}
-                    aria-pressed={country === "all" && region === k}
-                  >
-                    {t(`act1.filter.${k}`)}
-                  </button>
-                ))}
-              </div>
-              <label className="act11__select-wrap">
-                <span className="act11__select-lbl">{t("act7.country_label")}</span>
-                <select className="act11__select" value={country} onChange={(e) => setCountry(e.target.value)}>
-                  <option value="all">{t("act7.country_all")}</option>
-                  {countryOptions.map((c) => (
-                    <option key={c.area} value={c.area}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+        {state.status === "ready" && activeChart && (
+          <section className="synth__board" aria-label={t("act11.cross_title")}>
+            <div className="synth__bar">
+              <div className="synth__bar-filters">{filtersEl}</div>
+              <span className="synth__bar-hint">{t("act11.switch_hint")}</span>
             </div>
 
-            {stats && (
-              <div className="act11__stats">
-                <div className="act11__stat">
-                  <span className="act11__stat-num">
-                    {stats.pacMed.toFixed(1)}
-                    <span className="act11__stat-u"> t/hab</span>
+            <nav className="synth__tabs" role="tablist" aria-label={t("act11.cross_title")}>
+              {charts.map((c, i) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === activeIdx}
+                  className={`synth__tab ${i === activeIdx ? "is-active" : ""}`}
+                  onClick={() => goTab(i)}
+                >
+                  {c.tab}
+                </button>
+              ))}
+            </nav>
+
+            <div className="synth__stage">
+              <div className="synth__stage-main">
+                <div className="synth__stage-head">
+                  <span className="synth__num">
+                    {String(activeIdx + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
                   </span>
-                  <span className="act11__stat-lbl">{t("act11.stat_emi_label")}</span>
-                  <span className="act11__stat-sub">
-                    {stats.ratio ? `≈ ${stats.ratio.toFixed(1)}× ${t("act11.stat_emi_sub")}` : ""}
-                  </span>
+                  <h2 className="synth__chart-title">{activeChart.title}</h2>
+                  <p className="synth__chart-sub">{activeChart.sub}</p>
                 </div>
-                <div className="act11__stat">
-                  <span className="act11__stat-num">
-                    {stats.below}
-                    <span className="act11__stat-u"> / {stats.total}</span>
+                <div className="synth__chart">{activeChart.node}</div>
+                <div className="synth__pager">
+                  <button type="button" className="synth__pager-btn" onClick={() => goTab((p) => p - 1)} disabled={activeIdx <= 0} aria-label={t("act11.prev")}>
+                    ←
+                  </button>
+                  <span className="synth__pager-count">
+                    {activeIdx + 1} / {count}
                   </span>
-                  <span className="act11__stat-lbl">{t("act11.stat_inj_label")}</span>
-                  <span className="act11__stat-sub">{t("act11.stat_inj_sub")}</span>
-                </div>
-                <div className="act11__stat">
-                  <span className="act11__stat-num act11__stat-num--name">{stats.most ? stats.most.name : "—"}</span>
-                  <span className="act11__stat-lbl">{t("act11.stat_vuln_label")}</span>
-                  <span className="act11__stat-sub">
-                    {stats.most ? `${t("act11.stat_vuln_sub")} · ${Math.round(stats.most.y)}/100` : ""}
-                  </span>
+                  <button type="button" className="synth__pager-btn" onClick={() => goTab((p) => p + 1)} disabled={activeIdx >= count - 1} aria-label={t("act11.next")}>
+                    →
+                  </button>
                 </div>
               </div>
-            )}
 
-            <ExpandableCard title={t("act11.scatter_title")} sub={t("act11.scatter_sub")} {...xc}>
-              <ScatterPlot
-                points={scatterPoints}
-                xLabel={t("act11.scatter_x")}
-                yLabel={t("act11.scatter_y")}
-                xUnit={t("act11.scatter_x_unit")}
-                xRef={{ value: worldRef, label: t("act11.world_ref_label") }}
-                yDivider={medians.y}
-                quadrants={{ tl: t("act11.q_tl"), tr: t("act11.q_tr"), bl: t("act11.q_bl"), br: t("act11.q_br") }}
-                highlight={single ? country : null}
-                regionLabels={regionLabels}
-              />
-            </ExpandableCard>
-
-            {!single && (
-              <ExpandableCard title={t("act11.rank_title")} sub={t("act11.rank_sub")} {...xc}>
-                <RankBars data={rankComposite} unit={t("act11.index_unit")} worldAvg={compMed} refLabel={t("act6.median_ref")} />
-              </ExpandableCard>
-            )}
-
-            {single && profile.length > 0 && (
-              <ExpandableCard title={`${t("act11.profile_title")} — ${pictName(country, lang)}`} sub={t("act11.profile_sub")} {...xc}>
-                <RankBars data={profile} unit={t("act11.index_unit")} worldAvg={50} refLabel={t("act11.profile_ref")} />
-              </ExpandableCard>
-            )}
-
-            <p className="act11__credit">
-              {t("act11.credit")}
-              {activeVuln.length < VULN.length ? ` ${t("act11.credit_partial")}` : ""}
-            </p>
-          </>
+              <aside className="synth__story">
+                <div className="synth__story-card">
+                  <span className="synth__story-k">{t("act11.story_kicker")}</span>
+                  <p className="synth__story-t">{activeChart.story}</p>
+                </div>
+                <p className="synth__method">
+                  {t("act11.method")}
+                  {activeVuln.length < VULN.length ? ` ${t("act11.credit_partial")}` : ""}
+                </p>
+              </aside>
+            </div>
+          </section>
         )}
 
-        <Link to="/" className="act11__back">
+        {state.status === "ready" && (
+          <section className="synth__outro">
+            <p className="eyebrow">{t("act11.outro.kicker")}</p>
+            <h2 className="synth__outro-title">{t("act11.outro.title")}</h2>
+            <p className="synth__outro-text">{t("act11.outro.text")}</p>
+            <div className="synth__actions">
+              <Link to="/" className="synth__btn synth__btn--primary">
+                {t("act11.outro.home")} <span aria-hidden="true">→</span>
+              </Link>
+              <Link to="/emissions" className="synth__btn">
+                {t("act11.outro.restart")}
+              </Link>
+            </div>
+          </section>
+        )}
+
+        <Link to="/" className="synth__back">
           ← {t("act1.back")}
         </Link>
       </div>
