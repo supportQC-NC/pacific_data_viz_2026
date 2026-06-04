@@ -292,6 +292,34 @@
       "text": "The Pacific emits little per capita — bar a few exceptions. Now to what those emissions trigger: the ocean, on the front line.",
       "next": "Next act: the ocean",
       "home": "Back to home"
+    },
+    "thesis": "Across the Pacific, per-capita emissions vary tenfold — and rarely where you'd think.",
+    "board": {
+      "switch_hint": "← → to switch view",
+      "signature": "signature chart",
+      "takeaway_kicker": "Takeaway",
+      "tab_rank": "Ranking",
+      "tab_race": "The race",
+      "tab_trend": "Trend",
+      "tab_scatter": "Level × change",
+      "tab_map": "Map",
+      "tab_heat": "Heat",
+      "rank_find": "Per capita, the gap between territories runs tenfold — and the order surprises.",
+      "rank_take": "The biggest per-head emitters aren't always the ones you'd expect.",
+      "race_find": "The ranking replayed year by year: who climbs, who falls back.",
+      "race_take": "In a few decades, the emitters' hierarchy has been reshuffled.",
+      "trend_find": "Individual trajectories: some rise, others level off or fall.",
+      "trend_take": "No single path: the Pacific moves in scattered order.",
+      "scatter_find": "Current level (X) against change since the start (Y), by sub-region.",
+      "scatter_take": "Emitting little today doesn't prevent rising fast — and vice versa.",
+      "map_find": "The geography of per-capita emissions, year by year.",
+      "map_take": "Per-capita peaks often sit in small territories.",
+      "heat_find": "Each row a territory, each column a year: intensity over time.",
+      "heat_take": "The hottest bands reveal episodes of sustained emissions.",
+      "start": "Explore the data",
+      "conclusion": "Conclusion",
+      "back_intro": "Intro",
+      "revise_data": "Review the data"
     }
   },
   "export": {
@@ -1214,7 +1242,10 @@
       "polar": "The six dimensions open out like a fan. The longer a sector, the more that threat weighs in the chosen profile — a single territory, or the selection's average.",
       "radial": "The rings compare the leading territories: their composite index, side by side, to see the gap among the most exposed.",
       "gauge": "The median vulnerability level of the selection. Switch sub-region or territory and watch the needle move.",
-      "rank": "The full vulnerability ranking. In territory mode it becomes the breakdown of that territory's six dimensions, with 50 = the average."
+      "rank": "The full vulnerability ranking. In territory mode it becomes the breakdown of that territory's six dimensions, with 50 = the average.",
+      "gap": "Here is the debt, plainly: for each territory, subtract responsibility (its emissions) from vulnerability (what it bears). The long coral bars to the right are the territories paying the heaviest price for a disruption they didn't cause. The cyan bars on the left are the reverse — rare in the Pacific.",
+      "mirror": "On the left what a territory emits, on the right what it bears, back to back. When the right wing (coral) dwarfs the left (cyan), the injustice is obvious: much exposure for very little responsibility.",
+      "sloperank": "The same reversal, by rank: left, the emitters' ranking (1 = most responsible); right, the most vulnerable. The lines that plunge — high on the right, low on the left — are the most unjustly exposed territories."
     },
     "outro": {
       "kicker": "End of the journey",
@@ -1239,7 +1270,21 @@
     "tab_polar": "Dimensions",
     "tab_radial": "Top exposed",
     "tab_gauge": "Median",
-    "tab_rank": "Ranking"
+    "tab_rank": "Ranking",
+    "tab_gap": "The debt",
+    "tab_mirror": "Emit ↔ Bear",
+    "tab_sloperank": "Reversal (rank)",
+    "rank_word": "rank",
+    "gap_title": "The climate debt",
+    "gap_sub": "vulnerability − responsibility, per territory · right = bears more than it owes",
+    "gap_left": "owes more than it bears",
+    "gap_right": "bears more than it owes",
+    "mirror_title": "Emits on one side, bears it on the other",
+    "mirror_sub": "responsibility (left) against vulnerability (right), 0–100",
+    "sloperank_title": "The reversal, by rank",
+    "sloperank_sub": "responsibility rank (left) → vulnerability rank (right) · 1 = top",
+    "sloperank_left": "responsibility rank",
+    "sloperank_right": "vulnerability rank"
   },
   "flow": {
     "act": "Act",
