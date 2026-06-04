@@ -1,14 +1,13 @@
 // src/components/ActBoard/ActBoard.jsx
 // ============================================================
 // Coquille « dashboard narratif » réutilisable. Un acte se parcourt en
-// TROIS temps, sans ancres ni scroll : on affiche une section à la fois,
-// on avance/recule par boutons.
+// TROIS temps, sans ancres ni scroll : une section à la fois.
 //   0) INTRO  — titre + thèse + chiffres-chocs, plein écran.
-//   1) BOARD  — filtres globaux + onglets de graphes (dont 1 signature),
-//               un graphe à la fois, ligne « à retenir ».
-//   2) OUTRO  — la conclusion / transition vers l'acte suivant.
-// Dans le board, ←/→ changent de GRAPHE ; les boutons « Suivant / Intro /
-// Conclusion » changent d'ÉTAPE.
+//   1) BOARD  — RAIL de filtres + sélecteur de graphes à GAUCHE (vertical,
+//               gagne de la hauteur), GRAPHE plein cadre à droite (borné à
+//               l'écran), ligne « à retenir » dessous.
+//   2) OUTRO  — la conclusion / transition.
+// Dans le board, ←/→ changent de GRAPHE ; les boutons changent d'ÉTAPE.
 // 100 % présentational : l'acte calcule tout et passe les props.
 // ============================================================
 
@@ -50,7 +49,6 @@ export default function ActBoard({
   );
   const goStep = useCallback((s) => setStep(Math.max(0, Math.min(2, s))), []);
 
-  // ←/→ changent de graphe, uniquement sur le board.
   useEffect(() => {
     if (status !== "ready" || step !== 1) return undefined;
     const onKey = (e) => {
@@ -68,7 +66,6 @@ export default function ActBoard({
     return () => window.removeEventListener("keydown", onKey);
   }, [status, step, goTab]);
 
-  // Changement d'étape : on repart en haut (sans ancre).
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
@@ -116,7 +113,7 @@ export default function ActBoard({
           </section>
         )}
 
-        {/* ---------- ÉTAPE 1 — BOARD ---------- */}
+        {/* ---------- ÉTAPE 1 — BOARD (rail + graphe) ---------- */}
         {step === 1 &&
           (status === "ready" && active ? (
             <section className="board__panel">
@@ -125,55 +122,54 @@ export default function ActBoard({
                 {progressTxt ? <span className="board__progress">{progressTxt}</span> : null}
               </div>
 
-              <div className="board__bar">
-                <div className="board__filters">{filters}</div>
-                {labels.switchHint ? <span className="board__hint">{labels.switchHint}</span> : null}
-              </div>
+              <div className="board__work">
+                <aside className="board__rail">
+                  <div className="board__rail-filters">{filters}</div>
 
-              <nav className="board__tabs" role="tablist">
-                {charts.map((c, i) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === idx}
-                    className={`board__tab ${i === idx ? "is-active" : ""} ${c.signature ? "is-signature" : ""}`}
-                    onClick={() => goTab(i)}
-                  >
-                    {c.signature ? (
-                      <span className="board__tab-star" aria-hidden="true">
-                        ★
-                      </span>
+                  <nav className="board__navlist" role="tablist" aria-label={labels.signature}>
+                    {charts.map((c, i) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={i === idx}
+                        className={`board__navitem ${i === idx ? "is-active" : ""} ${c.signature ? "is-signature" : ""}`}
+                        onClick={() => goTab(i)}
+                      >
+                        {c.signature ? (
+                          <span className="board__navitem-star" aria-hidden="true">
+                            ★
+                          </span>
+                        ) : null}
+                        <span className="board__navitem-label">{c.tab}</span>
+                      </button>
+                    ))}
+                  </nav>
+
+                  <div className="board__rail-steps">
+                    <button type="button" className="board__btn board__btn--ghost" onClick={() => goStep(0)}>
+                      <span aria-hidden="true">←</span> {labels.backIntro}
+                    </button>
+                    {outro ? (
+                      <button type="button" className="board__btn board__btn--primary" onClick={() => goStep(2)}>
+                        {labels.conclusion} <span aria-hidden="true">→</span>
+                      </button>
                     ) : null}
-                    {c.tab}
-                  </button>
-                ))}
-              </nav>
-
-              <div className="board__stage">
-                <div className="board__head">
-                  <span className="board__num">
-                    {String(idx + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
-                    {active.signature && labels.signature ? ` · ${labels.signature}` : ""}
-                  </span>
-                  {active.title ? <h2 className="board__chart-title">{active.title}</h2> : null}
-                  {active.finding ? <p className="board__finding">{active.finding}</p> : null}
-                </div>
-
-                <div className="board__chart">{active.node}</div>
-
-                <div className="board__foot">
-                  <div className="board__pager">
-                    <button type="button" className="board__pager-btn" onClick={() => goTab((p) => p - 1)} disabled={idx <= 0} aria-label={labels.prev}>
-                      ←
-                    </button>
-                    <span className="board__pager-count">
-                      {idx + 1} / {count}
-                    </span>
-                    <button type="button" className="board__pager-btn" onClick={() => goTab((p) => p + 1)} disabled={idx >= count - 1} aria-label={labels.next}>
-                      →
-                    </button>
                   </div>
+                </aside>
+
+                <div className="board__main">
+                  <div className="board__head">
+                    <span className="board__num">
+                      {String(idx + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+                      {active.signature && labels.signature ? ` · ${labels.signature}` : ""}
+                    </span>
+                    {active.title ? <h2 className="board__chart-title">{active.title}</h2> : null}
+                    {active.finding ? <p className="board__finding">{active.finding}</p> : null}
+                  </div>
+
+                  <div className="board__chart">{active.node}</div>
+
                   {active.takeaway ? (
                     <p className="board__takeaway">
                       {labels.takeawayKicker ? <span className="board__takeaway-k">{labels.takeawayKicker}</span> : null}
@@ -181,17 +177,6 @@ export default function ActBoard({
                     </p>
                   ) : null}
                 </div>
-              </div>
-
-              <div className="board__step-nav">
-                <button type="button" className="board__btn" onClick={() => goStep(0)}>
-                  <span aria-hidden="true">←</span> {labels.backIntro}
-                </button>
-                {outro ? (
-                  <button type="button" className="board__btn board__btn--primary" onClick={() => goStep(2)}>
-                    {labels.conclusion} <span aria-hidden="true">→</span>
-                  </button>
-                ) : null}
               </div>
             </section>
           ) : (

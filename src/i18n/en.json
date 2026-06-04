@@ -269,7 +269,7 @@
       "color": "Color",
       "color_rank": "By rank",
       "color_abs": "Absolute",
-      "scale_help": "Linear: the axis keeps the real gaps — one very large emitter dwarfs the small ones. Log: each gridline multiplies the scale, so small values become visible too.",
+      "scale_help": "Logarithmic scale: each gridline is ×10. Essential here, as values range from 0.1 to ~87 t/capita — on a linear scale almost every territory would be crushed against zero.",
       "color_help": "By rank: colour follows the ranking (every territory stands out). Absolute: colour follows the raw value (an extreme can flatten everything).",
       "toggle": "Filters"
     },

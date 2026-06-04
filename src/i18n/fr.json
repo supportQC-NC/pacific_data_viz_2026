@@ -269,7 +269,7 @@
       "color": "Couleur",
       "color_rank": "Par rang",
       "color_abs": "Absolue",
-      "scale_help": "Linéaire : l'axe respecte les écarts réels — un très gros émetteur écrase les petits. Log : chaque graduation multiplie l'échelle, ce qui rend visibles aussi les petites valeurs.",
+      "scale_help": "Échelle logarithmique : chaque graduation vaut ×10. Indispensable ici, car les valeurs vont de 0,1 à ~87 t/hab — en linéaire, presque tous les territoires seraient écrasés contre zéro.",
       "color_help": "Par rang : la couleur suit le classement (tous les territoires se distinguent). Absolue : la couleur suit la valeur brute (un extrême peut tout aplatir).",
       "toggle": "Filtres"
     },
