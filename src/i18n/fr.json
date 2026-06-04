@@ -1214,7 +1214,10 @@
       "polar": "Les six dimensions s'ouvrent en éventail. Plus un secteur est long, plus cette menace pèse dans le profil retenu — un territoire seul, ou la moyenne de la sélection.",
       "radial": "Les anneaux comparent les territoires de tête : leur indice composite, côte à côte, pour voir l'écart entre les plus exposés.",
       "gauge": "Le niveau médian de vulnérabilité de la sélection. Changez de sous-région ou de territoire et regardez l'aiguille se déplacer.",
-      "rank": "Le palmarès complet de la vulnérabilité. En mode territoire, il devient le détail des six dimensions de ce territoire, repère à 50 = la moyenne."
+      "rank": "Le palmarès complet de la vulnérabilité. En mode territoire, il devient le détail des six dimensions de ce territoire, repère à 50 = la moyenne.",
+      "gap": "Voici la dette, sans détour : pour chaque territoire, on retire la responsabilité (ses émissions) à la vulnérabilité (ce qu'il subit). Les longues barres corail, vers la droite, sont les territoires qui paient le plus lourd un dérèglement qu'ils n'ont pas causé. Les barres cyan, à gauche, sont l'inverse — rares dans le Pacifique.",
+      "mirror": "À gauche ce qu'un territoire émet, à droite ce qu'il subit, dos à dos. Quand l'aile droite (corail) écrase la gauche (cyan), l'injustice saute aux yeux : beaucoup d'exposition pour très peu de responsabilité.",
+      "sloperank": "Même renversement, mais en rang : à gauche le classement des émetteurs (1 = le plus responsable), à droite celui des plus vulnérables. Les lignes qui plongent — bien classées à droite, mal à gauche — sont les territoires les plus injustement exposés."
     },
     "outro": {
       "kicker": "Fin du parcours",
@@ -1239,7 +1242,21 @@
     "tab_polar": "Dimensions",
     "tab_radial": "Top exposés",
     "tab_gauge": "Médiane",
-    "tab_rank": "Classement"
+    "tab_rank": "Classement",
+    "tab_gap": "La dette",
+    "tab_mirror": "Émet ↔ Subit",
+    "tab_sloperank": "Renversement (rang)",
+    "rank_word": "rang",
+    "gap_title": "La dette climatique",
+    "gap_sub": "vulnérabilité − responsabilité, par territoire · à droite = subit plus qu'il ne doit",
+    "gap_left": "doit plus qu'il ne subit",
+    "gap_right": "subit plus qu'il ne doit",
+    "mirror_title": "Émet d'un côté, subit de l'autre",
+    "mirror_sub": "responsabilité (gauche) face à vulnérabilité (droite), 0–100",
+    "sloperank_title": "Le renversement, par rang",
+    "sloperank_sub": "rang de responsabilité (gauche) → rang de vulnérabilité (droite) · 1 = en tête",
+    "sloperank_left": "rang responsabilité",
+    "sloperank_right": "rang vulnérabilité"
   },
   "flow": {
     "act": "Acte",

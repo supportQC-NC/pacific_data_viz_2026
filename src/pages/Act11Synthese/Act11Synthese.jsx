@@ -23,6 +23,8 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import SynthScatter from "../../components/charts/SynthScatter";
 import BubbleChart from "../../components/charts/BubbleChart";
 import SlopeChart from "../../components/charts/SlopeChart";
+import GapBars from "../../components/charts/GapBars";
+import MirrorBars from "../../components/charts/MirrorBars";
 import DonutChart from "../../components/charts/DonutChart";
 import PolarAreaChart from "../../components/charts/PolarAreaChart";
 import RadialBarsChart from "../../components/charts/RadialBarsChart";
@@ -278,6 +280,38 @@ export default function Act11Synthese() {
     [vis, emiNorm, composite, lang],
   );
 
+  // Territoires dotés des DEUX mesures (responsabilité normalisée + vulnérabilité).
+  const bothAreas = useMemo(
+    () => vis.filter((a) => Number.isFinite(emiNorm[a]) && Number.isFinite(composite[a])),
+    [vis, emiNorm, composite],
+  );
+  // La dette climatique = vulnérabilité − responsabilité (0–100 chacune).
+  const gapRows = useMemo(
+    () =>
+      bothAreas
+        .map((a) => ({ name: pictName(a, lang), value: composite[a] - emiNorm[a] }))
+        .sort((x, y) => y.value - x.value),
+    [bothAreas, composite, emiNorm, lang],
+  );
+  // Émet ↔ subit (barres miroir).
+  const mirrorRows = useMemo(
+    () =>
+      bothAreas
+        .map((a) => ({ name: pictName(a, lang), left: emiNorm[a], right: composite[a] }))
+        .sort((x, y) => y.right - x.right),
+    [bothAreas, composite, emiNorm, lang],
+  );
+  // Renversement par RANG (1 = le plus responsable / le plus vulnérable).
+  const slopeRankRows = useMemo(() => {
+    const respRank = {};
+    [...bothAreas].sort((a, b) => emiNorm[b] - emiNorm[a]).forEach((a, i) => (respRank[a] = i + 1));
+    const vulnRank = {};
+    [...bothAreas].sort((a, b) => composite[b] - composite[a]).forEach((a, i) => (vulnRank[a] = i + 1));
+    return bothAreas
+      .map((a) => ({ name: pictName(a, lang), left: respRank[a], right: vulnRank[a] }))
+      .sort((x, y) => x.right - y.right);
+  }, [bothAreas, composite, emiNorm, lang]);
+
   const donutRows = useMemo(
     () =>
       REGIONS3.map((rg) => ({
@@ -362,6 +396,18 @@ export default function Act11Synthese() {
 
   // ---------- Liste des vues disponibles (un graphe = un onglet) ----------
   const charts = [];
+  // 1) LA DETTE — le graphe-thèse, en ouverture.
+  if (!single && gapRows.length >= 2) {
+    charts.push({
+      id: "gap",
+      tab: t("act11.tab_gap"),
+      title: t("act11.gap_title"),
+      sub: t("act11.gap_sub"),
+      story: t("act11.story.gap"),
+      node: <GapBars rows={gapRows} unit={idxUnit} leftLabel={t("act11.gap_left")} rightLabel={t("act11.gap_right")} format={round0} />,
+    });
+  }
+  // 2) LA PREUVE — le face-à-face.
   if (pts.length >= 3) {
     charts.push({
       id: "scatter",
@@ -371,15 +417,19 @@ export default function Act11Synthese() {
       story: t("act11.story.scatter"),
       node: <SynthScatter groups={groups} xName={t("act11.scatter_x")} yName={t("act11.scatter_y")} xUnit={t("act11.scatter_x_unit")} xRef={xRef} yDivider={medians.y} />,
     });
+  }
+  // 3) LA JUXTAPOSITION — émet ↔ subit.
+  if (!single && mirrorRows.length >= 2) {
     charts.push({
-      id: "bubble",
-      tab: t("act11.tab_bubble"),
-      title: t("act11.bubble_title"),
-      sub: t("act11.bubble_sub"),
-      story: t("act11.story.bubble"),
-      node: <BubbleChart groups={groups} xName={t("act11.scatter_x")} yName={t("act11.scatter_y")} zName={t("act11.bubble_z")} xUnit={t("act11.scatter_x_unit")} xRef={xRef} />,
+      id: "mirror",
+      tab: t("act11.tab_mirror"),
+      title: t("act11.mirror_title"),
+      sub: t("act11.mirror_sub"),
+      story: t("act11.story.mirror"),
+      node: <MirrorBars rows={mirrorRows} leftLabel={t("act11.slope_left")} rightLabel={t("act11.slope_right")} unit={idxUnit} format={round0} />,
     });
   }
+  // 4) LE RENVERSEMENT — en valeur puis en rang.
   if (!single && slopeRows.length >= 3) {
     charts.push({
       id: "slope",
@@ -390,36 +440,28 @@ export default function Act11Synthese() {
       node: <SlopeChart rows={slopeRows} leftLabel={t("act11.slope_left")} rightLabel={t("act11.slope_right")} unit={idxUnit} />,
     });
   }
-  if (!single && region === "all" && donutRows.length >= 2) {
+  if (!single && slopeRankRows.length >= 3) {
     charts.push({
-      id: "donut",
-      tab: t("act11.tab_donut"),
-      title: t("act11.donut_title"),
-      sub: t("act11.donut_sub"),
-      story: t("act11.story.donut"),
-      node: <DonutChart rows={donutRows} unit={idxUnit} centerLabel={t("act11.donut_center")} format={round0} />,
+      id: "sloperank",
+      tab: t("act11.tab_sloperank"),
+      title: t("act11.sloperank_title"),
+      sub: t("act11.sloperank_sub"),
+      story: t("act11.story.sloperank"),
+      node: <SlopeChart rows={slopeRankRows} leftLabel={t("act11.sloperank_left")} rightLabel={t("act11.sloperank_right")} unit={t("act11.rank_word")} max={slopeRankRows.length} reverse invertColor />,
     });
   }
-  if (treemapRows.length >= 2) {
+  // 5) EN RELIEF.
+  if (pts.length >= 3) {
     charts.push({
-      id: "treemap",
-      tab: t("act11.tab_treemap"),
-      title: t("act11.treemap_title"),
-      sub: t("act11.treemap_sub"),
-      story: t("act11.story.treemap"),
-      node: <TreemapChart rows={treemapRows} unit={idxUnit} format={round0} />,
+      id: "bubble",
+      tab: t("act11.tab_bubble"),
+      title: t("act11.bubble_title"),
+      sub: t("act11.bubble_sub"),
+      story: t("act11.story.bubble"),
+      node: <BubbleChart groups={groups} xName={t("act11.scatter_x")} yName={t("act11.scatter_y")} zName={t("act11.bubble_z")} xUnit={t("act11.scatter_x_unit")} xRef={xRef} />,
     });
   }
-  if (paretoRows.length >= 2) {
-    charts.push({
-      id: "pareto",
-      tab: t("act11.tab_pareto"),
-      title: t("act11.pareto_title"),
-      sub: t("act11.pareto_sub"),
-      story: t("act11.story.pareto"),
-      node: <ParetoChart rows={paretoRows} unit={t("act11.scatter_x_unit")} cumulLabel={t("act4.pareto_cumul")} format={fmt1} />,
-    });
-  }
+  // 6) L'EMPREINTE — matrice, profils, dimensions.
   if (matrixRows.length >= 2 && activeVuln.length >= 3) {
     charts.push({
       id: "matrix",
@@ -448,6 +490,37 @@ export default function Act11Synthese() {
       sub: t("act11.polar_sub"),
       story: t("act11.story.polar"),
       node: <PolarAreaChart categories={radarCats} values={polarValues} unit={idxUnit} max={100} />,
+    });
+  }
+  // 7) LA HIÉRARCHIE — territoires, sous-régions, responsabilité.
+  if (treemapRows.length >= 2) {
+    charts.push({
+      id: "treemap",
+      tab: t("act11.tab_treemap"),
+      title: t("act11.treemap_title"),
+      sub: t("act11.treemap_sub"),
+      story: t("act11.story.treemap"),
+      node: <TreemapChart rows={treemapRows} unit={idxUnit} format={round0} />,
+    });
+  }
+  if (!single && region === "all" && donutRows.length >= 2) {
+    charts.push({
+      id: "donut",
+      tab: t("act11.tab_donut"),
+      title: t("act11.donut_title"),
+      sub: t("act11.donut_sub"),
+      story: t("act11.story.donut"),
+      node: <DonutChart rows={donutRows} unit={idxUnit} centerLabel={t("act11.donut_center")} format={round0} />,
+    });
+  }
+  if (paretoRows.length >= 2) {
+    charts.push({
+      id: "pareto",
+      tab: t("act11.tab_pareto"),
+      title: t("act11.pareto_title"),
+      sub: t("act11.pareto_sub"),
+      story: t("act11.story.pareto"),
+      node: <ParetoChart rows={paretoRows} unit={t("act11.scatter_x_unit")} cumulLabel={t("act4.pareto_cumul")} format={fmt1} />,
     });
   }
   if (radialRows.length >= 2) {

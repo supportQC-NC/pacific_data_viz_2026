@@ -9,13 +9,16 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
 import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, MONO } from "./apexBase";
 
-export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "", unit = "" }) {
+export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "", unit = "", max = 100, reverse = false, invertColor = false }) {
   const tk = useThemeTokens();
 
   const option = useMemo(() => {
     const clean = rows.filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right));
     const series = clean.map((r) => ({ name: r.name, data: [Number(r.left), Number(r.right)] }));
-    const colors = clean.map((r) => (Number(r.right) > Number(r.left) ? tk.warm : tk.accent));
+    // Couleur = sens de la pente. invertColor : utile quand l'axe est un RANG
+    // (plus petit = pire), où « droite < gauche » signale l'injustice.
+    const isWarm = (r) => (invertColor ? Number(r.right) < Number(r.left) : Number(r.right) > Number(r.left));
+    const colors = clean.map((r) => (isWarm(r) ? tk.warm : tk.accent));
 
     return {
       chart: baseChart(tk, { type: "line" }),
@@ -34,7 +37,8 @@ export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "",
       }),
       yaxis: baseYaxis(tk, {
         min: 0,
-        max: 100,
+        max,
+        reversed: reverse,
         tickAmount: 5,
         labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" }, formatter: (v) => fmt(Number(v), 0) },
       }),
@@ -51,7 +55,7 @@ export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "",
         },
       }),
     };
-  }, [rows, leftLabel, rightLabel, unit, tk]);
+  }, [rows, leftLabel, rightLabel, unit, max, reverse, invertColor, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }
