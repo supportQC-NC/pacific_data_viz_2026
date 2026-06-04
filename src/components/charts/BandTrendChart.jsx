@@ -19,6 +19,7 @@ export default function BandTrendChart({
   meanLabel = "",
   currentYear = null,
   color,
+  refValue = 0,
 }) {
   const tk = useThemeTokens();
 
@@ -81,11 +82,11 @@ export default function BandTrendChart({
         },
       }),
       annotations: {
-        yaxis: [refLineY(tk, 0, refLabel, tk.lineStrong)],
+        yaxis: refValue != null ? [refLineY(tk, refValue, refLabel, tk.lineStrong)] : [],
         xaxis: xAnno,
       },
     };
-  }, [data, unit, refLabel, meanLabel, currentYear, color, tk]);
+  }, [data, unit, refLabel, meanLabel, currentYear, color, refValue, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

@@ -581,7 +581,35 @@
     "points": "événements",
     "demo_badge": "démo",
     "lead": "Les anomalies finissent toujours par avoir un visage : des personnes affectées et des pertes économiques, concentrées sur quelques années de catastrophe.",
-    "coming": "Données récupérées ✓"
+    "coming": "Données récupérées ✓",
+    "annual_title": "Les années qui ont frappé fort",
+    "annual_sub": "total par année",
+    "dual_title": "Coût humain × coût économique",
+    "dual_sub": "personnes affectées (gauche) et pertes (droite), par année",
+    "pareto_title": "Une poignée encaisse l'essentiel",
+    "pareto_sub": "cumul par territoire + part cumulée",
+    "pareto_cumul": "cumul %",
+    "treemap_title": "La part de chacun",
+    "treemap_sub": "cumul par territoire",
+    "heat_title": "Quand et où ça a frappé",
+    "heat_sub": "intensité par territoire et par année",
+    "story": {
+      "timeline": "Chaque cercle est une catastrophe : peu d'événements, mais certains démesurés. Le rythme n'a rien d'une courbe régulière.",
+      "annual": "En agrégeant par année, les pics ressortent : quelques années concentrent l'essentiel des dégâts.",
+      "dual": "Le coût humain et le coût économique montent souvent ensemble — deux visages d'un même choc.",
+      "rank": "Sur toute la période, quelques territoires cumulent un tribut bien plus lourd que les autres.",
+      "pareto": "La courbe cumulée grimpe vite : une poignée de territoires fait l'essentiel du total.",
+      "treemap": "La surface dit la part : d'un coup d'œil, on voit qui encaisse le plus.",
+      "heat": "La grille révèle les chocs ponctuels — quand et où ils ont frappé, par-delà les cumuls.",
+      "map": "Sur la carte, l'empreinte cumulée se lit en relief : échelle logarithmique pour ne pas écraser les petits."
+    },
+    "outro": {
+      "kicker": "Fin de l'acte 04",
+      "title": "Le choc a un visage",
+      "text": "Derrière chaque pic, des vies bouleversées et des économies fragilisées. Mais le Pacifique ne subit pas seulement : il riposte.",
+      "next": "Acte 05 — L'élan",
+      "home": "Accueil"
+    }
   },
   "act5": {
     "value_label": "Part renouvelable",
@@ -630,7 +658,34 @@
     "coverage": "territoires",
     "period": "période",
     "lead": "Le Pacifique ne subit pas en silence. Face à la montée des eaux et au coût humain, une trajectoire s'affirme : la part des énergies renouvelables grimpe, territoire par territoire.",
-    "coming": "Données récupérées ✓"
+    "coming": "Données récupérées ✓",
+    "gauge_title": "L'élan en un chiffre",
+    "gauge_sub": "part renouvelable moyenne des territoires, à l'année courante",
+    "gauge_label": "part renouvelable",
+    "change_title": "Qui a le plus progressé",
+    "change_sub": "écart de part entre la première et la dernière année",
+    "dumb_title": "Le chemin parcouru",
+    "dumb_sub": "première → dernière année observée, par territoire",
+    "heat_title": "La montée en puissance, année par année",
+    "heat_sub": "part renouvelable — plus c'est vert, plus c'est élevé",
+    "story": {
+      "trend": "La moyenne régionale grimpe ; la bande montre l'écart entre les pionniers et les retardataires.",
+      "gauge": "En un chiffre, l'élan régional du renouvelable — faites glisser les années pour le voir monter.",
+      "map": "Sur la carte, le vert gagne du terrain : certains territoires tirent déjà l'essentiel de leur énergie du renouvelable.",
+      "rank": "À l'année choisie, le podium des champions — souvent de petits territoires à fort potentiel hydro/solaire.",
+      "change": "Tous n'avancent pas au même rythme : quelques territoires bondissent, d'autres stagnent.",
+      "dumb": "Le chemin parcouru d'une extrémité à l'autre de la période : la plupart des traits s'allongent vers le haut.",
+      "heat": "Le vert s'intensifie de gauche à droite : la transition se lit d'un coup d'œil.",
+      "evo": "Les plus fortes progressions, en points de pourcentage gagnés.",
+      "table": "Toutes les valeurs, triables, pour explorer territoire par territoire."
+    },
+    "outro": {
+      "kicker": "Fin de l'acte 05",
+      "title": "L'élan est réel",
+      "text": "Le renouvelable progresse, mais la pression sur les ressources demeure. Et la terre nourricière, dans tout ça ?",
+      "next": "Acte 06 — L'assiette",
+      "home": "Accueil"
+    }
   },
   "act6": {
     "tag": "Acte 06 — L'assiette",
@@ -725,7 +780,25 @@
     "animal_rank_sub": "Rendement médian par animal sur les territoires affichés (kg/animal)",
     "explorer_animal_title": "Explorer par animal",
     "explorer_animal_lead": "Choisis un animal pour voir son rendement par territoire et le dernier classement.",
-    "explorer_animal_pick": "Choisir un animal"
+    "explorer_animal_pick": "Choisir un animal",
+    "box_title": "L'inégalité des rendements, année par année",
+    "box_sub": "dispersion entre territoires (boîte de Tukey, échelle log)",
+    "scatter_title": "Diversité cultivée et rendement",
+    "scatter_sub": "chaque point = un territoire (année courante)",
+    "scatter_x": "nombre de cultures",
+    "cropmap_title": "Où chaque culture réussit le mieux",
+    "cropmap_sub": "rendement par culture × territoire, normalisé par culture",
+    "croptree_title": "Le poids des cultures",
+    "croptree_sub": "rendement médian par culture",
+    "radar_title": "Profil agricole des sous-régions",
+    "radar_sub": "rendement relatif par culture (100 = meilleure sous-région)",
+    "outro": {
+      "kicker": "Fin de l'acte 06",
+      "title": "Nourrir sous contrainte",
+      "text": "Rendements inégaux, fortes variations, dépendance aux importations : la terre nourricière reste vulnérable. Reste le vivant, premier témoin du dérèglement.",
+      "next": "Acte 07 — Le vivant",
+      "home": "Accueil"
+    }
   },
   "act7": {
     "tag": "Acte 07 — Le vivant",

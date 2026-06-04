@@ -14,6 +14,7 @@
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
   useCallback,
   lazy,
@@ -23,8 +24,13 @@ import { Link } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchAgriProduction } from "../../services/agriApi";
-import ReadingGuide from "../../components/ReadingGuide/ReadingGuide";
-import ExpandableCard from "../../components/ExpandableCard/ExpandableCard";
+import useThemeTokens from "../../hooks/UseThemeTokens";
+import VizPanel from "../../components/charts/VizPanel";
+import BoxplotChart from "../../components/charts/BoxplotChart";
+import ScatterChart from "../../components/charts/ScatterChart";
+import TreemapChart from "../../components/charts/TreemapChart";
+import CropHeatmap from "../../components/charts/CropHeatmap";
+import RadarProfileChart from "../../components/charts/RadarProfileChart";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
@@ -128,9 +134,69 @@ function pointsAt(agg, year, lang) {
     .filter(Boolean);
 }
 
+function Pills({ label, options, value, onChange }) {
+  return (
+    <div className="act1f" role="group" aria-label={label}>
+      {label ? <span className="act1f__lbl">{label}</span> : null}
+      <div className="act1f__pills">
+        {options.map((o) => (
+          <button
+            key={String(o.v)}
+            type="button"
+            className={`act1f__pill ${value === o.v ? "is-active" : ""}`}
+            onClick={() => onChange(o.v)}
+            aria-pressed={value === o.v}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function YearSlider({ label, years, index, onChange }) {
+  if (!years.length) return null;
+  return (
+    <div className="act1f act1f--year">
+      <span className="act1f__lbl">
+        {label} <strong>{years[index] ?? ""}</strong>
+      </span>
+      <input
+        className="act1f__range"
+        type="range"
+        min={0}
+        max={years.length - 1}
+        value={index ?? years.length - 1}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
+      />
+    </div>
+  );
+}
+
+function Selecter({ label, value, options, onChange }) {
+  return (
+    <label className="act1f act1f--select">
+      <span className="act1f__lbl">{label}</span>
+      <select
+        className="act1f__select"
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((o) => (
+          <option key={String(o.v)} value={o.v}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
-
+  const tk = useThemeTokens();
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
@@ -138,6 +204,10 @@ export default function Act6Agriculture() {
   const [rankScope, setRankScope] = useState("all");
   const [cmpA, setCmpA] = useState(null);
   const [cmpB, setCmpB] = useState(null);
+  const rootRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const [slideCount, setSlideCount] = useState(0);
+  const activeRef = useRef(0);
 
   useEffect(() => {
     let alive = true;
@@ -326,6 +396,128 @@ export default function Act6Agriculture() {
     [volatilityRows],
   );
 
+  // ---------- Données des panneaux ApexCharts ajoutés ----------
+  const REGION_COLOR = useMemo(
+    () => ({ melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive }),
+    [tk],
+  );
+  const REGIONS3 = ["melanesia", "polynesia", "micronesia"];
+
+  // Scatter : diversité (nb de cultures) × rendement médian, par sous-région.
+  const scatterGroups = useMemo(() => {
+    if (!diversityRows.length || !points.length) return [];
+    const divBy = {};
+    diversityRows.forEach((r) => {
+      divBy[r.area] = r.value;
+    });
+    const yieldBy = {};
+    points.forEach((p) => {
+      yieldBy[p.area] = p.value;
+    });
+    return REGIONS3.map((r) => {
+      const pts = Object.keys(yieldBy)
+        .filter((a) => REGION_OF[a] === r && divBy[a] != null)
+        .map((a) => ({ x: divBy[a], y: yieldBy[a], name: pictName(a, lang) }));
+      return { name: t(`act1.filter.${r}`), color: REGION_COLOR[r], points: pts };
+    }).filter((g) => g.points.length);
+  }, [diversityRows, points, lang, t, REGION_COLOR]);
+  const scatterMedianX = useMemo(
+    () => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
+    [scatterGroups],
+  );
+
+  // Treemap : rendement médian par culture (territoires visibles, année courante).
+  const cropMedians = useMemo(() => {
+    if (!agri.data || currentYear == null) return [];
+    return (agri.data.commodities || [])
+      .filter((c) => c.kind === "crop")
+      .map((c) => {
+        const d = agri.data.byCommodity[c.code];
+        if (!d) return null;
+        const vals = d.areas
+          .filter((a) => isPict(a) && areaVisible(a))
+          .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
+          .filter((p) => p && Number.isFinite(p.value))
+          .map((p) => p.value);
+        if (!vals.length) return null;
+        return { name: c.label, value: median(vals) };
+      })
+      .filter(Boolean);
+  }, [agri.data, currentYear, areaVisible]);
+
+  // Heatmap culture × territoire (année courante), normalisée par culture.
+  const cropHeatRows = useMemo(() => {
+    if (!agri.data || currentYear == null) return [];
+    const areas = points.map((p) => p.area); // territoires visibles avec donnée
+    if (!areas.length) return [];
+    return (agri.data.commodities || [])
+      .filter((c) => c.kind === "crop")
+      .map((c) => {
+        const d = agri.data.byCommodity[c.code];
+        if (!d) return null;
+        const raws = areas.map((a) => {
+          const p = (d.byArea[a] || []).find((q) => q.year === currentYear);
+          return p && Number.isFinite(p.value) ? p.value : null;
+        });
+        const present = raws.filter((v) => v != null);
+        if (present.length < 3) return null; // ligne trop creuse
+        const mx = Math.max(...present);
+        const cells = areas.map((a, i) => ({
+          x: pictName(a, lang),
+          y: raws[i] == null ? null : Math.round((raws[i] / (mx || 1)) * 100),
+          raw: raws[i],
+        }));
+        return { name: c.label, cells, coverage: present.length };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.coverage - a.coverage)
+      .slice(0, 12);
+  }, [agri.data, currentYear, points, lang]);
+
+  // Radar régional : profil multi-cultures par sous-région (normalisé par culture).
+  const cropRadar = useMemo(() => {
+    if (!agri.data || currentYear == null) return { categories: [], series: [] };
+    const crops = (agri.data.commodities || []).filter((c) => c.kind === "crop");
+    const regionMedian = (code, region) => {
+      const d = agri.data.byCommodity[code];
+      if (!d) return null;
+      const vals = d.areas
+        .filter((a) => isPict(a) && REGION_OF[a] === region && areaVisible(a))
+        .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
+        .filter((p) => p && Number.isFinite(p.value))
+        .map((p) => p.value);
+      return vals.length ? median(vals) : null;
+    };
+    // Cultures les mieux couvertes (présentes dans le plus de régions).
+    const scored = crops
+      .map((c) => {
+        const byReg = {};
+        let cover = 0;
+        REGIONS3.forEach((r) => {
+          const m = regionMedian(c.code, r);
+          if (m != null) {
+            byReg[r] = m;
+            cover += 1;
+          }
+        });
+        return { c, byReg, cover };
+      })
+      .filter((s) => s.cover >= 2)
+      .sort((a, b) => b.cover - a.cover)
+      .slice(0, 7);
+    if (scored.length < 3) return { categories: [], series: [] };
+    const categories = scored.map((s) => s.c.label);
+    const series = REGIONS3.map((r) => ({
+      name: t(`act1.filter.${r}`),
+      data: scored.map((s) => {
+        const mx = Math.max(...Object.values(s.byReg));
+        const v = s.byReg[r];
+        return v == null ? 0 : Math.round((v / (mx || 1)) * 100);
+      }),
+    })).filter((s) => s.data.some((v) => v > 0));
+    return { categories, series };
+  }, [agri.data, currentYear, areaVisible, t]);
+
   const lsAgg = useMemo(
     () => (agri.data ? buildAggregate(agri.data, "livestock") : null),
     [agri.data],
@@ -354,6 +546,10 @@ export default function Act6Agriculture() {
   }, [agri.data, lsAgg, areaVisible]);
 
   const unit = t("act6.unit");
+  const fmtKg = useCallback(
+    (v) => Math.round(Number(v) || 0).toLocaleString(lang === "en" ? "en-US" : "fr-FR"),
+    [lang],
+  );
   const tableLabels = useMemo(
     () => ({
       col_rank: t("export.col_rank"),
@@ -379,29 +575,101 @@ export default function Act6Agriculture() {
     setPlaying((p) => !p);
   }, [years.length]);
 
-  const xc = { expandLabel: t("act2.expand"), closeLabel: t("act2.close") };
+  const scrubYear = useCallback((i) => {
+    setPlaying(false);
+    setYearIdx(i);
+  }, []);
+
+  const goTo = useCallback((i) => {
+    const root = rootRef.current;
+    if (!root) return;
+    const nodes = Array.from(root.querySelectorAll(".act1slide"));
+    if (!nodes.length) return;
+    const idx = Math.max(0, Math.min(nodes.length - 1, i));
+    const top = nodes[idx].getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (agri.status !== "ready") return undefined;
+    const root = rootRef.current;
+    if (!root) return undefined;
+    let raf = 0;
+    const compute = () => {
+      const nodes = Array.from(root.querySelectorAll(".act1slide"));
+      setSlideCount(nodes.length);
+      const mid = window.innerHeight * 0.4;
+      let idx = 0;
+      for (let i = 0; i < nodes.length; i += 1) {
+        const r = nodes[i].getBoundingClientRect();
+        if (r.top <= mid) idx = i;
+        else break;
+      }
+      setActive(idx);
+      activeRef.current = idx;
+    };
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(compute);
+    };
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [agri.status, region, currentYear, lang]);
+
+  useEffect(() => {
+    if (agri.status !== "ready") return undefined;
+    const onKey = (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        goTo(activeRef.current + 1);
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        goTo(activeRef.current - 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [agri.status, goTo]);
+
+  // --- Fragments de filtres réutilisables ---
+  const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
+  const scopeOpts = [{ v: "all", label: t("act6.crop_rank_scope_all") }].concat(
+    rankCountries.map((c) => ({ v: c.code, label: c.name })),
+  );
+  const yearOpts = years.map((y) => ({ v: String(y), label: String(y) }));
+
+  const regionPills = (
+    <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+  );
+  const regionAndYear = (
+    <>
+      {regionPills}
+      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+    </>
+  );
 
   return (
-    <main className="act6">
+    <main className="act1 act6" ref={rootRef}>
       <div className="container">
-        <header className="act6__head">
+        <header className="act1__head act1slide act1slide--intro">
           <p className="eyebrow">{t("act6.tag")}</p>
-          <h1 className="act6__title">{t("act6.title")}</h1>
-          <p className="act6__lead">{t("act6.lead")}</p>
+          <h1 className="act1__title">{t("act6.title")}</h1>
+          <p className="act1__lead">{t("act6.lead")}</p>
         </header>
-
-        <ReadingGuide
-          title={t("act6.guide.title")}
-          intro={t("act6.guide.intro")}
-          steps={t("act6.guide.steps")}
-          takeaway={t("act6.guide.takeaway")}
-        />
 
         {agri.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
         {agri.status === "empty" && (
-          <div className="act6__state act6__state--err">
+          <div className="act1__state act1__state--err">
             <span>{t("act6.unavailable")}</span>
-            <button className="act6__btn" onClick={retry}>
+            <button className="act1__retry" onClick={retry}>
               {t("act1.retry")}
             </button>
           </div>
@@ -409,183 +677,104 @@ export default function Act6Agriculture() {
 
         {agri.status === "ready" && currentYear != null && (
           <>
-            {/* ---------- Sous-acte 1 : la terre (agrégat médian calculé) ---------- */}
-            <section className="act6__sub">
-              <div className="act6__sub-head">
-                <h2 className="act6__sub-title">{t("act6.sub1_title")}</h2>
-                <p className="act6__sub-sub">{t("act6.sub1_sub")}</p>
+            {/* ---------- Sous-acte 1 : la terre ---------- */}
+            <section className="act1slide act1text">
+              <div className="act1text__inner">
+                <h2 className="act1text__title">{t("act6.sub1_title")}</h2>
+                <p className="act1text__lead">{t("act6.sub1_sub")}</p>
+                <span className="act1text__hint" aria-hidden="true">↓</span>
               </div>
+            </section>
 
-              <div className="act6__bar">
-                <div className="act6__filter" role="group" aria-label={t("act1.filter.title")}>
-                  <span className="act6__filter-lbl">{t("act1.filter.title")}</span>
-                  <div className="act6__pills">
-                    {REGION_KEYS.map((k) => (
-                      <button
-                        key={k}
-                        className={`act6__pill ${region === k ? "is-active" : ""}`}
-                        onClick={() => setRegion(k)}
-                        aria-pressed={region === k}
-                      >
-                        {t(`act1.filter.${k}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <span className="act6__source">{t("act1.src_live")}</span>
-              </div>
+            <VizPanel title={t("act6.trend_title")} subtitle={t("act6.trend_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <SmallMultiples series={vSeries} years={years} unit={unit} currentYear={currentYear} labels={{ last: t("act6.smallmult_last") }} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.trend_title")} sub={t("act6.trend_sub")} {...xc}>
-                <SmallMultiples
-                  series={vSeries}
-                  years={years}
-                  unit={unit}
-                  currentYear={currentYear}
-                  labels={{ last: t("act6.smallmult_last") }}
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.heatmap_title")} subtitle={t("act6.heatmap_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
+              <EmissionsHeatmap
+                series={vSeries}
+                years={years}
+                unit={unit}
+                scale="sequential"
+                labels={{
+                  low: t("act6.heatmap_low"),
+                  high: t("act6.heatmap_high"),
+                  empty: t("act1.change.empty"),
+                  mode_row: t("act6.heatmap_mode_row"),
+                  mode_abs: t("act6.heatmap_mode_abs"),
+                }}
+              />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.heatmap_title")} sub={t("act6.heatmap_sub")} {...xc}>
-                <EmissionsHeatmap
-                  series={vSeries}
-                  years={years}
-                  unit={unit}
-                  scale="sequential"
-                  labels={{
-                    low: t("act6.heatmap_low"),
-                    high: t("act6.heatmap_high"),
-                    empty: t("act1.change.empty"),
-                    mode_row: t("act6.heatmap_mode_row"),
-                    mode_abs: t("act6.heatmap_mode_abs"),
-                  }}
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.change_title")} subtitle={t("act6.change_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
+              <ChangeBars rows={changeRows} unit={unit} labels={{ up: t("act6.change_up"), down: t("act6.change_down"), empty: t("act1.change.empty") }} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.change_title")} sub={t("act6.change_sub")} {...xc}>
-                <ChangeBars
-                  rows={changeRows}
-                  unit={unit}
-                  labels={{
-                    up: t("act6.change_up"),
-                    down: t("act6.change_down"),
-                    empty: t("act1.change.empty"),
-                  }}
-                />
-              </ExpandableCard>
+            <VizPanel
+              title={t("act6.crop_rank_title")}
+              subtitle={`${t("act6.crop_rank_sub")} · ${currentYear}`}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  {regionAndYear}
+                  <Selecter label={t("act6.crop_rank_scope")} value={rankScope} options={scopeOpts} onChange={setRankScope} />
+                </>
+              }
+            >
+              <CropRanking rows={cropRankRows} unit={unit} max={12} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.crop_rank_title")} sub={`${t("act6.crop_rank_sub")} · ${currentYear}`} {...xc}>
-                <CropRanking
-                  rows={cropRankRows}
-                  unit={unit}
-                  max={12}
-                  controls={
-                    <>
-                      <span className="croprank__select-lbl">{t("act6.crop_rank_scope")}</span>
-                      <select
-                        className="croprank__select"
-                        value={rankScope}
-                        onChange={(e) => setRankScope(e.target.value)}
-                        aria-label={t("act6.crop_rank_scope")}
-                      >
-                        <option value="all">{t("act6.crop_rank_scope_all")}</option>
-                        {rankCountries.map((c) => (
-                          <option key={c.code} value={c.code}>{c.name}</option>
-                        ))}
-                      </select>
-                    </>
-                  }
-                />
-              </ExpandableCard>
+            <VizPanel
+              title={t("act6.compare_title")}
+              subtitle={t("act6.compare_sub")}
+              filtersLabel={t("act1.f.toggle")}
+              filters={
+                <>
+                  {regionPills}
+                  <Selecter label={t("act6.compare_from")} value={String(cmpA ?? "")} options={yearOpts} onChange={(v) => setCmpA(Number(v))} />
+                  <Selecter label={t("act6.compare_to")} value={String(cmpB ?? "")} options={yearOpts} onChange={(v) => setCmpB(Number(v))} />
+                </>
+              }
+            >
+              <DumbbellChart rows={dumbbellRows} yearA={cmpA} yearB={cmpB} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.compare_title")} sub={t("act6.compare_sub")} {...xc}>
-                <DumbbellChart
-                  rows={dumbbellRows}
-                  yearA={cmpA}
-                  yearB={cmpB}
-                  unit={unit}
-                  labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }}
-                  controls={
-                    <>
-                      <span className="dumbbell__select-lbl">{t("act6.compare_from")}</span>
-                      <select
-                        className="dumbbell__select"
-                        value={cmpA ?? ""}
-                        onChange={(e) => setCmpA(Number(e.target.value))}
-                        aria-label={t("act6.compare_from")}
-                      >
-                        {years.map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                      <span className="dumbbell__select-lbl">{t("act6.compare_to")}</span>
-                      <select
-                        className="dumbbell__select"
-                        value={cmpB ?? ""}
-                        onChange={(e) => setCmpB(Number(e.target.value))}
-                        aria-label={t("act6.compare_to")}
-                      >
-                        {years.map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                    </>
-                  }
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.regional_title")} subtitle={t("act6.regional_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <TrendLines series={regionalSeries} years={years} currentYear={currentYear} unit={unit} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.regional_title")} sub={t("act6.regional_sub")} {...xc}>
-                <TrendLines
-                  series={regionalSeries}
-                  years={years}
-                  currentYear={currentYear}
-                  unit={unit}
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.diversity_title")} subtitle={t("act6.diversity_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
+              <RankBars data={diversityRows} unit={t("act6.diversity_unit")} worldAvg={diversityMedian} refLabel={t("act6.median_ref")} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.diversity_title")} sub={t("act6.diversity_sub")} {...xc}>
-                <RankBars
-                  data={diversityRows}
-                  unit={t("act6.diversity_unit")}
-                  worldAvg={diversityMedian}
-                  refLabel={t("act6.median_ref")}
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.volatility_title")} subtitle={t("act6.volatility_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
+              <RankBars data={volatilityRows} unit="%" worldAvg={volatilityMedian} refLabel={t("act6.median_ref")} />
+            </VizPanel>
 
-              <ExpandableCard title={t("act6.volatility_title")} sub={t("act6.volatility_sub")} {...xc}>
-                <RankBars
-                  data={volatilityRows}
-                  unit="%"
-                  worldAvg={volatilityMedian}
-                  refLabel={t("act6.median_ref")}
-                />
-              </ExpandableCard>
+            <VizPanel title={t("act6.box_title")} subtitle={t("act6.box_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
+              <BoxplotChart series={vSeries} years={years} unit={unit} scale="log" />
+            </VizPanel>
 
-              <div className="act6__timeline">
-                <button className="act6__btn act6__play" onClick={togglePlay}>
-                  {playing ? t("act1.pause") : t("act1.play")}
-                </button>
-                <input
-                  className="act6__slider"
-                  type="range"
-                  min={0}
-                  max={years.length - 1}
-                  value={yearIdx ?? 0}
-                  onChange={(e) => {
-                    setPlaying(false);
-                    setYearIdx(Number(e.target.value));
-                  }}
-                  aria-label={t("act1.year")}
-                />
-                <span className="act6__year">{currentYear}</span>
-              </div>
+            <VizPanel title={t("act6.scatter_title")} subtitle={`${t("act6.scatter_sub")}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <ScatterChart groups={scatterGroups} unit={unit} medianX={scatterMedianX} xName={t("act6.scatter_x")} yName={unit} />
+            </VizPanel>
 
-              <div className="act6__map-head">
-                <h3 className="act6__map-title">{t("act6.map_title")}</h3>
-                <span className="act6__sub-sub">
-                  {t("act6.map_sub")} · {currentYear}
-                </span>
-              </div>
-              <ErrorBoundary fallback={<div className="act6__state act6__state--err">{t("scene.error")}</div>}>
+            <VizPanel title={t("act6.cropmap_title")} subtitle={`${t("act6.cropmap_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <CropHeatmap rows={cropHeatRows} unit={unit} format={fmtKg} />
+            </VizPanel>
+
+            <VizPanel title={t("act6.croptree_title")} subtitle={`${t("act6.croptree_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <TreemapChart rows={cropMedians} unit={unit} format={fmtKg} />
+            </VizPanel>
+
+            {cropRadar.categories.length >= 3 && (
+              <VizPanel title={t("act6.radar_title")} subtitle={t("act6.radar_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+                <RadarProfileChart categories={cropRadar.categories} series={cropRadar.series} unit="%" max={100} />
+              </VizPanel>
+            )}
+
+            <VizPanel title={t("act6.map_title")} subtitle={`${t("act6.map_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
+              <ErrorBoundary fallback={<div className="act1__state act1__state--err">{t("scene.error")}</div>}>
                 <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <OceanMap
                     data={points}
@@ -596,47 +785,47 @@ export default function Act6Agriculture() {
                     midLabel={t("act6.map_mid")}
                     highLabel={t("act6.map_high")}
                     noTokenMsg={t("act1.map_no_token")}
+                    years={years}
+                    yearIndex={yearIdx}
+                    playing={playing}
+                    onTogglePlay={togglePlay}
+                    onScrub={scrubYear}
                   />
                 </Suspense>
               </ErrorBoundary>
+            </VizPanel>
 
-              <div className="act6__map-head">
-                <h3 className="act6__map-title">{t("act6.table_title")}</h3>
-                <span className="act6__sub-sub">
-                  {t("act6.table_sub")} · {currentYear}
-                </span>
-              </div>
+            <VizPanel title={t("act6.table_title")} subtitle={`${t("act6.table_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
               <DataTable rows={points} labels={tableLabels} unit={unit} refValue={refMedian} />
-            </section>
+            </VizPanel>
 
-            {/* ---------- Explorateur par culture (même donnée) ---------- */}
-            <section className="act6__sub">
-              <div className="act6__sub-head">
-                <h2 className="act6__sub-title">{t("act6.explorer_title")}</h2>
-                <p className="act6__sub-sub">{t("act6.explorer_lead")}</p>
+            {/* ---------- Explorateur par culture (hauteur naturelle) ---------- */}
+            <section className="act1slide act6explore">
+              <div className="act6explore__head">
+                <h2 className="act6explore__title">{t("act6.explorer_title")}</h2>
+                <p className="act6explore__lead">{t("act6.explorer_lead")}</p>
               </div>
-              <CropExplorer data={agri.data} />
+              <div className="act6explore__body">
+                <CropExplorer data={agri.data} />
+              </div>
             </section>
 
-            {/* ---------- Sous-acte 2 : le bétail (même donnée désagrégée) ---------- */}
+            {/* ---------- Sous-acte 2 : le bétail ---------- */}
             {lsSeries.length > 0 && (
-              <section className="act6__sub">
-                <div className="act6__sub-head">
-                  <h2 className="act6__sub-title">{t("act6.sub2_title")}</h2>
-                  <p className="act6__sub-sub">{t("act6.sub2_sub")}</p>
-                </div>
+              <>
+                <section className="act1slide act1text">
+                  <div className="act1text__inner">
+                    <h2 className="act1text__title">{t("act6.sub2_title")}</h2>
+                    <p className="act1text__lead">{t("act6.sub2_sub")}</p>
+                    <span className="act1text__hint" aria-hidden="true">↓</span>
+                  </div>
+                </section>
 
-                <ExpandableCard title={t("act6.ls_trend_title")} sub={t("act6.trend_sub")} {...xc}>
-                  <SmallMultiples
-                    series={lsSeries}
-                    years={lsAgg.years}
-                    unit={lsUnit}
-                    currentYear={lsAgg.lastYear}
-                    labels={{ last: t("act6.smallmult_last") }}
-                  />
-                </ExpandableCard>
+                <VizPanel title={t("act6.ls_trend_title")} subtitle={t("act6.trend_sub")}>
+                  <SmallMultiples series={lsSeries} years={lsAgg.years} unit={lsUnit} currentYear={lsAgg.lastYear} labels={{ last: t("act6.smallmult_last") }} />
+                </VizPanel>
 
-                <ExpandableCard title={t("act6.ls_heatmap_title")} sub={t("act6.heatmap_sub")} {...xc}>
+                <VizPanel title={t("act6.ls_heatmap_title")} subtitle={t("act6.heatmap_sub")}>
                   <EmissionsHeatmap
                     series={lsSeries}
                     years={lsAgg.years}
@@ -650,38 +839,68 @@ export default function Act6Agriculture() {
                       mode_abs: t("act6.heatmap_mode_abs"),
                     }}
                   />
-                </ExpandableCard>
+                </VizPanel>
 
-                <ExpandableCard title={t("act6.animal_rank_title")} sub={`${t("act6.animal_rank_sub")} · ${lsAgg.lastYear}`} {...xc}>
+                <VizPanel title={t("act6.animal_rank_title")} subtitle={`${t("act6.animal_rank_sub")} · ${lsAgg.lastYear}`}>
                   <CropRanking rows={lsRankRows} unit={lsUnit} max={10} />
-                </ExpandableCard>
+                </VizPanel>
 
-                <div className="act6__sub-head act6__sub-head--explorer">
-                  <h3 className="act6__sub-title">{t("act6.explorer_animal_title")}</h3>
-                  <p className="act6__sub-sub">{t("act6.explorer_animal_lead")}</p>
-                </div>
-                <CropExplorer
-                  data={agri.data}
-                  kind="livestock"
-                  labels={{ pick: t("act6.explorer_animal_pick") }}
-                />
-              </section>
+                <section className="act1slide act6explore">
+                  <div className="act6explore__head">
+                    <h2 className="act6explore__title">{t("act6.explorer_animal_title")}</h2>
+                    <p className="act6explore__lead">{t("act6.explorer_animal_lead")}</p>
+                  </div>
+                  <div className="act6explore__body">
+                    <CropExplorer data={agri.data} kind="livestock" labels={{ pick: t("act6.explorer_animal_pick") }} />
+                  </div>
+                </section>
+              </>
             )}
 
-            {/* ---------- Avertissement de rigueur ---------- */}
-            <aside className="act6__caveat">
-              <h3 className="act6__caveat-title">{t("act6.caveat_title")}</h3>
-              <p className="act6__caveat-body">{t("act6.caveat_body")}</p>
-            </aside>
+            {/* ---------- Avertissement ---------- */}
+            <section className="act1slide act1text">
+              <div className="act1text__inner">
+                <h2 className="act1text__title">{t("act6.caveat_title")}</h2>
+                <p className="act1text__story">{t("act6.caveat_body")}</p>
+              </div>
+            </section>
 
-            <p className="act6__next">{t("act6.next")}</p>
+            <section className="act1slide act1outro">
+              <div className="act1outro__inner">
+                <p className="eyebrow">{t("act6.outro.kicker")}</p>
+                <h2 className="act1outro__title">{t("act6.outro.title")}</h2>
+                <p className="act1outro__text">{t("act6.outro.text")}</p>
+                <div className="act1outro__actions">
+                  <Link to="/vivant" className="act1outro__btn act1outro__btn--primary">
+                    {t("act6.outro.next")} <span aria-hidden="true">→</span>
+                  </Link>
+                  <Link to="/" className="act1outro__btn">
+                    {t("act6.outro.home")}
+                  </Link>
+                </div>
+              </div>
+            </section>
           </>
         )}
 
-        <Link to="/" className="act6__back">
+        <Link to="/" className="act1__back">
           ← {t("act1.back")}
         </Link>
       </div>
+
+      {agri.status === "ready" && slideCount > 0 && (
+        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
+          <button type="button" className="act1nav__btn" onClick={() => goTo(active - 1)} disabled={active <= 0} aria-label={t("act1.nav.prev")}>
+            ↑
+          </button>
+          <span className="act1nav__count">
+            {active + 1}/{slideCount}
+          </span>
+          <button type="button" className="act1nav__btn" onClick={() => goTo(active + 1)} disabled={active >= slideCount - 1} aria-label={t("act1.nav.next")}>
+            ↓
+          </button>
+        </div>
+      )}
     </main>
   );
 }

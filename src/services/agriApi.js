@@ -130,7 +130,7 @@ function group(rows) {
       // Mots-clés produit = secours, uniquement non ambigus (on évite « egg »
       // qui matcherait « eggplant », ou « meat » qui matcherait « coconut meat »).
       const ANIMAL_COM =
-        /\bcattle\b|\bcow\b|buffalo|\bgoat\b|\bsheep\b|\bpig\b|swine|poultry|chicken|\bmilk\b|honey|\bwool\b|\bbeef\b|\bpork\b|mutton|bovin|porc|volaille|mouton|chevre|b(o|\u0153)uf|viande|lait|miel|laine|cheptel/;
+        /\bcattle\b|\bcow\b|buffalo|\bgoat\b|\bsheep\b|\bpig\b|swine|poultry|chicken|\bmilk\b|honey\b|\bwool\b|\bbeef\b|\bpork\b|mutton|bovin|porc|volaille|mouton|chevre|b(o|\u0153)uf|viande|lait\b|miel|laine|cheptel/;
       const kind = CROP_UNIT.test(u)
         ? "crop"
         : ANIMAL_UNIT.test(u) || ANIMAL_COM.test(cl)

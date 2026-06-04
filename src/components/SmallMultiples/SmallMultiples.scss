@@ -1,67 +1,91 @@
 // src/components/SmallMultiples/SmallMultiples.scss
-@use "../../index.scss" as *;
+// ============================================================
+// Petits multiples : une mini-carte (sparkline) par territoire.
+// Les cartes gardent une hauteur NATURELLE même dans un écran plein
+// (la grille ne s'étire pas verticalement) et se centrent proprement ;
+// si elles débordent, défilement interne plutôt que rognage.
+// Couleurs via tokens (var(--c-*)).
+// ============================================================
 
 .smallmult {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: var(--sp-3, 0.75rem);
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  gap: var(--sp-3);
+
+  // Ne PAS étirer les lignes pour remplir un conteneur haut : chaque carte
+  // reste à la hauteur de son contenu, le bloc se centre (et retombe en
+  // haut sans rogner si ça déborde grâce à "safe").
+  align-content: safe center;
+  grid-auto-rows: max-content;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: var(--sp-1);
 
   &__cell {
-    padding: var(--sp-3, 0.75rem);
-    border: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
-    border-radius: var(--r-md, 10px);
-    background: var(--c-surface, rgba(255, 255, 255, 0.03));
-    transition: border-color var(--t-fast, 0.15s) var(--ease-out, ease),
-      transform var(--t-fast, 0.15s) var(--ease-out, ease);
+    --tone: var(--c-accent);
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-4);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    transition:
+      border-color var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out),
+      box-shadow var(--t-fast) var(--ease-out);
 
     &:hover {
-      border-color: var(--c-line-strong, rgba(255, 255, 255, 0.25));
+      border-color: var(--c-line-strong);
       transform: translateY(-2px);
+      box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.55);
     }
 
-    --tone: var(--c-accent, #46d3e6);
-    &.is-down { --tone: var(--c-warm, #ff7a59); }
+    &.is-down {
+      --tone: var(--c-warm);
+    }
   }
 
   &__head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: var(--sp-2, 0.5rem);
-    margin-bottom: var(--sp-2, 0.5rem);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
   }
 
   &__name {
-    font-size: var(--fs-sm, 0.8125rem);
-    font-weight: var(--fw-medium, 600);
-    color: var(--c-text, #fff);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semi);
+    color: var(--c-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   &__val {
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
-    font-size: var(--fs-sm, 0.8125rem);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-med);
     color: var(--tone);
     white-space: nowrap;
   }
 
   &__unit {
-    color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
-    font-size: var(--fs-xs, 0.6875rem);
+    color: var(--c-text-mute);
+    font-size: var(--fs-xs);
   }
 
   &__spark {
     width: 100%;
-    height: 38px;
+    height: 52px;
     display: block;
   }
 
   &__line {
     fill: none;
     stroke: var(--tone);
-    stroke-width: 1.5;
+    stroke-width: 1.6;
     vector-effect: non-scaling-stroke;
     stroke-linejoin: round;
     stroke-linecap: round;
@@ -69,18 +93,21 @@
 
   &__area {
     fill: var(--tone);
-    opacity: 0.1;
+    opacity: 0.12;
   }
 
   &__dot {
     fill: var(--tone);
+    stroke: var(--c-surface);
+    stroke-width: 1.5;
   }
 
   &__foot {
     display: block;
-    margin-top: var(--sp-1, 0.25rem);
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
-    font-size: var(--fs-xs, 0.6875rem);
-    color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+    margin-top: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.04em;
+    color: var(--c-text-mute);
   }
 }

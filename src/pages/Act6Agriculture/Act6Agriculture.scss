@@ -1,8 +1,3 @@
-// src/pages/Act6Agriculture/Act6Agriculture.scss
-// ============================================================
-// Acte 06. Tokens uniquement → light/dark.
-// ============================================================
-
 .act6 {
   padding-block: var(--sp-16) var(--sp-24);
   min-height: 100vh;
@@ -12,11 +7,13 @@
   max-width: var(--maxw-text);
   margin-bottom: var(--sp-12);
 }
+
 .act6__title {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-light);
   margin: var(--sp-3) 0 var(--sp-4);
 }
+
 .act6__lead {
   color: var(--c-text-soft);
   font-size: var(--fs-md);
@@ -33,7 +30,11 @@
   color: var(--c-text-mute);
   padding: var(--sp-12);
 }
-.act6__state--err { color: var(--c-warm); }
+
+.act6__state--err {
+  color: var(--c-warm);
+}
+
 .act6__btn {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
@@ -49,14 +50,17 @@
   gap: var(--sp-6);
   margin-bottom: var(--sp-24);
 }
+
 .act6__sub-head {
   border-left: 3px solid var(--c-accent);
   padding-left: var(--sp-4);
 }
+
 .act6__sub-title {
   font-size: var(--fs-xl);
   font-weight: var(--fw-light);
 }
+
 .act6__sub-sub {
   display: block;
   color: var(--c-text-soft);
@@ -72,12 +76,14 @@
   gap: var(--sp-4);
   flex-wrap: wrap;
 }
+
 .act6__filter {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
   flex-wrap: wrap;
 }
+
 .act6__filter-lbl {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -85,11 +91,13 @@
   text-transform: uppercase;
   color: var(--c-text-mute);
 }
+
 .act6__pills {
   display: flex;
   gap: var(--sp-2);
   flex-wrap: wrap;
 }
+
 .act6__pill {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
@@ -99,11 +107,21 @@
   border-radius: var(--r-pill);
   padding: var(--sp-2) var(--sp-4);
   transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
-
-  &:hover { border-color: var(--c-accent); color: var(--c-accent); }
-  &.is-active { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-bg); }
-  &:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 }
+.act6__pill:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+.act6__pill.is-active {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-bg);
+}
+.act6__pill:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
 .act6__source {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -116,12 +134,14 @@
   align-items: center;
   gap: var(--sp-4);
 }
+
 .act6__slider {
   flex: 1;
   min-width: 180px;
   accent-color: var(--c-accent);
   cursor: pointer;
 }
+
 .act6__year {
   font-family: var(--font-display);
   font-size: var(--fs-xl);
@@ -131,7 +151,10 @@
   text-align: right;
 }
 
-.act6__map-head { margin-top: var(--sp-6); }
+.act6__map-head {
+  margin-top: var(--sp-6);
+}
+
 .act6__map-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semi);
@@ -145,12 +168,14 @@
   padding: var(--sp-6);
   margin-bottom: var(--sp-8);
 }
+
 .act6__caveat-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-semi);
   color: var(--c-warm);
   margin-bottom: var(--sp-2);
 }
+
 .act6__caveat-body {
   color: var(--c-text-soft);
   font-size: var(--fs-sm);
@@ -171,6 +196,34 @@
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--c-text-soft);
-
-  &:hover { color: var(--c-accent); }
+}
+.act6__back:hover {
+  color: var(--c-accent);
+}/*# sourceMappingURL=Act6Agriculture.css.map */
+/* ============================================================
+   Écran « Explorateur » — hauteur NATURELLE (hors zone graphique
+   contrainte .act1viz__chart) pour ne pas couper le graphique interne.
+   ============================================================ */
+.act6explore {
+  min-height: 100vh;
+  padding-block: var(--sp-16) var(--sp-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.act6explore__head {
+  max-width: var(--maxw-text);
+}
+.act6explore__title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-light);
+  margin: 0 0 var(--sp-2);
+}
+.act6explore__lead {
+  color: var(--c-text-soft);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+}
+.act6explore__body {
+  width: 100%;
 }

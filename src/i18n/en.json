@@ -581,7 +581,35 @@
     "points": "events",
     "demo_badge": "demo",
     "lead": "Anomalies always end up with a face: people affected and economic losses, concentrated in a few disaster years.",
-    "coming": "Data retrieved ✓"
+    "coming": "Data retrieved ✓",
+    "annual_title": "The years that hit hardest",
+    "annual_sub": "total per year",
+    "dual_title": "Human cost × economic cost",
+    "dual_sub": "people affected (left) and losses (right), per year",
+    "pareto_title": "A handful bears the brunt",
+    "pareto_sub": "cumulative per territory + cumulative share",
+    "pareto_cumul": "cumulative %",
+    "treemap_title": "Each one's share",
+    "treemap_sub": "cumulative per territory",
+    "heat_title": "When and where it struck",
+    "heat_sub": "intensity by territory and year",
+    "story": {
+      "timeline": "Each circle is a disaster: few events, but some enormous. The rhythm is nothing like a smooth curve.",
+      "annual": "Aggregated by year, the spikes stand out: a few years concentrate most of the damage.",
+      "dual": "Human cost and economic cost often rise together — two faces of one shock.",
+      "rank": "Over the whole period, a few territories pile up a far heavier toll than the rest.",
+      "pareto": "The cumulative line climbs fast: a handful of territories makes up most of the total.",
+      "treemap": "Area shows the share: at a glance, you see who takes the most.",
+      "heat": "The grid reveals the one-off shocks — when and where they struck, beyond the totals.",
+      "map": "On the map, the cumulative footprint reads in relief: a logarithmic scale so small territories aren't crushed."
+    },
+    "outro": {
+      "kicker": "End of act 04",
+      "title": "The shock has a face",
+      "text": "Behind every spike, upended lives and weakened economies. But the Pacific does not only endure: it fights back.",
+      "next": "Act 05 — The momentum",
+      "home": "Home"
+    }
   },
   "act5": {
     "value_label": "Renewable share",
@@ -630,7 +658,34 @@
     "coverage": "territories",
     "period": "period",
     "lead": "The Pacific does not suffer in silence. Against rising seas and the human cost, a trajectory is taking hold: the share of renewable energy is climbing, territory by territory.",
-    "coming": "Data retrieved ✓"
+    "coming": "Data retrieved ✓",
+    "gauge_title": "The momentum in one figure",
+    "gauge_sub": "average renewable share of territories, in the current year",
+    "gauge_label": "renewable share",
+    "change_title": "Who progressed the most",
+    "change_sub": "change in share between the first and last year",
+    "dumb_title": "The distance travelled",
+    "dumb_sub": "first → last observed year, per territory",
+    "heat_title": "The ramp-up, year by year",
+    "heat_sub": "renewable share — the greener, the higher",
+    "story": {
+      "trend": "The regional mean climbs; the band shows the gap between pioneers and laggards.",
+      "gauge": "In one figure, the region's renewable momentum — slide through the years to watch it rise.",
+      "map": "On the map, green gains ground: some territories already draw most of their energy from renewables.",
+      "rank": "In the chosen year, the champions' podium — often small territories with strong hydro/solar potential.",
+      "change": "Not everyone moves at the same pace: a few territories leap ahead, others stall.",
+      "dumb": "The distance travelled from one end of the period to the other: most segments stretch upward.",
+      "heat": "Green intensifies from left to right: the transition reads at a glance.",
+      "evo": "The strongest gains, in percentage points added.",
+      "table": "Every value, sortable, to explore territory by territory."
+    },
+    "outro": {
+      "kicker": "End of act 05",
+      "title": "The momentum is real",
+      "text": "Renewables advance, but pressure on resources remains. And what about the land that feeds?",
+      "next": "Act 06 — The plate",
+      "home": "Home"
+    }
   },
   "act6": {
     "tag": "Act 06 — The plate",
@@ -725,7 +780,25 @@
     "animal_rank_sub": "Median yield per animal across the displayed territories (kg/animal)",
     "explorer_animal_title": "Explore by animal",
     "explorer_animal_lead": "Pick an animal to see its yield by territory and the latest ranking.",
-    "explorer_animal_pick": "Pick an animal"
+    "explorer_animal_pick": "Pick an animal",
+    "box_title": "Yield inequality, year by year",
+    "box_sub": "spread across territories (Tukey box, log scale)",
+    "scatter_title": "Crop diversity and yield",
+    "scatter_sub": "each dot = a territory (current year)",
+    "scatter_x": "number of crops",
+    "cropmap_title": "Where each crop does best",
+    "cropmap_sub": "yield by crop × territory, normalized per crop",
+    "croptree_title": "The weight of crops",
+    "croptree_sub": "median yield per crop",
+    "radar_title": "Agricultural profile of sub-regions",
+    "radar_sub": "relative yield per crop (100 = best sub-region)",
+    "outro": {
+      "kicker": "End of act 06",
+      "title": "Feeding under strain",
+      "text": "Uneven yields, sharp swings, import dependence: the land that feeds remains vulnerable. Next, the living world — the first witness of the disruption.",
+      "next": "Act 07 — The living world",
+      "home": "Home"
+    }
   },
   "act7": {
     "tag": "Act 07 — The living world",

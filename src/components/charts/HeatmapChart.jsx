@@ -13,6 +13,7 @@ export default function HeatmapChart({
   unit = "",
   mode = "rank",
   labels = {},
+  invert = false,
 }) {
   const tk = useThemeTokens();
 
@@ -27,7 +28,8 @@ export default function HeatmapChart({
     const sorted = [...all].sort((a, b) => a - b);
     const min = sorted[0] ?? 0;
     const max = sorted[sorted.length - 1] ?? 1;
-    const ramp = apexRamp(tk);
+    // invert : haut = bon (vert). Inverse la rampe séquentielle (rank/abs).
+    const ramp = invert ? [...apexRamp(tk)].reverse() : apexRamp(tk);
 
     // ApexCharts dessine la 1re série en bas : on inverse pour garder le
     // 1er territoire en haut (cohérent avec l'ancien rendu).
@@ -120,7 +122,7 @@ export default function HeatmapChart({
         },
       }),
     };
-  }, [series, years, unit, mode, labels, tk]);
+  }, [series, years, unit, mode, labels, invert, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }
