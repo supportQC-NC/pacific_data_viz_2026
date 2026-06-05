@@ -1,47 +1,25 @@
 // src/pages/Act6Agriculture/Act6Agriculture.jsx
 // ============================================================
-// Acte 06 — L'assiette. « La terre nourricière sous pression. »
-// UNE seule source réelle : le jeu DÉSAGRÉGÉ (agriApi). À partir de lui :
-//   • Sous-acte 1 : AGRÉGÉ calculé par nous = rendement MÉDIAN par
-//     territoire, toutes cultures confondues (kg/ha) → couverture complète,
-//     pas de série corrompue. (On n'utilise plus l'indicateur SPC
-//     A.CROP_YIELD. qui était limité à 4 territoires et bruité.)
-//   • Explorateur par culture (icônes) sur la même donnée (pas de 2e appel).
-// 100 % données API — l'agrégat est une médiane de valeurs réelles, rien
-// n'est inventé.
+// Acte 06 — La terre nourricière : rendements agricoles (FAO via agriApi).
+// Format DASHBOARD (ActBoard) recentré sur les CULTURES (kg/ha) :
+// filtres GLOBAUX (sous-région + année), petits multiples en SIGNATURE.
+// Tableau retiré. 7 onglets, dont l'explorateur de cultures.
 // ============================================================
 
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-  lazy,
-  Suspense,
-} from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchAgriProduction } from "../../services/agriApi";
-import useThemeTokens from "../../hooks/UseThemeTokens";
-import VizPanel from "../../components/charts/VizPanel";
-import BoxplotChart from "../../components/charts/BoxplotChart";
-import ScatterChart from "../../components/charts/ScatterChart";
-import TreemapChart from "../../components/charts/TreemapChart";
-import CropHeatmap from "../../components/charts/CropHeatmap";
-import RadarProfileChart from "../../components/charts/RadarProfileChart";
+import ActBoard from "../../components/ActBoard/ActBoard";
+import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
-import RankBars from "../../components/RankBars/RankBars";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
-import ChangeBars from "../../components/ChangeBars/ChangeBars";
-import DataTable from "../../components/DataTable/DataTable";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
-import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
-import Loader from "../../components/Loader/Loader";
+import { fmt } from "../../components/charts/echartsBase";
 import "./Act6Agriculture.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -64,12 +42,11 @@ const median = (arr) => {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
 
-// Agrégat calculé : rendement MÉDIAN par territoire-année pour un type donné
-// ("crop" = cultures kg/ha, "livestock" = bétail kg/animal).
+// Rendement MÉDIAN par territoire-année pour un type ("crop" = kg/ha).
 function buildAggregate(data, kind = "crop") {
   if (!data || !data.commodities) return null;
   const codes = data.commodities.filter((c) => c.kind === kind).map((c) => c.code);
-  const bucket = {}; // geo -> year -> [values]
+  const bucket = {};
   codes.forEach((code) => {
     const d = data.byCommodity[code];
     if (!d) return;
@@ -81,7 +58,6 @@ function buildAggregate(data, kind = "crop") {
       });
     });
   });
-
   const byArea = {};
   const yearsSet = new Set();
   let min = Infinity;
@@ -99,7 +75,6 @@ function buildAggregate(data, kind = "crop") {
       .sort((a, b) => a.year - b.year);
     byArea[geo] = serie;
   });
-
   const years = [...yearsSet].sort((a, b) => a - b);
   return {
     byArea,
@@ -115,11 +90,7 @@ function allSeries(agg, lang) {
   if (!agg) return [];
   return agg.areas
     .filter((a) => isPict(a))
-    .map((a) => ({
-      area: a,
-      name: pictName(a, lang),
-      values: (agg.byArea[a] || []).filter((p) => Number.isFinite(p.value)),
-    }));
+    .map((a) => ({ area: a, name: pictName(a, lang), values: (agg.byArea[a] || []).filter((p) => Number.isFinite(p.value)) }));
 }
 function pointsAt(agg, year, lang) {
   if (!agg) return [];
@@ -127,34 +98,31 @@ function pointsAt(agg, year, lang) {
     .filter((a) => isPict(a))
     .map((a) => {
       const p = (agg.byArea[a] || []).find((q) => q.year === year);
-      return p && Number.isFinite(p.value)
-        ? { area: a, name: pictName(a, lang), value: p.value, year }
-        : null;
+      return p && Number.isFinite(p.value) ? { area: a, name: pictName(a, lang), value: p.value, year } : null;
     })
     .filter(Boolean);
 }
 
-function Pills({ label, options, value, onChange }) {
+/* ---------- Filtres globaux ---------- */
+function Select({ label, options, value, onChange }) {
   return (
-    <div className="act1f" role="group" aria-label={label}>
+    <div className="act1f act1f--select">
       {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__pills">
-        {options.map((o) => (
-          <button
-            key={String(o.v)}
-            type="button"
-            className={`act1f__pill ${value === o.v ? "is-active" : ""}`}
-            onClick={() => onChange(o.v)}
-            aria-pressed={value === o.v}
-          >
-            {o.label}
-          </button>
-        ))}
+      <div className="act1f__selwrap">
+        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
       </div>
     </div>
   );
 }
-
 function YearSlider({ label, years, index, onChange }) {
   if (!years.length) return null;
   return (
@@ -175,45 +143,16 @@ function YearSlider({ label, years, index, onChange }) {
   );
 }
 
-function Selecter({ label, value, options, onChange }) {
-  return (
-    <label className="act1f act1f--select">
-      <span className="act1f__lbl">{label}</span>
-      <select
-        className="act1f__select"
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((o) => (
-          <option key={String(o.v)} value={o.v}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
-  const tk = useThemeTokens();
+
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
-  const [playing, setPlaying] = useState(false);
-  const [rankScope, setRankScope] = useState("all");
-  const [cmpA, setCmpA] = useState(null);
-  const [cmpB, setCmpB] = useState(null);
-  const rootRef = useRef(null);
-  const [active, setActive] = useState(0);
-  const [slideCount, setSlideCount] = useState(0);
-  const activeRef = useRef(0);
 
   useEffect(() => {
     let alive = true;
     const ctrl = new AbortController();
-    // On garde les données affichées pendant le rechargement (changement de
-    // langue) pour éviter un flash de chargement.
     setAgri((prev) => (prev.data ? prev : { status: "loading", data: null }));
     fetchAgriProduction({ signal: ctrl.signal, lang }).then((res) => {
       if (!alive) return;
@@ -227,79 +166,24 @@ export default function Act6Agriculture() {
   }, [lang]);
 
   const agg = useMemo(() => (agri.data ? buildAggregate(agri.data) : null), [agri.data]);
-
   const years = useMemo(() => agg?.years || [], [agg]);
+
   useEffect(() => {
     if (years.length && yearIdx === null) setYearIdx(years.length - 1);
   }, [years, yearIdx]);
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
 
-  useEffect(() => {
-    if (years.length && cmpA == null) setCmpA(years[0]);
-    if (years.length && cmpB == null) setCmpB(years[years.length - 1]);
-  }, [years, cmpA, cmpB]);
+  const areaVisible = useCallback((a) => region === "all" || REGION_OF[a] === region, [region]);
 
-  useEffect(() => {
-    if (!playing || !years.length) return undefined;
-    const id = setInterval(() => {
-      setYearIdx((i) => {
-        const next = (i ?? 0) + 1;
-        if (next >= years.length) {
-          setPlaying(false);
-          return years.length - 1;
-        }
-        return next;
-      });
-    }, 1100);
-    return () => clearInterval(id);
-  }, [playing, years]);
-
-  const areaVisible = useCallback(
-    (a) => region === "all" || REGION_OF[a] === region,
-    [region],
-  );
-
-  const vSeries = useMemo(
-    () => allSeries(agg, lang).filter((s) => areaVisible(s.area) && s.values.length),
-    [agg, lang, areaVisible],
-  );
+  const vSeries = useMemo(() => allSeries(agg, lang).filter((s) => areaVisible(s.area) && s.values.length), [agg, lang, areaVisible]);
   const points = useMemo(
-    () =>
-      (agg && currentYear != null ? pointsAt(agg, currentYear, lang) : []).filter((p) =>
-        areaVisible(p.area),
-      ),
+    () => (agg && currentYear != null ? pointsAt(agg, currentYear, lang) : []).filter((p) => areaVisible(p.area)),
     [agg, currentYear, lang, areaVisible],
   );
   const refMedian = useMemo(() => median(points.map((p) => p.value)) ?? 0, [points]);
 
-  const changeRows = useMemo(
-    () =>
-      vSeries
-        .filter((s) => s.values.length >= 2)
-        .map((s) => {
-          const f = s.values[0];
-          const l = s.values[s.values.length - 1];
-          return { area: s.area, name: s.name, delta: l.value - f.value, first: f.value, last: l.value };
-        }),
-    [vSeries],
-  );
-
-  const rankCountries = useMemo(() => {
-    if (!agri.data) return [];
-    const set = new Set();
-    (agri.data.commodities || [])
-      .filter((c) => c.kind === "crop")
-      .forEach((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return;
-        d.areas.filter(isPict).forEach((a) => {
-          if ((d.byArea[a] || []).some((p) => Number.isFinite(p.value))) set.add(a);
-        });
-      });
-    return [...set]
-      .map((a) => ({ code: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name));
-  }, [agri.data, lang]);
+  const firstYear = agg?.firstYear ?? null;
+  const lastYear = agg?.lastYear ?? null;
 
   const cropRankRows = useMemo(() => {
     if (!agri.data || currentYear == null) return [];
@@ -308,36 +192,28 @@ export default function Act6Agriculture() {
       .map((c) => {
         const d = agri.data.byCommodity[c.code];
         if (!d) return null;
-        let vals;
-        if (rankScope === "all") {
-          vals = d.areas
-            .filter((a) => isPict(a) && areaVisible(a))
-            .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
-            .filter((p) => p && Number.isFinite(p.value))
-            .map((p) => p.value);
-        } else {
-          const p = (d.byArea[rankScope] || []).find((q) => q.year === currentYear);
-          vals = p && Number.isFinite(p.value) ? [p.value] : [];
-        }
+        const vals = d.areas
+          .filter((a) => isPict(a) && areaVisible(a))
+          .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
+          .filter((p) => p && Number.isFinite(p.value))
+          .map((p) => p.value);
         if (!vals.length) return null;
         return { code: c.code, label: c.label, value: median(vals), year: currentYear };
       })
       .filter(Boolean);
-  }, [agri.data, currentYear, areaVisible, rankScope]);
+  }, [agri.data, currentYear, areaVisible]);
 
   const dumbbellRows = useMemo(() => {
-    if (!agg || cmpA == null || cmpB == null) return [];
+    if (!agg || firstYear == null || lastYear == null) return [];
     return allSeries(agg, lang)
       .filter((s) => areaVisible(s.area))
       .map((s) => {
-        const pa = s.values.find((p) => p.year === cmpA);
-        const pb = s.values.find((p) => p.year === cmpB);
-        return pa && pb && Number.isFinite(pa.value) && Number.isFinite(pb.value)
-          ? { area: s.area, name: s.name, a: pa.value, b: pb.value }
-          : null;
+        const pa = s.values.find((p) => p.year === firstYear);
+        const pb = s.values.find((p) => p.year === lastYear);
+        return pa && pb && Number.isFinite(pa.value) && Number.isFinite(pb.value) ? { area: s.area, name: s.name, a: pa.value, b: pb.value } : null;
       })
       .filter(Boolean);
-  }, [agg, lang, areaVisible, cmpA, cmpB]);
+  }, [agg, lang, areaVisible, firstYear, lastYear]);
 
   const regionalSeries = useMemo(() => {
     if (!agg) return [];
@@ -355,211 +231,19 @@ export default function Act6Agriculture() {
     return [{ area: "PAC", name: t("act6.regional_name"), values: vals }];
   }, [agg, years, lang, areaVisible, t]);
 
-  const diversityRows = useMemo(() => {
-    if (!agri.data || !agg) return [];
-    const counts = {};
-    (agri.data.commodities || [])
-      .filter((c) => c.kind === "crop")
-      .forEach((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return;
-        d.areas.filter(isPict).forEach((a) => {
-          if ((d.byArea[a] || []).some((p) => Number.isFinite(p.value)))
-            counts[a] = (counts[a] || 0) + 1;
-        });
-      });
-    return Object.entries(counts)
-      .map(([area, value]) => ({ area, name: pictName(area, lang), value, year: agg.lastYear }))
-      .filter((r) => areaVisible(r.area));
-  }, [agri.data, agg, lang, areaVisible]);
-  const diversityMedian = useMemo(
-    () => median(diversityRows.map((r) => r.value)) ?? 0,
-    [diversityRows],
-  );
-
-  const volatilityRows = useMemo(() => {
-    if (!agg) return [];
-    return allSeries(agg, lang)
-      .filter((s) => areaVisible(s.area) && s.values.length >= 3)
-      .map((s) => {
-        const xs = s.values.map((p) => p.value);
-        const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
-        if (!mean) return null;
-        const variance = xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length;
-        const cv = (Math.sqrt(variance) / mean) * 100;
-        return { area: s.area, name: s.name, value: Math.round(cv * 10) / 10, year: agg.lastYear };
-      })
-      .filter(Boolean);
-  }, [agg, lang, areaVisible]);
-  const volatilityMedian = useMemo(
-    () => median(volatilityRows.map((r) => r.value)) ?? 0,
-    [volatilityRows],
-  );
-
-  // ---------- Données des panneaux ApexCharts ajoutés ----------
-  const REGION_COLOR = useMemo(
-    () => ({ melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive }),
-    [tk],
-  );
-  const REGIONS3 = ["melanesia", "polynesia", "micronesia"];
-
-  // Scatter : diversité (nb de cultures) × rendement médian, par sous-région.
-  const scatterGroups = useMemo(() => {
-    if (!diversityRows.length || !points.length) return [];
-    const divBy = {};
-    diversityRows.forEach((r) => {
-      divBy[r.area] = r.value;
-    });
-    const yieldBy = {};
-    points.forEach((p) => {
-      yieldBy[p.area] = p.value;
-    });
-    return REGIONS3.map((r) => {
-      const pts = Object.keys(yieldBy)
-        .filter((a) => REGION_OF[a] === r && divBy[a] != null)
-        .map((a) => ({ x: divBy[a], y: yieldBy[a], name: pictName(a, lang) }));
-      return { name: t(`act1.filter.${r}`), color: REGION_COLOR[r], points: pts };
-    }).filter((g) => g.points.length);
-  }, [diversityRows, points, lang, t, REGION_COLOR]);
-  const scatterMedianX = useMemo(
-    () => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
-    [scatterGroups],
-  );
-
-  // Treemap : rendement médian par culture (territoires visibles, année courante).
-  const cropMedians = useMemo(() => {
-    if (!agri.data || currentYear == null) return [];
-    return (agri.data.commodities || [])
-      .filter((c) => c.kind === "crop")
-      .map((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return null;
-        const vals = d.areas
-          .filter((a) => isPict(a) && areaVisible(a))
-          .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
-          .filter((p) => p && Number.isFinite(p.value))
-          .map((p) => p.value);
-        if (!vals.length) return null;
-        return { name: c.label, value: median(vals) };
-      })
-      .filter(Boolean);
-  }, [agri.data, currentYear, areaVisible]);
-
-  // Heatmap culture × territoire (année courante), normalisée par culture.
-  const cropHeatRows = useMemo(() => {
-    if (!agri.data || currentYear == null) return [];
-    const areas = points.map((p) => p.area); // territoires visibles avec donnée
-    if (!areas.length) return [];
-    return (agri.data.commodities || [])
-      .filter((c) => c.kind === "crop")
-      .map((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return null;
-        const raws = areas.map((a) => {
-          const p = (d.byArea[a] || []).find((q) => q.year === currentYear);
-          return p && Number.isFinite(p.value) ? p.value : null;
-        });
-        const present = raws.filter((v) => v != null);
-        if (present.length < 3) return null; // ligne trop creuse
-        const mx = Math.max(...present);
-        const cells = areas.map((a, i) => ({
-          x: pictName(a, lang),
-          y: raws[i] == null ? null : Math.round((raws[i] / (mx || 1)) * 100),
-          raw: raws[i],
-        }));
-        return { name: c.label, cells, coverage: present.length };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.coverage - a.coverage)
-      .slice(0, 12);
-  }, [agri.data, currentYear, points, lang]);
-
-  // Radar régional : profil multi-cultures par sous-région (normalisé par culture).
-  const cropRadar = useMemo(() => {
-    if (!agri.data || currentYear == null) return { categories: [], series: [] };
-    const crops = (agri.data.commodities || []).filter((c) => c.kind === "crop");
-    const regionMedian = (code, region) => {
-      const d = agri.data.byCommodity[code];
-      if (!d) return null;
-      const vals = d.areas
-        .filter((a) => isPict(a) && REGION_OF[a] === region && areaVisible(a))
-        .map((a) => (d.byArea[a] || []).find((p) => p.year === currentYear))
-        .filter((p) => p && Number.isFinite(p.value))
-        .map((p) => p.value);
-      return vals.length ? median(vals) : null;
-    };
-    // Cultures les mieux couvertes (présentes dans le plus de régions).
-    const scored = crops
-      .map((c) => {
-        const byReg = {};
-        let cover = 0;
-        REGIONS3.forEach((r) => {
-          const m = regionMedian(c.code, r);
-          if (m != null) {
-            byReg[r] = m;
-            cover += 1;
-          }
-        });
-        return { c, byReg, cover };
-      })
-      .filter((s) => s.cover >= 2)
-      .sort((a, b) => b.cover - a.cover)
-      .slice(0, 7);
-    if (scored.length < 3) return { categories: [], series: [] };
-    const categories = scored.map((s) => s.c.label);
-    const series = REGIONS3.map((r) => ({
-      name: t(`act1.filter.${r}`),
-      data: scored.map((s) => {
-        const mx = Math.max(...Object.values(s.byReg));
-        const v = s.byReg[r];
-        return v == null ? 0 : Math.round((v / (mx || 1)) * 100);
-      }),
-    })).filter((s) => s.data.some((v) => v > 0));
-    return { categories, series };
-  }, [agri.data, currentYear, areaVisible, t]);
-
-  const lsAgg = useMemo(
-    () => (agri.data ? buildAggregate(agri.data, "livestock") : null),
-    [agri.data],
-  );
-  const lsUnit = t("act6.livestock_unit");
-  const lsSeries = useMemo(
-    () => allSeries(lsAgg, lang).filter((s) => areaVisible(s.area) && s.values.length),
-    [lsAgg, lang, areaVisible],
-  );
-  const lsRankRows = useMemo(() => {
-    if (!agri.data || !lsAgg || lsAgg.lastYear == null) return [];
-    return (agri.data.commodities || [])
-      .filter((c) => c.kind === "livestock")
-      .map((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return null;
-        const vals = d.areas
-          .filter((a) => isPict(a) && areaVisible(a))
-          .map((a) => (d.byArea[a] || []).find((p) => p.year === lsAgg.lastYear))
-          .filter((p) => p && Number.isFinite(p.value))
-          .map((p) => p.value);
-        if (!vals.length) return null;
-        return { code: c.code, label: c.label, value: median(vals), year: lsAgg.lastYear };
-      })
-      .filter(Boolean);
-  }, [agri.data, lsAgg, areaVisible]);
-
   const unit = t("act6.unit");
-  const fmtKg = useCallback(
-    (v) => Math.round(Number(v) || 0).toLocaleString(lang === "en" ? "en-US" : "fr-FR"),
-    [lang],
-  );
-  const tableLabels = useMemo(
-    () => ({
-      col_rank: t("export.col_rank"),
-      col_code: t("export.col_code"),
-      col_name: t("export.col_name"),
-      col_value: `${t("act6.value_label")} (${unit})`,
-      col_vs_world: t("act6.vs_median"),
-    }),
-    [t, unit],
-  );
+
+  const kpiItems = useMemo(() => {
+    if (agri.status !== "ready" || !points.length) return [];
+    const sorted = [...points].sort((a, b) => a.value - b.value);
+    const high = sorted[sorted.length - 1];
+    const low = sorted[0];
+    return [
+      { key: "median", value: fmt(refMedian, 0), unit, label: t("act6.board.kpi_median"), tone: "accent" },
+      { key: "high", value: fmt(high.value, 0), unit: high.name, label: t("act6.board.kpi_high"), tone: "positive" },
+      { key: "low", value: fmt(low.value, 0), unit: low.name, label: t("act6.board.kpi_low"), tone: "warm" },
+    ];
+  }, [agri.status, points, refMedian, unit, t]);
 
   const retry = useCallback(() => {
     setAgri({ status: "loading", data: null });
@@ -570,337 +254,159 @@ export default function Act6Agriculture() {
     });
   }, [lang]);
 
-  const togglePlay = useCallback(() => {
-    setYearIdx((i) => (i === years.length - 1 ? 0 : i));
-    setPlaying((p) => !p);
-  }, [years.length]);
-
-  const scrubYear = useCallback((i) => {
-    setPlaying(false);
-    setYearIdx(i);
-  }, []);
-
-  const goTo = useCallback((i) => {
-    const root = rootRef.current;
-    if (!root) return;
-    const nodes = Array.from(root.querySelectorAll(".act1slide"));
-    if (!nodes.length) return;
-    const idx = Math.max(0, Math.min(nodes.length - 1, i));
-    const top = nodes[idx].getBoundingClientRect().top + window.pageYOffset - 80;
-    window.scrollTo({ top, behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
-    if (agri.status !== "ready") return undefined;
-    const root = rootRef.current;
-    if (!root) return undefined;
-    let raf = 0;
-    const compute = () => {
-      const nodes = Array.from(root.querySelectorAll(".act1slide"));
-      setSlideCount(nodes.length);
-      const mid = window.innerHeight * 0.4;
-      let idx = 0;
-      for (let i = 0; i < nodes.length; i += 1) {
-        const r = nodes[i].getBoundingClientRect();
-        if (r.top <= mid) idx = i;
-        else break;
-      }
-      setActive(idx);
-      activeRef.current = idx;
-    };
-    const onScroll = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [agri.status, region, currentYear, lang]);
-
-  useEffect(() => {
-    if (agri.status !== "ready") return undefined;
-    const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        goTo(activeRef.current + 1);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        goTo(activeRef.current - 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [agri.status, goTo]);
-
-  // --- Fragments de filtres réutilisables ---
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
-  const scopeOpts = [{ v: "all", label: t("act6.crop_rank_scope_all") }].concat(
-    rankCountries.map((c) => ({ v: c.code, label: c.name })),
-  );
-  const yearOpts = years.map((y) => ({ v: String(y), label: String(y) }));
+  const status = agri.status === "ready" ? (years.length ? "ready" : "empty") : agri.status === "loading" ? "loading" : "empty";
 
-  const regionPills = (
-    <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-  );
-  const regionAndYear = (
+  const heatLabels = {
+    low: t("act6.heatmap_low"),
+    high: t("act6.heatmap_high"),
+    empty: t("act1.change.empty"),
+    mode_row: t("act6.heatmap_mode_row"),
+    mode_abs: t("act6.heatmap_mode_abs"),
+  };
+
+  const filtersEl = (
     <>
-      {regionPills}
-      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={(i) => setYearIdx(i)} />
     </>
   );
 
-  return (
-    <main className="act1 act6" ref={rootRef}>
-      <div className="container">
-        <header className="act1__head act1slide act1slide--intro">
-          <p className="eyebrow">{t("act6.tag")}</p>
-          <h1 className="act1__title">{t("act6.title")}</h1>
-          <p className="act1__lead">{t("act6.lead")}</p>
-        </header>
-
-        {agri.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
-        {agri.status === "empty" && (
-          <div className="act1__state act1__state--err">
-            <span>{t("act6.unavailable")}</span>
-            <button className="act1__retry" onClick={retry}>
-              {t("act1.retry")}
-            </button>
-          </div>
-        )}
-
-        {agri.status === "ready" && currentYear != null && (
-          <>
-            {/* ---------- Sous-acte 1 : la terre ---------- */}
-            <section className="act1slide act1text">
-              <div className="act1text__inner">
-                <h2 className="act1text__title">{t("act6.sub1_title")}</h2>
-                <p className="act1text__lead">{t("act6.sub1_sub")}</p>
-                <span className="act1text__hint" aria-hidden="true">↓</span>
+  const charts =
+    status === "ready" && currentYear != null
+      ? [
+          {
+            id: "small",
+            signature: true,
+            empty: vSeries.length === 0,
+            tab: t("act6.board.tab_small"),
+            title: t("act6.trend_title"),
+            finding: t("act6.board.small_find"),
+            takeaway: t("act6.board.small_take"),
+            node: (
+              <div className="act6b__scroll">
+                <SmallMultiples series={vSeries} years={years} unit={unit} currentYear={currentYear} labels={{ last: t("act6.smallmult_last") }} />
               </div>
-            </section>
-
-            <VizPanel title={t("act6.trend_title")} subtitle={t("act6.trend_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <SmallMultiples series={vSeries} years={years} unit={unit} currentYear={currentYear} labels={{ last: t("act6.smallmult_last") }} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.heatmap_title")} subtitle={t("act6.heatmap_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
-              <EmissionsHeatmap
-                series={vSeries}
-                years={years}
-                unit={unit}
-                scale="sequential"
-                labels={{
-                  low: t("act6.heatmap_low"),
-                  high: t("act6.heatmap_high"),
-                  empty: t("act1.change.empty"),
-                  mode_row: t("act6.heatmap_mode_row"),
-                  mode_abs: t("act6.heatmap_mode_abs"),
-                }}
-              />
-            </VizPanel>
-
-            <VizPanel title={t("act6.change_title")} subtitle={t("act6.change_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
-              <ChangeBars rows={changeRows} unit={unit} labels={{ up: t("act6.change_up"), down: t("act6.change_down"), empty: t("act1.change.empty") }} />
-            </VizPanel>
-
-            <VizPanel
-              title={t("act6.crop_rank_title")}
-              subtitle={`${t("act6.crop_rank_sub")} · ${currentYear}`}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  {regionAndYear}
-                  <Selecter label={t("act6.crop_rank_scope")} value={rankScope} options={scopeOpts} onChange={setRankScope} />
-                </>
-              }
-            >
-              <CropRanking rows={cropRankRows} unit={unit} max={12} />
-            </VizPanel>
-
-            <VizPanel
-              title={t("act6.compare_title")}
-              subtitle={t("act6.compare_sub")}
-              filtersLabel={t("act1.f.toggle")}
-              filters={
-                <>
-                  {regionPills}
-                  <Selecter label={t("act6.compare_from")} value={String(cmpA ?? "")} options={yearOpts} onChange={(v) => setCmpA(Number(v))} />
-                  <Selecter label={t("act6.compare_to")} value={String(cmpB ?? "")} options={yearOpts} onChange={(v) => setCmpB(Number(v))} />
-                </>
-              }
-            >
-              <DumbbellChart rows={dumbbellRows} yearA={cmpA} yearB={cmpB} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.regional_title")} subtitle={t("act6.regional_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <TrendLines series={regionalSeries} years={years} currentYear={currentYear} unit={unit} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.diversity_title")} subtitle={t("act6.diversity_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
-              <RankBars data={diversityRows} unit={t("act6.diversity_unit")} worldAvg={diversityMedian} refLabel={t("act6.median_ref")} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.volatility_title")} subtitle={t("act6.volatility_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
-              <RankBars data={volatilityRows} unit="%" worldAvg={volatilityMedian} refLabel={t("act6.median_ref")} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.box_title")} subtitle={t("act6.box_sub")} filtersLabel={t("act1.f.toggle")} filters={regionPills}>
-              <BoxplotChart series={vSeries} years={years} unit={unit} scale="log" />
-            </VizPanel>
-
-            <VizPanel title={t("act6.scatter_title")} subtitle={`${t("act6.scatter_sub")}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <ScatterChart groups={scatterGroups} unit={unit} medianX={scatterMedianX} xName={t("act6.scatter_x")} yName={unit} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.cropmap_title")} subtitle={`${t("act6.cropmap_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <CropHeatmap rows={cropHeatRows} unit={unit} format={fmtKg} />
-            </VizPanel>
-
-            <VizPanel title={t("act6.croptree_title")} subtitle={`${t("act6.croptree_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <TreemapChart rows={cropMedians} unit={unit} format={fmtKg} />
-            </VizPanel>
-
-            {cropRadar.categories.length >= 3 && (
-              <VizPanel title={t("act6.radar_title")} subtitle={t("act6.radar_sub")} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-                <RadarProfileChart categories={cropRadar.categories} series={cropRadar.series} unit="%" max={100} />
-              </VizPanel>
-            )}
-
-            <VizPanel title={t("act6.map_title")} subtitle={`${t("act6.map_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <ErrorBoundary fallback={<div className="act1__state act1__state--err">{t("scene.error")}</div>}>
+            ),
+          },
+          {
+            id: "regional",
+            empty: !regionalSeries.length || regionalSeries[0].values.length < 2,
+            tab: t("act6.board.tab_regional"),
+            title: t("act6.regional_title"),
+            finding: t("act6.board.regional_find"),
+            takeaway: t("act6.board.regional_take"),
+            node: (
+              <div className="act6b__scroll">
+                <TrendLines series={regionalSeries} years={years} currentYear={currentYear} unit={unit} />
+              </div>
+            ),
+          },
+          {
+            id: "crops",
+            empty: cropRankRows.length === 0,
+            tab: t("act6.board.tab_crops"),
+            title: `${t("act6.crop_rank_title")} · ${currentYear}`,
+            finding: t("act6.board.crops_find"),
+            takeaway: t("act6.board.crops_take"),
+            node: (
+              <div className="act6b__scroll">
+                <CropRanking rows={cropRankRows} unit={unit} max={12} />
+              </div>
+            ),
+          },
+          {
+            id: "change",
+            empty: dumbbellRows.length === 0,
+            tab: t("act6.board.tab_change"),
+            title: `${t("act6.compare_title")} · ${firstYear}–${lastYear}`,
+            finding: t("act6.board.change_find"),
+            takeaway: t("act6.board.change_take"),
+            node: (
+              <div className="act6b__scroll">
+                <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
+              </div>
+            ),
+          },
+          {
+            id: "heat",
+            empty: vSeries.length === 0,
+            tab: t("act6.board.tab_heat"),
+            title: t("act6.heatmap_title"),
+            finding: t("act6.board.heat_find"),
+            takeaway: t("act6.board.heat_take"),
+            node: (
+              <div className="act6b__scroll">
+                <EmissionsHeatmap series={vSeries} years={years} unit={unit} scale="sequential" labels={heatLabels} />
+              </div>
+            ),
+          },
+          {
+            id: "map",
+            empty: points.length === 0,
+            tab: t("act6.board.tab_map"),
+            title: `${t("act6.map_title")} · ${currentYear}`,
+            finding: t("act6.board.map_find"),
+            takeaway: t("act6.board.map_take"),
+            node: (
+              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
                 <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
-                  <OceanMap
-                    data={points}
-                    unit={unit}
-                    range={agg ? agg.range : null}
-                    logScale
-                    lowLabel={t("act6.map_low")}
-                    midLabel={t("act6.map_mid")}
-                    highLabel={t("act6.map_high")}
-                    noTokenMsg={t("act1.map_no_token")}
-                    years={years}
-                    yearIndex={yearIdx}
-                    playing={playing}
-                    onTogglePlay={togglePlay}
-                    onScrub={scrubYear}
-                  />
+                  <OceanMap data={points} unit={unit} range={agg ? agg.range : null} logScale lowLabel={t("act6.map_low")} midLabel={t("act6.map_mid")} highLabel={t("act6.map_high")} noTokenMsg={t("act1.map_no_token")} />
                 </Suspense>
               </ErrorBoundary>
-            </VizPanel>
-
-            <VizPanel title={t("act6.table_title")} subtitle={`${t("act6.table_sub")} · ${currentYear}`} filtersLabel={t("act1.f.toggle")} filters={regionAndYear}>
-              <DataTable rows={points} labels={tableLabels} unit={unit} refValue={refMedian} />
-            </VizPanel>
-
-            {/* ---------- Explorateur par culture (hauteur naturelle) ---------- */}
-            <section className="act1slide act6explore">
-              <div className="act6explore__head">
-                <h2 className="act6explore__title">{t("act6.explorer_title")}</h2>
-                <p className="act6explore__lead">{t("act6.explorer_lead")}</p>
-              </div>
-              <div className="act6explore__body">
+            ),
+          },
+          {
+            id: "explorer",
+            empty: !agri.data,
+            tab: t("act6.board.tab_explorer"),
+            title: t("act6.explorer_title"),
+            finding: t("act6.board.explorer_find"),
+            takeaway: t("act6.board.explorer_take"),
+            node: (
+              <div className="act6b__scroll">
                 <CropExplorer data={agri.data} />
               </div>
-            </section>
+            ),
+          },
+        ]
+      : [];
 
-            {/* ---------- Sous-acte 2 : le bétail ---------- */}
-            {lsSeries.length > 0 && (
-              <>
-                <section className="act1slide act1text">
-                  <div className="act1text__inner">
-                    <h2 className="act1text__title">{t("act6.sub2_title")}</h2>
-                    <p className="act1text__lead">{t("act6.sub2_sub")}</p>
-                    <span className="act1text__hint" aria-hidden="true">↓</span>
-                  </div>
-                </section>
-
-                <VizPanel title={t("act6.ls_trend_title")} subtitle={t("act6.trend_sub")}>
-                  <SmallMultiples series={lsSeries} years={lsAgg.years} unit={lsUnit} currentYear={lsAgg.lastYear} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act6.ls_heatmap_title")} subtitle={t("act6.heatmap_sub")}>
-                  <EmissionsHeatmap
-                    series={lsSeries}
-                    years={lsAgg.years}
-                    unit={lsUnit}
-                    scale="sequential"
-                    labels={{
-                      low: t("act6.heatmap_low"),
-                      high: t("act6.heatmap_high"),
-                      empty: t("act1.change.empty"),
-                      mode_row: t("act6.heatmap_mode_row"),
-                      mode_abs: t("act6.heatmap_mode_abs"),
-                    }}
-                  />
-                </VizPanel>
-
-                <VizPanel title={t("act6.animal_rank_title")} subtitle={`${t("act6.animal_rank_sub")} · ${lsAgg.lastYear}`}>
-                  <CropRanking rows={lsRankRows} unit={lsUnit} max={10} />
-                </VizPanel>
-
-                <section className="act1slide act6explore">
-                  <div className="act6explore__head">
-                    <h2 className="act6explore__title">{t("act6.explorer_animal_title")}</h2>
-                    <p className="act6explore__lead">{t("act6.explorer_animal_lead")}</p>
-                  </div>
-                  <div className="act6explore__body">
-                    <CropExplorer data={agri.data} kind="livestock" labels={{ pick: t("act6.explorer_animal_pick") }} />
-                  </div>
-                </section>
-              </>
-            )}
-
-            {/* ---------- Avertissement ---------- */}
-            <section className="act1slide act1text">
-              <div className="act1text__inner">
-                <h2 className="act1text__title">{t("act6.caveat_title")}</h2>
-                <p className="act1text__story">{t("act6.caveat_body")}</p>
-              </div>
-            </section>
-
-            <section className="act1slide act1outro">
-              <div className="act1outro__inner">
-                <p className="eyebrow">{t("act6.outro.kicker")}</p>
-                <h2 className="act1outro__title">{t("act6.outro.title")}</h2>
-                <p className="act1outro__text">{t("act6.outro.text")}</p>
-                <div className="act1outro__actions">
-                  <Link to="/vivant" className="act1outro__btn act1outro__btn--primary">
-                    {t("act6.outro.next")} <span aria-hidden="true">→</span>
-                  </Link>
-                  <Link to="/" className="act1outro__btn">
-                    {t("act6.outro.home")}
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        <Link to="/" className="act1__back">
-          ← {t("act1.back")}
-        </Link>
-      </div>
-
-      {agri.status === "ready" && slideCount > 0 && (
-        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active - 1)} disabled={active <= 0} aria-label={t("act1.nav.prev")}>
-            ↑
-          </button>
-          <span className="act1nav__count">
-            {active + 1}/{slideCount}
-          </span>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active + 1)} disabled={active >= slideCount - 1} aria-label={t("act1.nav.next")}>
-            ↓
-          </button>
-        </div>
-      )}
-    </main>
+  return (
+    <ActBoard
+      status={status}
+      onRetry={retry}
+      back={{ to: "/", label: t("act1.back") }}
+      eyebrow={t("act6.tag")}
+      title={t("act6.title")}
+      thesis={t("act6.thesis")}
+      kpis={kpiItems}
+      kpiTitle={t("act1.stats.title")}
+      filters={filtersEl}
+      charts={charts}
+      progress={{ index: 6, total: 11 }}
+      labels={{
+        loading: t("scene.loading"),
+        empty: t("act6.unavailable"),
+        error: t("scene.error"),
+        retry: t("act1.retry"),
+        switchHint: t("act6.board.switch_hint"),
+        signature: t("act6.board.signature"),
+        takeawayKicker: t("act6.board.takeaway_kicker"),
+        prev: t("act1.nav.prev"),
+        next: t("act1.nav.next"),
+        start: t("act6.board.start"),
+        conclusion: t("act6.board.conclusion"),
+        backIntro: t("act6.board.back_intro"),
+        reviseData: t("act6.board.revise_data"),
+      }}
+      outro={{
+        kicker: t("act6.outro.kicker"),
+        title: t("act6.outro.title"),
+        text: t("act6.outro.text"),
+        primary: { to: "/vivant", label: t("act6.outro.next") },
+        secondary: { to: "/", label: t("act6.outro.home") },
+      }}
+    />
   );
 }
