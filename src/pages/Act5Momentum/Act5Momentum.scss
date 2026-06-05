@@ -1,124 +1,18 @@
 // src/pages/Act5Momentum/Act5Momentum.scss
-.act5 {
-  padding-block: var(--sp-24) var(--sp-16);
-  min-height: 100vh;
-}
-.act5__head {
-  margin-bottom: var(--sp-12);
-}
-.act5__title {
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  font-weight: var(--fw-light);
-  margin: var(--sp-3) 0 var(--sp-6);
-}
-.act5__lead {
-  max-width: var(--maxw-text);
-  color: var(--c-text-soft);
-  font-size: var(--fs-md);
-  line-height: var(--lh-base);
-}
+// ============================================================
+// Acte 05 — Momentum. Rendu via ActBoard. Classes de filtres (.act1f*)
+// de l'Acte 1 + conteneur défilable pour les composants maison.
+// ============================================================
+@import "../Act1Emissions/Act1Emissions.scss";
 
-.act5__state {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--c-text-mute);
-  padding: var(--sp-6) 0;
-}
-.act5__state--err {
-  color: var(--c-warm);
-}
-.act5__btn {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--c-text);
-  background: var(--c-bg-2);
-  border: var(--border-hair) solid var(--c-line-strong);
-  padding: var(--sp-2) var(--sp-5);
-  border-radius: var(--r-pill);
-  transition:
-    border-color var(--t-fast) var(--ease-out),
-    color var(--t-fast) var(--ease-out);
-}
-.act5__btn:hover {
-  border-color: #1f8f54;
-  color: #1f8f54;
-}
+.act5b__scroll {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
 
-.act5__timeline {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  margin: var(--sp-8) 0 var(--sp-8);
-  flex-wrap: wrap;
-}
-.act5__slider {
-  flex: 1;
-  min-width: 180px;
-  accent-color: #1f8f54;
-  cursor: pointer;
-}
-.act5__year {
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-light);
-  color: #1f8f54;
-  min-width: 4ch;
-}
-.act5__demo {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--c-text-mute);
-  border: var(--border-hair) solid var(--c-line-strong);
-  padding: var(--sp-1) var(--sp-3);
-  border-radius: var(--r-pill);
-}
-
-.act5__chart {
-  border: var(--border-hair) solid var(--c-line);
-  border-radius: var(--r-md);
-  background: var(--c-surface);
-  padding: var(--sp-6);
-  margin-bottom: var(--sp-4);
-}
-.act5__chart-head {
-  margin-bottom: var(--sp-4);
-}
-.act5__chart-title {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semi);
-}
-.act5__sub {
-  display: block;
-  margin-top: var(--sp-1);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.04em;
-  color: var(--c-text-mute);
-}
-
-.act5__sec-head {
-  margin: var(--sp-12) 0 var(--sp-4);
-  padding-top: var(--sp-8);
-  border-top: var(--border-hair) solid var(--c-line);
-}
-.act5__sec-title {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semi);
-}
-
-.act5__back {
-  display: inline-block;
-  margin-top: var(--sp-16);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--c-text-mute);
-  transition: color var(--t-fast) var(--ease-out);
-}
-.act5__back:hover {
-  color: #1f8f54;
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
 }

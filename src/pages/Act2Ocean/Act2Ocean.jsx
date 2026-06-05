@@ -20,10 +20,10 @@ import Loader from "../../components/Loader/Loader";
 import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import RankChart from "../../components/charts/RankChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
-import ScatterChart from "../../components/charts/ScatterChart";
+import TrajectoryChart from "../../components/charts/TrajectoryChart";
 import DualAxisChart from "../../components/charts/DualAxisChart";
 import ChangeChart from "../../components/charts/ChangeChart";
-import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
+import { median, fmt, valAt } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -40,41 +40,6 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
 /* ---------- Contrôles de filtre (globaux à l'acte) ---------- */
-function Pills({ label, options, value, onChange, help }) {
-  return (
-    <div className="act1f" role="group" aria-label={label}>
-      {label ? (
-        <span className="act1f__lbl">
-          {label}
-          {help ? (
-            <span className="act1f__info">
-              <button type="button" className="act1f__help" aria-label={help}>
-                ?
-              </button>
-              <span className="act1f__tip" role="tooltip">
-                {help}
-              </span>
-            </span>
-          ) : null}
-        </span>
-      ) : null}
-      <div className="act1f__pills">
-        {options.map((o) => (
-          <button
-            key={String(o.v)}
-            type="button"
-            className={`act1f__pill ${value === o.v ? "is-active" : ""}`}
-            onClick={() => onChange(o.v)}
-            aria-pressed={value === o.v}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function Select({ label, options, value, onChange }) {
   return (
     <div className="act1f act1f--select">
@@ -196,36 +161,24 @@ export default function Act2Ocean() {
     [DATA, inRegion, yearForMetric],
   );
 
-  const subNames = useMemo(
-    () => ({ melanesia: t("act1.filter.melanesia"), polynesia: t("act1.filter.polynesia"), micronesia: t("act1.filter.micronesia") }),
-    [t],
-  );
-
-  // Corrélation mer × température (point dans le temps, combiné).
-  const corrGroups = useMemo(() => {
-    const palette = paletteOf(tk);
-    const seaYear = yearForMetric("sea", currentYear);
-    const sstYear = yearForMetric("sst", currentYear);
-    const seaSeries = DATA.sea.series.filter((s) => inRegion(s.area));
-    return Object.keys(SUBREGIONS)
-      .map((reg, i) => ({
-        name: subNames[reg],
-        color: palette[i],
-        points: seaSeries
-          .filter((s) => REGION_OF[s.area] === reg)
-          .map((s) => {
-            const x = valAt(s, seaYear);
-            const sstS = DATA.sst.series.find((q) => q.area === s.area);
-            const y = sstS ? valAt(sstS, sstYear) : null;
-            if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-            return { name: s.name, x: Number(x.toFixed(3)), y: Number(y.toFixed(2)) };
-          })
-          .filter(Boolean),
-      }))
-      .filter((g) => g.points.length);
-  }, [DATA, currentYear, subNames, inRegion, yearForMetric, tk]);
-
-  const corrMedianX = useMemo(() => median(corrGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [corrGroups]);
+  // Trajectoire du Pacifique dans le temps : un point par année,
+  // X = réchauffement moyen (°C), Y = niveau de la mer moyen (m).
+  const trajectory = useMemo(() => {
+    const seaS = DATA.sea.series.filter((s) => inRegion(s.area));
+    const sstS = DATA.sst.series.filter((s) => inRegion(s.area));
+    const meanAt = (arr, y) => {
+      const vs = arr.map((s) => valAt(s, y)).filter((v) => Number.isFinite(v));
+      return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null;
+    };
+    return masterYears
+      .map((y) => {
+        const x = meanAt(sstS, y);
+        const yy = meanAt(seaS, y);
+        if (!Number.isFinite(x) || !Number.isFinite(yy)) return null;
+        return { year: y, x: Number(x.toFixed(3)), y: Number(yy.toFixed(3)) };
+      })
+      .filter(Boolean);
+  }, [DATA, inRegion, masterYears]);
 
   // Évolution depuis le début (dernière − première valeur) pour la mesure active.
   // delta > 0 = l'anomalie s'aggrave ; delta < 0 = elle se résorbe.
@@ -289,14 +242,14 @@ export default function Act2Ocean() {
   // Présence de données (évite l'axe vide 0–1).
   const noSeries = seriesFor(metric).length === 0;
   const noPts = currentYear != null && pointsFor(metric, currentYear).length === 0;
-  const noCorr = corrGroups.length === 0;
+  const noTraj = trajectory.length < 2;
   const noChange = changeRows.length === 0;
   const noDual = seriesFor("sea").length === 0 && seriesFor("sst").length === 0;
 
   const filtersEl = (
     <>
       <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <Pills label={t("act2.f.metric")} options={metricOpts} value={metric} onChange={setMetric} />
+      <Select label={t("act2.f.metric")} options={metricOpts} value={metric} onChange={setMetric} />
     </>
   );
 
@@ -362,13 +315,23 @@ export default function Act2Ocean() {
             ),
           },
           {
-            id: "corr",
-            empty: noCorr,
+            id: "traj",
+            empty: noTraj,
             tab: t("act2.board.tab_corr"),
             title: t("act2.viz.corr_title"),
             finding: t("act2.board.corr_find"),
             takeaway: t("act2.board.corr_take"),
-            node: <ScatterChart groups={corrGroups} unit={t("act2.sea_unit")} medianX={corrMedianX} xName={t("act2.sea_unit")} yName={t("act2.sst_unit")} />,
+            node: (
+              <TrajectoryChart
+                points={trajectory}
+                xName={t("act2.sst_unit")}
+                yName={t("act2.sea_unit")}
+                xUnit={t("act2.sst_unit")}
+                yUnit={t("act2.sea_unit")}
+                startLabel={t("act2.dumb.start")}
+                endLabel={t("act2.dumb.end")}
+              />
+            ),
           },
           {
             id: "heat",

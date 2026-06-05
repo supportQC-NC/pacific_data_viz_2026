@@ -323,12 +323,21 @@
   min-height: 0;
   width: 100%;
 
+  // Tout enfant direct (ECharts, ApexCharts, carte Mapbox, conteneur SVG…)
+  // remplit exactement la boîte — règle au passage la hauteur des cartes.
+  > * {
+    height: 100% !important;
+    min-height: 0 !important;
+    width: 100%;
+  }
+
   .apexchart,
   .apexchart--tall,
   .apexchart--xl,
   .echart,
   .barrace {
     height: 100% !important;
+    min-height: 0 !important;
     width: 100%;
   }
 }
@@ -377,12 +386,8 @@
     padding-right: var(--sp-4);
     border-right: 1px solid var(--c-line);
   }
-  // Le graphe (et lui seul) est borné : il ne déborde pas. Le rail reste en
-  // overflow visible (base) et la bulle d'aide, ancrée en haut du rail,
-  // s'affiche dans les limites du panneau — donc jamais coupée.
-  .board__chart {
-    overflow: hidden;
-  }
+  // Le panneau borne déjà tout à l'écran ; on ne rogne PAS le graphe lui-même
+  // (sinon les libellés du bas de l'axe sont coupés).
   // Respiration : le titre/numéro/sous-titre ne collent plus au rail.
   .board__main {
     padding-left: var(--sp-6);
