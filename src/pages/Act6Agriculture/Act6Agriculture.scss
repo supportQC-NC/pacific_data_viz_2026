@@ -1,18 +1,55 @@
 // src/pages/Act6Agriculture/Act6Agriculture.scss
 // ============================================================
-// Acte 06 — Agriculture. Rendu via ActBoard. Classes de filtres (.act1f*)
-// de l'Acte 1 + conteneur défilable pour les composants maison riches
-// (petits multiples, heatmap, explorateur de cultures).
+// Acte 06 — Agriculture. Rendu via ActBoard. Classes de filtres (.act1f*).
+//   .act6b__fit    → graphe SVG (tendance, heatmap) calé dans le cadre ;
+//   .act6b__scroll → listes/grilles riches, défilables, SANS forcer la
+//                    taille des <svg> internes (sinon les barres fines
+//                    type CropRanking sont étirées et deviennent énormes).
+// Les graphes ECharts (haltères, classements) sont rendus SANS wrapper :
+// le board leur impose height:100% et ils se calent seuls.
 // ============================================================
 @import "../Act1Emissions/Act1Emissions.scss";
+
+.act6b__fit {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // SVG à viewBox + preserveAspectRatio="meet" : se cale dans la boîte.
+  .trend,
+  .hm {
+    width: 100%;
+    height: 100%;
+  }
+
+  .trend__svg,
+  .hm__svg {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+  }
+}
 
 .act6b__scroll {
   height: 100%;
   width: 100%;
   overflow: auto;
+  // Pas de règle générique sur <svg> : chaque composant garde ses tailles
+  // CSS (ex. barres fines de CropRanking en 8px).
 
-  svg {
-    max-width: 100%;
-    height: auto;
+  // Sécurité : la barre de CropRanking est un <svg preserveAspectRatio="none">.
+  // Sans hauteur effective, le navigateur la calcule via l'aspect-ratio du
+  // viewBox (largeur × 8/100 ≈ énorme). On la fige donc explicitement.
+  .croprank__bar {
+    height: 14px !important;
+    align-self: center;
+  }
+
+  // Lignes plus compactes (rangée du classement).
+  .croprank__row {
+    padding-block: var(--sp-1);
   }
 }

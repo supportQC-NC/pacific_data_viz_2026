@@ -979,8 +979,17 @@
       "map_find": "The geography of median yield for the chosen year (log scale).",
       "map_take": "Fertile lands and poor soils are very unevenly spread across the Pacific.",
       "explorer_find": "Pick a crop to explore its yield, territory by territory.",
-      "explorer_take": "Behind the aggregate, each crop tells its own story of vulnerability."
-    }
+      "explorer_take": "Behind the aggregate, each crop tells its own story of vulnerability.",
+      "kind_label": "Type",
+      "kind_crop": "Crops",
+      "kind_livestock": "Livestock",
+      "tab_animals": "Top livestock",
+      "tab_stability": "Stability",
+      "stability_title": "Yield stability",
+      "stability_find": "Coefficient of variation of yield over time, per territory (low = steady).",
+      "stability_take": "The most volatile yields flag the production most exposed to climate shocks."
+    },
+    "explorer_race": "The territories' race"
   },
   "act7": {
     "tag": "Act 07 — The living world",

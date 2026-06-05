@@ -979,8 +979,17 @@
       "map_find": "La géographie du rendement médian pour l'année choisie (échelle logarithmique).",
       "map_take": "Terres fertiles et sols pauvres se répartissent très inégalement dans le Pacifique.",
       "explorer_find": "Choisissez une culture pour explorer son rendement, territoire par territoire.",
-      "explorer_take": "Derrière l'agrégat, chaque culture raconte sa propre histoire de vulnérabilité."
-    }
+      "explorer_take": "Derrière l'agrégat, chaque culture raconte sa propre histoire de vulnérabilité.",
+      "kind_label": "Type",
+      "kind_crop": "Cultures",
+      "kind_livestock": "Élevage",
+      "tab_animals": "Top élevage",
+      "tab_stability": "Stabilité",
+      "stability_title": "Stabilité des rendements",
+      "stability_find": "Coefficient de variation du rendement dans le temps, par territoire (faible = régulier).",
+      "stability_take": "Les rendements les plus volatils signalent les productions les plus exposées aux aléas climatiques."
+    },
+    "explorer_race": "La course des territoires"
   },
   "act7": {
     "tag": "Acte 07 — Le vivant",

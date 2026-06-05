@@ -18,6 +18,7 @@ import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import RankChart from "../../components/charts/RankChart";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import { fmt } from "../../components/charts/echartsBase";
 import "./Act6Agriculture.scss";
@@ -149,6 +150,7 @@ export default function Act6Agriculture() {
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
+  const [kind, setKind] = useState("crop");
 
   useEffect(() => {
     let alive = true;
@@ -165,8 +167,13 @@ export default function Act6Agriculture() {
     };
   }, [lang]);
 
-  const agg = useMemo(() => (agri.data ? buildAggregate(agri.data) : null), [agri.data]);
+  const agg = useMemo(() => (agri.data ? buildAggregate(agri.data, kind) : null), [agri.data, kind]);
   const years = useMemo(() => agg?.years || [], [agg]);
+
+  // Le type (cultures/élevage) a ses propres années → on réinitialise le curseur.
+  useEffect(() => {
+    setYearIdx(null);
+  }, [kind]);
 
   useEffect(() => {
     if (years.length && yearIdx === null) setYearIdx(years.length - 1);
@@ -188,7 +195,7 @@ export default function Act6Agriculture() {
   const cropRankRows = useMemo(() => {
     if (!agri.data || currentYear == null) return [];
     return (agri.data.commodities || [])
-      .filter((c) => c.kind === "crop")
+      .filter((c) => c.kind === kind)
       .map((c) => {
         const d = agri.data.byCommodity[c.code];
         if (!d) return null;
@@ -201,7 +208,7 @@ export default function Act6Agriculture() {
         return { code: c.code, label: c.label, value: median(vals), year: currentYear };
       })
       .filter(Boolean);
-  }, [agri.data, currentYear, areaVisible]);
+  }, [agri.data, currentYear, areaVisible, kind]);
 
   const dumbbellRows = useMemo(() => {
     if (!agg || firstYear == null || lastYear == null) return [];
@@ -231,7 +238,25 @@ export default function Act6Agriculture() {
     return [{ area: "PAC", name: t("act6.regional_name"), values: vals }];
   }, [agg, years, lang, areaVisible, t]);
 
-  const unit = t("act6.unit");
+  const unit = kind === "crop" ? t("act6.unit") : t("act6.livestock_unit");
+
+  // Stabilité = coefficient de variation (%) du rendement dans le temps,
+  // par territoire. Faible CV = production régulière (résiliente).
+  const volatilityRows = useMemo(() => {
+    if (!agg) return [];
+    return allSeries(agg, lang)
+      .filter((s) => areaVisible(s.area) && s.values.length >= 3)
+      .map((s) => {
+        const xs = s.values.map((p) => p.value);
+        const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
+        if (!mean) return null;
+        const variance = xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length;
+        const cv = (Math.sqrt(variance) / mean) * 100;
+        return { name: s.name, value: Math.round(cv * 10) / 10 };
+      })
+      .filter(Boolean);
+  }, [agg, lang, areaVisible]);
+  const volatilityMedian = useMemo(() => median(volatilityRows.map((r) => r.value)) ?? 0, [volatilityRows]);
 
   const kpiItems = useMemo(() => {
     if (agri.status !== "ready" || !points.length) return [];
@@ -267,6 +292,7 @@ export default function Act6Agriculture() {
 
   const filtersEl = (
     <>
+      <Select label={t("act6.board.kind_label")} options={[{ v: "crop", label: t("act6.board.kind_crop") }, { v: "livestock", label: t("act6.board.kind_livestock") }]} value={kind} onChange={setKind} />
       <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
       <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={(i) => setYearIdx(i)} />
     </>
@@ -297,7 +323,7 @@ export default function Act6Agriculture() {
             finding: t("act6.board.regional_find"),
             takeaway: t("act6.board.regional_take"),
             node: (
-              <div className="act6b__scroll">
+              <div className="act6b__fit">
                 <TrendLines series={regionalSeries} years={years} currentYear={currentYear} unit={unit} />
               </div>
             ),
@@ -305,8 +331,8 @@ export default function Act6Agriculture() {
           {
             id: "crops",
             empty: cropRankRows.length === 0,
-            tab: t("act6.board.tab_crops"),
-            title: `${t("act6.crop_rank_title")} · ${currentYear}`,
+            tab: kind === "crop" ? t("act6.board.tab_crops") : t("act6.board.tab_animals"),
+            title: `${kind === "crop" ? t("act6.crop_rank_title") : t("act6.animal_rank_title")} · ${currentYear}`,
             finding: t("act6.board.crops_find"),
             takeaway: t("act6.board.crops_take"),
             node: (
@@ -322,11 +348,16 @@ export default function Act6Agriculture() {
             title: `${t("act6.compare_title")} · ${firstYear}–${lastYear}`,
             finding: t("act6.board.change_find"),
             takeaway: t("act6.board.change_take"),
-            node: (
-              <div className="act6b__scroll">
-                <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
-              </div>
-            ),
+            node: <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />,
+          },
+          {
+            id: "stability",
+            empty: volatilityRows.length === 0,
+            tab: t("act6.board.tab_stability"),
+            title: t("act6.board.stability_title"),
+            finding: t("act6.board.stability_find"),
+            takeaway: t("act6.board.stability_take"),
+            node: <RankChart points={volatilityRows} unit="%" median={volatilityMedian} refLabel={t("act6.median_ref")} sort="desc" scale="lin" />,
           },
           {
             id: "heat",
@@ -336,7 +367,7 @@ export default function Act6Agriculture() {
             finding: t("act6.board.heat_find"),
             takeaway: t("act6.board.heat_take"),
             node: (
-              <div className="act6b__scroll">
+              <div className="act6b__fit">
                 <EmissionsHeatmap series={vSeries} years={years} unit={unit} scale="sequential" labels={heatLabels} />
               </div>
             ),
@@ -365,7 +396,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.explorer_take"),
             node: (
               <div className="act6b__scroll">
-                <CropExplorer data={agri.data} />
+                <CropExplorer data={agri.data} kind={kind} labels={{ pick: kind === "crop" ? t("act6.explorer_pick") : t("act6.explorer_animal_pick") }} />
               </div>
             ),
           },

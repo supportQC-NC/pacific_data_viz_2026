@@ -1,13 +1,13 @@
 // src/components/CropExplorer/CropExplorer.jsx
 // ============================================================
-// Explorateur par culture :
-//   • rangée de chips PAYS (Tous + chaque territoire) qui filtre la grille
-//     pour ne montrer que les cultures présentes dans ce territoire ;
-//   • grille d'icônes par culture ; au clic, trajectoire du rendement par
-//     territoire (TrendLines) + classement de la dernière année (RankBars).
-// Données réelles via agriApi. Peut recevoir la donnée déjà chargée par
-// l'acte (prop `data`) pour éviter un second appel ; sinon il charge
-// lui-même. État honnête si indisponible.
+// Explorateur par culture / animal :
+//   • menu PRODUIT (indépendant) — tous les produits du type ;
+//   • menu TERRITOIRE (dynamique) — territoires qui PRODUISENT le produit
+//     choisi ; filtre la trajectoire ;
+//   • TrendLines (trajectoire) + BarRace ANIMÉ (course des territoires sur
+//     toute la période, report en avant pour la fluidité).
+// Les deux menus sont robustes : on revalide la sélection à chaque changement.
+// Les menus réutilisent les classes globales .act1f* (chargées par la page).
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -15,8 +15,9 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchAgriProduction } from "../../services/agriApi";
 import TrendLines from "../TrendLines/TrendLines";
-import RankBars from "../RankBars/RankBars";
+import BarRace from "../BarRace/BarRace";
 import CropIcon from "../CropIcons/CropIcons";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./CropExplorer.scss";
 
 function pictAreas(d) {
@@ -30,11 +31,30 @@ function stateFrom(res) {
   return { status: ok ? "ready" : "empty", data: ok ? res : null };
 }
 
+function Drop({ label, value, onChange, options }) {
+  return (
+    <div className="act1f act1f--select cropx__drop">
+      <span className="act1f__lbl">{label}</span>
+      <div className="act1f__selwrap">
+        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function CropExplorer({ data: dataProp = null, kind = "crop", labels = {} }) {
   const { t, lang } = useLang();
-  const [state, setState] = useState(() =>
-    dataProp ? stateFrom(dataProp) : { status: "loading", data: null },
-  );
+  const tk = useThemeTokens();
+  const [state, setState] = useState(() => (dataProp ? stateFrom(dataProp) : { status: "loading", data: null }));
   const [selected, setSelected] = useState(null);
   const [country, setCountry] = useState("all");
 
@@ -54,7 +74,8 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
     };
   }, [dataProp, lang]);
 
-  // Produits du type demandé ayant au moins 2 territoires PICT avec données.
+  // Tous les produits du type, ayant au moins 2 territoires PICT avec données.
+  // (Indépendant du territoire choisi → pas d'état impossible.)
   const allCrops = useMemo(() => {
     if (!state.data) return [];
     return state.data.commodities
@@ -62,111 +83,65 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
       .filter((c) => pictAreas(state.data.byCommodity[c.code]).length >= 2);
   }, [state.data, kind]);
 
-  // Liste des pays présents (sur l'ensemble des cultures), triée par nom.
-  const countries = useMemo(() => {
-    if (!state.data) return [];
-    const set = new Set();
-    allCrops.forEach((c) => {
-      pictAreas(state.data.byCommodity[c.code]).forEach((a) => {
-        if (areaHasData(state.data.byCommodity[c.code], a)) set.add(a);
-      });
-    });
-    return [...set]
-      .map((a) => ({ code: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name));
-  }, [state.data, allCrops, lang]);
-
-  // Grille filtrée par pays sélectionné.
-  const crops = useMemo(() => {
-    if (country === "all") return allCrops;
-    return allCrops.filter((c) => areaHasData(state.data.byCommodity[c.code], country));
-  }, [allCrops, country, state.data]);
-
+  // Produit sélectionné toujours valide.
   useEffect(() => {
-    if (crops.length && (selected == null || !crops.some((c) => c.code === selected))) {
-      setSelected(crops[0].code);
+    if (allCrops.length && (selected == null || !allCrops.some((c) => c.code === selected))) {
+      setSelected(allCrops[0].code);
     }
-  }, [crops, selected]);
+  }, [allCrops, selected]);
 
   const cur = selected && state.data ? state.data.byCommodity[selected] : null;
-  const curMeta = crops.find((c) => c.code === selected) || allCrops.find((c) => c.code === selected);
+  const curMeta = allCrops.find((c) => c.code === selected);
+  const unit = curMeta?.unit || "";
 
-  const series = useMemo(() => {
-    if (!cur) return [];
-    return pictAreas(cur).map((a) => ({
-      area: a,
-      name: pictName(a, lang),
-      values: (cur.byArea[a] || []).filter((p) => Number.isFinite(p.value)),
-    }));
-  }, [cur, lang]);
+  // Territoires qui PRODUISENT le produit choisi (liste dynamique).
+  const prodAreas = useMemo(() => (cur ? pictAreas(cur).filter((a) => areaHasData(cur, a)) : []), [cur]);
+  const territories = useMemo(
+    () => prodAreas.map((a) => ({ code: a, name: pictName(a, lang) })).sort((x, y) => x.name.localeCompare(y.name)),
+    [prodAreas, lang],
+  );
 
-  const points = useMemo(() => {
+  // Territoire toujours valide pour le produit courant.
+  useEffect(() => {
+    if (country !== "all" && !prodAreas.includes(country)) setCountry("all");
+  }, [prodAreas, country]);
+
+  const allSeries = useMemo(
+    () => (cur ? prodAreas.map((a) => ({ area: a, name: pictName(a, lang), values: (cur.byArea[a] || []).filter((p) => Number.isFinite(p.value)) })) : []),
+    [cur, prodAreas, lang],
+  );
+
+  // Trajectoire : toutes les lignes, ou seulement le territoire choisi.
+  const trendSeries = useMemo(() => (country === "all" ? allSeries : allSeries.filter((s) => s.area === country)), [allSeries, country]);
+
+  // Course animée : report en avant de la dernière valeur connue (fluide).
+  const raceSeries = useMemo(() => {
     if (!cur) return [];
-    return pictAreas(cur)
+    return prodAreas
       .map((a) => {
-        const p = (cur.byArea[a] || []).find((q) => q.year === cur.lastYear);
-        return p && Number.isFinite(p.value)
-          ? { area: a, name: pictName(a, lang), value: p.value, year: cur.lastYear }
-          : null;
+        const s = (cur.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year);
+        let last = null;
+        const values = cur.years.map((y) => {
+          const ex = s.find((p) => p.year === y);
+          if (ex) last = ex.value;
+          return { year: y, value: last == null ? 0 : last };
+        });
+        return { area: a, name: pictName(a, lang), values };
       })
-      .filter(Boolean);
-  }, [cur, lang]);
+      .filter((r) => r.values.some((v) => v.value > 0));
+  }, [cur, prodAreas, lang]);
 
-  const median = useMemo(() => {
-    if (!points.length) return 0;
-    const v = points.map((p) => p.value).sort((a, b) => a - b);
-    const m = Math.floor(v.length / 2);
-    return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
-  }, [points]);
+  if (state.status === "loading") return <p className="cropx__state">{t("scene.loading")}</p>;
+  if (state.status === "empty" || !allCrops.length) return <p className="cropx__state cropx__state--empty">{t("act6.explorer_empty")}</p>;
 
-  if (state.status === "loading")
-    return <p className="cropx__state">{t("scene.loading")}</p>;
-  if (state.status === "empty" || !allCrops.length)
-    return <p className="cropx__state cropx__state--empty">{t("act6.explorer_empty")}</p>;
+  const cropOpts = allCrops.map((c) => ({ v: c.code, label: c.label }));
+  const countryOpts = [{ v: "all", label: t("act6.explorer_all") }, ...territories.map((c) => ({ v: c.code, label: c.name }))];
 
   return (
     <div className="cropx">
-      <div className="cropx__pickbar">
-        <span className="cropx__pick-lbl">{t("act6.explorer_country")}</span>
-        <div className="cropx__countrybar">
-          <button
-            className={`cropx__country ${country === "all" ? "is-active" : ""}`}
-            onClick={() => setCountry("all")}
-            aria-pressed={country === "all"}
-          >
-            {t("act6.explorer_all")}
-          </button>
-          {countries.map((c) => (
-            <button
-              key={c.code}
-              className={`cropx__country ${country === c.code ? "is-active" : ""}`}
-              onClick={() => setCountry(c.code)}
-              aria-pressed={country === c.code}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="cropx__pickbar">
-        <span className="cropx__pick-lbl">
-          {(labels.pick || t("act6.explorer_pick"))} · {crops.length}
-        </span>
-        <div className="cropx__grid">
-          {crops.map((c) => (
-            <button
-              key={c.code}
-              className={`cropx__chip ${selected === c.code ? "is-active" : ""}`}
-              onClick={() => setSelected(c.code)}
-              title={c.label}
-              aria-pressed={selected === c.code}
-            >
-              <CropIcon label={c.label} className="cropx__chip-ic" />
-              <span className="cropx__chip-lbl">{c.label}</span>
-            </button>
-          ))}
-        </div>
+      <div className="cropx__drops">
+        <Drop label={`${labels.pick || t("act6.explorer_pick")} · ${allCrops.length}`} value={selected ?? ""} onChange={setSelected} options={cropOpts} />
+        <Drop label={t("act6.explorer_country")} value={country} onChange={setCountry} options={countryOpts} />
       </div>
 
       {cur && (
@@ -176,32 +151,21 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
             <div>
               <h3 className="cropx__panel-title">{curMeta?.label}</h3>
               <span className="cropx__panel-sub">
-                {curMeta?.unit} · {cur.firstYear}–{cur.lastYear} · {series.length}{" "}
-                {t("act2.coverage")}
+                {unit} · {cur.firstYear}–{cur.lastYear} · {prodAreas.length} {t("act2.coverage")}
               </span>
             </div>
           </div>
 
           <div className="cropx__chart">
             <h4 className="cropx__chart-title">{t("act6.explorer_trend")}</h4>
-            <TrendLines
-              series={series}
-              years={cur.years}
-              currentYear={cur.lastYear}
-              unit={curMeta?.unit || ""}
-            />
+            <TrendLines series={trendSeries} years={cur.years} currentYear={cur.lastYear} unit={unit} />
           </div>
 
           <div className="cropx__chart">
-            <h4 className="cropx__chart-title">
-              {t("act6.explorer_rank")} · {cur.lastYear}
-            </h4>
-            <RankBars
-              data={points}
-              unit={curMeta?.unit || ""}
-              worldAvg={median}
-              refLabel={t("act6.pac_ref")}
-            />
+            <h4 className="cropx__chart-title">{t("act6.explorer_race")}</h4>
+            <div className="cropx__race">
+              <BarRace series={raceSeries} years={cur.years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />
+            </div>
           </div>
         </div>
       )}
