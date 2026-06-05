@@ -269,7 +269,7 @@
       "color": "Couleur",
       "color_rank": "Par rang",
       "color_abs": "Absolue",
-      "scale_help": "Échelle logarithmique : chaque graduation vaut ×10. Indispensable ici, car les valeurs vont de 0,1 à ~87 t/hab — en linéaire, presque tous les territoires seraient écrasés contre zéro.",
+      "scale_help": "L'échelle agit sur les courbes (Tendance) : en log, chaque graduation vaut ×10, ce qui rend lisibles les petites valeurs. Le classement reste linéaire, car des barres partent forcément de zéro.",
       "color_help": "Par rang : la couleur suit le classement (tous les territoires se distinguent). Absolue : la couleur suit la valeur brute (un extrême peut tout aplatir).",
       "toggle": "Filtres"
     },
@@ -319,7 +319,11 @@
       "start": "Explorer les données",
       "conclusion": "Conclusion",
       "back_intro": "Intro",
-      "revise_data": "Revoir les données"
+      "revise_data": "Revoir les données",
+      "tab_change": "Évolution",
+      "change_title": "Qui s'améliore, qui empire",
+      "change_find": "Variation nette des émissions par habitant entre la première et la dernière année de données.",
+      "change_take": "En vert ceux qui ont baissé leurs émissions par tête ; en rouge ceux qui les ont creusées."
     }
   },
   "export": {

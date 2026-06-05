@@ -1,10 +1,9 @@
 // src/components/charts/RankChart.jsx
 // Classement horizontal des territoires + repère médiane + couleur sémantique.
-// MIGRÉ ECharts -> ApexCharts. Props inchangées (compat Acte 1 & Acte 2).
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import ApexChart from "../ApexChart/ApexChart";
-import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, refLineX, MONO } from "./apexBase";
+import EChart from "../Echart/Echart";
+import { fmt, axisStyle, tooltipStyle, SANS, MONO } from "./echartsBase";
 
 export default function RankChart({
   points = [],
@@ -15,57 +14,50 @@ export default function RankChart({
   scale = "lin",
 }) {
   const tk = useThemeTokens();
-
   const option = useMemo(() => {
-    // ApexCharts dessine les barres horizontales du bas vers le haut :
-    // pour un "desc" visuel (plus grand en haut), on trie en ascendant.
     const pts = [...points].sort((a, b) =>
       sort === "desc" ? a.value - b.value : b.value - a.value,
     );
-    const colors = pts.map((p) => (p.value >= median ? tk.warm : tk.positive));
-
     return {
-      chart: baseChart(tk, { type: "bar" }),
-      colors,
-      plotOptions: {
-        bar: {
-          horizontal: true,
-          distributed: true,
-          barHeight: "62%",
-          borderRadius: 4,
-          borderRadiusApplication: "end",
-        },
+      grid: { left: 8, right: 24, top: 16, bottom: 8, containLabel: true },
+      tooltip: {
+        trigger: "item",
+        ...tooltipStyle(tk),
+        valueFormatter: (v) => `${fmt(v)} ${unit}`,
       },
-      dataLabels: { enabled: false },
-      legend: { show: false },
-      grid: baseGrid(tk),
+      // NB : un graphe en barres part de zéro ; un axe logarithmique (log(0)
+      // indéfini) ferait disparaître les barres. On garde donc toujours un axe
+      // linéaire ici. Le prop `scale` est conservé pour compat mais ignoré.
+      xAxis: { type: "value", name: unit, ...axisStyle(tk) },
+      yAxis: {
+        type: "category",
+        data: pts.map((p) => p.name),
+        axisLabel: { color: tk.textSoft, fontFamily: SANS },
+        axisLine: { lineStyle: { color: tk.line } },
+        axisTick: { show: false },
+      },
       series: [
         {
-          name: unit || "valeur",
-          data: pts.map((p) => ({ x: p.name, y: Number(p.value) })),
+          type: "bar",
+          barWidth: "62%",
+          data: pts.map((p) => ({
+            value: p.value,
+            itemStyle: {
+              color: p.value >= median ? tk.warm : tk.positive,
+              borderRadius: [0, 4, 4, 0],
+            },
+          })),
+          markLine: {
+            symbol: "none",
+            data: [{ xAxis: median }],
+            lineStyle: { color: tk.accent, type: "dashed", width: 1.5 },
+            label: { formatter: refLabel, color: tk.accent, fontFamily: MONO, fontSize: 10 },
+          },
+          animationDuration: 600,
         },
       ],
-      xaxis: baseXaxis(tk, {
-        type: "numeric",
-        logarithmic: scale === "log",
-        title: { text: unit, style: { color: tk.textMute, fontFamily: MONO, fontWeight: 400, fontSize: "11px" } },
-        labels: {
-          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
-          formatter: (v) => fmt(Number(v), 1),
-        },
-      }),
-      yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "12px" } },
-      }),
-      tooltip: baseTooltip({
-        y: { formatter: (v) => `${fmt(v)} ${unit}`, title: { formatter: () => "" } },
-      }),
-      annotations: {
-        xaxis: median ? [refLineX(tk, median, refLabel, tk.accent)] : [],
-      },
-      states: { active: { filter: { type: "none" } } },
     };
   }, [points, unit, median, refLabel, sort, scale, tk]);
 
-  return <ApexChart options={option} className="apexchart--tall" />;
+  return <EChart option={option} className="echart--tall" />;
 }

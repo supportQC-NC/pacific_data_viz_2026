@@ -269,7 +269,7 @@
       "color": "Color",
       "color_rank": "By rank",
       "color_abs": "Absolute",
-      "scale_help": "Logarithmic scale: each gridline is ×10. Essential here, as values range from 0.1 to ~87 t/capita — on a linear scale almost every territory would be crushed against zero.",
+      "scale_help": "The scale affects the line charts (Trend): in log, each gridline is ×10, making small values readable. The ranking stays linear, since bars must start from zero.",
       "color_help": "By rank: colour follows the ranking (every territory stands out). Absolute: colour follows the raw value (an extreme can flatten everything).",
       "toggle": "Filters"
     },
@@ -319,7 +319,11 @@
       "start": "Explore the data",
       "conclusion": "Conclusion",
       "back_intro": "Intro",
-      "revise_data": "Review the data"
+      "revise_data": "Review the data",
+      "tab_change": "Evolution",
+      "change_title": "Who improves, who worsens",
+      "change_find": "Net change in per-capita emissions between the first and the last year of data.",
+      "change_take": "In green, those who cut their per-head emissions; in red, those who raised them."
     }
   },
   "export": {

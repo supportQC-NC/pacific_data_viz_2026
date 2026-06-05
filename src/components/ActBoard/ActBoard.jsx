@@ -168,14 +168,11 @@ export default function ActBoard({
                     {active.finding ? <p className="board__finding">{active.finding}</p> : null}
                   </div>
 
-                  <div className="board__chart">{active.node}</div>
-
-                  {active.takeaway ? (
-                    <p className="board__takeaway">
-                      {labels.takeawayKicker ? <span className="board__takeaway-k">{labels.takeawayKicker}</span> : null}
-                      {active.takeaway}
-                    </p>
-                  ) : null}
+                  {active.empty ? (
+                    <div className="board__chart-empty">{labels.empty}</div>
+                  ) : (
+                    <div className="board__chart">{active.node}</div>
+                  )}
                 </div>
               </div>
             </section>

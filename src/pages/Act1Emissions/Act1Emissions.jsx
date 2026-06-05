@@ -22,6 +22,7 @@ import RankChart from "../../components/charts/RankChart";
 import TrendChart from "../../components/charts/TrendChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import ScatterChart from "../../components/charts/ScatterChart";
+import ChangeChart from "../../components/charts/ChangeChart";
 import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
 import "./Act1Emissions.scss";
 
@@ -39,10 +40,24 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
 /* ---------- Contrôles de filtre (globaux à l'acte) ---------- */
-function Pills({ label, options, value, onChange }) {
+function Pills({ label, options, value, onChange, help }) {
   return (
     <div className="act1f" role="group" aria-label={label}>
-      {label ? <span className="act1f__lbl">{label}</span> : null}
+      {label ? (
+        <span className="act1f__lbl">
+          {label}
+          {help ? (
+            <span className="act1f__info">
+              <button type="button" className="act1f__help" aria-label={help}>
+                ?
+              </button>
+              <span className="act1f__tip" role="tooltip">
+                {help}
+              </span>
+            </span>
+          ) : null}
+        </span>
+      ) : null}
       <div className="act1f__pills">
         {options.map((o) => (
           <button
@@ -60,22 +75,22 @@ function Pills({ label, options, value, onChange }) {
   );
 }
 
-function YearSlider({ label, years, index, onChange }) {
-  if (!years.length) return null;
+function Select({ label, options, value, onChange }) {
   return (
-    <div className="act1f act1f--year">
-      <span className="act1f__lbl">
-        {label} <strong>{years[index] ?? ""}</strong>
-      </span>
-      <input
-        className="act1f__range"
-        type="range"
-        min={0}
-        max={years.length - 1}
-        value={index ?? years.length - 1}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-      />
+    <div className="act1f act1f--select">
+      {label ? <span className="act1f__lbl">{label}</span> : null}
+      <div className="act1f__selwrap">
+        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
+      </div>
     </div>
   );
 }
@@ -180,6 +195,19 @@ export default function Act1Emissions() {
 
   const scatterMedianX = useMemo(() => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [scatterGroups]);
 
+  // Évolution nette depuis le début des données (dernière − première valeur).
+  // delta < 0 = baisse (s'améliore) ; delta > 0 = hausse (empire).
+  const changeRows = useMemo(
+    () =>
+      regionSeries
+        .filter((s) => s.values.length >= 2)
+        .map((s) => ({
+          name: s.name,
+          delta: Number((s.values[s.values.length - 1].value - s.values[0].value).toFixed(2)),
+        })),
+    [regionSeries],
+  );
+
   // Chiffres-chocs (PDH).
   const kpiItems = useMemo(() => {
     const pts = pointsFor(currentYear);
@@ -228,11 +256,15 @@ export default function Act1Emissions() {
 
   const status = failed ? "error" : !ready ? "loading" : empty ? "empty" : "ready";
 
+  // Présence de données pour la région/année courante (évite l'axe vide 0–1).
+  const noPts = currentYear != null && pointsFor(currentYear).length === 0;
+  const noSeries = regionSeries.length === 0;
+  const noScatter = scatterGroups.length === 0;
+
   const filtersEl = (
     <>
-      <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <Pills label={t("act1.f.scale")} options={scaleOpts} value={scale} onChange={setScale} />
-      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={scrubYear} />
+      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+      <Pills label={t("act1.f.scale")} options={scaleOpts} value={scale} onChange={setScale} help={t("act1.f.scale_help")} />
     </>
   );
 
@@ -240,8 +272,18 @@ export default function Act1Emissions() {
     status === "ready" && currentYear != null
       ? [
           {
-            id: "rank",
+            id: "race",
+            empty: noSeries,
             signature: true,
+            tab: t("act1.board.tab_race"),
+            title: t("act1.viz.race_title"),
+            finding: t("act1.board.race_find"),
+            takeaway: t("act1.board.race_take"),
+            node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />,
+          },
+          {
+            id: "rank",
+            empty: noPts,
             tab: t("act1.board.tab_rank"),
             title: t("act1.viz.rank_title"),
             finding: t("act1.board.rank_find"),
@@ -258,15 +300,8 @@ export default function Act1Emissions() {
             ),
           },
           {
-            id: "race",
-            tab: t("act1.board.tab_race"),
-            title: t("act1.viz.race_title"),
-            finding: t("act1.board.race_find"),
-            takeaway: t("act1.board.race_take"),
-            node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />,
-          },
-          {
             id: "trend",
+            empty: noSeries,
             tab: t("act1.board.tab_trend"),
             title: t("act1.viz.trend_title"),
             finding: t("act1.board.trend_find"),
@@ -274,7 +309,17 @@ export default function Act1Emissions() {
             node: <TrendChart series={regionSeries} years={years} unit={t("act1.unit")} scale={scale} />,
           },
           {
+            id: "change",
+            empty: changeRows.length === 0,
+            tab: t("act1.board.tab_change"),
+            title: t("act1.board.change_title"),
+            finding: t("act1.board.change_find"),
+            takeaway: t("act1.board.change_take"),
+            node: <ChangeChart rows={changeRows} unit={t("act1.unit")} direction="all" />,
+          },
+          {
             id: "scatter",
+            empty: noScatter,
             tab: t("act1.board.tab_scatter"),
             title: t("act1.viz.scatter_title"),
             finding: t("act1.board.scatter_find"),
@@ -283,6 +328,7 @@ export default function Act1Emissions() {
           },
           {
             id: "map",
+            empty: noPts,
             tab: t("act1.board.tab_map"),
             title: t("act1.viz.map_title"),
             finding: t("act1.board.map_find"),
@@ -313,11 +359,12 @@ export default function Act1Emissions() {
           },
           {
             id: "heat",
+            empty: noSeries,
             tab: t("act1.board.tab_heat"),
             title: t("act1.viz.heat_title"),
             finding: t("act1.board.heat_find"),
             takeaway: t("act1.board.heat_take"),
-            node: <HeatmapChart series={regionSeries} years={years} unit={t("act1.unit")} mode="rank" labels={{ low: t("act1.heatmap.low"), high: t("act1.heatmap.high") }} />,
+            node: <HeatmapChart series={regionSeries} years={years} unit={t("act1.unit")} mode="rank" ramp={[tk.positive, tk.warm, tk.negative]} labels={{ low: t("act1.heatmap.low"), high: t("act1.heatmap.high") }} />,
           },
         ]
       : [];
