@@ -280,7 +280,8 @@
     "race": {
       "play": "Lancer",
       "pause": "Pause",
-      "replay": "Rejouer"
+      "replay": "Rejouer",
+      "restart": "Retour au début"
     },
     "nav": {
       "prev": "Section précédente",

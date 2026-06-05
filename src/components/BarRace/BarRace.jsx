@@ -5,7 +5,13 @@
 //   • Tous les appels protégés par isDisposed() + frames annulées au démontage
 //     pour éviter "layerStack" null quand le graphique est détruit pendant
 //     l'animation.
-// Props : series [{name, values:[{year,value}]}], years [], unit, tk, labels.
+//   • Options (défauts = comportement historique des actes 1/3/5) :
+//       autoplay (true) : démarre en lecture ; false = en pause ;
+//       loop (true)     : reboucle ; false = s'arrête à la dernière année ;
+//       tick (900 ms)   : durée d'un pas (plus grand = plus lent).
+//   • Bouton « retour au début » (⟲) pour rejouer.
+// Props : series [{name, values:[{year,value}]}], years [], unit, tk,
+//         labels { play, pause, restart }, autoplay, loop, tick.
 // ============================================================
 
 import React, { useEffect, useRef, useState } from "react";
@@ -14,7 +20,6 @@ import "./BarRace.scss";
 
 const MONO = "IBM Plex Mono";
 const SANS = "Hanken Grotesk";
-const TICK = 900;
 
 function targetHeight(el) {
   const inDeck = el && el.closest && el.closest(".act1viz__chart");
@@ -26,14 +31,15 @@ function alive(chart) {
   return chart && !chart.isDisposed();
 }
 
-export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {} }) {
+export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = true, loop = true, tick = 900 }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
   const rafRef = useRef(0);
   const idxRef = useRef(0);
-  const playingRef = useRef(true);
+  const playingRef = useRef(autoplay);
+  const applyRef = useRef(null);
   const [idx, setIdx] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(autoplay);
 
   useEffect(() => {
     playingRef.current = playing;
@@ -59,6 +65,19 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
       });
 
     if (idxRef.current >= years.length) idxRef.current = 0;
+
+    // Permet à l'UI (boutons) d'aller à une année précise.
+    applyRef.current = (i) => {
+      idxRef.current = i;
+      setIdx(i);
+      if (alive(chartRef.current)) {
+        try {
+          chartRef.current.setOption({ series: [{ id: "race", data: valuesFor(i) }] });
+        } catch (e) {
+          /* noop */
+        }
+      }
+    };
 
     chart.setOption({
       grid: { top: 8, bottom: 28, left: 8, right: 96, containLabel: true },
@@ -97,7 +116,7 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
         },
       ],
       animationDuration: 0,
-      animationDurationUpdate: TICK,
+      animationDurationUpdate: tick,
       animationEasing: "linear",
       animationEasingUpdate: "linear",
     });
@@ -121,35 +140,62 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
 
     const timer = setInterval(() => {
       if (!playingRef.current || !alive(chartRef.current)) return;
-      const ni = (idxRef.current + 1) % years.length;
-      idxRef.current = ni;
-      setIdx(ni);
+      const next = idxRef.current + 1;
+      if (next >= years.length) {
+        if (loop) {
+          idxRef.current = 0;
+          setIdx(0);
+          try {
+            chartRef.current.setOption({ series: [{ id: "race", data: valuesFor(0) }] });
+          } catch (e) {
+            /* noop */
+          }
+        } else {
+          // Fin : on s'arrête sur la dernière année (pas de boucle).
+          playingRef.current = false;
+          setPlaying(false);
+        }
+        return;
+      }
+      idxRef.current = next;
+      setIdx(next);
       try {
-        chartRef.current.setOption({ series: [{ id: "race", data: valuesFor(ni) }] });
+        chartRef.current.setOption({ series: [{ id: "race", data: valuesFor(next) }] });
       } catch (e) {
         /* noop */
       }
-    }, TICK);
+    }, tick);
 
     return () => {
       clearInterval(timer);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", fit);
       ro.disconnect();
+      applyRef.current = null;
       if (alive(chart)) chart.dispose();
       chartRef.current = null;
     };
-  }, [series, years, unit, tk]);
+  }, [series, years, unit, tk, loop, tick]);
+
+  const atEnd = idx >= years.length - 1;
+
+  const togglePlay = () => {
+    // Si on relance alors qu'on est à la fin (sans boucle), on repart du début.
+    if (!playing && atEnd && !loop && applyRef.current) applyRef.current(0);
+    setPlaying((p) => !p);
+  };
+  const restart = () => {
+    if (applyRef.current) applyRef.current(0);
+  };
 
   return (
     <div className="barrace">
       <div className="barrace__top">
-        <button
-          type="button"
-          className="barrace__play"
-          onClick={() => setPlaying((p) => !p)}
-        >
+        <button type="button" className="barrace__play" onClick={togglePlay}>
           {playing ? labels.pause || "Pause" : labels.play || "Lecture"}
+        </button>
+        <button type="button" className="barrace__restart" onClick={restart} aria-label={labels.restart || "Retour au début"} title={labels.restart || "Retour au début"}>
+          ⟲
         </button>
         <span className="barrace__yr">{years[idx]}</span>
       </div>

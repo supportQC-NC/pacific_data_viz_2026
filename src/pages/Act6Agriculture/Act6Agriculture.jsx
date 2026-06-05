@@ -413,7 +413,7 @@ export default function Act6Agriculture() {
                 <div className="act6b__racebar">
                   <Select label={t("act6.board.race_pick")} options={raceProducts.map((c) => ({ v: c.code, label: c.label }))} value={raceProduct ?? ""} onChange={setRaceProduct} />
                 </div>
-                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />
+                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} autoplay={false} loop={false} tick={1800} />
               </div>
             ),
           },

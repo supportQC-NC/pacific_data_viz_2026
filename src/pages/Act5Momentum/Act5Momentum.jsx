@@ -254,7 +254,7 @@ export default function Act5Momentum() {
             title: t("act5.board.rank_title"),
             finding: t("act5.board.rank_find"),
             takeaway: t("act5.board.rank_take"),
-            node: <BarRace series={race} years={years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />,
+            node: <BarRace series={race} years={years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
           },
           {
             id: "map",

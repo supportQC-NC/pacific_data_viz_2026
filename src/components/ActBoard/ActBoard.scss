@@ -575,3 +575,22 @@
     max-width: 97vw;
   }
 }
+
+/* Bouton « retour au début » de BarRace (ajout). Style aligné sur le bouton play. */
+.barrace__restart {
+  margin-left: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+
+  &:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+}

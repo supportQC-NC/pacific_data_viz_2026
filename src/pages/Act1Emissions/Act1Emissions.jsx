@@ -279,7 +279,7 @@ export default function Act1Emissions() {
             title: t("act1.viz.race_title"),
             finding: t("act1.board.race_find"),
             takeaway: t("act1.board.race_take"),
-            node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />,
+            node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
           },
           {
             id: "rank",

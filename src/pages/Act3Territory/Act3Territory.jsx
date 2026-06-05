@@ -226,7 +226,7 @@ export default function Act3Territory() {
             title: t("act3.board.rank_title"),
             finding: t("act3.board.rank_find"),
             takeaway: t("act3.board.rank_take"),
-            node: <BarRace series={series} years={years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />,
+            node: <BarRace series={series} years={years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
           },
           {
             id: "map",

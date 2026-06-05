@@ -280,7 +280,8 @@
     "race": {
       "play": "Play",
       "pause": "Pause",
-      "replay": "Replay"
+      "replay": "Replay",
+      "restart": "Back to start"
     },
     "nav": {
       "prev": "Previous section",
