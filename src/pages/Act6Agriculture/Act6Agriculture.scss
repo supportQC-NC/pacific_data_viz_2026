@@ -53,3 +53,27 @@
     padding-block: var(--sp-1);
   }
 }
+
+// Onglet « Course » : sélecteur de produit en haut, BarRace qui remplit le reste.
+.act6b__race {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  overflow: hidden;
+
+  .act6b__racebar {
+    flex: 0 0 auto;
+  }
+
+  .barrace {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .barrace__canvas {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

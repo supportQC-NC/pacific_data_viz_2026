@@ -987,7 +987,12 @@
       "tab_stability": "Stability",
       "stability_title": "Yield stability",
       "stability_find": "Coefficient of variation of yield over time, per territory (low = steady).",
-      "stability_take": "The most volatile yields flag the production most exposed to climate shocks."
+      "stability_take": "The most volatile yields flag the production most exposed to climate shocks.",
+      "tab_race": "Race",
+      "race_title": "The territories' race",
+      "race_pick": "Product",
+      "race_find": "Pick a product: the race ranks territories by yield, year after year.",
+      "race_take": "The leading pack reshuffles with the climate — no yield is guaranteed."
     },
     "explorer_race": "The territories' race"
   },

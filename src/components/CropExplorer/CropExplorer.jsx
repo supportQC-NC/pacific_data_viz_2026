@@ -2,12 +2,12 @@
 // ============================================================
 // Explorateur par culture / animal :
 //   • menu PRODUIT (indépendant) — tous les produits du type ;
-//   • menu TERRITOIRE (dynamique) — territoires qui PRODUISENT le produit
-//     choisi ; filtre la trajectoire ;
-//   • TrendLines (trajectoire) + BarRace ANIMÉ (course des territoires sur
-//     toute la période, report en avant pour la fluidité).
-// Les deux menus sont robustes : on revalide la sélection à chaque changement.
-// Les menus réutilisent les classes globales .act1f* (chargées par la page).
+//   • menu TERRITOIRE (dynamique) — territoires qui PRODUISENT le produit,
+//     filtre la trajectoire ;
+//   • TrendLines (trajectoire du rendement par territoire).
+// Les deux menus sont robustes : la sélection est revalidée à chaque
+// changement (fonctionne dans n'importe quel ordre).
+// Menus stylés via les classes globales .act1f* (chargées par la page).
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -15,9 +15,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchAgriProduction } from "../../services/agriApi";
 import TrendLines from "../TrendLines/TrendLines";
-import BarRace from "../BarRace/BarRace";
 import CropIcon from "../CropIcons/CropIcons";
-import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./CropExplorer.scss";
 
 function pictAreas(d) {
@@ -53,7 +51,6 @@ function Drop({ label, value, onChange, options }) {
 
 export default function CropExplorer({ data: dataProp = null, kind = "crop", labels = {} }) {
   const { t, lang } = useLang();
-  const tk = useThemeTokens();
   const [state, setState] = useState(() => (dataProp ? stateFrom(dataProp) : { status: "loading", data: null }));
   const [selected, setSelected] = useState(null);
   const [country, setCountry] = useState("all");
@@ -74,8 +71,7 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
     };
   }, [dataProp, lang]);
 
-  // Tous les produits du type, ayant au moins 2 territoires PICT avec données.
-  // (Indépendant du territoire choisi → pas d'état impossible.)
+  // Tous les produits du type (indépendant du territoire → pas d'état impossible).
   const allCrops = useMemo(() => {
     if (!state.data) return [];
     return state.data.commodities
@@ -83,7 +79,6 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
       .filter((c) => pictAreas(state.data.byCommodity[c.code]).length >= 2);
   }, [state.data, kind]);
 
-  // Produit sélectionné toujours valide.
   useEffect(() => {
     if (allCrops.length && (selected == null || !allCrops.some((c) => c.code === selected))) {
       setSelected(allCrops[0].code);
@@ -101,7 +96,6 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
     [prodAreas, lang],
   );
 
-  // Territoire toujours valide pour le produit courant.
   useEffect(() => {
     if (country !== "all" && !prodAreas.includes(country)) setCountry("all");
   }, [prodAreas, country]);
@@ -111,25 +105,7 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
     [cur, prodAreas, lang],
   );
 
-  // Trajectoire : toutes les lignes, ou seulement le territoire choisi.
   const trendSeries = useMemo(() => (country === "all" ? allSeries : allSeries.filter((s) => s.area === country)), [allSeries, country]);
-
-  // Course animée : report en avant de la dernière valeur connue (fluide).
-  const raceSeries = useMemo(() => {
-    if (!cur) return [];
-    return prodAreas
-      .map((a) => {
-        const s = (cur.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year);
-        let last = null;
-        const values = cur.years.map((y) => {
-          const ex = s.find((p) => p.year === y);
-          if (ex) last = ex.value;
-          return { year: y, value: last == null ? 0 : last };
-        });
-        return { area: a, name: pictName(a, lang), values };
-      })
-      .filter((r) => r.values.some((v) => v.value > 0));
-  }, [cur, prodAreas, lang]);
 
   if (state.status === "loading") return <p className="cropx__state">{t("scene.loading")}</p>;
   if (state.status === "empty" || !allCrops.length) return <p className="cropx__state cropx__state--empty">{t("act6.explorer_empty")}</p>;
@@ -159,13 +135,6 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
           <div className="cropx__chart">
             <h4 className="cropx__chart-title">{t("act6.explorer_trend")}</h4>
             <TrendLines series={trendSeries} years={cur.years} currentYear={cur.lastYear} unit={unit} />
-          </div>
-
-          <div className="cropx__chart">
-            <h4 className="cropx__chart-title">{t("act6.explorer_race")}</h4>
-            <div className="cropx__race">
-              <BarRace series={raceSeries} years={cur.years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />
-            </div>
           </div>
         </div>
       )}

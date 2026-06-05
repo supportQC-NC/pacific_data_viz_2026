@@ -987,7 +987,12 @@
       "tab_stability": "Stabilité",
       "stability_title": "Stabilité des rendements",
       "stability_find": "Coefficient de variation du rendement dans le temps, par territoire (faible = régulier).",
-      "stability_take": "Les rendements les plus volatils signalent les productions les plus exposées aux aléas climatiques."
+      "stability_take": "Les rendements les plus volatils signalent les productions les plus exposées aux aléas climatiques.",
+      "tab_race": "Course",
+      "race_title": "La course des territoires",
+      "race_pick": "Produit",
+      "race_find": "Choisissez un produit : la course classe les territoires par rendement, année après année.",
+      "race_take": "Le peloton de tête se réordonne avec le climat — aucun rendement n'est acquis."
     },
     "explorer_race": "La course des territoires"
   },

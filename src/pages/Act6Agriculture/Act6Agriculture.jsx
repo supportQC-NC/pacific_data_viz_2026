@@ -19,7 +19,9 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
 import RankChart from "../../components/charts/RankChart";
+import BarRace from "../../components/BarRace/BarRace";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
 import "./Act6Agriculture.scss";
 
@@ -146,11 +148,13 @@ function YearSlider({ label, years, index, onChange }) {
 
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
+  const tk = useThemeTokens();
 
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
   const [kind, setKind] = useState("crop");
+  const [raceProduct, setRaceProduct] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -258,6 +262,44 @@ export default function Act6Agriculture() {
   }, [agg, lang, areaVisible]);
   const volatilityMedian = useMemo(() => median(volatilityRows.map((r) => r.value)) ?? 0, [volatilityRows]);
 
+  // --- Course animée : un produit choisi, ses territoires sur toute la période ---
+  const raceProducts = useMemo(() => {
+    if (!agri.data) return [];
+    return (agri.data.commodities || [])
+      .filter((c) => c.kind === kind)
+      .filter((c) => {
+        const d = agri.data.byCommodity[c.code];
+        if (!d) return false;
+        return d.areas.filter((a) => isPict(a) && (d.byArea[a] || []).some((p) => Number.isFinite(p.value))).length >= 2;
+      });
+  }, [agri.data, kind]);
+
+  useEffect(() => {
+    if (raceProducts.length && (raceProduct == null || !raceProducts.some((c) => c.code === raceProduct))) {
+      setRaceProduct(raceProducts[0].code);
+    }
+  }, [raceProducts, raceProduct]);
+
+  const raceData = raceProduct && agri.data ? agri.data.byCommodity[raceProduct] : null;
+  const raceMeta = raceProducts.find((c) => c.code === raceProduct);
+  const raceYears = useMemo(() => raceData?.years || [], [raceData]);
+  const raceSeries = useMemo(() => {
+    if (!raceData) return [];
+    return raceData.areas
+      .filter((a) => isPict(a) && areaVisible(a))
+      .map((a) => {
+        const s = (raceData.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year);
+        let last = null;
+        const values = raceYears.map((y) => {
+          const ex = s.find((p) => p.year === y);
+          if (ex) last = ex.value;
+          return { year: y, value: last == null ? 0 : last };
+        });
+        return { area: a, name: pictName(a, lang), values };
+      })
+      .filter((r) => r.values.some((v) => v.value > 0));
+  }, [raceData, raceYears, areaVisible, lang]);
+
   const kpiItems = useMemo(() => {
     if (agri.status !== "ready" || !points.length) return [];
     const sorted = [...points].sort((a, b) => a.value - b.value);
@@ -358,6 +400,22 @@ export default function Act6Agriculture() {
             finding: t("act6.board.stability_find"),
             takeaway: t("act6.board.stability_take"),
             node: <RankChart points={volatilityRows} unit="%" median={volatilityMedian} refLabel={t("act6.median_ref")} sort="desc" scale="lin" />,
+          },
+          {
+            id: "race",
+            empty: raceSeries.length < 2,
+            tab: t("act6.board.tab_race"),
+            title: t("act6.board.race_title"),
+            finding: t("act6.board.race_find"),
+            takeaway: t("act6.board.race_take"),
+            node: (
+              <div className="act6b__race">
+                <div className="act6b__racebar">
+                  <Select label={t("act6.board.race_pick")} options={raceProducts.map((c) => ({ v: c.code, label: c.label }))} value={raceProduct ?? ""} onChange={setRaceProduct} />
+                </div>
+                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause") }} />
+              </div>
+            ),
           },
           {
             id: "heat",

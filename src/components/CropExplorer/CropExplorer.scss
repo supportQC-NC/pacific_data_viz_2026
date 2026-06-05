@@ -72,17 +72,3 @@
   font-weight: var(--fw-semi);
   margin-bottom: var(--sp-3);
 }
-
-/* Course animée (BarRace) : hauteur fixe pour que le canvas se dimensionne. */
-.cropx__race {
-  height: clamp(340px, 50vh, 520px);
-
-  .barrace {
-    height: 100%;
-  }
-
-  .barrace__canvas {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-}
