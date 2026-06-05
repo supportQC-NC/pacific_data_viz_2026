@@ -2,9 +2,9 @@
 // ============================================================
 // Acte 02 — L'océan en première ligne. Niveau de la mer (m) & anomalie de
 // température de surface (°C), anomalies (0 = référence) — données PDH/SPC.
-// Format DASHBOARD (ActBoard) : filtres GLOBAUX (sous-région + mesure
-// mer/température + année), un graphe à la fois via le rail, « la montée
-// des eaux » en SIGNATURE. 6 graphes, le reste est coupé.
+// Format DASHBOARD (ActBoard) : filtres GLOBAUX (sous-région en menu
+// déroulant + mesure mer/température), « la montée des eaux » en SIGNATURE.
+// 7 graphes dont un graphe d'évolution (qui s'améliore / qui empire).
 // 100 % ApexCharts (hors carte Mapbox).
 // ============================================================
 
@@ -22,6 +22,7 @@ import RankChart from "../../components/charts/RankChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import ScatterChart from "../../components/charts/ScatterChart";
 import DualAxisChart from "../../components/charts/DualAxisChart";
+import ChangeChart from "../../components/charts/ChangeChart";
 import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
 
@@ -74,22 +75,22 @@ function Pills({ label, options, value, onChange, help }) {
   );
 }
 
-function YearSlider({ label, years, index, onChange }) {
-  if (!years.length) return null;
+function Select({ label, options, value, onChange }) {
   return (
-    <div className="act1f act1f--year">
-      <span className="act1f__lbl">
-        {label} <strong>{years[index] ?? ""}</strong>
-      </span>
-      <input
-        className="act1f__range"
-        type="range"
-        min={0}
-        max={years.length - 1}
-        value={index ?? years.length - 1}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-      />
+    <div className="act1f act1f--select">
+      {label ? <span className="act1f__lbl">{label}</span> : null}
+      <div className="act1f__selwrap">
+        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
+      </div>
     </div>
   );
 }
@@ -226,6 +227,19 @@ export default function Act2Ocean() {
 
   const corrMedianX = useMemo(() => median(corrGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [corrGroups]);
 
+  // Évolution depuis le début (dernière − première valeur) pour la mesure active.
+  // delta > 0 = l'anomalie s'aggrave ; delta < 0 = elle se résorbe.
+  const changeRows = useMemo(
+    () =>
+      DATA[metric].series
+        .filter((s) => inRegion(s.area) && s.values.length >= 2)
+        .map((s) => ({
+          name: s.name,
+          delta: Number((s.values[s.values.length - 1].value - s.values[0].value).toFixed(3)),
+        })),
+    [DATA, metric, inRegion],
+  );
+
   const kpiItems = useMemo(() => {
     if (!ready || !currentYear) return [];
     const seaPts = pointsFor("sea", currentYear);
@@ -272,11 +286,17 @@ export default function Act2Ocean() {
   const status = failed ? "error" : !ready ? "loading" : empty ? "empty" : "ready";
   const ml = metricLabel(metric);
 
+  // Présence de données (évite l'axe vide 0–1).
+  const noSeries = seriesFor(metric).length === 0;
+  const noPts = currentYear != null && pointsFor(metric, currentYear).length === 0;
+  const noCorr = corrGroups.length === 0;
+  const noChange = changeRows.length === 0;
+  const noDual = seriesFor("sea").length === 0 && seriesFor("sst").length === 0;
+
   const filtersEl = (
     <>
-      <Pills label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
       <Pills label={t("act2.f.metric")} options={metricOpts} value={metric} onChange={setMetric} />
-      <YearSlider label={t("act1.f.year")} years={masterYears} index={yearIdx} onChange={scrubYear} />
     </>
   );
 
@@ -286,6 +306,7 @@ export default function Act2Ocean() {
           {
             id: "band",
             signature: true,
+            empty: noSeries,
             tab: t("act2.board.tab_band"),
             title: `${t("act2.viz.band_title")} · ${ml}`,
             finding: t("act2.board.band_find"),
@@ -294,6 +315,7 @@ export default function Act2Ocean() {
           },
           {
             id: "rank",
+            empty: noPts,
             tab: t("act2.board.tab_rank"),
             title: `${t("act2.viz.rank_title")} · ${ml}`,
             finding: t("act2.board.rank_find"),
@@ -301,7 +323,17 @@ export default function Act2Ocean() {
             node: <RankChart points={pointsFor(metric, currentYear)} unit={unitOf(metric)} median={0} refLabel={t("act2.ref")} sort="desc" scale="lin" />,
           },
           {
+            id: "change",
+            empty: noChange,
+            tab: t("act2.board.tab_change"),
+            title: `${t("act2.board.change_title")} · ${ml}`,
+            finding: t("act2.board.change_find"),
+            takeaway: t("act2.board.change_take"),
+            node: <ChangeChart rows={changeRows} unit={unitOf(metric)} direction="all" />,
+          },
+          {
             id: "map",
+            empty: noPts,
             tab: t("act2.board.tab_map"),
             title: `${t("act2.viz.map_title")} · ${ml}`,
             finding: t("act2.board.map_find"),
@@ -331,6 +363,7 @@ export default function Act2Ocean() {
           },
           {
             id: "corr",
+            empty: noCorr,
             tab: t("act2.board.tab_corr"),
             title: t("act2.viz.corr_title"),
             finding: t("act2.board.corr_find"),
@@ -339,14 +372,16 @@ export default function Act2Ocean() {
           },
           {
             id: "heat",
+            empty: noSeries,
             tab: t("act2.board.tab_heat"),
             title: `${t("act2.viz.heat_title")} · ${ml}`,
             finding: t("act2.board.heat_find"),
             takeaway: t("act2.board.heat_take"),
-            node: <HeatmapChart series={seriesFor(metric)} years={DATA[metric].years} unit={unitOf(metric)} mode="rank" labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }} />,
+            node: <HeatmapChart series={seriesFor(metric)} years={DATA[metric].years} unit={unitOf(metric)} mode="rank" ramp={[tk.positive, tk.warm, tk.negative]} labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }} />,
           },
           {
             id: "dual",
+            empty: noDual,
             tab: t("act2.board.tab_dual"),
             title: t("act2.viz.dual_title"),
             finding: t("act2.board.dual_find"),

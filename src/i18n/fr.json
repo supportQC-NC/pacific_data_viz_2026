@@ -508,7 +508,11 @@
       "heat_find": "Chaque ligne un territoire, chaque colonne une année : l'intensité dans le temps.",
       "heat_take": "Les bandes s'assombrissent vers le présent — l'anomalie s'installe partout.",
       "dual_find": "Les deux mesures sur un même graphique, chacune son axe.",
-      "dual_take": "Niveau de la mer et température montent ensemble, décennie après décennie."
+      "dual_take": "Niveau de la mer et température montent ensemble, décennie après décennie.",
+      "tab_change": "Évolution",
+      "change_title": "Qui s'améliore, qui empire",
+      "change_find": "Variation nette entre la première et la dernière année de données.",
+      "change_take": "En vert l'anomalie qui se résorbe ; en rouge celle qui s'aggrave."
     }
   },
   "act3": {

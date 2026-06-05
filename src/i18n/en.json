@@ -508,7 +508,11 @@
       "heat_find": "Each row a territory, each column a year: intensity over time.",
       "heat_take": "Bands darken toward the present — the anomaly settles in everywhere.",
       "dual_find": "Both measures on one chart, each with its own axis.",
-      "dual_take": "Sea level and temperature climb together, decade after decade."
+      "dual_take": "Sea level and temperature climb together, decade after decade.",
+      "tab_change": "Evolution",
+      "change_title": "Who improves, who worsens",
+      "change_find": "Net change between the first and the last year of data.",
+      "change_take": "In green the anomaly easing; in red the one getting worse."
     }
   },
   "act3": {
