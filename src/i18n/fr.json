@@ -1783,6 +1783,13 @@
       "energy": "Production d'électricité",
       "envtaxes": "Fiscalité environnementale",
       "meteo": "Réseau météorologique"
+    },
+    "story": {
+      "eyebrow": "Ma conviction",
+      "title": "Le pouvoir d'une donnée bien racontée",
+      "p1": "Je suis passionné par ce que la donnée révèle quand on la met en scène : elle transforme des chiffres en décisions, et parfois en anticipation.",
+      "walmart": "L'exemple qui m'a ouvert les yeux : avant un ouragan, Walmart a fouillé des années de ventes et vu que les Pop-Tarts à la fraise partaient ~7 fois plus que d'habitude (la bière en tête). Magasins réapprovisionnés à l'avance, rayons vidés.",
+      "p3": "Imaginez la même anticipation pour nos veilles de cyclone dans le Pacifique : savoir, avant la tempête, ce dont chaque île aura besoin. C'est ça, le pouvoir de la data — et l'esprit de Datamoana."
     }
   }
 }

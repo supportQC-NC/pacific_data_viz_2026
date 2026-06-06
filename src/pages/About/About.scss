@@ -1,7 +1,7 @@
 // src/pages/About/About.scss
 // ============================================================
-//  Page « À propos » — éditorial épuré et premium (pour le jury).
-//  Surfaces plates, hairlines fines, ombres douces, dégradés discrets.
+//  Page « À propos » — éditorial premium, dense et accessible.
+//  Duo auteur + conviction, citation en exergue, catalogue en cartes.
 //  Tokens de la charte ; aucun style inline.
 // ============================================================
 
@@ -9,7 +9,8 @@
   --soft: 0 1px 2px color-mix(in srgb, var(--c-text) 5%, transparent);
   --soft-lg:
     0 1px 2px color-mix(in srgb, var(--c-text) 5%, transparent),
-    0 22px 50px -32px color-mix(in srgb, var(--c-text) 32%, transparent);
+    0 22px 50px -32px color-mix(in srgb, var(--c-text) 34%, transparent);
+  --surface: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
   --rail: 4px;
 
   flex: 1;
@@ -18,16 +19,14 @@
 }
 
 .about__inner {
-  max-width: 1100px;
+  max-width: 1200px;
 }
 
-/* Œilleton de section avec icône */
 .about__sec-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
   color: var(--c-text-mute);
-
   svg {
     font-size: 14px;
   }
@@ -35,7 +34,7 @@
 
 /* ---------- En-tête ---------- */
 .about__head {
-  margin-bottom: var(--sp-20);
+  margin-bottom: var(--sp-16);
 }
 
 .about__back {
@@ -49,7 +48,6 @@
   text-transform: uppercase;
   color: var(--c-text-mute);
   transition: color var(--t-fast) var(--ease-out);
-
   svg {
     transition: transform var(--t-fast) var(--ease-out);
   }
@@ -83,7 +81,6 @@
   color: var(--c-text-soft);
 }
 
-/* Titre H2 commun */
 .about__h2 {
   font-family: var(--font-display);
   font-size: var(--fs-h3);
@@ -94,9 +91,18 @@
   color: var(--c-text);
 }
 
-/* ---------- Auteur ---------- */
-.about__author {
-  margin-bottom: var(--sp-20);
+/* ---------- Duo auteur + conviction ---------- */
+.about__duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-16);
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: var(--sp-12);
+  }
 }
 
 .about__author-card {
@@ -105,8 +111,9 @@
   padding: var(--sp-8) var(--sp-8) var(--sp-8) var(--sp-10);
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
+  background: var(--surface);
   box-shadow: var(--soft-lg);
+  height: calc(100% - var(--sp-4));
 
   &::before {
     content: "";
@@ -124,7 +131,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-4);
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-5);
 }
 
 .about__author-avatar {
@@ -165,7 +172,6 @@
 }
 
 .about__author-body {
-  max-width: 64ch;
   line-height: var(--lh-base);
   color: var(--c-text-soft);
 }
@@ -182,9 +188,29 @@
   color: var(--c-text-mute);
 }
 
+/* ---------- Conviction ---------- */
+.about__story-p {
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0 0 var(--sp-4);
+}
+
+.about__quote {
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4) var(--sp-5);
+  border-left: 3px solid var(--c-accent);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: color-mix(in srgb, var(--c-accent) 7%, transparent);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-style: italic;
+  line-height: var(--lh-base);
+  color: var(--c-text);
+}
+
 /* ---------- Données ---------- */
 .about__data {
-  margin-bottom: var(--sp-20);
+  margin-bottom: var(--sp-16);
 }
 
 .about__data-lead {
@@ -194,7 +220,6 @@
   color: var(--c-text-soft);
 }
 
-/* Plateforme principale (PDH) */
 .about__platform {
   display: flex;
   align-items: center;
@@ -204,12 +229,11 @@
   margin-bottom: var(--sp-8);
   border-radius: var(--r-lg);
   border: var(--border-hair) solid var(--c-line);
-  background: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
+  background: var(--surface);
   box-shadow: var(--soft);
   transition:
     border-color var(--t-base) var(--ease-out),
     transform var(--t-base) var(--ease-out);
-
   &:hover {
     border-color: var(--c-accent);
     transform: translateY(-1px);
@@ -236,19 +260,16 @@
   gap: var(--sp-1);
   min-width: 12rem;
 }
-
 .about__platform-name {
   font-family: var(--font-display);
   font-size: var(--fs-md);
   font-weight: var(--fw-semi);
   color: var(--c-text);
 }
-
 .about__platform-desc {
   font-size: var(--fs-sm);
   color: var(--c-text-soft);
 }
-
 .about__platform-cta {
   display: inline-flex;
   align-items: center;
@@ -260,109 +281,96 @@
   color: var(--c-accent);
 }
 
-/* Catalogue (table responsive) */
-.about__table {
+/* Catalogue — grille de cartes */
+.about__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  gap: var(--sp-4);
+}
+
+.about__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-lg);
-  overflow: hidden;
+  background: var(--surface);
   box-shadow: var(--soft);
-}
-
-.about__row {
-  display: grid;
-  grid-template-columns: 1.1fr 1.5fr auto;
-  align-items: center;
-  gap: var(--sp-4);
-  padding: var(--sp-4) var(--sp-6);
-  border-top: var(--border-hair) solid var(--c-line);
-  transition: background var(--t-fast) var(--ease-out);
-
-  &:first-child {
-    border-top: 0;
-  }
-  &:not(.about__row--head):hover {
-    background: color-mix(in srgb, var(--c-text) 3%, transparent);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+  &:hover {
+    border-color: var(--c-accent);
+    transform: translateY(-2px);
   }
 }
 
-.about__row--head {
-  background: color-mix(in srgb, var(--c-text) 4%, transparent);
-
-  span {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-  }
-}
-
-.about__cell {
-  font-size: var(--fs-sm);
-  color: var(--c-text-soft);
-
-  &--topic {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    font-weight: var(--fw-med);
-    color: var(--c-text);
-  }
-  &--link a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-1);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-accent);
-    transition: color var(--t-fast) var(--ease-out);
-
-    svg {
-      transition: transform var(--t-fast) var(--ease-out);
-    }
-    &:hover {
-      color: var(--c-warm);
-    }
-    &:hover svg {
-      transform: translate(2px, -2px);
-    }
-  }
-}
-
-.about__topic-icon {
+.about__card-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border-radius: var(--r-sm);
-  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  font-size: 17px;
   color: var(--c-accent);
   background: color-mix(in srgb, var(--c-accent) 12%, transparent);
 }
 
-.about__note {
-  margin-top: var(--sp-4);
+.about__card-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+  margin: var(--sp-1) 0 0;
+}
+
+.about__card-desc {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+  flex: 1;
+}
+
+.about__card-src {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+
+.about__card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--c-text-mute);
+  transition: color var(--t-fast) var(--ease-out);
+  svg {
+    font-size: 12px;
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  &:first-child {
+    color: var(--c-accent);
+  }
+  &:hover {
+    color: var(--c-warm);
+  }
+  &:hover svg {
+    transform: translate(2px, -2px);
+  }
 }
 
-@media (max-width: 720px) {
-  .about__row {
-    grid-template-columns: 1fr;
-    gap: var(--sp-2);
-  }
-  .about__row--head {
-    display: none;
-  }
-  .about__cell--source {
-    font-size: var(--fs-xs);
-    color: var(--c-text-mute);
-  }
+.about__note {
+  margin-top: var(--sp-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
 }
 
 /* ---------- Concours ---------- */
@@ -374,14 +382,13 @@
   flex-wrap: wrap;
   padding: var(--sp-10);
   border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
+  background: var(--surface);
   border: var(--border-hair) solid var(--c-line);
   box-shadow: var(--soft-lg);
 }
 
 .about__challenge-text {
   max-width: 52ch;
-
   p {
     margin-top: var(--sp-2);
     line-height: var(--lh-base);
@@ -405,7 +412,6 @@
   transition:
     transform var(--t-fast) var(--ease-out),
     box-shadow var(--t-fast) var(--ease-out);
-
   svg {
     transition: transform var(--t-fast) var(--ease-out);
   }

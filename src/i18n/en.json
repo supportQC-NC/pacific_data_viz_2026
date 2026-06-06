@@ -1783,6 +1783,13 @@
       "energy": "Electricity generation",
       "envtaxes": "Environmental taxes",
       "meteo": "Weather network"
+    },
+    "story": {
+      "eyebrow": "What drives me",
+      "title": "The power of a well-told dataset",
+      "p1": "I'm passionate about what data reveals once you stage it: it turns numbers into decisions — sometimes into anticipation.",
+      "walmart": "The example that opened my eyes: before a hurricane, Walmart mined years of sales and found strawberry Pop-Tarts selling about 7× the usual rate (beer led the list). Stores pre-stocked in the storm's path, shelves cleared.",
+      "p3": "Picture that same anticipation for our cyclone watches in the Pacific: knowing, before the storm, what each island will need. That's the power of data — and the spirit of Datamoana."
     }
   }
 }
