@@ -1,53 +1,68 @@
 // src/components/charts/RadialGauge.jsx
-// Jauge radiale (ApexCharts radialBar) — affiche un POURCENTAGE marquant au
-// centre, dégradé. Idéal pour un KPI « part de … » réactif au curseur.
-// Props : value (0–100), label, color (défaut tk.positive).
+// Jauge radiale animée — score 0..max d'un territoire (vulnérabilité composite).
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import ApexChart from "../ApexChart/ApexChart";
-import { baseChart, MONO } from "./apexBase";
+import EChart from "../Echart/Echart";
+import { MONO, SANS } from "./echartsBase";
 
-export default function RadialGauge({ value = 0, label = "", color }) {
+export default function RadialGauge({
+  value = 0,
+  max = 100,
+  label = "",
+  caption = "",
+  tone,
+}) {
   const tk = useThemeTokens();
-
   const option = useMemo(() => {
-    const main = color || tk.positive;
-    const v = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+    const col =
+      tone || (value >= 66 ? tk.negative : value >= 33 ? tk.warm : tk.positive);
     return {
-      chart: baseChart(tk, { type: "radialBar", sparkline: { enabled: false } }),
-      colors: [main],
-      series: [v],
-      labels: [label],
-      plotOptions: {
-        radialBar: {
-          startAngle: -135,
-          endAngle: 135,
-          hollow: { size: "58%" },
-          track: { background: tk.bg2, strokeWidth: "100%", margin: 6 },
-          dataLabels: {
-            name: { show: true, color: tk.textMute, fontFamily: MONO, fontSize: "13px", offsetY: 26 },
-            value: {
-              show: true,
-              color: tk.text,
-              fontFamily: MONO,
-              fontSize: "46px",
-              fontWeight: 700,
-              offsetY: -6,
-              formatter: (val) => `${Math.round(val)} %`,
-            },
+      series: [
+        {
+          type: "gauge",
+          startAngle: 220,
+          endAngle: -40,
+          min: 0,
+          max,
+          radius: "92%",
+          center: ["50%", "56%"],
+          progress: {
+            show: true,
+            width: 14,
+            roundCap: true,
+            itemStyle: { color: col },
           },
+          axisLine: { lineStyle: { width: 14, color: [[1, tk.line]] } },
+          pointer: { show: false },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          anchor: { show: false },
+          title: {
+            offsetCenter: [0, "32%"],
+            color: tk.textMute,
+            fontFamily: MONO,
+            fontSize: 11,
+          },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: [0, "-6%"],
+            formatter: (v) => Math.round(v),
+            color: tk.text,
+            fontFamily: SANS,
+            fontWeight: 700,
+            fontSize: 44,
+          },
+          data: [{ value, name: label }],
         },
-      },
-      fill: {
-        type: "gradient",
-        gradient: { shade: "dark", type: "horizontal", gradientToColors: [tk.accent], stops: [0, 100] },
-      },
-      stroke: { lineCap: "round" },
+      ],
     };
-  }, [value, label, color, tk]);
+  }, [value, max, label, tone, tk]);
 
-  // ApexCharts `radialBar` ne rafraîchit pas sa valeur via updateOptions ;
-  // on remonte le graphe quand la valeur change pour refléter les filtres.
-  const v = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-  return <ApexChart key={`gauge-${v}`} options={option} className="apexchart--tall" />;
+  return (
+    <div className="rgauge">
+      <EChart option={option} className="rgauge__chart" />
+      {caption ? <p className="rgauge__caption">{caption}</p> : null}
+    </div>
+  );
 }

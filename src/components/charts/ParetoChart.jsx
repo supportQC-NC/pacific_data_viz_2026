@@ -5,9 +5,21 @@
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
-import { baseChart, baseGrid, baseLegend, baseXaxis, baseYaxis, baseTooltip } from "./apexBase";
+import {
+  baseChart,
+  baseGrid,
+  baseLegend,
+  baseXaxis,
+  baseYaxis,
+  baseTooltip,
+} from "./apexBase";
 
-export default function ParetoChart({ rows = [], unit = "", cumulLabel = "cumul %", format }) {
+export default function ParetoChart({
+  rows = [],
+  unit = "",
+  cumulLabel = "cumul %",
+  format,
+}) {
   const tk = useThemeTokens();
   const fmtV = typeof format === "function" ? format : (v) => `${v}`;
 
@@ -44,14 +56,22 @@ export default function ParetoChart({ rows = [], unit = "", cumulLabel = "cumul 
           rotate: -40,
           rotateAlways: names.length > 8,
           hideOverlappingLabels: true,
-          style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "11px" },
+          style: {
+            colors: tk.textSoft,
+            fontFamily: "Hanken Grotesk",
+            fontSize: "11px",
+          },
         },
       }),
       yaxis: [
         baseYaxis(tk, {
           seriesName: unit || "total",
           labels: {
-            style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+            style: {
+              colors: tk.textMute,
+              fontFamily: "IBM Plex Mono",
+              fontSize: "11px",
+            },
             formatter: (v) => fmtV(Number(v)),
           },
         }),
@@ -62,7 +82,11 @@ export default function ParetoChart({ rows = [], unit = "", cumulLabel = "cumul 
           max: 100,
           tickAmount: 4,
           labels: {
-            style: { colors: tk.accent, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+            style: {
+              colors: tk.accent,
+              fontFamily: "IBM Plex Mono",
+              fontSize: "11px",
+            },
             formatter: (v) => `${Math.round(Number(v))} %`,
           },
         }),

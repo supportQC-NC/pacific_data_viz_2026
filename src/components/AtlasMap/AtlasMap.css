@@ -1,0 +1,51 @@
+.atlas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--c-bg-2);
+}
+.atlas__canvas {
+  position: absolute;
+  inset: 0;
+}
+.atlas--notoken {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  padding: var(--sp-6);
+  text-align: center;
+}
+.atlas__legend {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-surface) 86%, transparent);
+  border: var(--border-hair);
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--c-text-soft);
+  z-index: 2;
+  max-width: calc(100% - var(--sp-6));
+}
+.atlas__legend-title {
+  color: var(--c-text);
+  font-weight: 600;
+  margin-right: var(--sp-1);
+}
+.atlas__legend-bar {
+  display: inline-block;
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+}/*# sourceMappingURL=AtlasMap.css.map */
