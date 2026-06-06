@@ -1,38 +1,36 @@
 // src/pages/Act10Sante/Act10Sante.jsx
 // ============================================================
-// Acte 10 — « Le corps et l'eau ». Deux indicateurs réels du PDH :
-//   • Eau potable sûre (DF_SDG_06) — % de la population. Plus haut = mieux.
-//   • Tuberculose      (DF_SDG_03) — cas / 100 000 hab. Plus bas = mieux.
-//
-// MÊME EXPÉRIENCE que les actes 3–9 : diaporama plein écran, filtres
-// repliables (sous-région + territoire), navigation clavier/boutons, écran
-// de fin. Guides retirés. On GARDE l'existant (small multiples, heatmap,
-// classement, dumbbell) et on AJOUTE :
-//   • BandTrend (médiane + bande p10–p90, la trajectoire régionale + écart),
-//   • Boxplot (dispersion entre territoires, par année),
-//   • Scatter croisé eau × tuberculose (assainissement ↔ fardeau),
-//   • jauge accès eau potable médian (%).
-// Dumbbell corrigé (1re→dernière valeur propre à chaque territoire).
-// 100 % données API. Zéro style inline.
+// Acte 10 — La santé : accès à l'eau potable & tuberculose.
+// Format DASHBOARD (ActBoard) : filtres GLOBAUX (mesure + sous-région +
+// territoire). Onglets variés : tendance (signature), petits multiples,
+// course animée, évolution (haltères), chaleur, radar (profil régional)
+// et carte 3D. Guides/cartes dépliables retirés.
 // ============================================================
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSante } from "../../services/santeApi";
-import useThemeTokens from "../../hooks/UseThemeTokens";
-import VizPanel from "../../components/charts/VizPanel";
-import BandTrendChart from "../../components/charts/BandTrendChart";
-import BoxplotChart from "../../components/charts/BoxplotChart";
-import ScatterChart from "../../components/charts/ScatterChart";
-import RadialGauge from "../../components/charts/RadialGauge";
+import ActBoard from "../../components/ActBoard/ActBoard";
+import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
-import RankBars from "../../components/RankBars/RankBars";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
-import Loader from "../../components/Loader/Loader";
+import TrendLines from "../../components/TrendLines/TrendLines";
+import RadarChart from "../../components/charts/RadarChart";
+import BarRace from "../../components/BarRace/BarRace";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act10Sante.scss";
+
+const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
 const SUBREGIONS = {
   melanesia: ["FJ", "PG", "SB", "VU", "NC"],
@@ -44,7 +42,13 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
-const REGIONS3 = ["melanesia", "polynesia", "micronesia"];
+
+const fmtVal = (v) =>
+  !Number.isFinite(v)
+    ? "—"
+    : Math.abs(v) < 10
+      ? String(Math.round(v * 100) / 100).replace(".", ",")
+      : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -61,13 +65,6 @@ function median(nums) {
   const m = Math.floor(a.length / 2);
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
 }
-function pct(sortedAsc, q) {
-  if (!sortedAsc.length) return null;
-  const i = (sortedAsc.length - 1) * q;
-  const lo = Math.floor(i);
-  const hi = Math.ceil(i);
-  return lo === hi ? sortedAsc[lo] : sortedAsc[lo] + (sortedAsc[hi] - sortedAsc[lo]) * (i - lo);
-}
 function toSeries(ind, lang) {
   if (!ind || ind.status !== "live") return [];
   return (ind.areas || [])
@@ -81,67 +78,92 @@ function toSeries(ind, lang) {
 }
 function buildRank(series, year) {
   return series
-    .map((s) => ({ area: s.area, name: s.name, value: valueAt(s.values, year) }))
+    .map((s) => ({
+      area: s.area,
+      name: s.name,
+      value: valueAt(s.values, year),
+    }))
     .filter((r) => Number.isFinite(r.value));
 }
-// « Avant → après » propre à chaque territoire (1re et dernière valeur observées).
-function buildEnds(series) {
+function buildDumbbell(series, yearA, yearB) {
   return series
-    .map((s) => {
-      const v = (s.values || []).filter((p) => Number.isFinite(p.value));
-      if (!v.length) return null;
-      return { area: s.area, name: s.name, a: v[0].value, b: v[v.length - 1].value };
+    .map((s) => ({
+      area: s.area,
+      name: s.name,
+      a: valueAt(s.values, yearA),
+      b: valueAt(s.values, yearB),
+    }))
+    .filter((r) => Number.isFinite(r.a) && Number.isFinite(r.b));
+}
+function medianLine(series, years, name) {
+  const vals = years
+    .map((y) => {
+      const v = series
+        .map((s) => valueAt(s.values, y))
+        .filter((n) => Number.isFinite(n));
+      const m = median(v);
+      return m == null ? null : { year: y, value: m };
     })
     .filter(Boolean);
+  return vals.length ? [{ area: "MED", name, values: vals }] : [];
 }
-// Médiane + bande p10–p90 (territoires visibles) année par année.
-function bandLine(series, years) {
-  return years
-    .map((y) => {
-      const vals = series.map((s) => valueAt(s.values, y)).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
-      if (!vals.length) return null;
-      return { year: y, mean: median(vals), min: pct(vals, 0.1), max: pct(vals, 0.9) };
+function raceFrom(series, years, lang) {
+  return series
+    .map((s) => {
+      const sorted = [...s.values].sort((a, b) => a.year - b.year);
+      let last = null;
+      const values = years.map((y) => {
+        const ex = sorted.find((p) => p.year === y);
+        if (ex) last = ex.value;
+        return { year: y, value: last == null ? 0 : last };
+      });
+      return { area: s.area, name: pictName(s.area, lang), values };
+    })
+    .filter((r) => r.values.some((v) => v.value > 0));
+}
+function subAverages(all, years, t) {
+  return Object.keys(SUBREGIONS)
+    .map((reg) => {
+      const members = all.filter((s) => REGION_OF[s.area] === reg);
+      if (!members.length) return null;
+      const values = years
+        .map((y) => {
+          const vs = members
+            .map((s) => valueAt(s.values, y))
+            .filter((n) => Number.isFinite(n));
+          return vs.length
+            ? { year: y, value: vs.reduce((a, b) => a + b, 0) / vs.length }
+            : null;
+        })
+        .filter(Boolean);
+      return values.length ? { name: t(`act1.filter.${reg}`), values } : null;
     })
     .filter(Boolean);
 }
 
-function Pills({ label, isActive, labelOf, onChange }) {
+/* ---------- Filtres globaux ---------- */
+function Select({ label, options, value, onChange }) {
   return (
-    <div className="act1f" role="group" aria-label={label}>
-      <span className="act1f__lbl">{label}</span>
-      <div className="act1f__pills">
-        {REGION_KEYS.map((k) => (
-          <button key={k} type="button" className={`act1f__pill ${isActive(k) ? "is-active" : ""}`} onClick={() => onChange(k)} aria-pressed={isActive(k)}>
-            {labelOf(k)}
-          </button>
-        ))}
+    <div className="act1f act1f--select">
+      {label ? <span className="act1f__lbl">{label}</span> : null}
+      <div className="act1f__selwrap">
+        <select
+          className="act1f__select"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
       </div>
     </div>
-  );
-}
-function Selecter({ label, value, options, onChange }) {
-  return (
-    <label className="act1f act1f--select">
-      <span className="act1f__lbl">{label}</span>
-      <select className="act1f__select" value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => (
-          <option key={String(o.v)} value={o.v}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-function TextSlide({ title, sub }) {
-  return (
-    <section className="act1slide act1text">
-      <div className="act1text__inner">
-        <h2 className="act1text__title">{title}</h2>
-        {sub ? <p className="act1text__lead">{sub}</p> : null}
-        <span className="act1text__hint" aria-hidden="true">↓</span>
-      </div>
-    </section>
   );
 }
 
@@ -151,10 +173,7 @@ export default function Act10Sante() {
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [country, setCountry] = useState("all");
-  const rootRef = useRef(null);
-  const [active, setActive] = useState(0);
-  const [slideCount, setSlideCount] = useState(0);
-  const activeRef = useRef(0);
+  const [metric, setMetric] = useState("water");
 
   useEffect(() => {
     let alive = true;
@@ -162,7 +181,10 @@ export default function Act10Sante() {
     setState((prev) => (prev.data ? prev : { status: "loading", data: null }));
     fetchSante({ lang, signal: ctrl.signal }).then((res) => {
       if (!alive) return;
-      setState({ status: res.source === "live" ? "ready" : "empty", data: res });
+      setState({
+        status: res.source === "live" ? "ready" : "empty",
+        data: res,
+      });
     });
     return () => {
       alive = false;
@@ -178,299 +200,411 @@ export default function Act10Sante() {
   const tbAll = useMemo(() => toSeries(tb, lang), [tb, lang]);
 
   const countryOptions = useMemo(() => {
-    const set = new Set([...waterAll.map((s) => s.area), ...tbAll.map((s) => s.area)]);
+    const set = new Set([
+      ...waterAll.map((s) => s.area),
+      ...tbAll.map((s) => s.area),
+    ]);
     return [...set]
       .map((a) => ({ area: a, name: pictName(a, lang) }))
       .sort((x, y) => x.name.localeCompare(y.name, lang));
   }, [waterAll, tbAll, lang]);
 
-  const areaVisible = useMemo(() => {
-    if (country !== "all") return (a) => a === country;
-    return (a) => region === "all" || REGION_OF[a] === region;
-  }, [region, country]);
+  const areaVisible = useCallback(
+    (a) =>
+      country !== "all"
+        ? a === country
+        : region === "all" || REGION_OF[a] === region,
+    [region, country],
+  );
 
-  const waterS = useMemo(() => waterAll.filter((s) => areaVisible(s.area)), [waterAll, areaVisible]);
-  const tbS = useMemo(() => tbAll.filter((s) => areaVisible(s.area)), [tbAll, areaVisible]);
-
-  const onRegion = useCallback((k) => {
-    setRegion(k);
-    setCountry("all");
-  }, []);
-  const single = country !== "all";
+  const waterS = useMemo(
+    () => waterAll.filter((s) => areaVisible(s.area)),
+    [waterAll, areaVisible],
+  );
+  const tbS = useMemo(
+    () => tbAll.filter((s) => areaVisible(s.area)),
+    [tbAll, areaVisible],
+  );
 
   const span = (ind, fb0, fb1) => [
-    ind?.firstYear ?? (ind?.years?.[0] ?? fb0),
-    ind?.lastYear ?? (ind?.years?.[ind?.years?.length - 1] ?? fb1),
+    ind?.firstYear ?? ind?.years?.[0] ?? fb0,
+    ind?.lastYear ?? ind?.years?.[ind?.years?.length - 1] ?? fb1,
   ];
   const [waterA, waterB] = span(water, 2000, 2022);
   const [tbA, tbB] = span(tb, 2000, 2023);
 
-  const waterBand = useMemo(() => bandLine(waterS, water?.years || []), [waterS, water]);
-  const tbBand = useMemo(() => bandLine(tbS, tb?.years || []), [tbS, tb]);
+  const waterYears = useMemo(() => water?.years || [], [water]);
+  const tbYears = useMemo(() => tb?.years || [], [tb]);
+
+  const waterLine = useMemo(
+    () => medianLine(waterS, waterYears, t("act10.water_med_name")),
+    [waterS, waterYears, t],
+  );
+  const tbLine = useMemo(
+    () => medianLine(tbS, tbYears, t("act10.tb_med_name")),
+    [tbS, tbYears, t],
+  );
 
   const waterRank = useMemo(() => buildRank(waterS, waterB), [waterS, waterB]);
   const tbRank = useMemo(() => buildRank(tbS, tbB), [tbS, tbB]);
-  const waterMed = useMemo(() => {
-    const m = median(waterRank.map((r) => r.value));
-    return m == null ? null : Math.round(m * 10) / 10;
-  }, [waterRank]);
-  const tbMed = useMemo(() => {
-    const m = median(tbRank.map((r) => r.value));
-    return m == null ? null : Math.round(m);
-  }, [tbRank]);
 
-  const waterDumb = useMemo(() => buildEnds(waterS), [waterS]);
-  const tbDumb = useMemo(() => buildEnds(tbS), [tbS]);
-
-  // Scatter croisé : eau potable (X) × tuberculose (Y), par territoire.
-  const REGION_COLOR = useMemo(
-    () => ({ melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive }),
-    [tk],
+  const waterDumb = useMemo(
+    () => buildDumbbell(waterS, waterA, waterB),
+    [waterS, waterA, waterB],
   );
-  const scatterGroups = useMemo(() => {
-    const wBy = {};
-    waterRank.forEach((r) => (wBy[r.area] = r.value));
-    const tBy = {};
-    tbRank.forEach((r) => (tBy[r.area] = r.value));
-    const areas = Object.keys(wBy).filter((a) => tBy[a] != null);
-    return REGIONS3.map((rg) => ({
-      name: t(`act1.filter.${rg}`),
-      color: REGION_COLOR[rg],
-      points: areas
-        .filter((a) => REGION_OF[a] === rg)
-        .map((a) => ({ x: wBy[a], y: tBy[a], name: pictName(a, lang) })),
-    })).filter((g) => g.points.length);
-  }, [waterRank, tbRank, lang, t, REGION_COLOR]);
-  const scatterCount = useMemo(() => scatterGroups.reduce((s, g) => s + g.points.length, 0), [scatterGroups]);
-  const scatterMedianX = useMemo(
-    () => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
-    [scatterGroups],
+  const tbDumb = useMemo(() => buildDumbbell(tbS, tbA, tbB), [tbS, tbA, tbB]);
+
+  const waterRace = useMemo(
+    () => raceFrom(waterS, waterYears, lang),
+    [waterS, waterYears, lang],
+  );
+  const tbRace = useMemo(
+    () => raceFrom(tbS, tbYears, lang),
+    [tbS, tbYears, lang],
   );
 
-  const seqLabels = {
+  const waterSub = useMemo(
+    () => subAverages(waterAll, waterYears, t),
+    [waterAll, waterYears, t],
+  );
+  const tbSub = useMemo(
+    () => subAverages(tbAll, tbYears, t),
+    [tbAll, tbYears, t],
+  );
+
+  const isWater = metric === "water";
+  const M = isWater
+    ? {
+        series: waterS,
+        line: waterLine,
+        rank: waterRank,
+        dumb: waterDumb,
+        race: waterRace,
+        sub: waterSub,
+        years: waterYears,
+        unit: t("act10.water_unit"),
+        A: waterA,
+        B: waterB,
+        ramp: "good",
+        highTone: "positive",
+        lowTone: "warm",
+        cmp: { up: t("act10.water_cmp_up"), down: t("act10.water_cmp_down") },
+        titles: {
+          trend: t("act10.regional_water_title"),
+          multiples: t("act10.water_title"),
+          heat: t("act10.water_hm_title"),
+          change: t("act10.water_cmp_title"),
+          rank: t("act10.water_rank_title"),
+        },
+      }
+    : {
+        series: tbS,
+        line: tbLine,
+        rank: tbRank,
+        dumb: tbDumb,
+        race: tbRace,
+        sub: tbSub,
+        years: tbYears,
+        unit: t("act10.tb_unit"),
+        A: tbA,
+        B: tbB,
+        ramp: undefined,
+        highTone: "warm",
+        lowTone: "positive",
+        cmp: { up: t("act10.tb_cmp_up"), down: t("act10.tb_cmp_down") },
+        titles: {
+          trend: t("act10.regional_tb_title"),
+          multiples: t("act10.tb_title"),
+          heat: t("act10.tb_hm_title"),
+          change: t("act10.tb_cmp_title"),
+          rank: t("act10.tb_rank_title"),
+        },
+      };
+
+  const mapRange = useMemo(() => {
+    const xs = M.series
+      .flatMap((s) => s.values.map((p) => p.value))
+      .filter(Number.isFinite);
+    return xs.length ? { min: 0, max: Math.max(...xs) } : { min: 0, max: 1 };
+  }, [M.series]);
+
+  const kpiItems = useMemo(() => {
+    if (!M.rank.length) return [];
+    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
+    const high = sorted[sorted.length - 1];
+    const low = sorted[0];
+    const med = median(M.rank.map((r) => r.value));
+    return [
+      {
+        key: "med",
+        value: fmtVal(med),
+        unit: M.unit,
+        label: t("act10.board.kpi_med"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: fmtVal(high.value),
+        unit: high.name,
+        label: t("act10.board.kpi_high"),
+        tone: M.highTone,
+      },
+      {
+        key: "low",
+        value: fmtVal(low.value),
+        unit: low.name,
+        label: t("act10.board.kpi_low"),
+        tone: M.lowTone,
+      },
+    ];
+  }, [M.rank, M.unit, M.highTone, M.lowTone, t]);
+
+  const heatLabels = {
     low: t("act6.heatmap_low"),
     high: t("act6.heatmap_high"),
     empty: t("act1.change.empty"),
     mode_row: t("act6.heatmap_mode_row"),
     mode_abs: t("act6.heatmap_mode_abs"),
   };
-  const waterCmp = { up: t("act10.water_cmp_up"), down: t("act10.water_cmp_down") };
-  const tbCmp = { up: t("act10.tb_cmp_up"), down: t("act10.tb_cmp_down") };
 
-  // ---------- Navigation diaporama ----------
-  const goTo = useCallback((i) => {
-    const root = rootRef.current;
-    if (!root) return;
-    const nodes = Array.from(root.querySelectorAll(".act1slide"));
-    if (!nodes.length) return;
-    const idx = Math.max(0, Math.min(nodes.length - 1, i));
-    const top = nodes[idx].getBoundingClientRect().top + window.pageYOffset - 80;
-    window.scrollTo({ top, behavior: "smooth" });
-  }, []);
+  const retry = useCallback(() => {
+    setState({ status: "loading", data: null });
+    fetchSante({ lang }).then((res) =>
+      setState({
+        status: res.source === "live" ? "ready" : "empty",
+        data: res,
+      }),
+    );
+  }, [lang]);
 
-  useEffect(() => {
-    if (state.status !== "ready") return undefined;
-    const root = rootRef.current;
-    if (!root) return undefined;
-    let raf = 0;
-    const compute = () => {
-      const nodes = Array.from(root.querySelectorAll(".act1slide"));
-      setSlideCount(nodes.length);
-      const mid = window.innerHeight * 0.4;
-      let idx = 0;
-      for (let i = 0; i < nodes.length; i += 1) {
-        const r = nodes[i].getBoundingClientRect();
-        if (r.top <= mid) idx = i;
-        else break;
-      }
-      setActive(idx);
-      activeRef.current = idx;
-    };
-    const onScroll = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [state.status, region, country, lang]);
+  const regionOpts = REGION_KEYS.map((k) => ({
+    v: k,
+    label: t(`act1.filter.${k}`),
+  }));
+  const metricOpts = [
+    { v: "water", label: t("act10.board.metric_water") },
+    { v: "tb", label: t("act10.board.metric_tb") },
+  ];
+  const countryOpts = [
+    { v: "all", label: t("act7.country_all") },
+    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
+  ];
 
-  useEffect(() => {
-    if (state.status !== "ready") return undefined;
-    const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        goTo(activeRef.current + 1);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        goTo(activeRef.current - 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [state.status, goTo]);
+  const status =
+    state.status === "ready"
+      ? M.series.length
+        ? "ready"
+        : "empty"
+      : state.status === "loading"
+        ? "loading"
+        : "empty";
 
   const filtersEl = (
     <>
-      <Pills
-        label={t("act1.filter.title")}
-        isActive={(k) => country === "all" && region === k}
-        labelOf={(k) => t(`act1.filter.${k}`)}
-        onChange={onRegion}
+      <Select
+        label={t("act10.board.metric_label")}
+        options={metricOpts}
+        value={metric}
+        onChange={setMetric}
       />
-      <Selecter
+      <Select
+        label={t("act1.filter.title")}
+        options={regionOpts}
+        value={region}
+        onChange={(k) => {
+          setRegion(k);
+          setCountry("all");
+        }}
+      />
+      <Select
         label={t("act7.country_label")}
+        options={countryOpts}
         value={country}
-        options={[{ v: "all", label: t("act7.country_all") }].concat(
-          countryOptions.map((c) => ({ v: c.area, label: c.name })),
-        )}
         onChange={setCountry}
       />
     </>
   );
-  const FT = t("act1.f.toggle");
-  const meanLbl = single ? pictName(country, lang) : t("act10.median_label");
+
+  const charts =
+    status === "ready"
+      ? [
+          {
+            id: "trend",
+            signature: true,
+            empty: !M.line.length,
+            tab: t("act10.board.tab_trend"),
+            title: M.titles.trend,
+            finding: t("act10.board.trend_find"),
+            takeaway: t("act10.board.trend_take"),
+            node: (
+              <div className="act10b__fit">
+                <TrendLines
+                  series={M.line}
+                  years={M.years}
+                  currentYear={M.B}
+                  unit={M.unit}
+                />
+              </div>
+            ),
+          },
+          {
+            id: "multiples",
+            empty: M.series.length === 0,
+            tab: t("act10.board.tab_multiples"),
+            title: M.titles.multiples,
+            finding: t("act10.board.multiples_find"),
+            takeaway: t("act10.board.multiples_take"),
+            node: (
+              <div className="act10b__scroll">
+                <SmallMultiples
+                  series={M.series}
+                  years={M.years}
+                  unit={M.unit}
+                  currentYear={M.B}
+                  labels={{ last: t("act6.smallmult_last") }}
+                />
+              </div>
+            ),
+          },
+          {
+            id: "race",
+            empty: M.race.length < 2,
+            tab: t("act10.board.tab_race"),
+            title: M.titles.rank,
+            finding: t("act10.board.race_find"),
+            takeaway: t("act10.board.race_take"),
+            node: (
+              <BarRace
+                series={M.race}
+                years={M.years}
+                unit={M.unit}
+                tk={tk}
+                labels={{
+                  play: t("act1.race.play"),
+                  pause: t("act1.race.pause"),
+                  restart: t("act1.race.restart"),
+                }}
+              />
+            ),
+          },
+          {
+            id: "change",
+            empty: M.dumb.length === 0,
+            tab: t("act10.board.tab_change"),
+            title: `${M.titles.change} · ${M.A}–${M.B}`,
+            finding: t("act10.board.change_find"),
+            takeaway: t("act10.board.change_take"),
+            node: (
+              <DumbbellChart
+                rows={M.dumb}
+                yearA={M.A}
+                yearB={M.B}
+                unit={M.unit}
+                labels={M.cmp}
+              />
+            ),
+          },
+          {
+            id: "heat",
+            empty: M.series.length === 0,
+            tab: t("act10.board.tab_heat"),
+            title: M.titles.heat,
+            finding: t("act10.board.heat_find"),
+            takeaway: t("act10.board.heat_take"),
+            node: (
+              <div className="act10b__fit">
+                <EmissionsHeatmap
+                  series={M.series}
+                  years={M.years}
+                  unit={M.unit}
+                  scale="sequential"
+                  labels={heatLabels}
+                />
+              </div>
+            ),
+          },
+          {
+            id: "radar",
+            empty: M.sub.length < 2,
+            tab: t("act10.board.tab_radar"),
+            title: t("act10.board.radar_title"),
+            finding: t("act10.board.radar_find"),
+            takeaway: t("act10.board.radar_take"),
+            node: (
+              <div className="act10b__fit">
+                <RadarChart subAvg={M.sub} years={M.years} />
+              </div>
+            ),
+          },
+          {
+            id: "map",
+            empty: M.rank.length === 0,
+            tab: t("act10.board.tab_map"),
+            title: `${t("act10.board.map_title")} · ${M.B}`,
+            finding: t("act10.board.map_find"),
+            takeaway: t("act10.board.map_take"),
+            node: (
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
+                  <OceanMap
+                    data={M.rank}
+                    unit={M.unit}
+                    range={mapRange}
+                    ramp={M.ramp}
+                    lowLabel={t("act6.heatmap_low")}
+                    highLabel={t("act6.heatmap_high")}
+                    noTokenMsg={t("act1.map_no_token")}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            ),
+          },
+        ]
+      : [];
 
   return (
-    <main className="act1 act10" ref={rootRef}>
-      <div className="container">
-        <header className="act1__head act1slide act1slide--intro">
-          <p className="eyebrow">{t("act10.tag")}</p>
-          <h1 className="act1__title">{t("act10.title")}</h1>
-          <p className="act1__lead">{t("act10.lead")}</p>
-        </header>
-
-        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
-        {state.status === "empty" && <p className="act1__state act1__state--err">{t("act10.unavailable")}</p>}
-
-        {state.status === "ready" && (
-          <>
-            {/* ---------- Eau potable : plus haut = mieux ---------- */}
-            {waterS.length > 0 && (
-              <>
-                <TextSlide title={t("act10.water_title")} sub={t("act10.water_sub")} />
-
-                {waterBand.length > 0 && (
-                  <VizPanel title={t("act10.regional_water_title")} subtitle={t("act10.regional_water_sub")} story={t("act10.story.water_band")} filtersLabel={FT} filters={filtersEl}>
-                    <BandTrendChart data={waterBand} unit={t("act10.water_unit")} refValue={null} meanLabel={meanLbl} currentYear={waterB} color={tk.positive} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act10.water_sm_title")} subtitle={`${waterA}–${waterB} · ${waterS.length} ${t("act2.coverage")}`} filtersLabel={FT} filters={filtersEl}>
-                  <SmallMultiples series={waterS} years={water.years} unit={t("act10.water_unit")} currentYear={waterB} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act10.water_hm_title")} subtitle={t("act10.water_hm_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <EmissionsHeatmap series={waterS} years={water.years} unit={t("act10.water_unit")} scale="sequential" labels={seqLabels} />
-                </VizPanel>
-
-                <VizPanel title={t("act10.water_rank_title")} subtitle={t("act10.water_rank_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <RankBars data={waterRank} unit={t("act10.water_unit")} worldAvg={waterMed} refLabel={t("act6.median_ref")} />
-                </VizPanel>
-
-                {!single && (
-                  <VizPanel title={t("act10.box_title")} subtitle={`${t("act10.box_sub")} · ${t("act10.water_unit")}`} story={t("act10.story.box")} filtersLabel={FT} filters={filtersEl}>
-                    <BoxplotChart series={waterS} years={water.years} unit={t("act10.water_unit")} scale="lin" />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act10.gauge_title")} subtitle={`${t("act10.gauge_sub")} · ${waterB}`} story={t("act10.story.gauge")} filtersLabel={FT} filters={filtersEl}>
-                  <RadialGauge value={Math.round(waterMed ?? 0)} label={t("act10.gauge_label")} color={tk.positive} />
-                </VizPanel>
-
-                <VizPanel title={t("act10.water_cmp_title")} subtitle={t("act10.water_cmp_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <DumbbellChart rows={waterDumb} yearA={waterA} yearB={waterB} unit={t("act10.water_unit")} labels={waterCmp} />
-                </VizPanel>
-              </>
-            )}
-
-            {/* ---------- Tuberculose : plus bas = mieux ---------- */}
-            {tbS.length > 0 && (
-              <>
-                <TextSlide title={t("act10.tb_title")} sub={t("act10.tb_sub")} />
-
-                {tbBand.length > 0 && (
-                  <VizPanel title={t("act10.regional_tb_title")} subtitle={t("act10.regional_tb_sub")} story={t("act10.story.tb_band")} filtersLabel={FT} filters={filtersEl}>
-                    <BandTrendChart data={tbBand} unit={t("act10.tb_unit")} refValue={null} meanLabel={meanLbl} currentYear={tbB} color={tk.warm} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act10.tb_sm_title")} subtitle={`${tbA}–${tbB} · ${tbS.length} ${t("act2.coverage")}`} filtersLabel={FT} filters={filtersEl}>
-                  <SmallMultiples series={tbS} years={tb.years} unit={t("act10.tb_unit")} currentYear={tbB} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act10.tb_hm_title")} subtitle={t("act10.tb_hm_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <EmissionsHeatmap series={tbS} years={tb.years} unit={t("act10.tb_unit")} scale="sequential" labels={seqLabels} />
-                </VizPanel>
-
-                <VizPanel title={t("act10.tb_rank_title")} subtitle={t("act10.tb_rank_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <RankBars data={tbRank} unit={t("act10.tb_unit")} worldAvg={tbMed} refLabel={t("act6.median_ref")} />
-                </VizPanel>
-
-                {!single && (
-                  <VizPanel title={t("act10.box_title")} subtitle={`${t("act10.box_sub")} · ${t("act10.tb_unit")}`} story={t("act10.story.box")} filtersLabel={FT} filters={filtersEl}>
-                    <BoxplotChart series={tbS} years={tb.years} unit={t("act10.tb_unit")} scale="lin" />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act10.tb_cmp_title")} subtitle={t("act10.tb_cmp_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <DumbbellChart rows={tbDumb} yearA={tbA} yearB={tbB} unit={t("act10.tb_unit")} labels={tbCmp} />
-                </VizPanel>
-              </>
-            )}
-
-            {/* ---------- Croisement eau × tuberculose ---------- */}
-            {scatterCount >= 3 && (
-              <VizPanel title={t("act10.scatter_title")} subtitle={t("act10.scatter_sub")} story={t("act10.story.scatter")} filtersLabel={FT} filters={filtersEl}>
-                <ScatterChart groups={scatterGroups} unit={t("act10.water_unit")} medianX={scatterMedianX} xName={t("act10.scatter_x")} yName={t("act10.tb_unit")} />
-              </VizPanel>
-            )}
-
-            {waterS.length === 0 && tbS.length === 0 && <p className="act1__state">{t("act1.change.empty")}</p>}
-
-            <section className="act1slide act1outro">
-              <div className="act1outro__inner">
-                <p className="eyebrow">{t("act10.outro.kicker")}</p>
-                <h2 className="act1outro__title">{t("act10.outro.title")}</h2>
-                <p className="act1outro__text">{t("act10.outro.text")}</p>
-                <div className="act1outro__actions">
-                  <Link to="/synthese" className="act1outro__btn act1outro__btn--primary">
-                    {t("act10.outro.next")} <span aria-hidden="true">→</span>
-                  </Link>
-                  <Link to="/" className="act1outro__btn">
-                    {t("act10.outro.home")}
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        <Link to="/" className="act1__back">
-          ← {t("act1.back")}
-        </Link>
-      </div>
-
-      {state.status === "ready" && slideCount > 0 && (
-        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active - 1)} disabled={active <= 0} aria-label={t("act1.nav.prev")}>
-            ↑
-          </button>
-          <span className="act1nav__count">
-            {active + 1}/{slideCount}
-          </span>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active + 1)} disabled={active >= slideCount - 1} aria-label={t("act1.nav.next")}>
-            ↓
-          </button>
-        </div>
-      )}
-    </main>
+    <ActBoard
+      status={status}
+      onRetry={retry}
+      back={{ to: "/", label: t("act1.back") }}
+      eyebrow={t("act10.tag")}
+      title={t("act10.title")}
+      thesis={t("act10.thesis")}
+      kpis={kpiItems}
+      kpiTitle={t("act1.stats.title")}
+      filters={filtersEl}
+      charts={charts}
+      progress={{ index: 10, total: 11 }}
+      labels={{
+        loading: t("scene.loading"),
+        empty: t("act10.unavailable"),
+        error: t("scene.error"),
+        retry: t("act1.retry"),
+        switchHint: t("act10.board.switch_hint"),
+        signature: t("act10.board.signature"),
+        takeawayKicker: t("act10.board.takeaway_kicker"),
+        prev: t("act1.nav.prev"),
+        next: t("act1.nav.next"),
+        start: t("act10.board.start"),
+        conclusion: t("act10.board.conclusion"),
+        backIntro: t("act10.board.back_intro"),
+        reviseData: t("act10.board.revise_data"),
+      }}
+      outro={{
+        kicker: t("act10.outro.kicker"),
+        title: t("act10.outro.title"),
+        text: t("act10.outro.text"),
+        primary: { to: "/synthese", label: t("act10.outro.next") },
+        secondary: { to: "/", label: t("act10.outro.home") },
+      }}
+    />
   );
 }
