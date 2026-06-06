@@ -56,23 +56,59 @@ const TOPIC_ICONS = {
 
 // Topic = clé i18n ; org = nom propre ; link = source.
 const SOURCES = [
-  { id: "emissions", org: "Banque mondiale · World Bank", link: "https://data.worldbank.org" },
-  { id: "seaLevel", org: "Copernicus Climate Change Service (C3S)", link: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global" },
+  {
+    id: "emissions",
+    org: "Banque mondiale · World Bank",
+    link: "https://data.worldbank.org",
+  },
+  {
+    id: "seaLevel",
+    org: "Copernicus Climate Change Service (C3S)",
+    link: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global",
+  },
   { id: "sst", org: "Copernicus C3S · SPC", link: PDH_STAT },
   { id: "rain", org: "SPC · Climate Change", link: PDH_STAT },
   { id: "agriculture", org: "SPC · Agricultural Production", link: PDH_STAT },
-  { id: "biodiversity", org: "UICN · Liste Rouge / IUCN Red List", link: "https://www.iucnredlist.org" },
+  {
+    id: "biodiversity",
+    org: "UICN · Liste Rouge / IUCN Red List",
+    link: "https://www.iucnredlist.org",
+  },
   { id: "water", org: "OMS / UNICEF · JMP", link: "https://washdata.org" },
-  { id: "health", org: "Organisation mondiale de la santé (OMS)", link: "https://www.who.int/data" },
-  { id: "disasters", org: "UNSD · SDG Indicators", link: "https://unstats.un.org/sdgs/dataportal" },
-  { id: "tourism", org: "ONU Tourisme · UN Tourism", link: "https://www.unwto.org" },
+  {
+    id: "health",
+    org: "Organisation mondiale de la santé (OMS)",
+    link: "https://www.who.int/data",
+  },
+  {
+    id: "disasters",
+    org: "UNSD · SDG Indicators",
+    link: "https://unstats.un.org/sdgs/dataportal",
+  },
+  {
+    id: "tourism",
+    org: "ONU Tourisme · UN Tourism",
+    link: "https://www.unwto.org",
+  },
   { id: "energy", org: "FMI · IRENA", link: "https://www.irena.org" },
   { id: "envtaxes", org: "FMI · OCDE", link: PDH_STAT },
   { id: "meteo", org: "OMM · OSCAR / WMO", link: "https://oscar.wmo.int" },
 ];
 
+// Initiales de l'auteur, dérivées du nom (i18n).
+function initialsFrom(name) {
+  return String(name || "")
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0] || "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export default function About() {
   const { t } = useLang();
+  const authorName = t("about.author.name");
 
   return (
     <main className="about">
@@ -95,12 +131,10 @@ export default function About() {
           <div className="about__author-card">
             <div className="about__author-id">
               <span className="about__author-avatar" aria-hidden="true">
-                <FiUser />
+                {initialsFrom(authorName)}
               </span>
               <span className="about__author-text">
-                <span className="about__author-name">
-                  {t("about.author.name")}
-                </span>
+                <span className="about__author-name">{authorName}</span>
                 <span className="about__author-role">
                   {t("about.author.role")}
                 </span>
@@ -137,7 +171,8 @@ export default function About() {
               </span>
             </span>
             <span className="about__platform-cta">
-              {t("about.data.platform_cta")} <FiArrowUpRight aria-hidden="true" />
+              {t("about.data.platform_cta")}{" "}
+              <FiArrowUpRight aria-hidden="true" />
             </span>
           </a>
 

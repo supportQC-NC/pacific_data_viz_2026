@@ -1746,15 +1746,15 @@
     "back": "Retour à l'accueil",
     "author": {
       "eyebrow": "L'auteur",
-      "name": "Votre nom",
-      "role": "Designer & développeur · Datavisualisation",
-      "body": "Décrivez ici votre parcours, ce qui vous a amené à ce projet et votre approche du récit par la donnée. Ce paragraphe est un espace réservé — à personnaliser avant le rendu au jury.",
-      "note": "Espace à personnaliser (clé about.author.*)"
+      "name": "Stoyann Velten",
+      "role": "Développeur & support informatique — Nouméa, Nouvelle-Calédonie",
+      "body": "Je vis et travaille à Nouméa, en Nouvelle-Calédonie, comme développeur et support informatique dans un grand groupe de quincaillerie du territoire. Datamoana, je l'ai construit seul, sur mon temps : le Pacifique, c'est chez moi, et ces chiffres parlent de notre quotidien — la mer qui grignote les côtes, les cyclones, l'eau, les récifs. Mon but : les rendre clairs et sensibles, sans tricher avec les échelles, pour qu'on saisisse d'un coup d'œil ce que vivent nos îles.",
+      "note": "Projet solo · React, ECharts & Mapbox GL · données Pacific Data Hub (SPC)"
     },
     "data": {
       "eyebrow": "Les données",
       "title": "Des sources ouvertes et vérifiables",
-      "lead": "Toutes les données de Datamoana proviennent de sources publiques et ouvertes, agrégées par le Pacific Data Hub .Stat de la Communauté du Pacifique (SPC). Chaque acte cite sa source et sa méthode.",
+      "lead": "Toutes les données de Datamoana proviennent de sources publiques et ouvertes, agrégées par le Pacific Data Hub .Stat de la Communauté du Pacifique (SPC). Elles correspondent à la liste officielle du concours : chaque acte affiche sa source, son unité et sa méthode.",
       "platform_name": "Pacific Data Hub .Stat (SPC)",
       "platform_desc": "Point d'accès unifié (API SDMX) aux statistiques régionales du Pacifique.",
       "platform_cta": "Ouvrir la plateforme",
@@ -1766,7 +1766,7 @@
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
-      "body": "Datamoana est une contribution au Pacific Dataviz Challenge 2026, le concours régional de datavisualisation du Pacifique.",
+      "body": "Datamoana est ma contribution au Pacific Dataviz Challenge 2026, dont le thème est le changement climatique dans le Pacifique. Onze actes, 23 jeux de données officiels croisés, une seule histoire.",
       "cta": "Site officiel du concours"
     },
     "topics": {

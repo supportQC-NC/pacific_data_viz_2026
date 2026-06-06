@@ -1746,15 +1746,15 @@
     "back": "Back to home",
     "author": {
       "eyebrow": "The author",
-      "name": "Your name",
-      "role": "Designer & developer · Data visualisation",
-      "body": "Describe here your background, what drew you to this project, and your approach to storytelling with data. This paragraph is a placeholder — personalise it before submitting to the jury.",
-      "note": "Placeholder to personalise (key about.author.*)"
+      "name": "Stoyann Velten",
+      "role": "Developer & IT support — Nouméa, New Caledonia",
+      "body": "I live and work in Nouméa, New Caledonia, as a developer and IT support in one of the territory's large hardware groups. I built Datamoana on my own time: the Pacific is home, and these numbers are about our daily life — the sea eating at the coast, cyclones, water, the reefs. My goal: make them clear and tangible, without cheating the scales, so anyone can grasp at a glance what our islands are going through.",
+      "note": "Solo project · React, ECharts & Mapbox GL · Pacific Data Hub (SPC) data"
     },
     "data": {
       "eyebrow": "The data",
       "title": "Open, verifiable sources",
-      "lead": "All Datamoana data comes from public, open sources aggregated by the Pacific Data Hub .Stat of the Pacific Community (SPC). Every act cites its source and method.",
+      "lead": "All of Datamoana's data comes from open, public sources, aggregated by the Pacific Community's (SPC) Pacific Data Hub .Stat. It matches the challenge's official list: each act shows its source, unit and method.",
       "platform_name": "Pacific Data Hub .Stat (SPC)",
       "platform_desc": "Unified access point (SDMX API) to the Pacific's regional statistics.",
       "platform_cta": "Open the platform",
@@ -1766,7 +1766,7 @@
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
-      "body": "Datamoana is a contribution to the Pacific Dataviz Challenge 2026, the Pacific's regional data-visualisation competition.",
+      "body": "Datamoana is my entry to the 2026 Pacific Dataviz Challenge, whose theme is climate change in the Pacific. Eleven acts, 23 official datasets crossed, one story.",
       "cta": "Official competition website"
     },
     "topics": {

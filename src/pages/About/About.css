@@ -1,17 +1,10 @@
-// src/pages/About/About.scss
-// ============================================================
-//  Page « À propos » — éditorial épuré et premium (pour le jury).
-//  Surfaces plates, hairlines fines, ombres douces, dégradés discrets.
-//  Tokens de la charte ; aucun style inline.
-// ============================================================
-
+@charset "UTF-8";
 .about {
   --soft: 0 1px 2px color-mix(in srgb, var(--c-text) 5%, transparent);
   --soft-lg:
     0 1px 2px color-mix(in srgb, var(--c-text) 5%, transparent),
     0 22px 50px -32px color-mix(in srgb, var(--c-text) 32%, transparent);
   --rail: 4px;
-
   flex: 1;
   padding-block: calc(var(--nav-h) + var(--sp-16)) var(--sp-24);
   -webkit-font-smoothing: antialiased;
@@ -27,10 +20,9 @@
   align-items: center;
   gap: var(--sp-2);
   color: var(--c-text-mute);
-
-  svg {
-    font-size: 14px;
-  }
+}
+.about__sec-eyebrow svg {
+  font-size: 14px;
 }
 
 /* ---------- En-tête ---------- */
@@ -49,16 +41,15 @@
   text-transform: uppercase;
   color: var(--c-text-mute);
   transition: color var(--t-fast) var(--ease-out);
-
-  svg {
-    transition: transform var(--t-fast) var(--ease-out);
-  }
-  &:hover {
-    color: var(--c-accent);
-  }
-  &:hover svg {
-    transform: translateX(-3px);
-  }
+}
+.about__back svg {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.about__back:hover {
+  color: var(--c-accent);
+}
+.about__back:hover svg {
+  transform: translateX(-3px);
 }
 
 .about__eyebrow {
@@ -107,17 +98,16 @@
   border-radius: var(--r-lg);
   background: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
   box-shadow: var(--soft-lg);
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--rail);
-    border-radius: var(--r-lg) 0 0 var(--r-lg);
-    background: var(--c-accent);
-  }
+}
+.about__author-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--rail);
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
+  background: var(--c-accent);
 }
 
 .about__author-id {
@@ -206,14 +196,11 @@
   border: var(--border-hair) solid var(--c-line);
   background: color-mix(in srgb, var(--c-surface) 72%, var(--c-bg));
   box-shadow: var(--soft);
-  transition:
-    border-color var(--t-base) var(--ease-out),
-    transform var(--t-base) var(--ease-out);
-
-  &:hover {
-    border-color: var(--c-accent);
-    transform: translateY(-1px);
-  }
+  transition: border-color var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.about__platform:hover {
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
 }
 
 .about__platform-icon {
@@ -276,59 +263,55 @@
   padding: var(--sp-4) var(--sp-6);
   border-top: var(--border-hair) solid var(--c-line);
   transition: background var(--t-fast) var(--ease-out);
-
-  &:first-child {
-    border-top: 0;
-  }
-  &:not(.about__row--head):hover {
-    background: color-mix(in srgb, var(--c-text) 3%, transparent);
-  }
+}
+.about__row:first-child {
+  border-top: 0;
+}
+.about__row:not(.about__row--head):hover {
+  background: color-mix(in srgb, var(--c-text) 3%, transparent);
 }
 
 .about__row--head {
   background: color-mix(in srgb, var(--c-text) 4%, transparent);
-
-  span {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-  }
+}
+.about__row--head span {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
 }
 
 .about__cell {
   font-size: var(--fs-sm);
   color: var(--c-text-soft);
-
-  &--topic {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    font-weight: var(--fw-med);
-    color: var(--c-text);
-  }
-  &--link a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-1);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-accent);
-    transition: color var(--t-fast) var(--ease-out);
-
-    svg {
-      transition: transform var(--t-fast) var(--ease-out);
-    }
-    &:hover {
-      color: var(--c-warm);
-    }
-    &:hover svg {
-      transform: translate(2px, -2px);
-    }
-  }
+}
+.about__cell--topic {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-weight: var(--fw-med);
+  color: var(--c-text);
+}
+.about__cell--link a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.about__cell--link a svg {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.about__cell--link a:hover {
+  color: var(--c-warm);
+}
+.about__cell--link a:hover svg {
+  transform: translate(2px, -2px);
 }
 
 .about__topic-icon {
@@ -364,7 +347,6 @@
     color: var(--c-text-mute);
   }
 }
-
 /* ---------- Concours ---------- */
 .about__challenge {
   display: flex;
@@ -381,12 +363,11 @@
 
 .about__challenge-text {
   max-width: 52ch;
-
-  p {
-    margin-top: var(--sp-2);
-    line-height: var(--lh-base);
-    color: var(--c-text-soft);
-  }
+}
+.about__challenge-text p {
+  margin-top: var(--sp-2);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
 }
 
 .about__challenge-cta {
@@ -402,22 +383,19 @@
   font-size: var(--fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition:
-    transform var(--t-fast) var(--ease-out),
-    box-shadow var(--t-fast) var(--ease-out);
-
-  svg {
-    transition: transform var(--t-fast) var(--ease-out);
-  }
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--soft-lg);
-  }
-  &:hover svg {
-    transform: translate(2px, -2px);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--c-accent);
-    outline-offset: 3px;
-  }
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
 }
+.about__challenge-cta svg {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.about__challenge-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--soft-lg);
+}
+.about__challenge-cta:hover svg {
+  transform: translate(2px, -2px);
+}
+.about__challenge-cta:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}/*# sourceMappingURL=About.css.map */
