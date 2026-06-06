@@ -8,7 +8,7 @@
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
@@ -32,9 +32,8 @@ const CHAPTER_OF = {
 export default function ActFlow({ actId, children }) {
   const { t } = useLang();
   const navigate = useNavigate();
-  const { guided, seen, markSeen, exitJourney, neighbors, setImmersive } =
-    useJourney();
-  const { index, total, prev, next } = neighbors(actId);
+  const { guided, seen, markSeen, neighbors, setImmersive } = useJourney();
+  const { index, total, prev } = neighbors(actId);
 
   // En mode guidé et intro pas encore vue → on montre l'intro d'abord.
   const needsIntro = guided && !seen[actId];
@@ -58,11 +57,31 @@ export default function ActFlow({ actId, children }) {
     const ctx = gsap.context(() => {
       gsap
         .timeline({ defaults: { ease: "power3.out" } })
-        .from(".actflow__intro-ghost", { opacity: 0, scale: 1.15, duration: 1.1 })
-        .from(".actflow__intro-chapter", { y: 18, opacity: 0, duration: 0.6 }, "-=0.7")
-        .from(".actflow__intro-tag", { y: 16, opacity: 0, duration: 0.5 }, "-=0.4")
-        .from(".actflow__intro-title", { y: 40, opacity: 0, duration: 0.8 }, "-=0.3")
-        .from(".actflow__intro-text", { y: 24, opacity: 0, duration: 0.6 }, "-=0.45")
+        .from(".actflow__intro-ghost", {
+          opacity: 0,
+          scale: 1.15,
+          duration: 1.1,
+        })
+        .from(
+          ".actflow__intro-chapter",
+          { y: 18, opacity: 0, duration: 0.6 },
+          "-=0.7",
+        )
+        .from(
+          ".actflow__intro-tag",
+          { y: 16, opacity: 0, duration: 0.5 },
+          "-=0.4",
+        )
+        .from(
+          ".actflow__intro-title",
+          { y: 40, opacity: 0, duration: 0.8 },
+          "-=0.3",
+        )
+        .from(
+          ".actflow__intro-text",
+          { y: 24, opacity: 0, duration: 0.6 },
+          "-=0.45",
+        )
         .from(
           ".actflow__intro-actions > *",
           { y: 18, opacity: 0, duration: 0.5, stagger: 0.1 },
@@ -84,7 +103,10 @@ export default function ActFlow({ actId, children }) {
   useEffect(() => {
     if (revealed) return;
     if (introRef.current) {
-      introRef.current.style.setProperty("--intro-img", `url("/intro/${actId}.jpg")`);
+      introRef.current.style.setProperty(
+        "--intro-img",
+        `url("/intro/${actId}.jpg")`,
+      );
     }
   }, [actId, revealed]);
 
@@ -93,9 +115,6 @@ export default function ActFlow({ actId, children }) {
     setRevealed(true);
   };
 
-  const goNext = () => {
-    if (next) navigate(next.to);
-  };
   const goPrev = () => {
     if (prev) navigate(prev.to);
   };
@@ -121,9 +140,15 @@ export default function ActFlow({ actId, children }) {
             <h1 className="actflow__intro-title">
               {t(`home.acts.${actId}_title`)}
             </h1>
-            <p className="actflow__intro-text">{t(`home.acts.${actId}_text`)}</p>
+            <p className="actflow__intro-text">
+              {t(`home.acts.${actId}_text`)}
+            </p>
             <div className="actflow__intro-actions">
-              <button type="button" className="actflow__reveal" onClick={reveal}>
+              <button
+                type="button"
+                className="actflow__reveal"
+                onClick={reveal}
+              >
                 {t("flow.reveal")} <span aria-hidden="true">↓</span>
               </button>
               {prev && (
@@ -144,62 +169,7 @@ export default function ActFlow({ actId, children }) {
       )}
 
       {/* Contenu réel de l'acte */}
-      {revealed && (
-        <>
-          {children}
-
-          {/* Pied de navigation */}
-          <nav className="actflow__foot container" aria-label={t("flow.nav_aria")}>
-            <div className="actflow__foot-side">
-              {prev ? (
-                <button
-                  type="button"
-                  className="actflow__navbtn actflow__navbtn--prev"
-                  onClick={goPrev}
-                >
-                  <span className="actflow__navbtn-dir">← {t("flow.prev")}</span>
-                  <span className="actflow__navbtn-name">
-                    {t(`home.acts.${prev.id}_title`)}
-                  </span>
-                </button>
-              ) : (
-                <Link to="/" className="actflow__navbtn actflow__navbtn--prev">
-                  <span className="actflow__navbtn-dir">← {t("flow.home")}</span>
-                  <span className="actflow__navbtn-name">{t("flow.home_name")}</span>
-                </Link>
-              )}
-            </div>
-
-            <span className="actflow__foot-count">
-              {num} / {total}
-            </span>
-
-            <div className="actflow__foot-side actflow__foot-side--right">
-              {next ? (
-                <button
-                  type="button"
-                  className="actflow__navbtn actflow__navbtn--next"
-                  onClick={goNext}
-                >
-                  <span className="actflow__navbtn-dir">{t("flow.next")} →</span>
-                  <span className="actflow__navbtn-name">
-                    {t(`home.acts.${next.id}_title`)}
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  to="/"
-                  className="actflow__navbtn actflow__navbtn--next actflow__navbtn--end"
-                  onClick={exitJourney}
-                >
-                  <span className="actflow__navbtn-dir">{t("flow.end")} ✦</span>
-                  <span className="actflow__navbtn-name">{t("flow.end_name")}</span>
-                </Link>
-              )}
-            </div>
-          </nav>
-        </>
-      )}
+      {revealed && children}
     </div>
   );
 }
