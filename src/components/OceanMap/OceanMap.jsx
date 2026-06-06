@@ -44,12 +44,48 @@ function cssVarRaw(name, fallback) {
 function colorExpr(lo, hi, pal, mid) {
   const { cold, neutral, hot } = pal;
   if (mid != null && lo < mid && mid < hi)
-    return ["interpolate", ["linear"], ["get", "cv"], lo, cold, mid, neutral, hi, hot];
+    return [
+      "interpolate",
+      ["linear"],
+      ["get", "cv"],
+      lo,
+      cold,
+      mid,
+      neutral,
+      hi,
+      hot,
+    ];
   if (lo < 0 && hi > 0)
-    return ["interpolate", ["linear"], ["get", "cv"], lo, cold, 0, neutral, hi, hot];
+    return [
+      "interpolate",
+      ["linear"],
+      ["get", "cv"],
+      lo,
+      cold,
+      0,
+      neutral,
+      hi,
+      hot,
+    ];
   if (hi <= 0)
-    return ["interpolate", ["linear"], ["get", "cv"], lo, cold, hi === lo ? lo + 1e-6 : hi, neutral];
-  return ["interpolate", ["linear"], ["get", "cv"], lo, neutral, hi === lo ? lo + 1e-6 : hi, hot];
+    return [
+      "interpolate",
+      ["linear"],
+      ["get", "cv"],
+      lo,
+      cold,
+      hi === lo ? lo + 1e-6 : hi,
+      neutral,
+    ];
+  return [
+    "interpolate",
+    ["linear"],
+    ["get", "cv"],
+    lo,
+    neutral,
+    hi === lo ? lo + 1e-6 : hi,
+    hot,
+  ];
 }
 
 function squareKm([lng, lat], km) {
@@ -90,7 +126,7 @@ export default function OceanMap({
   const mapRef = useRef(null);
   const popupRef = useRef(null);
   const rafRef = useRef(0);
-  const fittedRef = useRef(false);
+  const fittedKeyRef = useRef("");
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(false);
 
@@ -110,7 +146,9 @@ export default function OceanMap({
 
   const norm = useMemo(
     () => (v) =>
-      hiD === loD ? 0.5 : Math.max(0, Math.min(1, (dom(v) - loD) / (hiD - loD))),
+      hiD === loD
+        ? 0.5
+        : Math.max(0, Math.min(1, (dom(v) - loD) / (hiD - loD))),
     [dom, loD, hiD],
   );
 
@@ -142,7 +180,10 @@ export default function OceanMap({
       type: "FeatureCollection",
       features: fc.features.map((f) => ({
         type: "Feature",
-        geometry: { type: "Point", coordinates: [f.properties.lng, f.properties.lat] },
+        geometry: {
+          type: "Point",
+          coordinates: [f.properties.lng, f.properties.lat],
+        },
         properties: { code: f.properties.code, val: f.properties.value },
       })),
     }),
@@ -204,8 +245,14 @@ export default function OceanMap({
         position: [1.4, 210, 30],
       });
 
-      map.addSource("cols", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      map.addSource("centers", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addSource("cols", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addSource("centers", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
 
       map.addLayer({
         id: "cols",
@@ -245,7 +292,11 @@ export default function OceanMap({
         },
       });
 
-      const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: "pm-popup" });
+      const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        className: "pm-popup",
+      });
       popupRef.current = popup;
       map.on("mousemove", "cols", (e) => {
         map.getCanvas().style.cursor = "pointer";
@@ -271,7 +322,11 @@ export default function OceanMap({
         const k = Math.min(1, (now - T0) / DUR);
         const e = 1 - Math.pow(1 - k, 3);
         if (map.getLayer("cols"))
-          map.setPaintProperty("cols", "fill-extrusion-height", ["*", ["get", "height"], e]);
+          map.setPaintProperty("cols", "fill-extrusion-height", [
+            "*",
+            ["get", "height"],
+            e,
+          ]);
         if (k < 1) rafRef.current = requestAnimationFrame(grow);
       };
       rafRef.current = requestAnimationFrame(grow);
@@ -290,7 +345,11 @@ export default function OceanMap({
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
     if (map.getLayer("cols"))
-      map.setPaintProperty("cols", "fill-extrusion-color", colorExpr(loD, hiD, pal, midD));
+      map.setPaintProperty(
+        "cols",
+        "fill-extrusion-color",
+        colorExpr(loD, hiD, pal, midD),
+      );
   }, [loaded, loD, hiD, pal, midD]);
 
   useEffect(() => {
@@ -303,15 +362,38 @@ export default function OceanMap({
     if (map.getLayer("cols"))
       map.setPaintProperty("cols", "fill-extrusion-height", ["get", "height"]);
 
-    if (!fittedRef.current && fc.features.length) {
-      const lngs = fc.features.map((f) => (f.properties.lng < 0 ? f.properties.lng + 360 : f.properties.lng));
+    // Recadrage DYNAMIQUE : on recalcule une "clé de bornes" à partir des
+    // territoires présents (leurs positions). Elle change quand les FILTRES
+    // changent (sous-région, territoire…), mais PAS au scrub d'année (mêmes
+    // territoires) → la caméra suit les filtres sans sauter à chaque année.
+    if (fc.features.length) {
+      const lngs = fc.features.map((f) =>
+        f.properties.lng < 0 ? f.properties.lng + 360 : f.properties.lng,
+      );
       const lats = fc.features.map((f) => f.properties.lat);
-      const bounds = [
-        [Math.min(...lngs) - 4, Math.min(...lats) - 4],
-        [Math.max(...lngs) + 4, Math.max(...lats) + 4],
-      ];
-      map.fitBounds(bounds, { padding: 60, pitch: 45, bearing: -8, maxZoom: 4.2, duration: 0 });
-      fittedRef.current = true;
+      const key = fc.features
+        .map(
+          (f) =>
+            `${f.properties.lng.toFixed(2)},${f.properties.lat.toFixed(2)}`,
+        )
+        .sort()
+        .join("|");
+      if (key !== fittedKeyRef.current) {
+        const bounds = [
+          [Math.min(...lngs) - 4, Math.min(...lats) - 4],
+          [Math.max(...lngs) + 4, Math.max(...lats) + 4],
+        ];
+        // 1er rendu : instantané ; changements de filtre ensuite : transition douce.
+        const duration = fittedKeyRef.current ? 700 : 0;
+        map.fitBounds(bounds, {
+          padding: 60,
+          pitch: 45,
+          bearing: -8,
+          maxZoom: 4.2,
+          duration,
+        });
+        fittedKeyRef.current = key;
+      }
     }
   }, [loaded, fc, centers]);
 
@@ -342,28 +424,91 @@ export default function OceanMap({
       <div className="omap__stage">
         <div ref={containerRef} className="omap__map" />
 
-        <button type="button" className="omap__expand" onClick={() => setFull((f) => !f)} aria-label={full ? ml.close : ml.expand} title={full ? ml.close : ml.expand}>
+        <button
+          type="button"
+          className="omap__expand"
+          onClick={() => setFull((f) => !f)}
+          aria-label={full ? ml.close : ml.expand}
+          title={full ? ml.close : ml.expand}
+        >
           {full ? (
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-              <path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M6 6 L18 18 M18 6 L6 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-              <path d="M9 4 H4 V9 M15 4 H20 V9 M9 20 H4 V15 M15 20 H20 V15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M9 4 H4 V9 M15 4 H20 V9 M9 20 H4 V15 M15 20 H20 V15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </button>
 
         {hasTimeline && (
           <div className="omap__timeline">
-            <button type="button" className="omap__play" onClick={onTogglePlay} aria-label={playing ? ml.pause : ml.play} title={playing ? ml.pause : ml.play}>
+            <button
+              type="button"
+              className="omap__play"
+              onClick={onTogglePlay}
+              aria-label={playing ? ml.pause : ml.play}
+              title={playing ? ml.pause : ml.play}
+            >
               {playing ? (
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
-                  <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
-                  <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <rect
+                    x="6"
+                    y="5"
+                    width="4"
+                    height="14"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                  <rect
+                    x="14"
+                    y="5"
+                    width="4"
+                    height="14"
+                    rx="1"
+                    fill="currentColor"
+                  />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                  focusable="false"
+                >
                   <path d="M8 5 L19 12 L8 19 Z" fill="currentColor" />
                 </svg>
               )}
@@ -386,7 +531,11 @@ export default function OceanMap({
         <span>{lowLabel}</span>
         <span className="omap__legend-bar" />
         <span>{highLabel}</span>
-        {midLabel ? <span className="omap__legend-mid">{"\u00b7"} {midLabel}</span> : null}
+        {midLabel ? (
+          <span className="omap__legend-mid">
+            {"\u00b7"} {midLabel}
+          </span>
+        ) : null}
       </div>
     </div>
   );

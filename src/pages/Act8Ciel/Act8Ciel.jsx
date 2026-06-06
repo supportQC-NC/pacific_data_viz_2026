@@ -1,41 +1,36 @@
 // src/pages/Act8Ciel/Act8Ciel.jsx
 // ============================================================
-// Acte 08 — « Le ciel se dérègle ». Trois indicateurs réels du PDH :
-//   • Précipitations (RAIN_ANOM) — anomalie mm vs 1991–2020 (−sec / +humide).
-//   • Température terre (*_ANOM) — anomalie °C vs 1971–2000 (réchauffement).
-//   • Réseau météo (METEO_MONITOR_NET) — nb de stations (cumul, la riposte).
-//
-// MÊME EXPÉRIENCE que les actes 3–7 : diaporama plein écran, filtres
-// repliables (sous-région + focus territoire), navigation clavier/boutons,
-// écran de fin. Guides retirés. On GARDE l'existant (small multiples,
-// heatmap divergente, classement, dumbbell, ligne du réseau) et on AJOUTE :
-//   • BandTrend (médiane + bande + ligne de référence 0 = la normale),
-//   • ShareAbove (% de territoires en anomalie positive),
-//   • Boxplot (dispersion des anomalies par année),
-//   • Scatter croisé température × précipitations,
-//   • jauge « % de territoires en réchauffement ».
-// 100 % données API. Zéro style inline.
+// Acte 08 — Le ciel : pluie & température (anomalies) + réseau météo.
+// Format DASHBOARD (ActBoard) : filtres GLOBAUX (mesure + sous-région +
+// territoire). Onglets ADAPTÉS à la mesure (bande d'anomalie pour
+// pluie/temp, total réseau pour météo). Ajouts storytelling : carte 3D +
+// course animée (météo). Tableau/guides retirés.
 // ============================================================
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchCiel } from "../../services/cielApi";
-import useThemeTokens from "../../hooks/UseThemeTokens";
-import VizPanel from "../../components/charts/VizPanel";
-import BandTrendChart from "../../components/charts/BandTrendChart";
-import ShareAboveChart from "../../components/charts/ShareAboveChart";
-import BoxplotChart from "../../components/charts/BoxplotChart";
-import ScatterChart from "../../components/charts/ScatterChart";
-import RadialGauge from "../../components/charts/RadialGauge";
+import ActBoard from "../../components/ActBoard/ActBoard";
+import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
+import Loader from "../../components/Loader/Loader";
+import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
-import RankBars from "../../components/RankBars/RankBars";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
-import Loader from "../../components/Loader/Loader";
+import BarRace from "../../components/BarRace/BarRace";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act8Ciel.scss";
+
+const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
 const SUBREGIONS = {
   melanesia: ["FJ", "PG", "SB", "VU", "NC"],
@@ -47,7 +42,13 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
-const REGIONS3 = ["melanesia", "polynesia", "micronesia"];
+
+const fmtVal = (v) =>
+  !Number.isFinite(v)
+    ? "—"
+    : Math.abs(v) < 10
+      ? String(Math.round(v * 100) / 100).replace(".", ",")
+      : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -86,84 +87,90 @@ function toSeries(ind, lang) {
 }
 function buildRank(series, year) {
   return series
-    .map((s) => ({ area: s.area, name: s.name, value: valueAt(s.values, year) }))
+    .map((s) => ({
+      area: s.area,
+      name: s.name,
+      value: valueAt(s.values, year),
+    }))
     .filter((r) => Number.isFinite(r.value));
 }
-// « Avant → après » PROPRE À CHAQUE TERRITOIRE : première et dernière valeur
-// réellement observées (≠ année globale, qui écartait les territoires sans
-// donnée à la borne de début, ex. réseau météo en 1889).
-function buildEnds(series) {
+function buildDumbbell(series, yearA, yearB) {
   return series
-    .map((s) => {
-      const v = (s.values || []).filter((p) => Number.isFinite(p.value));
-      if (!v.length) return null;
-      return { area: s.area, name: s.name, a: v[0].value, b: v[v.length - 1].value };
-    })
-    .filter(Boolean);
+    .map((s) => ({
+      area: s.area,
+      name: s.name,
+      a: valueAt(s.values, yearA),
+      b: valueAt(s.values, yearB),
+    }))
+    .filter((r) => Number.isFinite(r.a) && Number.isFinite(r.b));
 }
 function anomalyBand(series, years) {
   return years
     .map((y) => {
-      const vals = series.map((s) => exactAt(s.values, y)).filter((n) => Number.isFinite(n));
+      const vals = series
+        .map((s) => exactAt(s.values, y))
+        .filter((n) => Number.isFinite(n));
       if (!vals.length) return null;
-      return { year: y, mean: mean(vals), min: Math.min(...vals), max: Math.max(...vals) };
+      return {
+        year: y,
+        mean: mean(vals),
+        min: Math.min(...vals),
+        max: Math.max(...vals),
+      };
     })
     .filter(Boolean);
 }
 function totalLine(series, years, name) {
   const vals = years
     .map((y) => {
-      const got = series.map((s) => valueAt(s.values, y)).filter((n) => Number.isFinite(n));
-      return got.length ? { year: y, value: got.reduce((a, b) => a + b, 0) } : null;
+      const got = series
+        .map((s) => valueAt(s.values, y))
+        .filter((n) => Number.isFinite(n));
+      return got.length
+        ? { year: y, value: got.reduce((a, b) => a + b, 0) }
+        : null;
     })
     .filter(Boolean);
   return vals.length ? [{ area: "REG", name, values: vals }] : [];
 }
+function raceFrom(series, years, lang) {
+  return series
+    .map((s) => {
+      const sorted = [...s.values].sort((a, b) => a.year - b.year);
+      let last = null;
+      const values = years.map((y) => {
+        const ex = sorted.find((p) => p.year === y);
+        if (ex) last = ex.value;
+        return { year: y, value: last == null ? 0 : last };
+      });
+      return { area: s.area, name: pictName(s.area, lang), values };
+    })
+    .filter((r) => r.values.some((v) => v.value > 0));
+}
 
-function Pills({ label, isActive, labelOf, onChange }) {
+/* ---------- Filtres globaux ---------- */
+function Select({ label, options, value, onChange }) {
   return (
-    <div className="act1f" role="group" aria-label={label}>
-      <span className="act1f__lbl">{label}</span>
-      <div className="act1f__pills">
-        {REGION_KEYS.map((k) => (
-          <button
-            key={k}
-            type="button"
-            className={`act1f__pill ${isActive(k) ? "is-active" : ""}`}
-            onClick={() => onChange(k)}
-            aria-pressed={isActive(k)}
-          >
-            {labelOf(k)}
-          </button>
-        ))}
+    <div className="act1f act1f--select">
+      {label ? <span className="act1f__lbl">{label}</span> : null}
+      <div className="act1f__selwrap">
+        <select
+          className="act1f__select"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
+          {options.map((o) => (
+            <option key={String(o.v)} value={o.v}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="act1f__caret" aria-hidden="true">
+          ▾
+        </span>
       </div>
     </div>
-  );
-}
-function Selecter({ label, value, options, onChange }) {
-  return (
-    <label className="act1f act1f--select">
-      <span className="act1f__lbl">{label}</span>
-      <select className="act1f__select" value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => (
-          <option key={String(o.v)} value={o.v}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function TextSlide({ title, sub }) {
-  return (
-    <section className="act1slide act1text">
-      <div className="act1text__inner">
-        <h2 className="act1text__title">{title}</h2>
-        {sub ? <p className="act1text__lead">{sub}</p> : null}
-        <span className="act1text__hint" aria-hidden="true">↓</span>
-      </div>
-    </section>
   );
 }
 
@@ -173,10 +180,7 @@ export default function Act8Ciel() {
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [country, setCountry] = useState("all");
-  const rootRef = useRef(null);
-  const [active, setActive] = useState(0);
-  const [slideCount, setSlideCount] = useState(0);
-  const activeRef = useRef(0);
+  const [metric, setMetric] = useState("rain");
 
   useEffect(() => {
     let alive = true;
@@ -184,7 +188,10 @@ export default function Act8Ciel() {
     setState((prev) => (prev.data ? prev : { status: "loading", data: null }));
     fetchCiel({ lang, signal: ctrl.signal }).then((res) => {
       if (!alive) return;
-      setState({ status: res.source === "live" ? "ready" : "empty", data: res });
+      setState({
+        status: res.source === "live" ? "ready" : "empty",
+        data: res,
+      });
     });
     return () => {
       alive = false;
@@ -202,98 +209,227 @@ export default function Act8Ciel() {
   const meteoAll = useMemo(() => toSeries(meteo, lang), [meteo, lang]);
 
   const countryOptions = useMemo(() => {
-    const set = new Set([...rainAll.map((s) => s.area), ...tempAll.map((s) => s.area), ...meteoAll.map((s) => s.area)]);
+    const set = new Set([
+      ...rainAll.map((s) => s.area),
+      ...tempAll.map((s) => s.area),
+      ...meteoAll.map((s) => s.area),
+    ]);
     return [...set]
       .map((a) => ({ area: a, name: pictName(a, lang) }))
       .sort((x, y) => x.name.localeCompare(y.name, lang));
   }, [rainAll, tempAll, meteoAll, lang]);
 
-  const areaVisible = useMemo(() => {
-    if (country !== "all") return (a) => a === country;
-    return (a) => region === "all" || REGION_OF[a] === region;
-  }, [region, country]);
+  const areaVisible = useCallback(
+    (a) =>
+      country !== "all"
+        ? a === country
+        : region === "all" || REGION_OF[a] === region,
+    [region, country],
+  );
 
-  const rainS = useMemo(() => rainAll.filter((s) => areaVisible(s.area)), [rainAll, areaVisible]);
-  const tempS = useMemo(() => tempAll.filter((s) => areaVisible(s.area)), [tempAll, areaVisible]);
-  const meteoS = useMemo(() => meteoAll.filter((s) => areaVisible(s.area)), [meteoAll, areaVisible]);
-
-  const onRegion = useCallback((k) => {
-    setRegion(k);
-    setCountry("all");
-  }, []);
-  const single = country !== "all";
+  const rainS = useMemo(
+    () => rainAll.filter((s) => areaVisible(s.area)),
+    [rainAll, areaVisible],
+  );
+  const tempS = useMemo(
+    () => tempAll.filter((s) => areaVisible(s.area)),
+    [tempAll, areaVisible],
+  );
+  const meteoS = useMemo(
+    () => meteoAll.filter((s) => areaVisible(s.area)),
+    [meteoAll, areaVisible],
+  );
 
   const span = (ind, fb0, fb1) => [
-    ind?.firstYear ?? (ind?.years?.[0] ?? fb0),
-    ind?.lastYear ?? (ind?.years?.[ind?.years?.length - 1] ?? fb1),
+    ind?.firstYear ?? ind?.years?.[0] ?? fb0,
+    ind?.lastYear ?? ind?.years?.[ind?.years?.length - 1] ?? fb1,
   ];
   const [rainA, rainB] = span(rain, 1979, 2025);
   const [tempA, tempB] = span(temp, 1850, 2025);
   const [meteoA, meteoB] = span(meteo, 1889, 2026);
 
-  const rainBand = useMemo(() => anomalyBand(rainS, rain?.years || []), [rainS, rain]);
-  const tempBand = useMemo(() => anomalyBand(tempS, temp?.years || []), [tempS, temp]);
+  const rainYears = useMemo(() => rain?.years || [], [rain]);
+  const tempYears = useMemo(() => temp?.years || [], [temp]);
+  const meteoYears = useMemo(() => meteo?.years || [], [meteo]);
+
+  const rainBand = useMemo(
+    () => anomalyBand(rainS, rainYears),
+    [rainS, rainYears],
+  );
+  const tempBand = useMemo(
+    () => anomalyBand(tempS, tempYears),
+    [tempS, tempYears],
+  );
   const meteoLine = useMemo(
-    () => totalLine(meteoS, meteo?.years || [], t("act8.meteo_total_name")),
-    [meteoS, meteo, t],
+    () => totalLine(meteoS, meteoYears, t("act8.meteo_total_name")),
+    [meteoS, meteoYears, t],
   );
+  const meteoRace = useMemo(
+    () => raceFrom(meteoS, meteoYears, lang),
+    [meteoS, meteoYears, lang],
+  );
+
+  const rainRank = useMemo(() => buildRank(rainS, rainB), [rainS, rainB]);
+  const tempRank = useMemo(() => buildRank(tempS, tempB), [tempS, tempB]);
   const meteoRank = useMemo(() => buildRank(meteoS, meteoB), [meteoS, meteoB]);
-  const meteoMed = useMemo(() => {
-    const m = median(meteoRank.map((r) => r.value));
-    return m == null ? null : Math.round(m);
-  }, [meteoRank]);
 
-  const rainDumb = useMemo(() => buildEnds(rainS), [rainS]);
-  const tempDumb = useMemo(() => buildEnds(tempS), [tempS]);
-  const meteoDumb = useMemo(() => buildEnds(meteoS), [meteoS]);
-
-  // Jauge : part des territoires en anomalie de température positive (dernière année).
-  const warmPct = useMemo(() => {
-    const vs = tempS.map((s) => valueAt(s.values, tempB)).filter((n) => Number.isFinite(n));
-    if (!vs.length) return 0;
-    return Math.round((vs.filter((v) => v > 0).length / vs.length) * 100);
-  }, [tempS, tempB]);
-
-  // Scatter croisé : anomalie de température (X) × anomalie de précipitations (Y).
-  const REGION_COLOR = useMemo(
-    () => ({ melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive }),
-    [tk],
+  const rainDumb = useMemo(
+    () => buildDumbbell(rainS, rainA, rainB),
+    [rainS, rainA, rainB],
   );
-  const scatterGroups = useMemo(() => {
-    const tBy = {};
-    tempS.forEach((s) => {
-      const v = valueAt(s.values, tempB);
-      if (Number.isFinite(v)) tBy[s.area] = v;
-    });
-    const rBy = {};
-    rainS.forEach((s) => {
-      const v = valueAt(s.values, rainB);
-      if (Number.isFinite(v)) rBy[s.area] = v;
-    });
-    const areas = Object.keys(tBy).filter((a) => rBy[a] != null);
-    return REGIONS3.map((rg) => ({
-      name: t(`act1.filter.${rg}`),
-      color: REGION_COLOR[rg],
-      points: areas
-        .filter((a) => REGION_OF[a] === rg)
-        .map((a) => ({ x: tBy[a], y: rBy[a], name: pictName(a, lang) })),
-    })).filter((g) => g.points.length);
-  }, [tempS, rainS, tempB, rainB, lang, t, REGION_COLOR]);
-  const scatterCount = useMemo(() => scatterGroups.reduce((s, g) => s + g.points.length, 0), [scatterGroups]);
-  const scatterMedianX = useMemo(
-    () => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
-    [scatterGroups],
+  const tempDumb = useMemo(
+    () => buildDumbbell(tempS, tempA, tempB),
+    [tempS, tempA, tempB],
+  );
+  const meteoDumb = useMemo(
+    () => buildDumbbell(meteoS, meteoA, meteoB),
+    [meteoS, meteoA, meteoB],
   );
 
-  const divLabels = (below, above) => ({
+  // Définition de la mesure active.
+  const M = useMemo(() => {
+    if (metric === "rain")
+      return {
+        kind: "anom",
+        series: rainS,
+        band: rainBand,
+        rank: rainRank,
+        dumb: rainDumb,
+        years: rainYears,
+        unit: t("act8.rain_unit"),
+        A: rainA,
+        B: rainB,
+        tone: "accent",
+        baseline: t("act8.rain_baseline"),
+        below: t("act8.rain_hm_below"),
+        above: t("act8.rain_hm_above"),
+        titles: {
+          trend: t("act8.regional_rain_title"),
+          multiples: t("act8.rain_title"),
+          heat: t("act8.rain_hm_title"),
+          change: t("act8.rain_cmp_title"),
+        },
+      };
+    if (metric === "temp")
+      return {
+        kind: "anom",
+        series: tempS,
+        band: tempBand,
+        rank: tempRank,
+        dumb: tempDumb,
+        years: tempYears,
+        unit: t("act8.temp_unit"),
+        A: tempA,
+        B: tempB,
+        tone: "warm",
+        baseline: t("act8.temp_baseline"),
+        below: t("act8.temp_hm_below"),
+        above: t("act8.temp_hm_above"),
+        titles: {
+          trend: t("act8.regional_temp_title"),
+          multiples: t("act8.temp_title"),
+          heat: t("act8.temp_hm_title"),
+          change: t("act8.temp_cmp_title"),
+        },
+      };
+    return {
+      kind: "count",
+      series: meteoS,
+      line: meteoLine,
+      race: meteoRace,
+      rank: meteoRank,
+      dumb: meteoDumb,
+      years: meteoYears,
+      unit: t("act8.meteo_unit"),
+      A: meteoA,
+      B: meteoB,
+      titles: {
+        trend: t("act8.regional_meteo_title"),
+        multiples: t("act8.meteo_title"),
+        heat: t("act8.meteo_hm_title"),
+        change: t("act8.meteo_cmp_title"),
+        rank: t("act8.meteo_rank_title"),
+      },
+    };
+  }, [
+    metric,
+    rainS,
+    rainBand,
+    rainRank,
+    rainDumb,
+    rainYears,
+    rainA,
+    rainB,
+    tempS,
+    tempBand,
+    tempRank,
+    tempDumb,
+    tempYears,
+    tempA,
+    tempB,
+    meteoS,
+    meteoLine,
+    meteoRace,
+    meteoRank,
+    meteoDumb,
+    meteoYears,
+    meteoA,
+    meteoB,
+    t,
+  ]);
+
+  const mapRange = useMemo(() => {
+    const xs = M.series
+      .flatMap((s) => s.values.map((p) => p.value))
+      .filter(Number.isFinite);
+    if (!xs.length) return { min: 0, max: 1 };
+    if (M.kind === "anom") {
+      const m = Math.max(...xs.map((v) => Math.abs(v)));
+      return { min: -m, max: m };
+    }
+    return { min: 0, max: Math.max(...xs) };
+  }, [M.series, M.kind]);
+
+  const kpiItems = useMemo(() => {
+    if (!M.rank.length) return [];
+    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
+    const high = sorted[sorted.length - 1];
+    const low = sorted[0];
+    const med = median(M.rank.map((r) => r.value));
+    return [
+      {
+        key: "med",
+        value: fmtVal(med),
+        unit: M.unit,
+        label: t("act8.board.kpi_med"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: fmtVal(high.value),
+        unit: high.name,
+        label: t("act8.board.kpi_high"),
+        tone: "warm",
+      },
+      {
+        key: "low",
+        value: fmtVal(low.value),
+        unit: low.name,
+        label: t("act8.board.kpi_low"),
+        tone: "positive",
+      },
+    ];
+  }, [M.rank, M.unit, t]);
+
+  const divLabels = {
     low: t("act6.heatmap_low"),
     high: t("act6.heatmap_high"),
-    below,
-    above,
+    below: M.below,
+    above: M.above,
     empty: t("act1.change.empty"),
     mode_row: t("act6.heatmap_mode_row"),
     mode_abs: t("act6.heatmap_mode_abs"),
-  });
+  };
   const seqLabels = {
     low: t("act6.heatmap_low"),
     high: t("act6.heatmap_high"),
@@ -303,255 +439,265 @@ export default function Act8Ciel() {
   };
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
-  // ---------- Navigation diaporama ----------
-  const goTo = useCallback((i) => {
-    const root = rootRef.current;
-    if (!root) return;
-    const nodes = Array.from(root.querySelectorAll(".act1slide"));
-    if (!nodes.length) return;
-    const idx = Math.max(0, Math.min(nodes.length - 1, i));
-    const top = nodes[idx].getBoundingClientRect().top + window.pageYOffset - 80;
-    window.scrollTo({ top, behavior: "smooth" });
-  }, []);
+  const retry = useCallback(() => {
+    setState({ status: "loading", data: null });
+    fetchCiel({ lang }).then((res) =>
+      setState({
+        status: res.source === "live" ? "ready" : "empty",
+        data: res,
+      }),
+    );
+  }, [lang]);
 
-  useEffect(() => {
-    if (state.status !== "ready") return undefined;
-    const root = rootRef.current;
-    if (!root) return undefined;
-    let raf = 0;
-    const compute = () => {
-      const nodes = Array.from(root.querySelectorAll(".act1slide"));
-      setSlideCount(nodes.length);
-      const mid = window.innerHeight * 0.4;
-      let idx = 0;
-      for (let i = 0; i < nodes.length; i += 1) {
-        const r = nodes[i].getBoundingClientRect();
-        if (r.top <= mid) idx = i;
-        else break;
-      }
-      setActive(idx);
-      activeRef.current = idx;
-    };
-    const onScroll = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [state.status, region, country, lang]);
+  const regionOpts = REGION_KEYS.map((k) => ({
+    v: k,
+    label: t(`act1.filter.${k}`),
+  }));
+  const metricOpts = [
+    { v: "rain", label: t("act8.board.metric_rain") },
+    { v: "temp", label: t("act8.board.metric_temp") },
+    { v: "meteo", label: t("act8.board.metric_meteo") },
+  ];
+  const countryOpts = [
+    { v: "all", label: t("act7.country_all") },
+    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
+  ];
 
-  useEffect(() => {
-    if (state.status !== "ready") return undefined;
-    const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        goTo(activeRef.current + 1);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        goTo(activeRef.current - 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [state.status, goTo]);
+  const status =
+    state.status === "ready"
+      ? M.series.length
+        ? "ready"
+        : "empty"
+      : state.status === "loading"
+        ? "loading"
+        : "empty";
 
   const filtersEl = (
     <>
-      <Pills
-        label={t("act1.filter.title")}
-        isActive={(k) => country === "all" && region === k}
-        labelOf={(k) => t(`act1.filter.${k}`)}
-        onChange={onRegion}
+      <Select
+        label={t("act8.board.metric_label")}
+        options={metricOpts}
+        value={metric}
+        onChange={setMetric}
       />
-      <Selecter
+      <Select
+        label={t("act1.filter.title")}
+        options={regionOpts}
+        value={region}
+        onChange={(k) => {
+          setRegion(k);
+          setCountry("all");
+        }}
+      />
+      <Select
         label={t("act7.country_label")}
+        options={countryOpts}
         value={country}
-        options={[{ v: "all", label: t("act7.country_all") }].concat(
-          countryOptions.map((c) => ({ v: c.area, label: c.name })),
-        )}
         onChange={setCountry}
       />
     </>
   );
-  const FT = t("act1.f.toggle");
-  const meanLbl = single ? pictName(country, lang) : t("act8.mean_label");
+
+  // Onglet « tendance » : bande d'anomalie (pluie/temp) ou total réseau (météo).
+  const trendChart =
+    M.kind === "anom"
+      ? {
+          id: "trend",
+          signature: true,
+          empty: !M.band.length,
+          tab: t("act8.board.tab_trend"),
+          title: M.titles.trend,
+          finding: t("act8.board.trend_find"),
+          takeaway: t("act8.board.trend_take"),
+          node: (
+            <div className="act8b__fit">
+              <AnomalyTrend
+                data={M.band}
+                currentYear={M.B}
+                unit={M.unit}
+                tone={M.tone}
+                baselineLabel={M.baseline}
+                meanLabel={t("act8.mean_label")}
+              />
+            </div>
+          ),
+        }
+      : {
+          id: "trend",
+          signature: true,
+          empty: !M.line.length,
+          tab: t("act8.board.tab_trend"),
+          title: M.titles.trend,
+          finding: t("act8.board.trend_find"),
+          takeaway: t("act8.board.trend_take"),
+          node: (
+            <div className="act8b__fit">
+              <TrendLines
+                series={M.line}
+                years={M.years}
+                currentYear={M.B}
+                unit={M.unit}
+              />
+            </div>
+          ),
+        };
+
+  // Onglet variable : haltères (anomalies) ou course animée (météo).
+  const changeChart =
+    M.kind === "anom"
+      ? {
+          id: "change",
+          empty: M.dumb.length === 0,
+          tab: t("act8.board.tab_change"),
+          title: `${M.titles.change} · ${M.A}–${M.B}`,
+          finding: t("act8.board.change_find"),
+          takeaway: t("act8.board.change_take"),
+          node: (
+            <DumbbellChart
+              rows={M.dumb}
+              yearA={M.A}
+              yearB={M.B}
+              unit={M.unit}
+              labels={cmpLabels}
+            />
+          ),
+        }
+      : {
+          id: "race",
+          empty: M.race.length < 2,
+          tab: t("act8.board.tab_race"),
+          title: M.titles.rank,
+          finding: t("act8.board.race_find"),
+          takeaway: t("act8.board.race_take"),
+          node: (
+            <BarRace
+              series={M.race}
+              years={M.years}
+              unit={M.unit}
+              tk={tk}
+              labels={{
+                play: t("act1.race.play"),
+                pause: t("act1.race.pause"),
+                restart: t("act1.race.restart"),
+              }}
+            />
+          ),
+        };
+
+  const charts =
+    status === "ready"
+      ? [
+          trendChart,
+          {
+            id: "multiples",
+            empty: M.series.length === 0,
+            tab: t("act8.board.tab_multiples"),
+            title: M.titles.multiples,
+            finding: t("act8.board.multiples_find"),
+            takeaway: t("act8.board.multiples_take"),
+            node: (
+              <div className="act8b__scroll">
+                <SmallMultiples
+                  series={M.series}
+                  years={M.years}
+                  unit={M.unit}
+                  currentYear={M.B}
+                  labels={{ last: t("act6.smallmult_last") }}
+                />
+              </div>
+            ),
+          },
+          {
+            id: "heat",
+            empty: M.series.length === 0,
+            tab: t("act8.board.tab_heat"),
+            title: M.titles.heat,
+            finding: t("act8.board.heat_find"),
+            takeaway: t("act8.board.heat_take"),
+            node: (
+              <div className="act8b__fit">
+                <EmissionsHeatmap
+                  series={M.series}
+                  years={M.years}
+                  unit={M.unit}
+                  scale={M.kind === "anom" ? "diverging" : "sequential"}
+                  labels={M.kind === "anom" ? divLabels : seqLabels}
+                />
+              </div>
+            ),
+          },
+          changeChart,
+          {
+            id: "map",
+            empty: M.rank.length === 0,
+            tab: t("act8.board.tab_map"),
+            title: `${t("act8.board.map_title")} · ${M.B}`,
+            finding: t("act8.board.map_find"),
+            takeaway: t("act8.board.map_take"),
+            node: (
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
+                  <OceanMap
+                    data={M.rank}
+                    unit={M.unit}
+                    range={mapRange}
+                    lowLabel={t("act6.heatmap_low")}
+                    midLabel={
+                      M.kind === "anom" ? t("act8.board.map_mid") : undefined
+                    }
+                    highLabel={t("act6.heatmap_high")}
+                    noTokenMsg={t("act1.map_no_token")}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            ),
+          },
+        ]
+      : [];
 
   return (
-    <main className="act1 act8" ref={rootRef}>
-      <div className="container">
-        <header className="act1__head act1slide act1slide--intro">
-          <p className="eyebrow">{t("act8.tag")}</p>
-          <h1 className="act1__title">{t("act8.title")}</h1>
-          <p className="act1__lead">{t("act8.lead")}</p>
-        </header>
-
-        {state.status === "loading" && <Loader fullscreen label={t("scene.loading")} />}
-        {state.status === "empty" && <p className="act1__state act1__state--err">{t("act8.unavailable")}</p>}
-
-        {state.status === "ready" && (
-          <>
-            {/* ---------- Précipitations ---------- */}
-            {rainS.length > 0 && (
-              <>
-                <TextSlide title={t("act8.rain_title")} sub={t("act8.rain_sub")} />
-
-                {rainBand.length > 0 && (
-                  <VizPanel title={t("act8.regional_rain_title")} subtitle={t("act8.regional_rain_sub")} story={t("act8.story.rain_trend")} filtersLabel={FT} filters={filtersEl}>
-                    <BandTrendChart data={rainBand} unit={t("act8.rain_unit")} refValue={0} refLabel={t("act8.rain_baseline")} meanLabel={meanLbl} currentYear={rainB} color={tk.accent} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act8.rain_sm_title")} subtitle={`${rainA}–${rainB} · ${rainS.length} ${t("act2.coverage")}`} filtersLabel={FT} filters={filtersEl}>
-                  <SmallMultiples series={rainS} years={rain.years} unit={t("act8.rain_unit")} currentYear={rainB} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.rain_hm_title")} subtitle={t("act8.rain_hm_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <EmissionsHeatmap series={rainS} years={rain.years} unit={t("act8.rain_unit")} scale="diverging" labels={divLabels(t("act8.rain_hm_below"), t("act8.rain_hm_above"))} />
-                </VizPanel>
-
-                {!single && (
-                  <VizPanel title={t("act8.box_title")} subtitle={`${t("act8.box_sub")} · ${t("act8.rain_unit")}`} story={t("act8.story.box")} filtersLabel={FT} filters={filtersEl}>
-                    <BoxplotChart series={rainS} years={rain.years} unit={t("act8.rain_unit")} scale="lin" />
-                  </VizPanel>
-                )}
-
-                {!single && (
-                  <VizPanel title={t("act8.share_wet_title")} subtitle={t("act8.share_wet_sub")} story={t("act8.story.share_wet")} filtersLabel={FT} filters={filtersEl}>
-                    <ShareAboveChart series={rainS} years={rain.years} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act8.rain_cmp_title")} subtitle={t("act8.rain_cmp_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <DumbbellChart rows={rainDumb} yearA={rainA} yearB={rainB} unit={t("act8.rain_unit")} labels={cmpLabels} />
-                </VizPanel>
-              </>
-            )}
-
-            {/* ---------- Température de surface ---------- */}
-            {tempS.length > 0 && (
-              <>
-                <TextSlide title={t("act8.temp_title")} sub={t("act8.temp_sub")} />
-
-                {tempBand.length > 0 && (
-                  <VizPanel title={t("act8.regional_temp_title")} subtitle={t("act8.regional_temp_sub")} story={t("act8.story.temp_trend")} filtersLabel={FT} filters={filtersEl}>
-                    <BandTrendChart data={tempBand} unit={t("act8.temp_unit")} refValue={0} refLabel={t("act8.temp_baseline")} meanLabel={meanLbl} currentYear={tempB} color={tk.warm} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act8.temp_sm_title")} subtitle={`${tempA}–${tempB} · ${tempS.length} ${t("act2.coverage")}`} filtersLabel={FT} filters={filtersEl}>
-                  <SmallMultiples series={tempS} years={temp.years} unit={t("act8.temp_unit")} currentYear={tempB} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.temp_hm_title")} subtitle={t("act8.temp_hm_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <EmissionsHeatmap series={tempS} years={temp.years} unit={t("act8.temp_unit")} scale="diverging" labels={divLabels(t("act8.temp_hm_below"), t("act8.temp_hm_above"))} />
-                </VizPanel>
-
-                {!single && (
-                  <VizPanel title={t("act8.box_title")} subtitle={`${t("act8.box_sub")} · ${t("act8.temp_unit")}`} story={t("act8.story.box")} filtersLabel={FT} filters={filtersEl}>
-                    <BoxplotChart series={tempS} years={temp.years} unit={t("act8.temp_unit")} scale="lin" />
-                  </VizPanel>
-                )}
-
-                {!single && (
-                  <VizPanel title={t("act8.share_warm_title")} subtitle={t("act8.share_warm_sub")} story={t("act8.story.share_warm")} filtersLabel={FT} filters={filtersEl}>
-                    <ShareAboveChart series={tempS} years={temp.years} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act8.gauge_title")} subtitle={`${t("act8.gauge_sub")} · ${tempB}`} story={t("act8.story.gauge")} filtersLabel={FT} filters={filtersEl}>
-                  <RadialGauge value={warmPct} label={t("act8.gauge_label")} color={tk.warm} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.temp_cmp_title")} subtitle={t("act8.temp_cmp_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <DumbbellChart rows={tempDumb} yearA={tempA} yearB={tempB} unit={t("act8.temp_unit")} labels={cmpLabels} />
-                </VizPanel>
-              </>
-            )}
-
-            {/* ---------- Croisement température × précipitations ---------- */}
-            {scatterCount >= 3 && (
-              <VizPanel title={t("act8.scatter_title")} subtitle={t("act8.scatter_sub")} story={t("act8.story.scatter")} filtersLabel={FT} filters={filtersEl}>
-                <ScatterChart groups={scatterGroups} unit={t("act8.temp_unit")} medianX={scatterMedianX} xName={t("act8.scatter_x")} yName={t("act8.rain_unit")} />
-              </VizPanel>
-            )}
-
-            {/* ---------- Réseau de surveillance météo (la riposte) ---------- */}
-            {meteoS.length > 0 && (
-              <>
-                <TextSlide title={t("act8.meteo_title")} sub={t("act8.meteo_sub")} />
-
-                {!single && meteoLine.length > 0 && (
-                  <VizPanel title={t("act8.regional_meteo_title")} subtitle={t("act8.regional_meteo_sub")} filtersLabel={FT} filters={filtersEl}>
-                    <TrendLines series={meteoLine} years={meteo.years} currentYear={meteoB} unit={t("act8.meteo_unit")} />
-                  </VizPanel>
-                )}
-
-                <VizPanel title={t("act8.meteo_sm_title")} subtitle={`${meteoA}–${meteoB} · ${meteoS.length} ${t("act2.coverage")}`} filtersLabel={FT} filters={filtersEl}>
-                  <SmallMultiples series={meteoS} years={meteo.years} unit={t("act8.meteo_unit")} currentYear={meteoB} labels={{ last: t("act6.smallmult_last") }} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.meteo_hm_title")} subtitle={t("act8.meteo_hm_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <EmissionsHeatmap series={meteoS} years={meteo.years} unit={t("act8.meteo_unit")} scale="sequential" labels={seqLabels} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.meteo_rank_title")} subtitle={t("act8.meteo_rank_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <RankBars data={meteoRank} unit={t("act8.meteo_unit")} worldAvg={meteoMed} refLabel={t("act6.median_ref")} />
-                </VizPanel>
-
-                <VizPanel title={t("act8.meteo_cmp_title")} subtitle={t("act8.meteo_cmp_sub")} filtersLabel={FT} filters={filtersEl}>
-                  <DumbbellChart rows={meteoDumb} yearA={meteoA} yearB={meteoB} unit={t("act8.meteo_unit")} labels={cmpLabels} />
-                </VizPanel>
-              </>
-            )}
-
-            {rainS.length === 0 && tempS.length === 0 && meteoS.length === 0 && (
-              <p className="act1__state">{t("act1.change.empty")}</p>
-            )}
-
-            <section className="act1slide act1outro">
-              <div className="act1outro__inner">
-                <p className="eyebrow">{t("act8.outro.kicker")}</p>
-                <h2 className="act1outro__title">{t("act8.outro.title")}</h2>
-                <p className="act1outro__text">{t("act8.outro.text")}</p>
-                <div className="act1outro__actions">
-                  <Link to="/economie" className="act1outro__btn act1outro__btn--primary">
-                    {t("act8.outro.next")} <span aria-hidden="true">→</span>
-                  </Link>
-                  <Link to="/" className="act1outro__btn">
-                    {t("act8.outro.home")}
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        <Link to="/" className="act1__back">
-          ← {t("act1.back")}
-        </Link>
-      </div>
-
-      {state.status === "ready" && slideCount > 0 && (
-        <div className="act1nav" role="group" aria-label={t("act1.nav.next")}>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active - 1)} disabled={active <= 0} aria-label={t("act1.nav.prev")}>
-            ↑
-          </button>
-          <span className="act1nav__count">
-            {active + 1}/{slideCount}
-          </span>
-          <button type="button" className="act1nav__btn" onClick={() => goTo(active + 1)} disabled={active >= slideCount - 1} aria-label={t("act1.nav.next")}>
-            ↓
-          </button>
-        </div>
-      )}
-    </main>
+    <ActBoard
+      status={status}
+      onRetry={retry}
+      back={{ to: "/", label: t("act1.back") }}
+      eyebrow={t("act8.tag")}
+      title={t("act8.title")}
+      thesis={t("act8.thesis")}
+      kpis={kpiItems}
+      kpiTitle={t("act1.stats.title")}
+      filters={filtersEl}
+      charts={charts}
+      progress={{ index: 8, total: 11 }}
+      labels={{
+        loading: t("scene.loading"),
+        empty: t("act8.unavailable"),
+        error: t("scene.error"),
+        retry: t("act1.retry"),
+        switchHint: t("act8.board.switch_hint"),
+        signature: t("act8.board.signature"),
+        takeawayKicker: t("act8.board.takeaway_kicker"),
+        prev: t("act1.nav.prev"),
+        next: t("act1.nav.next"),
+        start: t("act8.board.start"),
+        conclusion: t("act8.board.conclusion"),
+        backIntro: t("act8.board.back_intro"),
+        reviseData: t("act8.board.revise_data"),
+      }}
+      outro={{
+        kicker: t("act8.outro.kicker"),
+        title: t("act8.outro.title"),
+        text: t("act8.outro.text"),
+        primary: { to: "/economie", label: t("act8.outro.next") },
+        secondary: { to: "/", label: t("act8.outro.home") },
+      }}
+    />
   );
 }
