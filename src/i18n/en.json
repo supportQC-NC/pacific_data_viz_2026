@@ -1570,10 +1570,11 @@
     },
     "outro": {
       "kicker": "End of the journey",
-      "title": "Guilty of almost nothing, exposed to almost everything",
-      "text": "The territories least responsible for climate change are often the most exposed to it. Eleven acts, one thread: that, in a word, is the Pacific's climate injustice.",
-      "home": "Back to home",
-      "restart": "Relive from act 1"
+      "title": "A debt they never took on",
+      "text": "Eleven acts, dozens of datasets, one conclusion: those who pay for the climate aren't those who disrupted it. The rest is up to us.",
+      "home": "Replay the journey",
+      "restart": "Relive from act 1",
+      "next": "Back to home"
     },
     "switch_hint": "← → to switch view",
     "story_kicker": "Read this",
@@ -1605,7 +1606,35 @@
     "sloperank_title": "The reversal, by rank",
     "sloperank_sub": "responsibility rank (left) → vulnerability rank (right) · 1 = top",
     "sloperank_left": "responsibility rank",
-    "sloperank_right": "vulnerability rank"
+    "sloperank_right": "vulnerability rank",
+    "thesis": "Here is the verdict of the whole journey: the Pacific emitted almost nothing, yet stacks up vulnerabilities. A climate debt it never took on.",
+    "board": {
+      "switch_hint": "← → to switch view",
+      "signature": "signature chart",
+      "takeaway_kicker": "Takeaway",
+      "start": "See the verdict",
+      "conclusion": "Conclusion",
+      "back_intro": "Intro",
+      "revise_data": "Review the data",
+      "tab_paradox": "The paradox",
+      "tab_vuln": "Vulnerability",
+      "tab_matrix": "The matrix",
+      "tab_radar": "Fingerprint",
+      "tab_resp": "Responsibility",
+      "matrix_title": "The climate matrix: territories × stresses",
+      "radar_title": "The vulnerability fingerprint, by sub-region",
+      "resp_title": "Responsibility: emissions per capita",
+      "paradox_find": "Each dot a territory: its responsibility (GHG/capita, X) against its composite vulnerability (Y).",
+      "paradox_take": "The injustice is stark: the Pacific emits very little, yet ranks among the most vulnerable.",
+      "vuln_find": "Composite index (0–100): normalized average of the six climate stresses, per territory.",
+      "vuln_take": "The most exposed stack sea-level rise, heat, water and health strain.",
+      "matrix_find": "Each row a territory, each column a stress: green = spared, red = under pressure.",
+      "matrix_take": "No single vulnerability: it's the accumulation of stresses that makes the danger.",
+      "radar_find": "The average profile of each sub-region across the six vulnerability dimensions.",
+      "radar_take": "Melanesia, Polynesia and Micronesia carry different but very real fragilities.",
+      "resp_find": "GHG emissions per capita, ranked: each one's share of responsibility.",
+      "resp_take": "Even the Pacific's biggest emitters stay far below the world average."
+    }
   },
   "flow": {
     "act": "Act",

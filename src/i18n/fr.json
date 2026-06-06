@@ -1569,11 +1569,12 @@
       "sloperank": "Même renversement, mais en rang : à gauche le classement des émetteurs (1 = le plus responsable), à droite celui des plus vulnérables. Les lignes qui plongent — bien classées à droite, mal à gauche — sont les territoires les plus injustement exposés."
     },
     "outro": {
-      "kicker": "Fin du parcours",
-      "title": "Coupables de presque rien, exposés à presque tout",
-      "text": "Les territoires les moins responsables du dérèglement en sont souvent les plus exposés. Onze actes, un même fil : voilà, en un mot, l'injustice climatique du Pacifique.",
-      "home": "Retour à l'accueil",
-      "restart": "Revivre depuis l'acte 1"
+      "kicker": "Fin du voyage",
+      "title": "Une dette qu'ils n'ont pas contractée",
+      "text": "Onze actes, des dizaines de jeux de données, une seule conclusion : ceux qui paient le climat ne sont pas ceux qui l'ont déréglé. À nous d'agir.",
+      "home": "Revoir le voyage",
+      "restart": "Revivre depuis l'acte 1",
+      "next": "Retour à l'accueil"
     },
     "switch_hint": "← → pour changer de vue",
     "story_kicker": "À lire",
@@ -1605,7 +1606,35 @@
     "sloperank_title": "Le renversement, par rang",
     "sloperank_sub": "rang de responsabilité (gauche) → rang de vulnérabilité (droite) · 1 = en tête",
     "sloperank_left": "rang responsabilité",
-    "sloperank_right": "rang vulnérabilité"
+    "sloperank_right": "rang vulnérabilité",
+    "thesis": "Voici le verdict de tout le voyage : le Pacifique n'a presque rien émis, mais cumule les vulnérabilités. Une dette climatique qu'il n'a pas contractée.",
+    "board": {
+      "switch_hint": "← → pour changer de vue",
+      "signature": "graphe signature",
+      "takeaway_kicker": "À retenir",
+      "start": "Voir le verdict",
+      "conclusion": "Conclusion",
+      "back_intro": "Intro",
+      "revise_data": "Revoir les données",
+      "tab_paradox": "Le paradoxe",
+      "tab_vuln": "Vulnérabilité",
+      "tab_matrix": "La matrice",
+      "tab_radar": "Empreinte",
+      "tab_resp": "Responsabilité",
+      "matrix_title": "La matrice du climat : territoires × stress",
+      "radar_title": "L'empreinte de vulnérabilité, par sous-région",
+      "resp_title": "La responsabilité : émissions par habitant",
+      "paradox_find": "Chaque point un territoire : sa responsabilité (GES/hab, X) face à sa vulnérabilité composite (Y).",
+      "paradox_take": "L'injustice est nette : le Pacifique émet très peu, mais figure parmi les plus vulnérables.",
+      "vuln_find": "Indice composite (0–100) : moyenne normalisée des six stress climatiques, par territoire.",
+      "vuln_take": "Les plus exposés cumulent montée des eaux, chaleur, eau et santé sous tension.",
+      "matrix_find": "Chaque ligne un territoire, chaque colonne un stress : vert = épargné, rouge = sous pression.",
+      "matrix_take": "Aucune vulnérabilité unique : c'est l'accumulation des stress qui fait le danger.",
+      "radar_find": "Le profil moyen de chaque sous-région sur les six dimensions de vulnérabilité.",
+      "radar_take": "Mélanésie, Polynésie et Micronésie portent des fragilités différentes mais toutes réelles.",
+      "resp_find": "Les émissions de GES par habitant, classées : la part de responsabilité de chacun.",
+      "resp_take": "Même les plus « émetteurs » du Pacifique restent loin sous la moyenne mondiale."
+    }
   },
   "flow": {
     "act": "Acte",
