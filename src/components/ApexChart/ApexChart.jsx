@@ -119,14 +119,16 @@ export default function ApexChart({ options, className = "" }) {
       return;
     }
     try {
-      if (sameShape(prevRef.current, options)) {
-        // Seules les valeurs changent → on n'anime QUE les séries (barres) :
-        // pas de reconstruction de la grille/axes/légende → zéro clignotement.
+      const isBar = options.chart && options.chart.type === "bar";
+      if (isBar && sameShape(prevRef.current, options)) {
+        // Barres, mêmes catégories/séries → on n'anime QUE les valeurs :
+        // pas de reconstruction (zéro clignotement) et AUCUN chemin à morpher.
         chart.updateSeries(options.series, true);
       } else {
-        // Changement de structure (filtre, thème, nb de séries) → mise à jour
-        // complète mais animée, sans redrawPaths (transition douce).
-        chart.updateOptions(withHeight(options, targetHeight(el)), false, true, false);
+        // Tout le reste (aire, funnel, donut, changement de structure) →
+        // redraw COMPLET (redrawPaths=true). On NE morphe PAS les chemins via
+        // .to() : c'est ce morph qui produisait des chemins NaN → "parser Error".
+        chart.updateOptions(withHeight(options, targetHeight(el)), true, true, false);
       }
     } catch (err) {
       /* noop */

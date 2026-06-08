@@ -948,7 +948,7 @@
       "tab_mix_detail": "Mix: by source",
       "mix_band_find": "Electricity generation (GWh) stacked, fossil against renewable, by year.",
       "mix_band_take": "At a glance, the renewable share eats into the fossil one over time.",
-      "mix_detail_find": "Electricity generation (GWh) broken down by source: coal, gas, oil, hydro, solar, wind, geothermal, biomass…",
+      "mix_detail_find": "Electricity output by source over the years (stacked columns); the total on top shows demand growth.",
       "mix_detail_take": "The detail shows which technologies drive the transition: solar and wind rising, thermal slowly receding.",
       "tab_mix_compo": "Mix: composition by territory",
       "tab_mix_share": "Renewable share (ranking)",
@@ -967,7 +967,13 @@
       "mix_donut_take": "Source by source, you see exactly what each island's power depends on — and how far there is to go.",
       "tab_mix_leader": "Mix: volume by source",
       "mix_leader_find": "Total electricity output of each source (bar length) for the slider year; the label shows the territory that produces the most and its share.",
-      "mix_leader_take": "Oil dominates Pacific volume, but each source has its 'champion' — often a single territory carrying most of it."
+      "mix_leader_take": "Oil dominates Pacific volume, but each source has its 'champion' — often a single territory carrying most of it.",
+      "tab_mix_funnel": "Mix: Pacific funnel",
+      "mix_funnel_find": "Total volume produced by each source across the WHOLE Pacific (funnel, largest to smallest), for the slider year.",
+      "mix_funnel_take": "The funnel says it all: oil crushes the top, renewables share a narrow base.",
+      "tab_mix_share_evo": "Mix: share evolution",
+      "mix_share_evo_find": "Share of each source in the Pacific's total electricity generation (all territories combined), year by year (100% stacked bars). Hover = GWh produced.",
+      "mix_share_evo_take": "A snapshot of the transition: renewables slowly chip away at fossil's share across the whole basin."
     },
     "mix": {
       "fossil": "Fossil",
@@ -983,7 +989,9 @@
       "donut_title": "Electricity mix in detail",
       "donut_terr": "Territory",
       "donut_center": "Renewable",
-      "leader_title": "By source: total volume and top consumer"
+      "leader_title": "By source: total volume and top consumer",
+      "funnel_title": "Total Pacific electricity, by source",
+      "share_evo_title": "Evolution of each source's share — Pacific"
     }
   },
   "act6": {

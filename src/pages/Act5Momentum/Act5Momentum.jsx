@@ -23,6 +23,9 @@ import MixCompositionChart from "../../components/charts/MixCompositionChart";
 import TreemapChart from "../../components/charts/TreemapChart";
 import DonutChart from "../../components/charts/DonutChart";
 import SourceLeaderChart from "../../components/charts/SourceLeaderChart";
+import StackedColsChart from "../../components/charts/StackedColsChart";
+import FunnelChart from "../../components/charts/FunnelChart";
+import ShareAreaChart from "../../components/charts/ShareAreaChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
@@ -276,6 +279,21 @@ export default function Act5Momentum() {
   };
   // Ordre des territoires FIGÉ sur la dernière année (part renouvelable
   // croissante) → réutilisé sur chaque frame pour un morph fluide.
+  // Années ayant une ventilation par source non nulle (tout le Pacifique).
+  // Utilisé par les 100 % empilés pour éviter les colonnes à total 0 (NaN).
+  const detailYears = useMemo(() => {
+    const d = mix.data;
+    if (!d) return [];
+    return mixYears.filter((yr) => {
+      let tot = 0;
+      Object.keys(d.byArea).forEach((g) => {
+        if (!isPict(g)) return;
+        const det = d.byArea[g].detail || {};
+        Object.keys(det).forEach((lab) => { tot += (det[lab] || {})[yr] || 0; });
+      });
+      return tot > 0;
+    });
+  }, [mix.data, mixYears]);
   const compoOrder = useMemo(() => {
     const d = mix.data;
     if (!d || !mixYears.length) return [];
@@ -288,20 +306,25 @@ export default function Act5Momentum() {
   const [compoIdx, setCompoIdx] = useState(0);
   const [compoPlaying, setCompoPlaying] = useState(false);
   useEffect(() => {
-    setCompoIdx(mixYears.length ? mixYears.length - 1 : 0);
+    setCompoIdx(detailYears.length ? detailYears.length - 1 : 0);
     setCompoPlaying(false);
-  }, [mixYears.length, region]);
+  }, [detailYears.length, region]);
   useEffect(() => {
-    if (!compoPlaying || mixYears.length < 2) return undefined;
-    const id = setInterval(() => setCompoIdx((i) => (i + 1) % mixYears.length), 1100);
+    if (!compoPlaying || detailYears.length < 2) return undefined;
+    const id = setInterval(() => setCompoIdx((i) => (i + 1) % detailYears.length), 1100);
     return () => clearInterval(id);
-  }, [compoPlaying, mixYears.length]);
-  const compoYear = mixYears.length ? mixYears[Math.min(compoIdx, mixYears.length - 1)] : null;
+  }, [compoPlaying, detailYears.length]);
+  const compoYear = detailYears.length ? detailYears[Math.min(compoIdx, detailYears.length - 1)] : null;
   // Composition par territoire (barres empilées 100 % par source), animée.
   const mixCompo = useMemo(() => {
     const d = mix.data;
     if (!d || compoYear == null) return { categories: [], series: [] };
-    const terr = compoOrder;
+    const terr = compoOrder.filter((g) => {
+      const det = d.byArea[g].detail || {};
+      let tot = 0;
+      Object.keys(det).forEach((lab) => { tot += (det[lab] || {})[compoYear] || 0; });
+      return tot > 0;
+    });
     const series = d.detailSources.map((sx) => ({
       name: sx.label,
       color: energyColor(sx.label, tk),
@@ -402,6 +425,41 @@ export default function Act5Momentum() {
       })
       .sort((a, b) => b.total - a.total);
   }, [mix.data, mixYear, inRegion, lang, tk]);
+  // Funnel : énergie totale du Pacifique ENTIER par source (ignore le filtre
+  // sous-région), triée décroissant.
+  const mixFunnel = useMemo(() => {
+    const d = mix.data;
+    if (!d || mixYear == null) return [];
+    const totals = {};
+    Object.keys(d.byArea)
+      .filter((g) => isPict(g))
+      .forEach((g) => {
+        const det = d.byArea[g].detail || {};
+        Object.keys(det).forEach((lab) => { totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[mixYear] || 0); });
+      });
+    return Object.keys(totals)
+      .filter((lab) => totals[lab] > 0)
+      .map((lab) => ({ label: lab, value: Math.round(totals[lab] * 10) / 10, color: energyColor(lab, tk) }))
+      .sort((a, b) => b.value - a.value);
+  }, [mix.data, mixYear, tk]);
+  // Évolution des parts (100 % empilé) pour TOUT le Pacifique. On NE GARDE que
+  // les années ayant une ventilation détaillée non nulle : sinon le total d'une
+  // colonne 100 % vaut 0 → hauteur NaN → "parser Error" dans ApexCharts.
+  const mixShareEvo = useMemo(() => {
+    const d = mix.data;
+    if (!d) return { years: [], series: [] };
+    const years = detailYears;
+    const series = d.detailSources.map((sx) => ({
+      name: sx.label,
+      color: energyColor(sx.label, tk),
+      data: years.map((yr) => {
+        let sum = 0;
+        Object.keys(d.byArea).forEach((g) => { if (isPict(g)) sum += (d.byArea[g].detail[sx.label] || {})[yr] || 0; });
+        return Math.round(sum * 10) / 10;
+      }),
+    }));
+    return { years, series };
+  }, [mix.data, detailYears, tk]);
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
@@ -512,7 +570,7 @@ export default function Act5Momentum() {
             title: t("act5.mix.detail_title"),
             finding: t("act5.board.mix_detail_find"),
             takeaway: t("act5.board.mix_detail_take"),
-            node: <PowerMixChart series={mixDetailSeries} years={mixYears} unit={t("act5.mix.unit")} />,
+            node: <StackedColsChart series={mixDetailSeries} years={mixYears} unit={t("act5.mix.unit")} />,
           },
           {
             id: "mix_compo",
@@ -583,6 +641,24 @@ export default function Act5Momentum() {
             finding: t("act5.board.mix_leader_find"),
             takeaway: t("act5.board.mix_leader_take"),
             node: <SourceLeaderChart points={mixSourceLeader} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_funnel",
+            empty: !mixReady || mixFunnel.length === 0,
+            tab: t("act5.board.tab_mix_funnel"),
+            title: `${t("act5.mix.funnel_title")} · ${mixYear ?? ""}`,
+            finding: t("act5.board.mix_funnel_find"),
+            takeaway: t("act5.board.mix_funnel_take"),
+            node: <FunnelChart points={mixFunnel} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_share_evo",
+            empty: !mixReady || mixShareEvo.years.length === 0,
+            tab: t("act5.board.tab_mix_share_evo"),
+            title: t("act5.mix.share_evo_title"),
+            finding: t("act5.board.mix_share_evo_find"),
+            takeaway: t("act5.board.mix_share_evo_take"),
+            node: <ShareAreaChart series={mixShareEvo.series} years={mixShareEvo.years} unit={t("act5.mix.unit")} />,
           },
         ]
       : [];

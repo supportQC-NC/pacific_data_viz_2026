@@ -948,7 +948,7 @@
       "tab_mix_detail": "Mix : par source",
       "mix_band_find": "Production d'électricité (GWh) empilée, fossile contre renouvelable, par année.",
       "mix_band_take": "On lit d'un coup d'œil la part du renouvelable qui grignote celle du fossile au fil du temps.",
-      "mix_detail_find": "Production d'électricité (GWh) détaillée par source : charbon, gaz, pétrole, hydro, solaire, éolien, géothermie, biomasse…",
+      "mix_detail_find": "Production électrique par source au fil des années (colonnes empilées) ; le total au sommet montre la croissance de la demande.",
       "mix_detail_take": "Le détail révèle quelles technologies portent la transition : montée du solaire et de l'éolien, recul progressif du thermique.",
       "tab_mix_compo": "Mix : composition par territoire",
       "tab_mix_share": "Part renouvelable (classement)",
@@ -967,7 +967,13 @@
       "mix_donut_take": "Source par source, on voit exactement de quoi dépend l'électricité de chaque île — et le chemin qu'il reste à parcourir.",
       "tab_mix_leader": "Mix : volume par source",
       "mix_leader_find": "Production électrique totale de chaque source (longueur de barre) pour l'année du curseur ; le label indique le territoire qui en produit le plus et sa part.",
-      "mix_leader_take": "Le pétrole domine le volume du Pacifique, mais chaque source a son « champion » — souvent un seul territoire qui pèse l'essentiel."
+      "mix_leader_take": "Le pétrole domine le volume du Pacifique, mais chaque source a son « champion » — souvent un seul territoire qui pèse l'essentiel.",
+      "tab_mix_funnel": "Mix : funnel Pacifique",
+      "mix_funnel_find": "Volume total produit par chaque source pour l'ENSEMBLE du Pacifique (entonnoir du plus gros au plus petit), pour l'année du curseur.",
+      "mix_funnel_take": "L'entonnoir dit tout : le pétrole écrase le sommet, les renouvelables se partagent une base étroite.",
+      "tab_mix_share_evo": "Mix : évolution des parts",
+      "mix_share_evo_find": "Part de chaque source dans la production électrique totale du Pacifique (tout territoire confondu), année après année (barres empilées à 100 %). Survol = GWh produits.",
+      "mix_share_evo_take": "La photographie de la transition : on voit le renouvelable grignoter, lentement, la part du fossile sur l'ensemble du bassin."
     },
     "mix": {
       "fossil": "Fossile",
@@ -983,7 +989,9 @@
       "donut_title": "Mix électrique détaillé",
       "donut_terr": "Territoire",
       "donut_center": "Renouvelable",
-      "leader_title": "Par source : volume total et premier consommateur"
+      "leader_title": "Par source : volume total et premier consommateur",
+      "funnel_title": "Énergie électrique totale du Pacifique, par source",
+      "share_evo_title": "Évolution de la part de chaque source — Pacifique"
     }
   },
   "act6": {
