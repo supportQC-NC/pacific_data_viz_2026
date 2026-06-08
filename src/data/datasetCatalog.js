@@ -37,6 +37,16 @@ const DATASET_CATALOG = [
     ],
   },
   {
+    id: "coastline",
+    labelFr: "Trait de côte",
+    labelEn: "Coastline",
+    descFr: "Recul et avancée annuels du littoral, dérivés du satellite Landsat.",
+    descEn: "Annual coastline retreat and growth, derived from Landsat satellite.",
+    sources: [
+      { label: "Digital Earth Pacific · SPC-GEM (CC BY-NC)", url: "https://stac-browser.digitalearthpacific.org/collections/dep_ls_coastlines" },
+    ],
+  },
+  {
     id: "sst",
     labelFr: "Température de la mer",
     labelEn: "Sea temperature",

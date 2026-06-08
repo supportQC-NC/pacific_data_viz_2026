@@ -34,6 +34,7 @@ import {
   FiCompass,
   FiPercent,
   FiWind,
+  FiMapPin,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
@@ -45,6 +46,7 @@ const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
 const TOPIC_ICONS = {
   emissions: <FiCloud />,
   seaLevel: <FiActivity />,
+  coastline: <FiMapPin />,
   sst: <FiThermometer />,
   rain: <FiCloudRain />,
   agriculture: <FiSun />,

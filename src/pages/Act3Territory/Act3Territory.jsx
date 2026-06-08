@@ -32,6 +32,10 @@ import "./Act3Territory.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
+// Couche « trait de côte » (Digital Earth Pacific — Landsat Coastlines, CC BY-NC).
+// GeoJSON dégraissé servi depuis public/data/.
+const COAST_URL = `${process.env.PUBLIC_URL || ""}/data/coastline-hotspots.geojson`;
+
 const SUBREGIONS = {
   melanesia: ["FJ", "PG", "SB", "VU", "NC"],
   polynesia: ["PF", "WS", "TO", "TV", "CK", "NU", "WF", "TK", "AS", "PN"],
@@ -375,6 +379,49 @@ export default function Act3Territory() {
                   />
                 </Suspense>
               </ErrorBoundary>
+            ),
+          },
+          {
+            id: "coast",
+            empty: false,
+            tab: t("act3.board.tab_coast"),
+            title: t("act3.viz.coast_title"),
+            finding: t("act3.board.coast_find"),
+            takeaway: t("act3.board.coast_take"),
+            node: (
+              <div className="act6coast">
+                <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
+                  <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+                    <OceanMap
+                      data={[]}
+                      unit={seaUnit}
+                      range={mapRange}
+                      ramp="semantic"
+                      mid={0}
+                      lowLabel={t("act3.map_low")}
+                      midLabel={t("act3.map_mid")}
+                      highLabel={t("act3.map_high")}
+                      noTokenMsg={t("act1.map_no_token")}
+                      coastlineUrl={COAST_URL}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+                <div className="act6coast__legend">
+                  <span className="act6coast__item">
+                    <i className="act6coast__dot act6coast__dot--ero" aria-hidden="true" />{" "}
+                    {t("act3.coast.legend_erosion")}
+                  </span>
+                  <span className="act6coast__item">
+                    <i className="act6coast__dot act6coast__dot--sta" aria-hidden="true" />{" "}
+                    {t("act3.coast.legend_stable")}
+                  </span>
+                  <span className="act6coast__item">
+                    <i className="act6coast__dot act6coast__dot--acc" aria-hidden="true" />{" "}
+                    {t("act3.coast.legend_accretion")}
+                  </span>
+                  <span className="act6coast__attr">{t("act3.coast.attr")}</span>
+                </div>
+              </div>
             ),
           },
           {

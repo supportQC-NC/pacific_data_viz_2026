@@ -118,6 +118,7 @@ export default function OceanMap({
   playing = false,
   onTogglePlay = null,
   onScrub = null,
+  coastlineUrl = null,
 }) {
   const { lang } = useLang();
   const ml = mapLabels[lang] || mapLabels.fr;
@@ -396,6 +397,59 @@ export default function OceanMap({
       }
     }
   }, [loaded, fc, centers]);
+
+  // Couche optionnelle "trait de côte" (Digital Earth Pacific — Landsat
+  // Coastlines, CC BY-NC 4.0). Cercles colores par r = taux de variation
+  // annuel du trait de cote (m/an) : <0 recul (rouge), >0 avancee (bleu).
+  // Activee seulement si coastlineUrl est fourni (Acte 6) -> autres actes
+  // inchanges. Couche inseree SOUS les colonnes/labels.
+  useEffect(() => {
+    if (!loaded || !mapRef.current || !coastlineUrl) return undefined;
+    const map = mapRef.current;
+    let cancelled = false;
+    fetch(coastlineUrl)
+      .then((r) => r.json())
+      .then((gj) => {
+        if (cancelled || !mapRef.current) return;
+        if (!map.getSource("coast")) {
+          map.addSource("coast", { type: "geojson", data: gj });
+          map.addLayer(
+            {
+              id: "coast",
+              type: "circle",
+              source: "coast",
+              paint: {
+                "circle-radius": [
+                  "interpolate", ["linear"], ["zoom"], 1, 1.4, 4, 3, 7, 5.5,
+                ],
+                "circle-color": [
+                  "interpolate", ["linear"], ["get", "r"],
+                  -2, "#e8453c", -0.2, "#f0b67a", 0, "#e6edf3",
+                  0.2, "#7fd4c1", 2, "#2c7fb8",
+                ],
+                "circle-opacity": 0.85,
+                "circle-stroke-width": 0.4,
+                "circle-stroke-color": "rgba(0,0,0,0.35)",
+              },
+            },
+            map.getLayer("cols") ? "cols" : undefined,
+          );
+        } else {
+          map.getSource("coast").setData(gj);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      try {
+        const m = mapRef.current;
+        if (m && m.getLayer("coast")) m.removeLayer("coast");
+        if (m && m.getSource("coast")) m.removeSource("coast");
+      } catch (e) {
+        /* carte deja detruite */
+      }
+    };
+  }, [loaded, coastlineUrl]);
 
   useEffect(() => {
     if (!mapRef.current) return undefined;

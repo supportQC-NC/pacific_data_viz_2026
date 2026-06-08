@@ -675,7 +675,10 @@
       "profile_take": "Long bars on both sides flag the most exposed: high sea AND a still-growing population.",
       "tab_path": "Path",
       "path_find": "For each territory, the growth rate from the first observed year (dull dot) to the most recent (warm dot).",
-      "path_take": "Most paths drift downward: growth slows but stays positive on rising coasts."
+      "path_take": "Most paths drift downward: growth slows but stays positive on rising coasts.",
+      "tab_coast": "Coastline",
+      "coast_find": "Each dot is a satellite-tracked coastline segment (Landsat, 1999–2023): red is retreat, blue is growth, expressed in metres per year.",
+      "coast_take": "Retreat is not uniform along the coast: it concentrates on specific stretches, often among the most inhabited."
     },
     "sea_unit": "m",
     "viz": {
@@ -690,10 +693,17 @@
       "profile_left": "Sea rise (rank)",
       "profile_right": "Demographic pressure (rank)",
       "profile_unit": "/100",
-      "path_title": "The demographic path"
+      "path_title": "The demographic path",
+      "coast_title": "The coast: retreat and growth"
     },
     "path_start": "first year",
-    "path_end": "recent"
+    "path_end": "recent",
+    "coast": {
+      "legend_erosion": "Retreat (m/yr)",
+      "legend_stable": "Stable",
+      "legend_accretion": "Growth (m/yr)",
+      "attr": "Coastline: Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)"
+    }
   },
   "act4": {
     "kpi_affected": "people affected (total)",

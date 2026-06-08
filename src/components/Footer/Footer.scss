@@ -206,7 +206,7 @@ $glow-h: 220px;
 }
 
 .footer__logomark {
-  height: 44px;
+  height: 80px;
   width: auto;
   display: block;
   object-fit: contain;
@@ -227,6 +227,6 @@ $glow-h: 220px;
 
 @media (max-width: 640px) {
   .footer__logomark {
-    height: 38px;
+    height: 80px;
   }
 }

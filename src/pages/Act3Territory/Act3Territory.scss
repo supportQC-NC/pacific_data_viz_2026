@@ -17,3 +17,60 @@
     display: block;
   }
 }
+
+
+/* ============================================================
+   À COLLER en fin de src/pages/Act3Territory/Act3Territory.scss
+   Vue « Trait de côte » (Acte 6) — légende + attribution.
+   Couleurs alignées sur la rampe des cercles d'OceanMap
+   (rouge = recul, neutre = stable, bleu = avancée).
+   ============================================================ */
+
+.act6coast {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  /* mêmes teintes que la couche "coast" d'OceanMap */
+  --coast-ero: #e8453c;
+  --coast-sta: #e6edf3;
+  --coast-acc: #2c7fb8;
+}
+
+.act6coast__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.act6coast__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.act6coast__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--r-pill);
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-text) 22%, transparent);
+}
+.act6coast__dot--ero { background: var(--coast-ero); }
+.act6coast__dot--sta { background: var(--coast-sta); }
+.act6coast__dot--acc { background: var(--coast-acc); }
+
+.act6coast__attr {
+  margin-left: auto;
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .act6coast__attr {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}

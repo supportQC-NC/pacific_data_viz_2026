@@ -675,7 +675,10 @@
       "profile_take": "Les barres longues des deux côtés marquent les plus exposés : mer haute ET population qui croît encore.",
       "tab_path": "Trajectoire",
       "path_find": "Pour chaque territoire, le taux de croissance de la première année observée (point sourd) à la plus récente (point chaud).",
-      "path_take": "La plupart des trajectoires glissent vers le bas : la croissance ralentit, mais reste positive sur des côtes qui montent."
+      "path_take": "La plupart des trajectoires glissent vers le bas : la croissance ralentit, mais reste positive sur des côtes qui montent.",
+      "tab_coast": "Trait de côte",
+      "coast_find": "Chaque point est un segment de littoral suivi par satellite (Landsat, 1999–2023) : en rouge le recul, en bleu l’avancée, exprimés en mètres par an.",
+      "coast_take": "Le recul ne touche pas la côte de façon uniforme : il se concentre sur des secteurs précis, souvent parmi les plus habités."
     },
     "sea_unit": "m",
     "viz": {
@@ -690,10 +693,17 @@
       "profile_left": "Montée mer (rang)",
       "profile_right": "Pression démo. (rang)",
       "profile_unit": "/100",
-      "path_title": "La trajectoire démographique"
+      "path_title": "La trajectoire démographique",
+      "coast_title": "Le littoral : recul et avancée"
     },
     "path_start": "1re année",
-    "path_end": "récent"
+    "path_end": "récent",
+    "coast": {
+      "legend_erosion": "Recul (m/an)",
+      "legend_stable": "Stable",
+      "legend_accretion": "Avancée (m/an)",
+      "attr": "Trait de côte : Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)"
+    }
   },
   "act4": {
     "kpi_affected": "personnes affectées (cumul)",
