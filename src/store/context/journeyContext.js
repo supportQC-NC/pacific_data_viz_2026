@@ -1,29 +1,47 @@
 // src/store/context/journeyContext.js
 // ============================================================
 // Contexte du PARCOURS GUIDÉ (« Commencer l'expérience »).
-// - Ordre canonique des 11 actes (id + route)
-// - Mode guidé activé ou non (l'exploration libre reste toujours possible)
-// - Suivi de l'intro « vue » par acte (pour ne pas la remontrer)
-// - Helpers de navigation : index, précédent, suivant
-// - Persistance légère (localStorage) du mode et des intros vues
+// SOURCE DE VÉRITÉ UNIQUE pour : l'ordre des actes, leur NUMÉRO, leur
+// MOUVEMENT narratif, et le voisinage (précédent / suivant).
+// - Ordre canonique des 11 actes (id + route) → JOURNEY
+// - Regroupement en 5 MOUVEMENTS narratifs (pour la Home et l'ouvre-chapitre)
+// - Helpers : numberOf, padOf, movementOf, byPath, neighbors
+// - Mode guidé activé ou non ; suivi des intros vues ; persistance légère
 // Aucun style ici. Aucune chaîne visible (les libellés passent par i18n).
+//
+// NB : pour réordonner le récit, il SUFFIT de modifier JOURNEY (et la
+//      composition de MOVEMENTS). Les numéros, la progression et les liens
+//      « suivant » se recalculent automatiquement partout.
 // ============================================================
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 // Ordre narratif officiel (doit suivre les chapitres de la Home).
+// Plan validé v2 — 5 mouvements :
+//   Ouverture (responsabilité) · I Climat physique · II Ressources & vivant ·
+//   III L'humain en première ligne · IV La riposte · Final (verdict).
 export const JOURNEY = [
-  { id: "a1", to: "/emissions" },
-  { id: "a2", to: "/ocean" },
-  { id: "a3", to: "/territory" },
-  { id: "a4", to: "/impact" },
-  { id: "a5", to: "/momentum" },
-  { id: "a6", to: "/agriculture" },
-  { id: "a7", to: "/vivant" },
-  { id: "a8", to: "/ciel" },
-  { id: "a9", to: "/economie" },
-  { id: "a10", to: "/sante" },
-  { id: "a11", to: "/synthese" },
+  { id: "a1", to: "/emissions" },   // 01 · Le paradoxe fondateur (émissions)
+  { id: "a2", to: "/ocean" },       // 02 · L'océan (SST)
+  { id: "a8", to: "/ciel" },        // 03 · Lire le ciel (pluie + temp. terre + météo)
+  { id: "a6", to: "/agriculture" }, // 04 · Nourrir demain (agriculture)
+  { id: "a7", to: "/vivant" },      // 05 · Protéger le vivant (Liste Rouge + pêche)
+  { id: "a3", to: "/territory" },   // 06 · La côte, ligne de front (niveau mer + population)
+  { id: "a10", to: "/sante" },      // 07 · L'eau et la santé (eau + tuberculose)
+  { id: "a4", to: "/impact" },      // 08 · L'humain au cœur (catastrophes)
+  { id: "a5", to: "/momentum" },    // 09 · L'élan renouvelable (renouvelables)
+  { id: "a9", to: "/economie" },    // 10 · Une économie qui se réinvente (tourisme + élec. + fiscalité)
+  { id: "a11", to: "/synthese" },   // 11 · La voie tracée (synthèse)
+];
+
+// Mouvements narratifs (regroupent les actes par famille de données).
+// L'ordre des `acts` DOIT suivre l'ordre de JOURNEY.
+export const MOVEMENTS = [
+  { id: "m1", acts: ["a1"] },              // Le constat / la responsabilité
+  { id: "m2", acts: ["a2", "a8"] },        // Le climat physique
+  { id: "m3", acts: ["a6", "a7"] },        // Ressources & vivant
+  { id: "m4", acts: ["a3", "a10", "a4"] }, // L'humain en première ligne
+  { id: "m5", acts: ["a5", "a9", "a11"] }, // La riposte, puis le verdict
 ];
 
 const MODE_KEY = "pdc-journey-mode";
@@ -44,6 +62,30 @@ function loadSeen() {
   }
 }
 
+// Helpers purs (utilisables hors React).
+export function indexOfAct(id) {
+  return JOURNEY.findIndex((a) => a.id === id);
+}
+export function numberOfAct(id) {
+  const i = indexOfAct(id);
+  return i < 0 ? null : i + 1;
+}
+export function padNumber(n) {
+  return n == null ? "" : String(n).padStart(2, "0");
+}
+export function movementOfAct(id) {
+  return MOVEMENTS.find((m) => m.acts.includes(id)) || null;
+}
+export function actByPath(pathname) {
+  const i = JOURNEY.findIndex((a) => a.to === pathname);
+  if (i < 0) return null;
+  return { ...JOURNEY[i], index: i, number: i + 1, total: JOURNEY.length };
+}
+export function routeOfAct(id) {
+  const a = JOURNEY.find((x) => x.id === id);
+  return a ? a.to : null;
+}
+
 export function JourneyProvider({ children }) {
   const [guided, setGuided] = useState(loadMode);
   const [seen, setSeen] = useState(loadSeen);
@@ -62,7 +104,12 @@ export function JourneyProvider({ children }) {
   const closePresentation = useCallback(() => setPresentation(false), []);
   const togglePresentation = useCallback(() => setPresentation((p) => !p), []);
 
-  const indexOf = useCallback((id) => JOURNEY.findIndex((a) => a.id === id), []);
+  const indexOf = useCallback((id) => indexOfAct(id), []);
+  const numberOf = useCallback((id) => numberOfAct(id), []);
+  const padOf = useCallback((id) => padNumber(numberOfAct(id)), []);
+  const movementOf = useCallback((id) => movementOfAct(id), []);
+  const byPath = useCallback((pathname) => actByPath(pathname), []);
+  const routeOf = useCallback((id) => routeOfAct(id), []);
 
   const startJourney = useCallback(() => {
     setGuided(true);
@@ -79,18 +126,15 @@ export function JourneyProvider({ children }) {
     setSeen((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
   }, []);
 
-  const neighbors = useCallback(
-    (id) => {
-      const i = JOURNEY.findIndex((a) => a.id === id);
-      return {
-        index: i,
-        total: JOURNEY.length,
-        prev: i > 0 ? JOURNEY[i - 1] : null,
-        next: i >= 0 && i < JOURNEY.length - 1 ? JOURNEY[i + 1] : null,
-      };
-    },
-    [],
-  );
+  const neighbors = useCallback((id) => {
+    const i = JOURNEY.findIndex((a) => a.id === id);
+    return {
+      index: i,
+      total: JOURNEY.length,
+      prev: i > 0 ? JOURNEY[i - 1] : null,
+      next: i >= 0 && i < JOURNEY.length - 1 ? JOURNEY[i + 1] : null,
+    };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -103,11 +147,17 @@ export function JourneyProvider({ children }) {
       exitJourney,
       markSeen,
       indexOf,
+      numberOf,
+      padOf,
+      movementOf,
+      byPath,
+      routeOf,
       neighbors,
       openPresentation,
       closePresentation,
       togglePresentation,
       journey: JOURNEY,
+      movements: MOVEMENTS,
     }),
     [
       guided,
@@ -118,6 +168,11 @@ export function JourneyProvider({ children }) {
       exitJourney,
       markSeen,
       indexOf,
+      numberOf,
+      padOf,
+      movementOf,
+      byPath,
+      routeOf,
       neighbors,
       openPresentation,
       closePresentation,

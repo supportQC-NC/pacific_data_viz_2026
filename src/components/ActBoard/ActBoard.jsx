@@ -3,16 +3,22 @@
 // Coquille « dashboard narratif » réutilisable. Un acte se parcourt en
 // TROIS temps, sans ancres ni scroll : une section à la fois.
 //   0) INTRO  — titre + thèse + chiffres-chocs, plein écran.
-//   1) BOARD  — RAIL de filtres + sélecteur de graphes à GAUCHE (vertical,
-//               gagne de la hauteur), GRAPHE plein cadre à droite (borné à
-//               l'écran), ligne « à retenir » dessous.
+//   1) BOARD  — RAIL de filtres + sélecteur de graphes à GAUCHE (vertical),
+//               GRAPHE plein cadre à droite, ligne « à retenir » dessous.
 //   2) OUTRO  — la conclusion / transition.
 // Dans le board, ←/→ changent de GRAPHE ; les boutons changent d'ÉTAPE.
-// 100 % présentational : l'acte calcule tout et passe les props.
+//
+// NUMÉROTATION & NAVIGATION : le NUMÉRO d'acte, la PROGRESSION et le lien
+// « suivant » sont dérivés du PARCOURS (journeyContext) à partir de la route
+// courante — l'acte n'a plus à les coder en dur. Les props `eyebrow`,
+// `progress` et `outro.primary` restent acceptées en repli (route inconnue).
+// 100 % présentational : l'acte calcule les données et passe les props.
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useLang } from "../../store/context/langContext";
+import { useJourney } from "../../store/context/journeyContext";
 import KpiRow from "../KpiRow/KpiRow";
 import Loader from "../Loader/Loader";
 import "./ActBoard.scss";
@@ -32,6 +38,34 @@ export default function ActBoard({
   progress,
   outro,
 }) {
+  const { t } = useLang();
+  const { pathname } = useLocation();
+  const { byPath, journey } = useJourney();
+
+  // Résolution de l'acte courant via la route → numéro, total, voisin suivant.
+  const here = byPath(pathname);
+  const num = here ? String(here.number).padStart(2, "0") : null;
+  const actName = here ? t(`home.acts.${here.id}_name`) : "";
+
+  // Eyebrow « Acte 03 — Nom » dérivé du parcours ; repli sur la prop.
+  const eyebrowTxt = here
+    ? `${t("flow.act")} ${num}${actName ? ` — ${actName}` : ""}`
+    : eyebrow;
+
+  // Progression dérivée ; repli sur la prop.
+  const effProgress = here ? { index: here.number, total: here.total } : progress;
+
+  // CTA « suivant » dérivé du parcours (cible + libellé). Repli sur outro.primary
+  // si la route n'est pas dans le parcours ou si l'acte est le dernier.
+  let nextPrimary = outro ? outro.primary : null;
+  if (here && journey && here.index + 1 < journey.length) {
+    const next = journey[here.index + 1];
+    nextPrimary = {
+      to: next.to,
+      label: `${t("flow.next")} · ${t(`home.acts.${next.id}_title`)}`,
+    };
+  }
+
   const count = charts.length;
   const [tab, setTab] = useState(() => {
     const sig = charts.findIndex((c) => c.signature);
@@ -72,7 +106,7 @@ export default function ActBoard({
 
   const idx = Math.min(tab, Math.max(0, count - 1));
   const active = count ? charts[idx] : null;
-  const progressTxt = progress ? `${progress.index} / ${progress.total}` : null;
+  const progressTxt = effProgress ? `${effProgress.index} / ${effProgress.total}` : null;
 
   return (
     <main className={`board board--s${step}`}>
@@ -82,7 +116,7 @@ export default function ActBoard({
           <section className="board__intro">
             <div className="board__intro-inner">
               <div className="board__hero-top">
-                <p className="eyebrow">{eyebrow}</p>
+                <p className="eyebrow">{eyebrowTxt}</p>
                 {progressTxt ? <span className="board__progress">{progressTxt}</span> : null}
               </div>
               {title ? <h1 className="board__title board__title--xl">{title}</h1> : null}
@@ -188,9 +222,9 @@ export default function ActBoard({
               <h2 className="board__outro-title">{outro.title}</h2>
               <p className="board__outro-text">{outro.text}</p>
               <div className="board__actions">
-                {outro.primary ? (
-                  <Link to={outro.primary.to} className="board__btn board__btn--primary">
-                    {outro.primary.label} <span aria-hidden="true">→</span>
+                {nextPrimary ? (
+                  <Link to={nextPrimary.to} className="board__btn board__btn--primary">
+                    {nextPrimary.label} <span aria-hidden="true">→</span>
                   </Link>
                 ) : null}
                 {outro.secondary ? (

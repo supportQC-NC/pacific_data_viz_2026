@@ -1,10 +1,10 @@
 // src/components/ActFlow/ActFlow.jsx
 // ============================================================
 // Enveloppe de PARCOURS pour une page d'acte. La page passe son contenu en
-// children. Plus de barre de progression en haut (inutile) : en mode guidé,
-// un ouvre-chapitre plein cadre ; puis le contenu de l'acte ; puis un pied
-// de navigation (← précédent · suivant →). Le header/footer globaux sont
-// masqués sur une page d'acte. Aucun style inline. Textes via i18n.
+// children. En mode guidé : un ouvre-chapitre plein cadre ; puis le contenu
+// de l'acte ; le header/footer globaux sont masqués sur une page d'acte.
+// Le NUMÉRO d'acte, le MOUVEMENT et le tag sont dérivés du parcours
+// (journeyContext) — aucune numérotation codée en dur ici. Textes via i18n.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -14,26 +14,15 @@ import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import "./ActFlow.scss";
 
-// À quel chapitre appartient chaque acte (pour l'ouvre-chapitre cinématique).
-const CHAPTER_OF = {
-  a1: "c1",
-  a2: "c1",
-  a3: "c1",
-  a4: "c1",
-  a5: "c2",
-  a6: "c2",
-  a7: "c2",
-  a8: "c2",
-  a9: "c2",
-  a10: "c3",
-  a11: "c3",
-};
-
 export default function ActFlow({ actId, children }) {
   const { t } = useLang();
   const navigate = useNavigate();
-  const { guided, seen, markSeen, neighbors, setImmersive } = useJourney();
+  const { guided, seen, markSeen, neighbors, movementOf, setImmersive } = useJourney();
   const { index, total, prev } = neighbors(actId);
+
+  // Mouvement narratif de l'acte (pour l'ouvre-chapitre cinématique).
+  const movement = movementOf(actId);
+  const movementId = movement ? movement.id : "m1";
 
   // En mode guidé et intro pas encore vue → on montre l'intro d'abord.
   const needsIntro = guided && !seen[actId];
@@ -121,6 +110,10 @@ export default function ActFlow({ actId, children }) {
 
   const num = String(index + 1).padStart(2, "0");
 
+  // Tag composé : « Acte 03 » (+ éventuel nom court de l'acte, ex. « — L'assiette »).
+  const actName = t(`home.acts.${actId}_name`);
+  const tag = `${t("flow.act")} ${num}${actName ? ` — ${actName}` : ""}`;
+
   return (
     <div className="actflow">
       {/* Écran d'intro / ouvre-chapitre (mode guidé, intro non vue) */}
@@ -131,12 +124,10 @@ export default function ActFlow({ actId, children }) {
           </span>
           <div className="actflow__intro-inner container">
             <p className="actflow__intro-chapter">
-              {t(`home.${CHAPTER_OF[actId]}_kicker`)} ·{" "}
-              {t(`home.${CHAPTER_OF[actId]}_title`)}
+              {t(`home.${movementId}_kicker`)} ·{" "}
+              {t(`home.${movementId}_title`)}
             </p>
-            <p className="eyebrow actflow__intro-tag">
-              {t(`home.acts.${actId}_tag`)}
-            </p>
+            <p className="eyebrow actflow__intro-tag">{tag}</p>
             <h1 className="actflow__intro-title">
               {t(`home.acts.${actId}_title`)}
             </h1>
