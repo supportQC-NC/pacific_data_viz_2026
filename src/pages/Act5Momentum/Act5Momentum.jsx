@@ -20,7 +20,7 @@ import BarRace from "../../components/BarRace/BarRace";
 import TrendChart from "../../components/charts/TrendChart";
 import PowerMixChart from "../../components/charts/PowerMixChart";
 import MixCompositionChart from "../../components/charts/MixCompositionChart";
-import RankChart from "../../components/charts/RankChart";
+import TreemapChart from "../../components/charts/TreemapChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
@@ -38,6 +38,20 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
   return acc;
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
+
+// Couleur sémantique par source d'énergie (tokens du thème) : chaque source
+// reçoit une teinte distincte — notamment hydro (bleu) ≠ biogaz (vert).
+function energyColor(label, tk) {
+  const n = (label || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/charbon|coal|tourbe|peat/.test(n)) return tk.textMute;
+  if (/biogaz|biogas|bio|biomass|biocombustible|biofuel/.test(n)) return tk.positive;
+  if (/petrole|oil|gaz|gas/.test(n)) return tk.warm;
+  if (/hydro/.test(n)) return tk.accentDeep;
+  if (/solaire|solar/.test(n)) return tk.warmSoft;
+  if (/eolien|wind/.test(n)) return tk.accent;
+  if (/geotherm/.test(n)) return tk.negative;
+  return tk.secondary || tk.accent;
+}
 
 function pct(sorted, q) {
   if (!sorted.length) return 0;
@@ -239,14 +253,11 @@ export default function Act5Momentum() {
   const mixDetailSeries = useMemo(() => {
     const d = mix.data;
     if (!d) return [];
-    const fossilPal = [tk.warm, tk.negative, tk.accentDeep, tk.secondary];
-    const renewPal = [tk.positive, tk.accent, tk.secondary, tk.accentDeep, tk.warm];
-    let fi = 0;
-    let ri = 0;
-    return d.detailSources.map((sx) => {
-      const color = sx.kind === "fossil" ? fossilPal[fi++ % fossilPal.length] : renewPal[ri++ % renewPal.length];
-      return { name: sx.label, color, data: sumByYear((a, y) => (a.detail[sx.label] || {})[y] || 0) };
-    });
+    return d.detailSources.map((sx) => ({
+      name: sx.label,
+      color: energyColor(sx.label, tk),
+      data: sumByYear((a, y) => (a.detail[sx.label] || {})[y] || 0),
+    }));
   }, [mix.data, sumByYear, tk]);
 
   // Année du mix alignée sur le curseur (mix : 2000→2023, sinon dernière connue).
@@ -261,39 +272,59 @@ export default function Act5Momentum() {
     const r = a.renew[y] || 0;
     return f + r > 0 ? r / (f + r) : null;
   };
-  // Composition par territoire (barres empilées 100 % par source) à mixYear.
+  // Ordre des territoires FIGÉ sur la dernière année (part renouvelable
+  // croissante) → réutilisé sur chaque frame pour un morph fluide.
+  const compoOrder = useMemo(() => {
+    const d = mix.data;
+    if (!d || !mixYears.length) return [];
+    const last = mixYears[mixYears.length - 1];
+    return Object.keys(d.byArea)
+      .filter((g) => isPict(g) && inRegion(g) && mixYears.some((y) => ((d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0)) > 0))
+      .sort((g1, g2) => (shareAt(d.byArea[g1], last) || 0) - (shareAt(d.byArea[g2], last) || 0));
+  }, [mix.data, mixYears, inRegion]);
+  // Année animée de la composition (play/pause propre, indépendant du curseur).
+  const [compoIdx, setCompoIdx] = useState(0);
+  const [compoPlaying, setCompoPlaying] = useState(false);
+  useEffect(() => {
+    setCompoIdx(mixYears.length ? mixYears.length - 1 : 0);
+    setCompoPlaying(false);
+  }, [mixYears.length, region]);
+  useEffect(() => {
+    if (!compoPlaying || mixYears.length < 2) return undefined;
+    const id = setInterval(() => setCompoIdx((i) => (i + 1) % mixYears.length), 1100);
+    return () => clearInterval(id);
+  }, [compoPlaying, mixYears.length]);
+  const compoYear = mixYears.length ? mixYears[Math.min(compoIdx, mixYears.length - 1)] : null;
+  // Composition par territoire (barres empilées 100 % par source), animée.
   const mixCompo = useMemo(() => {
     const d = mix.data;
-    if (!d || mixYear == null) return { categories: [], series: [] };
-    const terr = Object.keys(d.byArea)
-      .filter((g) => isPict(g) && inRegion(g) && ((d.byArea[g].fossil[mixYear] || 0) + (d.byArea[g].renew[mixYear] || 0)) > 0)
-      .sort((g1, g2) => (shareAt(d.byArea[g1], mixYear) || 0) - (shareAt(d.byArea[g2], mixYear) || 0));
-    const fossilPal = [tk.warm, tk.negative, tk.accentDeep, tk.secondary];
-    const renewPal = [tk.positive, tk.accent, tk.secondary, tk.accentDeep, tk.warm];
-    let fi = 0;
-    let ri = 0;
-    const series = d.detailSources.map((sx) => {
-      const color = sx.kind === "fossil" ? fossilPal[fi++ % fossilPal.length] : renewPal[ri++ % renewPal.length];
-      return { name: sx.label, color, data: terr.map((g) => Math.round(((d.byArea[g].detail[sx.label] || {})[mixYear] || 0) * 10) / 10) };
-    });
+    if (!d || compoYear == null) return { categories: [], series: [] };
+    const terr = compoOrder;
+    const series = d.detailSources.map((sx) => ({
+      name: sx.label,
+      color: energyColor(sx.label, tk),
+      data: terr.map((g) => Math.round(((d.byArea[g].detail[sx.label] || {})[compoYear] || 0) * 10) / 10),
+    }));
     return { categories: terr.map((g) => pictName(g, lang)), series };
-  }, [mix.data, mixYear, inRegion, lang, tk]);
-  // Classement de la part renouvelable (%) par territoire à mixYear.
-  const mixShare = useMemo(() => {
+  }, [mix.data, compoYear, compoOrder, lang, tk]);
+  // Treemap : d'où vient l'électricité (part de chaque source, région agrégée).
+  const mixTree = useMemo(() => {
     const d = mix.data;
-    if (!d || mixYear == null) return { points: [], median: 0 };
-    const points = Object.keys(d.byArea)
+    if (!d || mixYear == null) return [];
+    const totals = {};
+    Object.keys(d.byArea)
       .filter((g) => isPict(g) && inRegion(g))
-      .map((g) => {
-        const sh = shareAt(d.byArea[g], mixYear);
-        return sh == null ? null : { name: pictName(g, lang), value: Math.round(sh * 1000) / 10 };
-      })
-      .filter(Boolean);
-    const vals = points.map((pt) => pt.value).sort((x, y) => x - y);
-    const n = vals.length;
-    const med = n ? (n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2) : 0;
-    return { points, median: med };
-  }, [mix.data, mixYear, inRegion, lang]);
+      .forEach((g) => {
+        const det = d.byArea[g].detail || {};
+        Object.keys(det).forEach((lab) => {
+          totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[mixYear] || 0);
+        });
+      });
+    return Object.keys(totals)
+      .filter((lab) => totals[lab] > 0)
+      .map((lab) => ({ label: lab, value: Math.round(totals[lab] * 10) / 10, color: energyColor(lab, tk) }))
+      .sort((a, b) => b.value - a.value);
+  }, [mix.data, mixYear, inRegion, tk]);
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
@@ -410,19 +441,32 @@ export default function Act5Momentum() {
             id: "mix_compo",
             empty: !mixReady || mixCompo.categories.length === 0,
             tab: t("act5.board.tab_mix_compo"),
-            title: `${t("act5.mix.compo_title")} · ${mixYear ?? ""}`,
+            title: `${t("act5.mix.compo_title")} · ${compoYear ?? ""}`,
             finding: t("act5.board.mix_compo_find"),
             takeaway: t("act5.board.mix_compo_take"),
-            node: <MixCompositionChart series={mixCompo.series} categories={mixCompo.categories} unit={t("act5.mix.unit")} />,
+            node: (
+              <div>
+                <div className="barrace__top">
+                  <button type="button" className="barrace__play" onClick={() => setCompoPlaying((v) => !v)}>
+                    {compoPlaying ? t("act1.race.pause") : t("act1.race.play")}
+                  </button>
+                  <button type="button" className="barrace__restart" onClick={() => { setCompoPlaying(false); setCompoIdx(0); }} aria-label={t("act1.race.restart")} title={t("act1.race.restart")}>
+                    {"\u21BA"}
+                  </button>
+                  <span className="barrace__yr">{compoYear}</span>
+                </div>
+                <MixCompositionChart series={mixCompo.series} categories={mixCompo.categories} unit={t("act5.mix.unit")} />
+              </div>
+            ),
           },
           {
-            id: "mix_share",
-            empty: !mixReady || mixShare.points.length === 0,
-            tab: t("act5.board.tab_mix_share"),
-            title: `${t("act5.mix.share_title")} · ${mixYear ?? ""}`,
-            finding: t("act5.board.mix_share_find"),
-            takeaway: t("act5.board.mix_share_take"),
-            node: <RankChart points={mixShare.points} unit="%" median={mixShare.median} refLabel={t("act5.mix.share_ref")} sort="desc" scale="lin" />,
+            id: "mix_tree",
+            empty: !mixReady || mixTree.length === 0,
+            tab: t("act5.board.tab_mix_tree"),
+            title: `${t("act5.mix.tree_title")} · ${mixYear ?? ""}`,
+            finding: t("act5.board.mix_tree_find"),
+            takeaway: t("act5.board.mix_tree_take"),
+            node: <TreemapChart points={mixTree} unit={t("act5.mix.unit")} />,
           },
         ]
       : [];

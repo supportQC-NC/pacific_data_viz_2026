@@ -955,7 +955,13 @@
       "mix_compo_find": "Share of each source in every territory's generation (100% bars), for the selected year.",
       "mix_compo_take": "The contrast is striking: some territories run almost entirely on fossil fuels, others have already greened their mix.",
       "mix_share_find": "Renewable share of each territory's electricity generation, ranked, for the selected year.",
-      "mix_share_take": "The ranking reveals the transition pioneers and those still locked into thermal power."
+      "mix_share_take": "The ranking reveals the transition pioneers and those still locked into thermal power.",
+      "tab_mix_race": "Mix: renewable race",
+      "mix_race_find": "Animated progression of the renewable share (%) in each territory's electricity generation, year by year.",
+      "mix_race_take": "The transition plays out live: who pulls ahead, who catches up, who flips to clean power.",
+      "tab_mix_tree": "Mix: treemap by source",
+      "mix_tree_find": "Share of each source in the selection's total electricity generation (area ∝ output), for the slider year.",
+      "mix_tree_take": "Oil's weight is obvious; clean sources still cover only a fraction of the area."
     },
     "mix": {
       "fossil": "Fossil",
@@ -965,7 +971,9 @@
       "detail_title": "Electricity mix by source",
       "compo_title": "Mix composition by territory",
       "share_title": "Renewable share by territory",
-      "share_ref": "median"
+      "share_ref": "median",
+      "race_title": "The transition in motion — renewable share",
+      "tree_title": "Where the power comes from — by source"
     }
   },
   "act6": {

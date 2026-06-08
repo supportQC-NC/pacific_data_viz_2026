@@ -955,7 +955,13 @@
       "mix_compo_find": "Part de chaque source dans la production de chaque territoire (barres à 100 %), pour l'année sélectionnée.",
       "mix_compo_take": "Le contraste saute aux yeux : certains territoires tournent presque entièrement au fossile, d'autres ont déjà largement verdi leur mix.",
       "mix_share_find": "Part du renouvelable dans la production électrique de chaque territoire, classée, pour l'année sélectionnée.",
-      "mix_share_take": "Le classement révèle les pionniers de la transition et ceux qui restent dépendants du thermique."
+      "mix_share_take": "Le classement révèle les pionniers de la transition et ceux qui restent dépendants du thermique.",
+      "tab_mix_race": "Mix : course renouvelable",
+      "mix_race_find": "Progression animée de la part du renouvelable (%) dans la production électrique de chaque territoire, année après année.",
+      "mix_race_take": "On voit la transition se jouer en direct : qui décroche, qui rattrape, qui bascule vers une électricité propre.",
+      "tab_mix_tree": "Mix : treemap par source",
+      "mix_tree_find": "Part de chaque source dans la production électrique totale de la sélection (surface ∝ production), pour l'année du curseur.",
+      "mix_tree_take": "Le poids du pétrole saute aux yeux ; les sources propres n'occupent encore qu'une fraction de la surface."
     },
     "mix": {
       "fossil": "Fossile",
@@ -965,7 +971,9 @@
       "detail_title": "Mix électrique par source",
       "compo_title": "Composition du mix par territoire",
       "share_title": "Part renouvelable par territoire",
-      "share_ref": "médiane"
+      "share_ref": "médiane",
+      "race_title": "La transition en mouvement — part renouvelable",
+      "tree_title": "D'où vient l'électricité — par source"
     }
   },
   "act6": {
