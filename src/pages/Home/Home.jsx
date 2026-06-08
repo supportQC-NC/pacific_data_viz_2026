@@ -1,12 +1,10 @@
 // src/pages/Home/Home.jsx
 // ============================================================
 // Accueil — ouverture cinématique (thèse + chiffre-choc + ligne de flottaison
-// animée) puis récit en 5 MOUVEMENTS regroupant les 11 actes, présentés en
+// animée) puis récit en 3 CHAPITRES regroupant les 11 actes, présentés en
 // grille éditoriale avec une icône thématique par acte.
-// L'ORDRE, les MOUVEMENTS et le NUMÉRO de chaque acte viennent du parcours
-// (journeyContext) — source de vérité unique. Aucune numérotation codée en dur.
-// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation.
-// Aucun style inline en JSX. Respecte prefers-reduced-motion.
+// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation des
+// actes. Aucun style inline en JSX. Respecte prefers-reduced-motion.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -27,14 +25,13 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
-import { useJourney } from "../../store/context/journeyContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import StatRotator from "../../components/StatRotator/StatRotator";
 import "../../components/StatRotator/StatRotator.scss";
 import "./Home.scss";
 
-// Icône thématique par acte (par identité de contenu, indépendante de l'ordre).
+// Icône thématique par acte.
 const ACT_ICONS = {
   a1: <FiCloud />,
   a2: <FiDroplet />,
@@ -49,9 +46,38 @@ const ACT_ICONS = {
   a11: <FiLayers />,
 };
 
+// Récit complet : 11 actes répartis en 3 chapitres narratifs.
+const CHAPTERS = [
+  {
+    id: "c1",
+    acts: [
+      { id: "a1", to: "/emissions" },
+      { id: "a2", to: "/ocean" },
+      { id: "a3", to: "/territory" },
+      { id: "a4", to: "/impact" },
+    ],
+  },
+  {
+    id: "c2",
+    acts: [
+      { id: "a5", to: "/momentum" },
+      { id: "a6", to: "/agriculture" },
+      { id: "a7", to: "/vivant" },
+      { id: "a8", to: "/ciel" },
+      { id: "a9", to: "/economie" },
+    ],
+  },
+  {
+    id: "c3",
+    acts: [
+      { id: "a10", to: "/sante" },
+      { id: "a11", to: "/synthese" },
+    ],
+  },
+];
+
 export default function Home() {
   const { t } = useLang();
-  const { movements, routeOf, numberOf } = useJourney();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -166,14 +192,7 @@ export default function Home() {
     );
   }
 
-  // Composition d'un tag d'acte : « Acte 04 » (+ nom court éventuel).
-  const tagOf = (id) => {
-    const num = String(numberOf(id)).padStart(2, "0");
-    const name = t(`home.acts.${id}_name`);
-    return `${t("flow.act")} ${num}${name ? ` — ${name}` : ""}`;
-  };
-
-  let flatIdx = -1;
+  let globalIdx = -1;
 
   return (
     <main className="home">
@@ -213,6 +232,12 @@ export default function Home() {
             >
               {t("home.cta")} <span aria-hidden="true">↓</span>
             </button>
+            <button
+              className="home__cta home__cta--ghost"
+              onClick={() => navigate("/le-saviez-vous")}
+            >
+              {t("home.funfacts")} <span aria-hidden="true">✦</span>
+            </button>
             <span className="home__live">
               <span
                 className={`home__live-dot home__live-dot--${seaLevel.status}`}
@@ -238,63 +263,63 @@ export default function Home() {
           <p className="home__story-lead">{t("home.acts_lead")}</p>
         </header>
 
-        {movements.map((mv, mi) => (
-          <section className="home__chapter" key={mv.id}>
+        {CHAPTERS.map((chap, ci) => (
+          <section className="home__chapter" key={chap.id}>
             <div className="home__chapter-head">
               <span className="home__chapter-num">
-                {String(mi + 1).padStart(2, "0")}
+                {String(ci + 1).padStart(2, "0")}
               </span>
               <div className="home__chapter-meta">
                 <p className="eyebrow home__chapter-kicker">
-                  {t(`home.${mv.id}_kicker`)}
+                  {t(`home.${chap.id}_kicker`)}
                 </p>
                 <h3 className="home__chapter-title">
-                  {t(`home.${mv.id}_title`)}
+                  {t(`home.${chap.id}_title`)}
                 </h3>
                 <p className="home__chapter-desc">
-                  {t(`home.${mv.id}_desc`)}
+                  {t(`home.${chap.id}_desc`)}
                 </p>
               </div>
             </div>
 
             <ol className="home__acts">
-              {mv.acts.map((id) => {
-                flatIdx += 1;
-                const refIdx = flatIdx;
-                const to = routeOf(id);
-                const number = numberOf(id);
+              {chap.acts.map((a) => {
+                globalIdx += 1;
+                const idx = globalIdx;
                 return (
                   <li
-                    key={id}
-                    data-idx={refIdx}
+                    key={a.id}
+                    data-idx={idx}
                     ref={(el) => {
-                      actsRef.current[refIdx] = el;
+                      actsRef.current[idx] = el;
                     }}
                     className="act act--link"
-                    onClick={() => navigate(to)}
+                    onClick={() => navigate(a.to)}
                     role="link"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") navigate(to);
+                      if (e.key === "Enter") navigate(a.to);
                     }}
                   >
                     <span className="act__ghost" aria-hidden="true">
-                      {String(number).padStart(2, "0")}
+                      {String(idx + 1).padStart(2, "0")}
                     </span>
                     <div className="act__inner">
                       <div className="act__meta">
                         <span className="act__icon" aria-hidden="true">
-                          {ACT_ICONS[id]}
+                          {ACT_ICONS[a.id]}
                         </span>
                         <span className="act__index">
-                          {String(number).padStart(2, "0")}
+                          {String(idx + 1).padStart(2, "0")}
                         </span>
-                        <p className="eyebrow act__tag">{tagOf(id)}</p>
+                        <p className="eyebrow act__tag">
+                          {t(`home.acts.${a.id}_tag`)}
+                        </p>
                       </div>
                       <h4 className="act__title">
-                        {t(`home.acts.${id}_title`)}
+                        {t(`home.acts.${a.id}_title`)}
                       </h4>
-                      <p className="act__text">{t(`home.acts.${id}_text`)}</p>
+                      <p className="act__text">{t(`home.acts.${a.id}_text`)}</p>
                       <span className="act__action">
                         {t("home.act_explore")}{" "}
                         <span aria-hidden="true">→</span>

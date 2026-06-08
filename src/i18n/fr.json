@@ -104,7 +104,8 @@
     "m4_desc": "Là où les chiffres rencontrent les habitants : niveau de la mer sur les côtes peuplées, accès à l'eau, maladies, et bilan des catastrophes.",
     "m5_kicker": "Mouvement V",
     "m5_title": "La riposte, puis le verdict",
-    "m5_desc": "Les leviers d'adaptation — part des renouvelables, mutation économique — et la synthèse qui croise responsabilité et vulnérabilité."
+    "m5_desc": "Les leviers d'adaptation — part des renouvelables, mutation économique — et la synthèse qui croise responsabilité et vulnérabilité.",
+    "funfacts": "Le saviez-vous ?"
   },
   "footer": {
     "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",
@@ -1966,6 +1967,35 @@
       "p1": "Je suis passionné par ce que la donnée révèle quand on la met en scène : elle transforme des chiffres en décisions, et parfois en anticipation.",
       "walmart": "L'exemple qui m'a ouvert les yeux : avant un ouragan, Walmart a fouillé des années de ventes et vu que les Pop-Tarts à la fraise partaient ~7 fois plus que d'habitude (la bière en tête). Magasins réapprovisionnés à l'avance, rayons vidés.",
       "p3": "Imaginez la même anticipation pour nos veilles de cyclone dans le Pacifique : savoir, avant la tempête, ce dont chaque île aura besoin. C'est ça, le pouvoir de la data — et l'esprit de Datamoana."
+    }
+  },
+  "funfacts": {
+    "kicker": "Le saviez-vous ? · données réelles",
+    "home": "Accueil",
+    "next": "Suivant",
+    "loading": "Chargement des données du Pacifique…",
+    "empty": "Données indisponibles pour le moment.",
+    "median": "Médiane Pacifique",
+    "region": {
+      "melanesia": "Mélanésie",
+      "polynesia": "Polynésie",
+      "micronesia": "Micronésie"
+    },
+    "ds": {
+      "emissions": "les émissions de CO₂ par habitant",
+      "seaLevel": "le niveau de la mer",
+      "sst": "l'anomalie de température de surface",
+      "renewables": "la part d'énergie renouvelable",
+      "population": "la population",
+      "disastersAffected": "les personnes touchées par des catastrophes",
+      "landCover": "l'indice de couverture des sols"
+    },
+    "tpl": {
+      "record_high": "{area} détient le record du Pacifique pour {metric} : {value} ({year}).",
+      "record_low": "{area} affiche le plus bas du Pacifique pour {metric} : {value} ({year}).",
+      "biggest_change": "Pour {metric}, {area} est passé de {v0} à {v1} entre {year0} et {year1}.",
+      "median_multiple": "Pour {metric}, {area} pèse {mult} la médiane du Pacifique.",
+      "region_top": "Pour {metric}, {area} est la sous-région la plus élevée ({value} en moyenne)."
     }
   }
 }

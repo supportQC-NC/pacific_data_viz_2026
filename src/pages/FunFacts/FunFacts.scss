@@ -1,0 +1,219 @@
+// src/pages/FunFacts/FunFacts.scss
+// ============================================================
+// Plein écran « Le saviez-vous ? ». Couleur d'accent par fait via
+// --ff-acc (piloté par data-accent). Tout en tokens (light/dark).
+// ============================================================
+
+.ff {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-bg);
+  color: var(--c-text);
+  overflow: hidden;
+}
+
+// Halo d'ambiance (très discret) reprenant l'accent courant.
+.ff::before {
+  content: "";
+  position: absolute;
+  inset: -20% 30% auto -20%;
+  height: 60%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--c-accent) 14%, transparent), transparent);
+  filter: blur(40px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ff__top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-8);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.ff__kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.ff__home {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill, 999px);
+  padding: var(--sp-2) var(--sp-4);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: var(--c-text);
+    border-color: var(--c-accent);
+  }
+}
+
+.ff__stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) var(--sp-8);
+}
+
+// --- carte de fait (accent dynamique) ---
+.ff__card {
+  --ff-acc: var(--c-accent);
+  max-width: 760px;
+  width: 100%;
+  text-align: center;
+  animation: ff-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &[data-accent="warm"] { --ff-acc: var(--c-warm); }
+  &[data-accent="accent"] { --ff-acc: var(--c-accent); }
+  &[data-accent="accentDeep"] { --ff-acc: var(--c-accent-deep); }
+  &[data-accent="negative"] { --ff-acc: var(--c-negative); }
+  &[data-accent="positive"] { --ff-acc: var(--c-positive); }
+  &[data-accent="secondary"] { --ff-acc: var(--c-secondary, var(--c-accent)); }
+}
+
+@keyframes ff-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+.ff__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ff-acc);
+  margin: 0 0 var(--sp-3);
+}
+
+.ff__big {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold, 700);
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  line-height: 1;
+  color: var(--ff-acc);
+  margin: 0;
+  text-shadow: 0 0 40px color-mix(in srgb, var(--ff-acc) 35%, transparent);
+}
+
+.ff__big--onmap {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin-top: var(--sp-2);
+  text-shadow: none;
+}
+
+.ff__scope {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  color: var(--c-text);
+  margin: var(--sp-4) 0 0;
+}
+
+.ff__visual {
+  margin: var(--sp-6) auto var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ff__svg {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  display: block;
+}
+
+// dots de la carte
+.ff__dot { fill: var(--c-text-mute); opacity: 0.35; }
+.ff__loc-ring { fill: none; stroke: var(--ff-acc); stroke-width: 1.5; opacity: 0.45; }
+.ff__loc-dot { fill: var(--ff-acc); }
+
+// sparkline
+.ff__spark-line { fill: none; stroke: var(--ff-acc); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.ff__spark-start { fill: none; stroke: var(--ff-acc); stroke-width: 2; }
+.ff__spark-end { fill: var(--ff-acc); }
+.ff__sparklab { fill: var(--c-text-mute); font-family: var(--font-mono); font-size: 12px; }
+
+// barres de comparaison
+.ff__bar { fill: var(--ff-acc); }
+.ff__bar-ref { fill: var(--c-line-strong); }
+.ff__barlab { fill: var(--c-text-soft); font-family: var(--font-mono); font-size: 12px; }
+.ff__barval { fill: var(--c-text); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+
+.ff__sentence {
+  max-width: 56ch;
+  margin: var(--sp-4) auto 0;
+  font-size: var(--fs-md, 1.15rem);
+  line-height: 1.55;
+  color: var(--c-text-soft);
+}
+
+// --- contrôles bas ---
+.ff__controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-8) var(--sp-8);
+}
+
+.ff__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  letter-spacing: 0.08em;
+}
+
+.ff__next {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm, 0.95rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border: none;
+  border-radius: var(--r-pill, 999px);
+  padding: var(--sp-3) var(--sp-8);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--c-accent) 35%, transparent);
+  }
+  &:active { transform: translateY(0); }
+}
+
+.ff__loading {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm, 0.95rem);
+  letter-spacing: 0.08em;
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 640px) {
+  .ff__top { padding: var(--sp-3) var(--sp-4); }
+  .ff__stage { padding: var(--sp-4); }
+  .ff__controls { padding: var(--sp-4); gap: var(--sp-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ff__card { animation: none; }
+}

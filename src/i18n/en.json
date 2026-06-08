@@ -104,7 +104,8 @@
     "m4_desc": "Where the figures meet the inhabitants: sea level on populated coasts, drinking-water access, disease, and the toll of disasters.",
     "m5_kicker": "Movement V",
     "m5_title": "The response, then the verdict",
-    "m5_desc": "The levers of adaptation — renewable share, economic transformation — and the synthesis that crosses responsibility with vulnerability."
+    "m5_desc": "The levers of adaptation — renewable share, economic transformation — and the synthesis that crosses responsibility with vulnerability.",
+    "funfacts": "Did you know?"
   },
   "footer": {
     "tagline": "Giving a face to climate-change data across the Pacific.",
@@ -1966,6 +1967,35 @@
       "p1": "I'm passionate about what data reveals once you stage it: it turns numbers into decisions — sometimes into anticipation.",
       "walmart": "The example that opened my eyes: before a hurricane, Walmart mined years of sales and found strawberry Pop-Tarts selling about 7× the usual rate (beer led the list). Stores pre-stocked in the storm's path, shelves cleared.",
       "p3": "Picture that same anticipation for our cyclone watches in the Pacific: knowing, before the storm, what each island will need. That's the power of data — and the spirit of Datamoana."
+    }
+  },
+  "funfacts": {
+    "kicker": "Did you know? · real data",
+    "home": "Home",
+    "next": "Next",
+    "loading": "Loading Pacific data…",
+    "empty": "Data unavailable right now.",
+    "median": "Pacific median",
+    "region": {
+      "melanesia": "Melanesia",
+      "polynesia": "Polynesia",
+      "micronesia": "Micronesia"
+    },
+    "ds": {
+      "emissions": "CO₂ emissions per capita",
+      "seaLevel": "sea level",
+      "sst": "the sea-surface temperature anomaly",
+      "renewables": "the renewable energy share",
+      "population": "population",
+      "disastersAffected": "people affected by disasters",
+      "landCover": "the land-cover index"
+    },
+    "tpl": {
+      "record_high": "{area} holds the Pacific record for {metric}: {value} ({year}).",
+      "record_low": "{area} has the Pacific's lowest for {metric}: {value} ({year}).",
+      "biggest_change": "For {metric}, {area} went from {v0} to {v1} between {year0} and {year1}.",
+      "median_multiple": "For {metric}, {area} is {mult} the Pacific median.",
+      "region_top": "For {metric}, {area} is the highest sub-region ({value} on average)."
     }
   }
 }
