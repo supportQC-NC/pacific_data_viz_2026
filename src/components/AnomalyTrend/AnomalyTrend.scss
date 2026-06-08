@@ -1,21 +1,36 @@
-// src/components/AnomalyTrend/AnomalyTrend.scss
+// src/components/charts/AnomalyTrend.scss
 // ============================================================
-// Couleur pilotée par une variable locale --tone (sea = cyan, warm).
-// Tout via les tokens → light/dark.
+// Styles du graphe « signature » (aire + bande de dispersion + moyenne).
+// Le ton (couleur) est piloté par les variables --tone / --tone-band /
+// --tone-area, déclinées par classe .atrend--<tone>.
+// Repli par défaut sur .atrend : tout tone inconnu reprend l'accent au lieu
+// de tomber en NOIR (fill SVG par défaut).
 // ============================================================
 
 .atrend {
   width: 100%;
+  // Repli par défaut (évite tout fill noir si le tone n'a pas de variante).
+  --tone: var(--c-accent);
+  --tone-band: color-mix(in srgb, var(--c-accent) 16%, transparent);
+  --tone-area: color-mix(in srgb, var(--c-accent) 22%, transparent);
 }
+
 .atrend--sea {
   --tone: var(--c-accent);
   --tone-band: color-mix(in srgb, var(--c-accent) 16%, transparent);
   --tone-area: color-mix(in srgb, var(--c-accent) 22%, transparent);
 }
+
 .atrend--warm {
   --tone: var(--c-warm);
   --tone-band: color-mix(in srgb, var(--c-warm) 16%, transparent);
   --tone-area: color-mix(in srgb, var(--c-warm) 22%, transparent);
+}
+
+.atrend--green {
+  --tone: var(--c-positive);
+  --tone-band: color-mix(in srgb, var(--c-positive) 16%, transparent);
+  --tone-area: color-mix(in srgb, var(--c-positive) 22%, transparent);
 }
 
 .atrend--empty {
@@ -35,10 +50,12 @@
   stroke: var(--c-line);
   stroke-width: 1;
 }
+
 .atrend__tick {
   fill: var(--c-text-mute);
   font-size: 13px;
 }
+
 .atrend__unit {
   fill: var(--c-text-soft);
   font-size: 12px;
@@ -48,24 +65,29 @@
 .atrend__band {
   fill: var(--tone-band);
 }
+
 .atrend__area {
   fill: var(--tone-area);
   opacity: 0.7;
 }
+
 .atrend__baseline {
   stroke: var(--c-line-strong);
   stroke-width: 1;
   stroke-dasharray: 4 4;
 }
+
 .atrend__baseline-label {
   fill: var(--c-text-mute);
   font-size: 12px;
 }
+
 .atrend__mean {
   fill: none;
   stroke: var(--tone);
   stroke-width: 2.5;
 }
+
 .atrend__meanlabel {
   fill: var(--tone);
   font-size: 12px;
@@ -77,9 +99,11 @@
   stroke: var(--tone);
   stroke-width: 2.5;
 }
+
 .atrend__legend-band {
   fill: var(--tone-band);
 }
+
 .atrend__legend-txt {
   fill: var(--c-text-mute);
   font-size: 12px;
@@ -91,11 +115,13 @@
   stroke-width: 1;
   stroke-dasharray: 3 3;
 }
+
 .atrend__marker-dot {
   fill: var(--tone);
   stroke: var(--c-bg);
   stroke-width: 1.5;
 }
+
 .atrend__marker-dot--soft {
   fill: none;
   stroke: var(--tone);
@@ -107,15 +133,18 @@
   fill: var(--c-surface);
   stroke: var(--c-line-strong);
 }
+
 .atrend__readout-yr {
   fill: var(--c-text);
   font-size: 12px;
   font-weight: var(--fw-semi);
 }
+
 .atrend__readout-mean {
   fill: var(--tone);
   font-size: 11px;
 }
+
 .atrend__readout-rng {
   fill: var(--c-text-mute);
   font-size: 11px;

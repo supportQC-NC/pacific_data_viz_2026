@@ -961,7 +961,10 @@
       "mix_race_take": "The transition plays out live: who pulls ahead, who catches up, who flips to clean power.",
       "tab_mix_tree": "Mix: treemap by source",
       "mix_tree_find": "Share of each source in the selection's total electricity generation (area ∝ output), for the slider year.",
-      "mix_tree_take": "Oil's weight is obvious; clean sources still cover only a fraction of the area."
+      "mix_tree_take": "Oil's weight is obvious; clean sources still cover only a fraction of the area.",
+      "tab_mix_donut": "Mix: detailed donut",
+      "mix_donut_find": "Electricity mix composition of one territory (or region) for a given year: pick the area and year. The centre shows the renewable share.",
+      "mix_donut_take": "Source by source, you see exactly what each island's power depends on — and how far there is to go."
     },
     "mix": {
       "fossil": "Fossil",
@@ -973,7 +976,10 @@
       "share_title": "Renewable share by territory",
       "share_ref": "median",
       "race_title": "The transition in motion — renewable share",
-      "tree_title": "Where the power comes from — by source"
+      "tree_title": "Where the power comes from — by source",
+      "donut_title": "Electricity mix in detail",
+      "donut_terr": "Territory",
+      "donut_center": "Renewable"
     }
   },
   "act6": {

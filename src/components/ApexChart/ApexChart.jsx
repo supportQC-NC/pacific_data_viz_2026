@@ -23,8 +23,13 @@ function targetHeight(el) {
   return el && el.clientHeight ? el.clientHeight : 360;
 }
 
-// Injecte la hauteur calculée dans la config (sans muter l'objet d'origine).
+// Une hauteur numérique explicite (chart.height) est-elle fournie ?
+function hasExplicitHeight(options) {
+  return !!(options && options.chart && typeof options.chart.height === "number");
+}
+// Injecte la hauteur calculée (sauf si une hauteur explicite est demandée).
 function withHeight(options, height) {
+  if (hasExplicitHeight(options)) return options;
   return { ...options, chart: { ...(options && options.chart), height } };
 }
 
@@ -34,6 +39,9 @@ function sameShape(a, b) {
   const ta = a.chart && a.chart.type;
   const tb = b.chart && b.chart.type;
   if (ta !== tb) return false;
+  // Les charts à label central / formatters globaux (donut, pie, radialBar)
+  // doivent repasser par updateOptions pour rafraîchir le centre & les labels.
+  if (ta === "donut" || ta === "pie" || ta === "radialBar") return false;
   if (!Array.isArray(a.series) || !Array.isArray(b.series)) return false;
   if (a.series.length !== b.series.length) return false;
   for (let i = 0; i < a.series.length; i += 1) {
@@ -71,6 +79,7 @@ export default function ApexChart({ options, className = "" }) {
 
     const fit = () => {
       if (!chartRef.current) return;
+      if (hasExplicitHeight(optRef.current)) return;
       try {
         chartRef.current.updateOptions({ chart: { height: targetHeight(el) } }, false, false);
       } catch (err) {

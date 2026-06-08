@@ -1,49 +1,68 @@
 // src/components/charts/DonutChart.jsx
-// Anneau (donut) : proportions part-à-tout pour quelques catégories, total
-// affiché au centre. Pour la synthèse : où se concentre la vulnérabilité
-// cumulée, par sous-région. Props : rows [{name, value, color?}], unit,
-// format (fn), centerLabel.
+// ============================================================
+// Donut (part-to-whole) du mix électrique d'une sélection (territoire,
+// région ou ensemble) pour une année. Centre = part renouvelable.
+// • Couleurs sémantiques fournies par l'appelant (une par source).
+// • Label % de chaque part en couleur ADAPTATIVE (foncé sur fond clair,
+//   blanc sur fond foncé) → toujours lisible.
+// • Hauteur EXPLICITE (contenue) pour ne pas déborder du conteneur.
+// Props : labels[], series[](GWh), colors[], unit, centerLabel, centerValue.
+// ============================================================
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
-import { fmt, baseChart, baseLegend, baseTooltip, MONO } from "./apexBase";
+import { fmt, baseChart, baseLegend, baseTooltip, SANS } from "./apexBase";
 
-export default function DonutChart({ rows = [], unit = "", format, centerLabel = "" }) {
+function toRGB(c) {
+  if (!c) return [80, 80, 80];
+  if (c[0] === "#") {
+    const h = c.slice(1);
+    const f = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+    const n = parseInt(f, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  const m = c.match(/(\d+(?:\.\d+)?)/g);
+  return m && m.length >= 3 ? [+m[0], +m[1], +m[2]] : [80, 80, 80];
+}
+function contrastText(c) {
+  const [r, g, b] = toRGB(c);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.58 ? "#0a1822" : "#ffffff";
+}
+
+export default function DonutChart({ labels = [], series = [], colors = [], unit = "", centerLabel = "", centerValue = "" }) {
   const tk = useThemeTokens();
-  const fmtV = typeof format === "function" ? format : (v) => fmt(v, 0);
 
   const option = useMemo(() => {
-    const data = rows.filter((r) => Number.isFinite(r.value) && r.value > 0);
-    const series = data.map((r) => Number(r.value));
-    const labels = data.map((r) => r.name);
-    const fallback = [tk.accent, tk.warm, tk.positive, tk.secondary, tk.accentDeep, tk.negative];
-    const colors = data.map((r, i) => r.color || fallback[i % fallback.length]);
-    const total = series.reduce((a, b) => a + b, 0);
-
+    const labelColors = (colors.length ? colors : labels.map(() => tk.accent)).map((c) => contrastText(c));
     return {
-      chart: baseChart(tk, { type: "donut" }),
-      colors,
+      chart: { ...baseChart(tk, { type: "donut" }), height: 460 },
       series,
       labels,
-      stroke: { width: 2, colors: [tk.bg] },
-      legend: baseLegend(tk, { position: "right", horizontalAlign: "center" }),
-      dataLabels: { enabled: true, style: { fontFamily: MONO, fontSize: "11px" }, formatter: (val) => `${Math.round(val)}%`, dropShadow: { enabled: false } },
+      colors: colors.length ? colors : undefined,
+      legend: baseLegend(tk),
+      stroke: { width: 2, colors: [tk.bg || "transparent"] },
+      dataLabels: {
+        enabled: true,
+        formatter: (val) => `${Number(val).toFixed(0)}%`,
+        style: { fontFamily: SANS, fontSize: "12px", fontWeight: 700, colors: labelColors },
+        dropShadow: { enabled: false },
+      },
       plotOptions: {
         pie: {
           donut: {
             size: "62%",
             labels: {
               show: true,
-              name: { show: true, color: tk.textMute, fontFamily: MONO, fontSize: "12px" },
-              value: { show: true, color: tk.text, fontFamily: MONO, fontSize: "22px", formatter: (v) => fmtV(v) },
-              total: { show: true, label: centerLabel, color: tk.textMute, fontFamily: MONO, formatter: () => fmtV(total) },
+              value: { show: true, fontFamily: SANS, fontSize: "22px", fontWeight: 700, color: tk.text, formatter: (v) => `${fmt(v)} ${unit}` },
+              total: { show: true, showAlways: true, label: centerLabel, fontFamily: SANS, fontSize: "13px", color: tk.textSoft, formatter: () => centerValue },
             },
           },
         },
       },
-      tooltip: baseTooltip({ y: { formatter: (v) => `${fmtV(v)} ${unit}` } }),
+      tooltip: baseTooltip({ y: { formatter: (v) => `${fmt(v)} ${unit}` } }),
     };
-  }, [rows, unit, fmtV, centerLabel, tk]);
+  }, [labels, series, colors, unit, centerLabel, centerValue, tk]);
 
-  return <ApexChart options={option} className="apexchart--tall" />;
+  return <ApexChart options={option} className="apexchart--donut" />;
 }

@@ -21,6 +21,7 @@ import TrendChart from "../../components/charts/TrendChart";
 import PowerMixChart from "../../components/charts/PowerMixChart";
 import MixCompositionChart from "../../components/charts/MixCompositionChart";
 import TreemapChart from "../../components/charts/TreemapChart";
+import DonutChart from "../../components/charts/DonutChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
@@ -325,6 +326,51 @@ export default function Act5Momentum() {
       .map((lab) => ({ label: lab, value: Math.round(totals[lab] * 10) / 10, color: energyColor(lab, tk) }))
       .sort((a, b) => b.value - a.value);
   }, [mix.data, mixYear, inRegion, tk]);
+  // ---- Donut autonome : mix d'UNE sélection (filtres propres) ----
+  const [dRegion, setDRegion] = useState("all");
+  const [dTerr, setDTerr] = useState("all");
+  const [dYear, setDYear] = useState(null);
+  useEffect(() => {
+    if (mixYears.length) setDYear((y) => (y == null ? mixYears[mixYears.length - 1] : y));
+  }, [mixYears.length]);
+  useEffect(() => { setDTerr("all"); }, [dRegion]);
+  const dTerrOpts = useMemo(() => {
+    const base = [{ v: "all", label: t("act1.filter.all") }];
+    const d = mix.data;
+    if (!d) return base;
+    const terrs = Object.keys(d.byArea)
+      .filter((g) => isPict(g) && (dRegion === "all" || REGION_OF[g] === dRegion) && mixYears.some((y) => ((d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0)) > 0))
+      .map((g) => ({ v: g, label: pictName(g, lang) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return base.concat(terrs);
+  }, [mix.data, dRegion, mixYears, lang, t]);
+  const dYearOpts = useMemo(() => mixYears.map((y) => ({ v: String(y), label: String(y) })), [mixYears]);
+  const donut = useMemo(() => {
+    const d = mix.data;
+    if (!d || dYear == null) return { labels: [], series: [], colors: [], renewShare: null };
+    const kindOf = {};
+    (d.detailSources || []).forEach((sx) => { kindOf[sx.label] = sx.kind; });
+    const totals = {};
+    Object.keys(d.byArea)
+      .filter((g) => isPict(g) && (dRegion === "all" || REGION_OF[g] === dRegion) && (dTerr === "all" || g === dTerr))
+      .forEach((g) => {
+        const det = d.byArea[g].detail || {};
+        Object.keys(det).forEach((lab) => { totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[dYear] || 0); });
+      });
+    const entries = Object.keys(totals)
+      .filter((lab) => totals[lab] > 0)
+      .map((lab) => ({ lab, val: totals[lab], color: energyColor(lab, tk), kind: kindOf[lab] }))
+      .sort((a, b) => b.val - a.val);
+    const total = entries.reduce((acc, e) => acc + e.val, 0);
+    const renew = entries.filter((e) => e.kind === "renew").reduce((acc, e) => acc + e.val, 0);
+    return {
+      labels: entries.map((e) => e.lab),
+      series: entries.map((e) => Math.round(e.val * 10) / 10),
+      colors: entries.map((e) => e.color),
+      renewShare: total > 0 ? Math.round((renew / total) * 1000) / 10 : null,
+    };
+  }, [mix.data, dRegion, dTerr, dYear, tk]);
+  const donutScope = dTerr === "all" ? t(`act1.filter.${dRegion}`) : ((dTerrOpts.find((o) => o.v === dTerr) || {}).label || "");
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
@@ -467,6 +513,35 @@ export default function Act5Momentum() {
             finding: t("act5.board.mix_tree_find"),
             takeaway: t("act5.board.mix_tree_take"),
             node: <TreemapChart points={mixTree} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_donut",
+            empty: !mixReady,
+            tab: t("act5.board.tab_mix_donut"),
+            title: `${t("act5.mix.donut_title")} · ${donutScope} · ${dYear ?? ""}`,
+            finding: t("act5.board.mix_donut_find"),
+            takeaway: t("act5.board.mix_donut_take"),
+            node: (
+              <div>
+                <div className="act1viz__filters">
+                  <Select label={t("act1.filter.title")} options={regionOpts} value={dRegion} onChange={setDRegion} />
+                  <Select label={t("act5.mix.donut_terr")} options={dTerrOpts} value={dTerr} onChange={setDTerr} />
+                  <Select label={t("act1.f.year")} options={dYearOpts} value={String(dYear ?? "")} onChange={(v) => setDYear(Number(v))} />
+                </div>
+                {donut.series.length ? (
+                  <DonutChart
+                    labels={donut.labels}
+                    series={donut.series}
+                    colors={donut.colors}
+                    unit={t("act5.mix.unit")}
+                    centerLabel={t("act5.mix.donut_center")}
+                    centerValue={donut.renewShare != null ? `${donut.renewShare} %` : "—"}
+                  />
+                ) : (
+                  <p className="act5__nodata">{t("act1.empty")}</p>
+                )}
+              </div>
+            ),
           },
         ]
       : [];
