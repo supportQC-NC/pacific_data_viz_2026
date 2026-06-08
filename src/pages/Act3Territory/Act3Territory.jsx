@@ -27,6 +27,8 @@ import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import MirrorBars from "../../components/charts/MirrorBars";
 import ChangeChart from "../../components/charts/ChangeChart";
 import DumbbellChart from "../../components/charts/DumbbellChart";
+import CoastBalanceChart from "../../components/charts/CoastBalanceChart";
+import COASTLINE_BY_TERRITORY from "../../data/coastlineByTerritory";
 import { median, fmt } from "../../components/charts/echartsBase";
 import "./Act3Territory.scss";
 
@@ -239,6 +241,26 @@ export default function Act3Territory() {
     [popSeries],
   );
 
+  // Bilan côtier par territoire (agrégat statique Digital Earth Pacific),
+  // filtré par sous-région. ero/acc en % ; bal = acc - ero ; med en m/an.
+  const coastRows = useMemo(
+    () =>
+      COASTLINE_BY_TERRITORY.filter((d) => inRegion(d.area)).map((d) => ({
+        ...d,
+        name: pictName(d.area, lang),
+      })),
+    [lang, inRegion],
+  );
+  // Carte « érosion par territoire » : valeur = % de littoral en recul.
+  const coastEroPoints = useMemo(
+    () => coastRows.map((d) => ({ area: d.area, name: d.name, value: d.ero })),
+    [coastRows],
+  );
+  const eroRange = useMemo(() => {
+    const vals = coastEroPoints.map((p) => p.value);
+    return { min: 0, max: vals.length ? Math.max(...vals) : 100 };
+  }, [coastEroPoints]);
+
   const seaUnit = t("act3.sea_unit");
   const popUnit = t("act3.unit");
 
@@ -419,6 +441,46 @@ export default function Act3Territory() {
                   <span className="act6coast__attr">{t("act3.coast.attr")}</span>
                 </div>
               </div>
+            ),
+          },
+          {
+            id: "coastbal",
+            empty: coastRows.length === 0,
+            tab: t("act3.board.tab_coastbal"),
+            title: t("act3.viz.coastbal_title"),
+            finding: t("act3.board.coastbal_find"),
+            takeaway: t("act3.board.coastbal_take"),
+            node: (
+              <CoastBalanceChart
+                rows={coastRows}
+                retreatLabel={t("act3.coast.legend_erosion_short")}
+                advanceLabel={t("act3.coast.legend_accretion_short")}
+                unit="%"
+              />
+            ),
+          },
+          {
+            id: "coastmap",
+            empty: coastEroPoints.length === 0,
+            tab: t("act3.board.tab_coastmap"),
+            title: t("act3.viz.coastmap_title"),
+            finding: t("act3.board.coastmap_find"),
+            takeaway: t("act3.board.coastmap_take"),
+            node: (
+              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
+                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+                  <OceanMap
+                    data={coastEroPoints}
+                    unit={t("act3.coast.ero_unit")}
+                    range={eroRange}
+                    ramp="diverging"
+                    lowLabel={t("act3.coastmap_low")}
+                    midLabel={t("act3.coastmap_mid")}
+                    highLabel={t("act3.coastmap_high")}
+                    noTokenMsg={t("act1.map_no_token")}
+                  />
+                </Suspense>
+              </ErrorBoundary>
             ),
           },
           {

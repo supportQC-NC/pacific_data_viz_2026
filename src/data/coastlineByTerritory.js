@@ -1,0 +1,12 @@
+// src/data/coastlineByTerritory.js
+// Agrégat par territoire du trait de côte (Digital Earth Pacific — Landsat
+// Coastlines, CC BY-NC 4.0). Calculé hors-ligne depuis coastline-hotspots
+// (points hotspots_zoom_1) : chaque point rattaché au centroïde de territoire
+// le plus proche (PICT_GEO, cap 7°). Champs par territoire :
+//   area, n (segments), ero (% recul <-0.2 m/an), acc (% avancée >0.2),
+//   med (médiane m/an), bal (acc - ero, en points de %).
+// Lecture APPROCHÉE au niveau territoire (rattachement par proximité).
+
+const COASTLINE_BY_TERRITORY = [{"area": "PF", "n": 214, "ero": 41.1, "acc": 4.2, "med": -0.17, "bal": -36.9}, {"area": "AS", "n": 11, "ero": 54.5, "acc": 18.2, "med": -0.21, "bal": -36.4}, {"area": "CK", "n": 8, "ero": 25.0, "acc": 0.0, "med": -0.03, "bal": -25.0}, {"area": "PG", "n": 581, "ero": 25.3, "acc": 10.2, "med": -0.04, "bal": -15.1}, {"area": "KI", "n": 34, "ero": 17.6, "acc": 5.9, "med": -0.105, "bal": -11.8}, {"area": "WF", "n": 8, "ero": 0.0, "acc": 0.0, "med": 0.02, "bal": 0.0}, {"area": "FJ", "n": 226, "ero": 16.4, "acc": 19.9, "med": 0.015, "bal": 3.5}, {"area": "NC", "n": 171, "ero": 4.1, "acc": 9.9, "med": -0.02, "bal": 5.8}, {"area": "VU", "n": 70, "ero": 12.9, "acc": 30.0, "med": -0.05, "bal": 17.1}, {"area": "SB", "n": 417, "ero": 9.6, "acc": 27.8, "med": 0.1, "bal": 18.2}, {"area": "TK", "n": 11, "ero": 9.1, "acc": 27.3, "med": 0.03, "bal": 18.2}, {"area": "PN", "n": 15, "ero": 13.3, "acc": 33.3, "med": -0.03, "bal": 20.0}, {"area": "WS", "n": 29, "ero": 13.8, "acc": 44.8, "med": 0.16, "bal": 31.0}, {"area": "NU", "n": 5, "ero": 0.0, "acc": 40.0, "med": 0.1, "bal": 40.0}, {"area": "MP", "n": 9, "ero": 0.0, "acc": 44.4, "med": 0.14, "bal": 44.4}, {"area": "PW", "n": 28, "ero": 0.0, "acc": 46.4, "med": 0.195, "bal": 46.4}, {"area": "MH", "n": 55, "ero": 9.1, "acc": 56.4, "med": 0.22, "bal": 47.3}, {"area": "TO", "n": 16, "ero": 0.0, "acc": 50.0, "med": 0.245, "bal": 50.0}, {"area": "GU", "n": 6, "ero": 0.0, "acc": 83.3, "med": 0.23, "bal": 83.3}, {"area": "FM", "n": 29, "ero": 0.0, "acc": 86.2, "med": 0.38, "bal": 86.2}, {"area": "TV", "n": 13, "ero": 0.0, "acc": 100.0, "med": 0.37, "bal": 100.0}];
+
+export default COASTLINE_BY_TERRITORY;

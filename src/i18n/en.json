@@ -678,7 +678,13 @@
       "path_take": "Most paths drift downward: growth slows but stays positive on rising coasts.",
       "tab_coast": "Coastline",
       "coast_find": "Each dot is a satellite-tracked coastline segment (Landsat, 1999–2023): red is retreat, blue is growth, expressed in metres per year.",
-      "coast_take": "Retreat is not uniform along the coast: it concentrates on specific stretches, often among the most inhabited."
+      "coast_take": "Retreat is not uniform along the coast: it concentrates on specific stretches, often among the most inhabited.",
+      "tab_coastbal": "Coastal balance",
+      "coastbal_find": "For each territory, the share of coastline retreating (red, left) versus growing (blue, right), aggregated from satellite-tracked segments.",
+      "coastbal_take": "French Polynesia, American Samoa and Papua New Guinea lean toward retreat; conversely, several atolls (Tuvalu, Federated States of Micronesia) are gaining ground — erosion is not a uniform fate.",
+      "tab_coastmap": "Erosion map",
+      "coastmap_find": "Per-territory map: column height and colour intensity show the share of coastline in retreat.",
+      "coastmap_take": "Retreat hotspots concentrate on a few territories; elsewhere the coast stays stable or advances."
     },
     "sea_unit": "m",
     "viz": {
@@ -694,7 +700,9 @@
       "profile_right": "Demographic pressure (rank)",
       "profile_unit": "/100",
       "path_title": "The demographic path",
-      "coast_title": "The coast: retreat and growth"
+      "coast_title": "The coast: retreat and growth",
+      "coastbal_title": "Retreat or growth: the balance by territory",
+      "coastmap_title": "Erosion pressure by territory"
     },
     "path_start": "first year",
     "path_end": "recent",
@@ -702,8 +710,14 @@
       "legend_erosion": "Retreat (m/yr)",
       "legend_stable": "Stable",
       "legend_accretion": "Growth (m/yr)",
-      "attr": "Coastline: Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)"
-    }
+      "attr": "Coastline: Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)",
+      "legend_erosion_short": "Retreat",
+      "legend_accretion_short": "Growth",
+      "ero_unit": "% retreat"
+    },
+    "coastmap_low": "Stable",
+    "coastmap_mid": "Moderate retreat",
+    "coastmap_high": "Strong retreat"
   },
   "act4": {
     "kpi_affected": "people affected (total)",

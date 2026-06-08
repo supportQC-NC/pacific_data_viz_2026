@@ -678,7 +678,13 @@
       "path_take": "La plupart des trajectoires glissent vers le bas : la croissance ralentit, mais reste positive sur des côtes qui montent.",
       "tab_coast": "Trait de côte",
       "coast_find": "Chaque point est un segment de littoral suivi par satellite (Landsat, 1999–2023) : en rouge le recul, en bleu l’avancée, exprimés en mètres par an.",
-      "coast_take": "Le recul ne touche pas la côte de façon uniforme : il se concentre sur des secteurs précis, souvent parmi les plus habités."
+      "coast_take": "Le recul ne touche pas la côte de façon uniforme : il se concentre sur des secteurs précis, souvent parmi les plus habités.",
+      "tab_coastbal": "Bilan côtier",
+      "coastbal_find": "Pour chaque territoire, la part de littoral en recul (rouge, à gauche) face à la part en avancée (bleu, à droite), agrégée à partir des segments suivis par satellite.",
+      "coastbal_take": "Polynésie française, Samoa américaines et Papouasie penchent vers le recul ; à l’inverse, plusieurs atolls (Tuvalu, États fédérés de Micronésie) gagnent du terrain — l’érosion n’est pas un destin uniforme.",
+      "tab_coastmap": "Carte d’érosion",
+      "coastmap_find": "Carte par territoire : la hauteur et l’intensité de couleur indiquent la part de littoral en recul.",
+      "coastmap_take": "Les foyers de recul se concentrent sur quelques territoires ; ailleurs, le littoral reste stable ou progresse."
     },
     "sea_unit": "m",
     "viz": {
@@ -694,7 +700,9 @@
       "profile_right": "Pression démo. (rang)",
       "profile_unit": "/100",
       "path_title": "La trajectoire démographique",
-      "coast_title": "Le littoral : recul et avancée"
+      "coast_title": "Le littoral : recul et avancée",
+      "coastbal_title": "Recul ou avancée : le bilan par territoire",
+      "coastmap_title": "Pression d’érosion par territoire"
     },
     "path_start": "1re année",
     "path_end": "récent",
@@ -702,8 +710,14 @@
       "legend_erosion": "Recul (m/an)",
       "legend_stable": "Stable",
       "legend_accretion": "Avancée (m/an)",
-      "attr": "Trait de côte : Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)"
-    }
+      "attr": "Trait de côte : Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)",
+      "legend_erosion_short": "Recul",
+      "legend_accretion_short": "Avancée",
+      "ero_unit": "% recul"
+    },
+    "coastmap_low": "Stable",
+    "coastmap_mid": "Recul modéré",
+    "coastmap_high": "Fort recul"
   },
   "act4": {
     "kpi_affected": "personnes affectées (cumul)",
