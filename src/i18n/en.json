@@ -949,14 +949,23 @@
       "mix_band_find": "Electricity generation (GWh) stacked, fossil against renewable, by year.",
       "mix_band_take": "At a glance, the renewable share eats into the fossil one over time.",
       "mix_detail_find": "Electricity generation (GWh) broken down by source: coal, gas, oil, hydro, solar, wind, geothermal, biomass…",
-      "mix_detail_take": "The detail shows which technologies drive the transition: solar and wind rising, thermal slowly receding."
+      "mix_detail_take": "The detail shows which technologies drive the transition: solar and wind rising, thermal slowly receding.",
+      "tab_mix_compo": "Mix: composition by territory",
+      "tab_mix_share": "Renewable share (ranking)",
+      "mix_compo_find": "Share of each source in every territory's generation (100% bars), for the selected year.",
+      "mix_compo_take": "The contrast is striking: some territories run almost entirely on fossil fuels, others have already greened their mix.",
+      "mix_share_find": "Renewable share of each territory's electricity generation, ranked, for the selected year.",
+      "mix_share_take": "The ranking reveals the transition pioneers and those still locked into thermal power."
     },
     "mix": {
       "fossil": "Fossil",
       "renew": "Renewable",
       "unit": "GWh",
       "band_title": "The greening mix — fossil vs renewable",
-      "detail_title": "Electricity mix by source"
+      "detail_title": "Electricity mix by source",
+      "compo_title": "Mix composition by territory",
+      "share_title": "Renewable share by territory",
+      "share_ref": "median"
     }
   },
   "act6": {

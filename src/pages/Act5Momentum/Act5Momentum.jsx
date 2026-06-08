@@ -19,6 +19,8 @@ import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import BarRace from "../../components/BarRace/BarRace";
 import TrendChart from "../../components/charts/TrendChart";
 import PowerMixChart from "../../components/charts/PowerMixChart";
+import MixCompositionChart from "../../components/charts/MixCompositionChart";
+import RankChart from "../../components/charts/RankChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
@@ -247,6 +249,52 @@ export default function Act5Momentum() {
     });
   }, [mix.data, sumByYear, tk]);
 
+  // Année du mix alignée sur le curseur (mix : 2000→2023, sinon dernière connue).
+  const mixYear = useMemo(() => {
+    if (!mixYears.length) return null;
+    if (currentYear == null) return mixYears[mixYears.length - 1];
+    const le = mixYears.filter((y) => y <= currentYear);
+    return le.length ? le[le.length - 1] : mixYears[0];
+  }, [mixYears, currentYear]);
+  const shareAt = (a, y) => {
+    const f = a.fossil[y] || 0;
+    const r = a.renew[y] || 0;
+    return f + r > 0 ? r / (f + r) : null;
+  };
+  // Composition par territoire (barres empilées 100 % par source) à mixYear.
+  const mixCompo = useMemo(() => {
+    const d = mix.data;
+    if (!d || mixYear == null) return { categories: [], series: [] };
+    const terr = Object.keys(d.byArea)
+      .filter((g) => isPict(g) && inRegion(g) && ((d.byArea[g].fossil[mixYear] || 0) + (d.byArea[g].renew[mixYear] || 0)) > 0)
+      .sort((g1, g2) => (shareAt(d.byArea[g1], mixYear) || 0) - (shareAt(d.byArea[g2], mixYear) || 0));
+    const fossilPal = [tk.warm, tk.negative, tk.accentDeep, tk.secondary];
+    const renewPal = [tk.positive, tk.accent, tk.secondary, tk.accentDeep, tk.warm];
+    let fi = 0;
+    let ri = 0;
+    const series = d.detailSources.map((sx) => {
+      const color = sx.kind === "fossil" ? fossilPal[fi++ % fossilPal.length] : renewPal[ri++ % renewPal.length];
+      return { name: sx.label, color, data: terr.map((g) => Math.round(((d.byArea[g].detail[sx.label] || {})[mixYear] || 0) * 10) / 10) };
+    });
+    return { categories: terr.map((g) => pictName(g, lang)), series };
+  }, [mix.data, mixYear, inRegion, lang, tk]);
+  // Classement de la part renouvelable (%) par territoire à mixYear.
+  const mixShare = useMemo(() => {
+    const d = mix.data;
+    if (!d || mixYear == null) return { points: [], median: 0 };
+    const points = Object.keys(d.byArea)
+      .filter((g) => isPict(g) && inRegion(g))
+      .map((g) => {
+        const sh = shareAt(d.byArea[g], mixYear);
+        return sh == null ? null : { name: pictName(g, lang), value: Math.round(sh * 1000) / 10 };
+      })
+      .filter(Boolean);
+    const vals = points.map((pt) => pt.value).sort((x, y) => x - y);
+    const n = vals.length;
+    const med = n ? (n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2) : 0;
+    return { points, median: med };
+  }, [mix.data, mixYear, inRegion, lang]);
+
   const unit = t("act5.unit");
   const evoLabels = useMemo(
     () => ({ improved: t("act5.evo_down"), worsened: t("act5.evo_up"), since: t("act1.evo.since"), no_data: t("act1.evo.no_data") }),
@@ -357,6 +405,24 @@ export default function Act5Momentum() {
             finding: t("act5.board.mix_detail_find"),
             takeaway: t("act5.board.mix_detail_take"),
             node: <PowerMixChart series={mixDetailSeries} years={mixYears} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_compo",
+            empty: !mixReady || mixCompo.categories.length === 0,
+            tab: t("act5.board.tab_mix_compo"),
+            title: `${t("act5.mix.compo_title")} · ${mixYear ?? ""}`,
+            finding: t("act5.board.mix_compo_find"),
+            takeaway: t("act5.board.mix_compo_take"),
+            node: <MixCompositionChart series={mixCompo.series} categories={mixCompo.categories} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_share",
+            empty: !mixReady || mixShare.points.length === 0,
+            tab: t("act5.board.tab_mix_share"),
+            title: `${t("act5.mix.share_title")} · ${mixYear ?? ""}`,
+            finding: t("act5.board.mix_share_find"),
+            takeaway: t("act5.board.mix_share_take"),
+            node: <RankChart points={mixShare.points} unit="%" median={mixShare.median} refLabel={t("act5.mix.share_ref")} sort="desc" scale="lin" />,
           },
         ]
       : [];

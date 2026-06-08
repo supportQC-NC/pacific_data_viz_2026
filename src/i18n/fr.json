@@ -949,14 +949,23 @@
       "mix_band_find": "Production d'électricité (GWh) empilée, fossile contre renouvelable, par année.",
       "mix_band_take": "On lit d'un coup d'œil la part du renouvelable qui grignote celle du fossile au fil du temps.",
       "mix_detail_find": "Production d'électricité (GWh) détaillée par source : charbon, gaz, pétrole, hydro, solaire, éolien, géothermie, biomasse…",
-      "mix_detail_take": "Le détail révèle quelles technologies portent la transition : montée du solaire et de l'éolien, recul progressif du thermique."
+      "mix_detail_take": "Le détail révèle quelles technologies portent la transition : montée du solaire et de l'éolien, recul progressif du thermique.",
+      "tab_mix_compo": "Mix : composition par territoire",
+      "tab_mix_share": "Part renouvelable (classement)",
+      "mix_compo_find": "Part de chaque source dans la production de chaque territoire (barres à 100 %), pour l'année sélectionnée.",
+      "mix_compo_take": "Le contraste saute aux yeux : certains territoires tournent presque entièrement au fossile, d'autres ont déjà largement verdi leur mix.",
+      "mix_share_find": "Part du renouvelable dans la production électrique de chaque territoire, classée, pour l'année sélectionnée.",
+      "mix_share_take": "Le classement révèle les pionniers de la transition et ceux qui restent dépendants du thermique."
     },
     "mix": {
       "fossil": "Fossile",
       "renew": "Renouvelable",
       "unit": "GWh",
       "band_title": "Le mix qui verdit — fossile vs renouvelable",
-      "detail_title": "Mix électrique par source"
+      "detail_title": "Mix électrique par source",
+      "compo_title": "Composition du mix par territoire",
+      "share_title": "Part renouvelable par territoire",
+      "share_ref": "médiane"
     }
   },
   "act6": {
