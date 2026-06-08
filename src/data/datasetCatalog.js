@@ -79,6 +79,17 @@ const DATASET_CATALOG = [
     ],
   },
   {
+    id: "landcover",
+    labelFr: "Occupation des sols",
+    labelEn: "Land cover",
+    descFr: "Indice de couverture des sols modifiant le climat (CALCI), base 2015 = 100.",
+    descEn: "Climate-altering land cover index (CALCI), 2015 = 100.",
+    sources: [
+      { label: "FMI · IMF Climate (CALCI, d'après FAO)", url: "https://climatedata.imf.org/pages/climate-and-weather#cc4" },
+      { label: "Pacific Data Hub .Stat", url: PDH_STAT },
+    ],
+  },
+  {
     id: "biodiversity",
     labelFr: "Biodiversité — Liste Rouge",
     labelEn: "Biodiversity — Red List",

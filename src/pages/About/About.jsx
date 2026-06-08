@@ -35,6 +35,7 @@ import {
   FiPercent,
   FiWind,
   FiMapPin,
+  FiLayers,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
@@ -47,6 +48,7 @@ const TOPIC_ICONS = {
   emissions: <FiCloud />,
   seaLevel: <FiActivity />,
   coastline: <FiMapPin />,
+  landcover: <FiLayers />,
   sst: <FiThermometer />,
   rain: <FiCloudRain />,
   agriculture: <FiSun />,

@@ -16,6 +16,7 @@ export const DATASETS = {
   sst:               { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.SST_ANOM.',    start: 1970 },
   emissions:         { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.GHG_EMI_CAPITA.', start: 1970 },
   cropYield:         { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.CROP_YIELD.',   start: 1961 },
+  landCover:         { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.ALT_LAND_COVER.', start: 1992 },
   livestockYield:    { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.LVST_YIELD.',   start: 1961 },
   population:        { flow: 'SPC,DF_NMDI_POP,1.0',       key: 'A..NMDI0002._T._T._T..', start: 1970 },
   disastersAffected: { flow: 'SPC,DF_SDG_11,3.0',         key: 'A.VC_DSR_AFFCT.........', start: 2000 },

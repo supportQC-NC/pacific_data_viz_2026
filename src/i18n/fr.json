@@ -684,7 +684,18 @@
       "coastbal_take": "Polynésie française, Samoa américaines et Papouasie penchent vers le recul ; à l’inverse, plusieurs atolls (Tuvalu, États fédérés de Micronésie) gagnent du terrain — l’érosion n’est pas un destin uniforme.",
       "tab_coastmap": "Carte d’érosion",
       "coastmap_find": "Carte par territoire : la hauteur et l’intensité de couleur indiquent la part de littoral en recul.",
-      "coastmap_take": "Les foyers de recul se concentrent sur quelques territoires ; ailleurs, le littoral reste stable ou progresse."
+      "coastmap_take": "Les foyers de recul se concentrent sur quelques territoires ; ailleurs, le littoral reste stable ou progresse.",
+      "tab_slope": "Montée de la mer",
+      "slope_find": "Pour chaque territoire, le niveau de la mer à la première puis à la dernière année observée (anomalie en mm). Une pente montante = mer qui s'élève.",
+      "slope_take": "La hausse est quasi générale et d'ampleur voisine d'un territoire à l'autre : la mer monte pour (presque) tous.",
+      "tab_spread": "Dispersion",
+      "spread_find": "Chaque boîte résume la distribution des vitesses de trait de côte d'un territoire (médiane, quartiles, extrêmes), en m/an.",
+      "spread_take": "Une même côte mêle souvent recul et avancée : la dispersion révèle l'hétérogénéité que les moyennes masquent.",
+      "tab_bubble": "Pression × côte",
+      "bubble_find": "Croisement : en abscisse la croissance démographique, en ordonnée la part de littoral en recul, taille des bulles = nombre de segments suivis.",
+      "bubble_take": "Là où la population croît vite et où le littoral recule, les pressions se cumulent — ce sont les territoires à surveiller en priorité.",
+      "kpi_coast_retreat": "Territoires en recul net",
+      "kpi_coast_unit": "sur le total"
     },
     "sea_unit": "m",
     "viz": {
@@ -702,7 +713,13 @@
       "path_title": "La trajectoire démographique",
       "coast_title": "Le littoral : recul et avancée",
       "coastbal_title": "Recul ou avancée : le bilan par territoire",
-      "coastmap_title": "Pression d’érosion par territoire"
+      "coastmap_title": "Pression d’érosion par territoire",
+      "slope_title": "Niveau de la mer : début → aujourd'hui",
+      "spread_title": "Vitesses du trait de côte par territoire",
+      "bubble_title": "Pression humaine et recul du littoral",
+      "bubble_x": "Croissance démographique (%/an)",
+      "bubble_y": "% littoral en recul",
+      "bubble_z": "Segments suivis"
     },
     "path_start": "1re année",
     "path_end": "récent",
@@ -713,7 +730,9 @@
       "attr": "Trait de côte : Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)",
       "legend_erosion_short": "Recul",
       "legend_accretion_short": "Avancée",
-      "ero_unit": "% recul"
+      "ero_unit": "% recul",
+      "slope_unit": "mm",
+      "rate_unit": "m/an"
     },
     "coastmap_low": "Stable",
     "coastmap_mid": "Recul modéré",
@@ -1084,9 +1103,25 @@
       "race_title": "La course des territoires",
       "race_pick": "Produit",
       "race_find": "Choisissez un produit : la course classe les territoires par rendement, année après année.",
-      "race_take": "Le peloton de tête se réordonne avec le climat — aucun rendement n'est acquis."
+      "race_take": "Le peloton de tête se réordonne avec le climat — aucun rendement n'est acquis.",
+      "tab_land_change": "Sols : évolution",
+      "land_change_find": "Variation de l'indice de couverture des sols modifiant le climat (CALCI) entre 2015 (référence = 100) et la dernière année, par territoire.",
+      "land_change_take": "Une hausse signale une couverture des sols davantage modifiée ; plusieurs territoires restent proches de leur niveau de 2015.",
+      "tab_land_lines": "Sols : trajectoire",
+      "land_lines_find": "Évolution annuelle de l'indice CALCI (base 2015 = 100) par territoire, depuis 1992.",
+      "land_lines_take": "Quelques territoires ont vu leur couverture des sols changer fortement avant de converger ; la plupart évoluent autour de la référence.",
+      "tab_land_slope": "Sols : début → fin",
+      "land_slope_find": "Indice CALCI à la première puis à la dernière année observée, par territoire (base 2015 = 100).",
+      "land_slope_take": "La pente résume trois décennies de changement d'usage des sols : forte pour quelques territoires, quasi plate pour les autres."
     },
-    "explorer_race": "La course des territoires"
+    "explorer_race": "La course des territoires",
+    "land": {
+      "change_title": "Couverture des sols : évolution depuis 2015",
+      "change_unit": "pts vs 2015",
+      "lines_title": "Trajectoire de l'occupation des sols",
+      "index_unit": "indice (2015 = 100)",
+      "slope_title": "Occupation des sols : début → aujourd'hui"
+    }
   },
   "act7": {
     "tag": "Acte 07 — Le vivant",

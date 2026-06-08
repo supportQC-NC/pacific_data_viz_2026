@@ -23,6 +23,11 @@ import BarRace from "../../components/BarRace/BarRace";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
+import ChangeChart from "../../components/charts/ChangeChart";
+import TrendChart from "../../components/charts/TrendChart";
+import SlopeChart from "../../components/charts/SlopeChart";
+import { useDispatch, useSelector } from "react-redux";
+import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import "./Act6Agriculture.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -149,6 +154,8 @@ function YearSlider({ label, years, index, onChange }) {
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
   const tk = useThemeTokens();
+  const dispatch = useDispatch();
+  const land = useSelector(selectDataset("landCover"));
 
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
@@ -170,6 +177,10 @@ export default function Act6Agriculture() {
       ctrl.abort();
     };
   }, [lang]);
+
+  useEffect(() => {
+    dispatch(loadDataset("landCover"));
+  }, [dispatch]);
 
   const agg = useMemo(() => (agri.data ? buildAggregate(agri.data, kind) : null), [agri.data, kind]);
   const years = useMemo(() => agg?.years || [], [agg]);
@@ -195,6 +206,43 @@ export default function Act6Agriculture() {
 
   const firstYear = agg?.firstYear ?? null;
   const lastYear = agg?.lastYear ?? null;
+
+  // Indice d'occupation des sols modifiant le climat (CALCI, base 2015 = 100),
+  // chargé via le store (DF_CLIMATE_CHANGE · ALT_LAND_COVER), filtré par sous-région.
+  const landReady = land.status === "succeeded" && !!land.data;
+  const landYears = useMemo(() => (land.data ? land.data.years : []), [land.data]);
+  const landSeries = useMemo(() => {
+    const d = land.data;
+    if (!d) return [];
+    return d.areas
+      .filter((a) => isPict(a) && areaVisible(a))
+      .map((a) => ({
+        area: a,
+        name: pictName(a, lang),
+        values: (d.byArea[a] || []).filter((q) => Number.isFinite(q.value)).sort((x, y) => x.year - y.year),
+      }))
+      .filter((sx) => sx.values.length);
+  }, [land.data, lang, areaVisible]);
+  // Évolution vs 2015 (= 100) : dernière valeur − 100, par territoire.
+  const landChangeRows = useMemo(
+    () =>
+      landSeries
+        .map((sx) => ({ name: sx.name, delta: sx.values[sx.values.length - 1].value - 100 }))
+        .filter((r) => Number.isFinite(r.delta)),
+    [landSeries],
+  );
+  // Slope : première -> dernière année observée, par territoire.
+  const landSlopeRows = useMemo(
+    () =>
+      landSeries
+        .map((sx) => ({ name: sx.name, left: sx.values[0].value, right: sx.values[sx.values.length - 1].value }))
+        .filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right)),
+    [landSeries],
+  );
+  const landSlopeMax = useMemo(() => {
+    const v = landSlopeRows.flatMap((r) => [r.left, r.right]);
+    return v.length ? Math.ceil(Math.max(...v) / 10) * 10 : 200;
+  }, [landSlopeRows]);
 
   const cropRankRows = useMemo(() => {
     if (!agri.data || currentYear == null) return [];
@@ -456,6 +504,42 @@ export default function Act6Agriculture() {
               <div className="act6b__scroll">
                 <CropExplorer data={agri.data} kind={kind} labels={{ pick: kind === "crop" ? t("act6.explorer_pick") : t("act6.explorer_animal_pick") }} />
               </div>
+            ),
+          },
+          {
+            id: "land_change",
+            empty: !landReady || landChangeRows.length === 0,
+            tab: t("act6.board.tab_land_change"),
+            title: t("act6.land.change_title"),
+            finding: t("act6.board.land_change_find"),
+            takeaway: t("act6.board.land_change_take"),
+            node: <ChangeChart rows={landChangeRows} unit={t("act6.land.change_unit")} direction="all" polarity="down_good" />,
+          },
+          {
+            id: "land_lines",
+            empty: !landReady || landSeries.length === 0,
+            tab: t("act6.board.tab_land_lines"),
+            title: t("act6.land.lines_title"),
+            finding: t("act6.board.land_lines_find"),
+            takeaway: t("act6.board.land_lines_take"),
+            node: <TrendChart series={landSeries} years={landYears} unit={t("act6.land.index_unit")} scale="lin" />,
+          },
+          {
+            id: "land_slope",
+            empty: !landReady || landSlopeRows.length < 2,
+            tab: t("act6.board.tab_land_slope"),
+            title: t("act6.land.slope_title"),
+            finding: t("act6.board.land_slope_find"),
+            takeaway: t("act6.board.land_slope_take"),
+            node: (
+              <SlopeChart
+                rows={landSlopeRows}
+                leftLabel={String(landYears[0] ?? "")}
+                rightLabel={String(landYears[landYears.length - 1] ?? "")}
+                unit={t("act6.land.index_unit")}
+                min={0}
+                max={landSlopeMax}
+              />
             ),
           },
         ]

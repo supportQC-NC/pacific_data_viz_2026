@@ -29,6 +29,10 @@ import ChangeChart from "../../components/charts/ChangeChart";
 import DumbbellChart from "../../components/charts/DumbbellChart";
 import CoastBalanceChart from "../../components/charts/CoastBalanceChart";
 import COASTLINE_BY_TERRITORY from "../../data/coastlineByTerritory";
+import BubbleChart from "../../components/charts/BubbleChart";
+import SlopeChart from "../../components/charts/SlopeChart";
+import CoastSpreadChart from "../../components/charts/CoastSpreadChart";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import { median, fmt } from "../../components/charts/echartsBase";
 import "./Act3Territory.scss";
 
@@ -134,6 +138,7 @@ function YearSlider({ label, years, index, onChange }) {
 export default function Act3Territory() {
   const { t, lang } = useLang();
   const dispatch = useDispatch();
+  const tk = useThemeTokens();
 
   const sea = useSelector(selectDataset("seaLevel"));
   const pop = useSelector(selectDataset("population"));
@@ -261,6 +266,43 @@ export default function Act3Territory() {
     return { min: 0, max: vals.length ? Math.max(...vals) : 100 };
   }, [coastEroPoints]);
 
+  // Croisement pression humaine x recul cotier (bulles, par sous-region).
+  const bubbleGroups = useMemo(() => {
+    const colorByRegion = { melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive };
+    const acc = {};
+    coastRows.forEach((d) => {
+      const g = popLatestByArea[d.area];
+      if (!Number.isFinite(g)) return;
+      const reg = REGION_OF[d.area] || "all";
+      (acc[reg] = acc[reg] || []).push({ x: g, y: d.ero, z: d.n, name: d.name });
+    });
+    return Object.entries(acc).map(([reg, points]) => ({
+      name: t(`act1.filter.${reg}`),
+      color: colorByRegion[reg] || tk.accent,
+      points,
+    }));
+  }, [coastRows, popLatestByArea, tk, t]);
+
+  // Montee de la mer : premiere -> derniere annee (mm) par territoire.
+  const slopeRows = useMemo(
+    () =>
+      seaSeries
+        .map((s) => ({ name: s.name, left: firstValue(s) * 1000, right: latestValue(s) * 1000 }))
+        .filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right)),
+    [seaSeries],
+  );
+  const slopeRange = useMemo(() => {
+    const v = slopeRows.flatMap((r) => [r.left, r.right]);
+    if (!v.length) return { min: 0, max: 100 };
+    return { min: Math.floor(Math.min(...v)), max: Math.ceil(Math.max(...v)) };
+  }, [slopeRows]);
+
+  // Dispersion des vitesses par territoire (boite a moustaches).
+  const spreadRows = useMemo(
+    () => coastRows.filter((d) => Array.isArray(d.box)).map((d) => ({ name: d.name, box: d.box, n: d.n })),
+    [coastRows],
+  );
+
   const seaUnit = t("act3.sea_unit");
   const popUnit = t("act3.unit");
 
@@ -296,8 +338,18 @@ export default function Act3Territory() {
         tone: popMed > 0 ? "warm" : "positive",
       });
     }
+    const retreatN = coastRows.filter((d) => d.bal < 0).length;
+    if (coastRows.length) {
+      items.push({
+        key: "coast",
+        value: `${retreatN}/${coastRows.length}`,
+        unit: t("act3.board.kpi_coast_unit"),
+        label: t("act3.board.kpi_coast_retreat"),
+        tone: "warm",
+      });
+    }
     return items;
-  }, [ready, seaPoints, seaMedian, sea.data, firstSeaYear, lastSeaYear, lang, inRegion, popLatestByArea, seaUnit, popUnit, t]);
+  }, [ready, seaPoints, seaMedian, sea.data, firstSeaYear, lastSeaYear, lang, inRegion, popLatestByArea, coastRows, seaUnit, popUnit, t]);
 
   const mapRange = useMemo(() => {
     if (!seaPoints.length) return { min: -0.2, max: 0.2 };
@@ -346,6 +398,24 @@ export default function Act3Territory() {
             finding: t("act3.board.band_find"),
             takeaway: t("act3.board.band_take"),
             node: <AnomalyBandChart series={seaSeries} years={seaYears} unit={seaUnit} />,
+          },
+          {
+            id: "slope",
+            empty: slopeRows.length < 2,
+            tab: t("act3.board.tab_slope"),
+            title: t("act3.viz.slope_title"),
+            finding: t("act3.board.slope_find"),
+            takeaway: t("act3.board.slope_take"),
+            node: (
+              <SlopeChart
+                rows={slopeRows}
+                leftLabel={String(firstSeaYear ?? "")}
+                rightLabel={String(lastSeaYear ?? "")}
+                unit={t("act3.coast.slope_unit")}
+                min={slopeRange.min}
+                max={slopeRange.max}
+              />
+            ),
           },
           {
             id: "profile",
@@ -481,6 +551,32 @@ export default function Act3Territory() {
                   />
                 </Suspense>
               </ErrorBoundary>
+            ),
+          },
+          {
+            id: "spread",
+            empty: spreadRows.length === 0,
+            tab: t("act3.board.tab_spread"),
+            title: t("act3.viz.spread_title"),
+            finding: t("act3.board.spread_find"),
+            takeaway: t("act3.board.spread_take"),
+            node: <CoastSpreadChart rows={spreadRows} unit={t("act3.coast.rate_unit")} />,
+          },
+          {
+            id: "bubble",
+            empty: bubbleGroups.every((g) => !g.points.length),
+            tab: t("act3.board.tab_bubble"),
+            title: t("act3.viz.bubble_title"),
+            finding: t("act3.board.bubble_find"),
+            takeaway: t("act3.board.bubble_take"),
+            node: (
+              <BubbleChart
+                groups={bubbleGroups}
+                xName={t("act3.viz.bubble_x")}
+                yName={t("act3.viz.bubble_y")}
+                zName={t("act3.viz.bubble_z")}
+                xUnit="%"
+              />
             ),
           },
           {

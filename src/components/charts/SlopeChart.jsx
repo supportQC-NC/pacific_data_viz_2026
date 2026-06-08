@@ -9,7 +9,7 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
 import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, MONO } from "./apexBase";
 
-export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "", unit = "", max = 100, reverse = false, invertColor = false }) {
+export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "", unit = "", min = 0, max = 100, reverse = false, invertColor = false }) {
   const tk = useThemeTokens();
 
   const option = useMemo(() => {
@@ -36,7 +36,7 @@ export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "",
         labels: { style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "12px" } },
       }),
       yaxis: baseYaxis(tk, {
-        min: 0,
+        min,
         max,
         reversed: reverse,
         tickAmount: 5,
@@ -55,7 +55,7 @@ export default function SlopeChart({ rows = [], leftLabel = "", rightLabel = "",
         },
       }),
     };
-  }, [rows, leftLabel, rightLabel, unit, max, reverse, invertColor, tk]);
+  }, [rows, leftLabel, rightLabel, unit, min, max, reverse, invertColor, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

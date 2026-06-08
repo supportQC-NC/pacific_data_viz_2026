@@ -684,7 +684,18 @@
       "coastbal_take": "French Polynesia, American Samoa and Papua New Guinea lean toward retreat; conversely, several atolls (Tuvalu, Federated States of Micronesia) are gaining ground — erosion is not a uniform fate.",
       "tab_coastmap": "Erosion map",
       "coastmap_find": "Per-territory map: column height and colour intensity show the share of coastline in retreat.",
-      "coastmap_take": "Retreat hotspots concentrate on a few territories; elsewhere the coast stays stable or advances."
+      "coastmap_take": "Retreat hotspots concentrate on a few territories; elsewhere the coast stays stable or advances.",
+      "tab_slope": "Sea-level rise",
+      "slope_find": "For each territory, sea level at the first and last observed year (mm anomaly). A rising slope = rising sea.",
+      "slope_take": "The rise is near-universal and of similar magnitude across territories: the sea is rising for (almost) everyone.",
+      "tab_spread": "Spread",
+      "spread_find": "Each box summarises a territory's distribution of coastline-change rates (median, quartiles, extremes), in m/year.",
+      "spread_take": "A single coast often mixes retreat and growth: the spread reveals the heterogeneity that averages hide.",
+      "tab_bubble": "Pressure × coast",
+      "bubble_find": "Cross-view: x = population growth, y = share of coastline retreating, bubble size = number of tracked segments.",
+      "bubble_take": "Where population grows fast and the coast retreats, pressures compound — those are the territories to watch first.",
+      "kpi_coast_retreat": "Territories in net retreat",
+      "kpi_coast_unit": "of total"
     },
     "sea_unit": "m",
     "viz": {
@@ -702,7 +713,13 @@
       "path_title": "The demographic path",
       "coast_title": "The coast: retreat and growth",
       "coastbal_title": "Retreat or growth: the balance by territory",
-      "coastmap_title": "Erosion pressure by territory"
+      "coastmap_title": "Erosion pressure by territory",
+      "slope_title": "Sea level: start → today",
+      "spread_title": "Coastline-change rates by territory",
+      "bubble_title": "Human pressure and coastal retreat",
+      "bubble_x": "Population growth (%/yr)",
+      "bubble_y": "% coastline retreating",
+      "bubble_z": "Tracked segments"
     },
     "path_start": "first year",
     "path_end": "recent",
@@ -713,7 +730,9 @@
       "attr": "Coastline: Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0)",
       "legend_erosion_short": "Retreat",
       "legend_accretion_short": "Growth",
-      "ero_unit": "% retreat"
+      "ero_unit": "% retreat",
+      "slope_unit": "mm",
+      "rate_unit": "m/yr"
     },
     "coastmap_low": "Stable",
     "coastmap_mid": "Moderate retreat",
@@ -1084,9 +1103,25 @@
       "race_title": "The territories' race",
       "race_pick": "Product",
       "race_find": "Pick a product: the race ranks territories by yield, year after year.",
-      "race_take": "The leading pack reshuffles with the climate — no yield is guaranteed."
+      "race_take": "The leading pack reshuffles with the climate — no yield is guaranteed.",
+      "tab_land_change": "Land: change",
+      "land_change_find": "Change in the climate-altering land-cover index (CALCI) between 2015 (reference = 100) and the latest year, by territory.",
+      "land_change_take": "A rise signals more altered land cover; several territories stay close to their 2015 level.",
+      "tab_land_lines": "Land: trajectory",
+      "land_lines_find": "Annual evolution of the CALCI index (2015 = 100) by territory, since 1992.",
+      "land_lines_take": "A few territories saw land cover change sharply before converging; most evolve around the reference.",
+      "tab_land_slope": "Land: start → end",
+      "land_slope_find": "CALCI index at the first and last observed year, by territory (2015 = 100).",
+      "land_slope_take": "The slope sums up three decades of land-use change: steep for a few territories, near-flat for the rest."
     },
-    "explorer_race": "The territories' race"
+    "explorer_race": "The territories' race",
+    "land": {
+      "change_title": "Land cover: change since 2015",
+      "change_unit": "pts vs 2015",
+      "lines_title": "Land-use trajectory",
+      "index_unit": "index (2015 = 100)",
+      "slope_title": "Land cover: start → today"
+    }
   },
   "act7": {
     "tag": "Act 07 — The living world",
