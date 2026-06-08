@@ -9,7 +9,6 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
 import {
   FiCloud,
@@ -25,10 +24,8 @@ import {
   FiLayers,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
-import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
-import StatRotator from "../../components/StatRotator/StatRotator";
-import "../../components/StatRotator/StatRotator.scss";
+import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
 import "./Home.scss";
 
 // Icône thématique par acte.
@@ -78,22 +75,14 @@ const CHAPTERS = [
 
 export default function Home() {
   const { t } = useLang();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [gateOpen, setGateOpen] = useState(false);
 
   const heroRef = useRef(null);
   const contentRef = useRef(null);
-  const waterlineRef = useRef(null);
   const storyRef = useRef(null);
   const actsRef = useRef([]);
-
-  const seaLevel = useSelector(selectDataset("seaLevel"));
-
-  useEffect(() => {
-    dispatch(loadDataset("seaLevel"));
-  }, [dispatch]);
 
   const scrollToStory = () =>
     storyRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -118,7 +107,6 @@ export default function Home() {
           "-=0.2",
         )
         .from(".home__thesis", { y: 24, opacity: 0, duration: 0.7 }, "-=0.4")
-        .from(".statrot", { y: 22, opacity: 0, duration: 0.7 }, "-=0.45")
         .from(".home__hero-foot", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4")
         .from(".home__scrollcue", { opacity: 0, duration: 0.6 }, "-=0.1");
     }, heroRef);
@@ -130,9 +118,6 @@ export default function Home() {
     if (reduced || !contentRef.current) return undefined;
     const setY = gsap.quickSetter(contentRef.current, "y", "px");
     const setA = gsap.quickSetter(contentRef.current, "opacity");
-    const setWater = waterlineRef.current
-      ? gsap.quickSetter(waterlineRef.current, "scaleY")
-      : null;
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -143,7 +128,6 @@ export default function Home() {
         const p = Math.min(1, Math.max(0, y / h));
         setY(y * 0.22);
         setA(1 - p * 0.9);
-        if (setWater) setWater(0.12 + p * 0.5);
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -172,26 +156,6 @@ export default function Home() {
     return () => revealObs.disconnect();
   }, []);
 
-  let live;
-  if (seaLevel.status === "loading" || seaLevel.status === "idle") {
-    live = <span className="home__live-text">{t("home.live_loading")}</span>;
-  } else if (seaLevel.status === "failed") {
-    live = (
-      <span className="home__live-text home__live-text--err">
-        {t("home.live_error")}
-      </span>
-    );
-  } else {
-    const d = seaLevel.data;
-    live = (
-      <span className="home__live-text">
-        {t("home.live_label")} — <strong>{d.areas.length}</strong>{" "}
-        {t("home.live_coverage")}
-        {d.firstYear && d.lastYear ? ` · ${d.firstYear}–${d.lastYear}` : ""}
-      </span>
-    );
-  }
-
   let globalIdx = -1;
 
   return (
@@ -200,7 +164,7 @@ export default function Home() {
 
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
-        <div className="home__waterline" ref={waterlineRef} aria-hidden="true" />
+        <HeroSeaRise />
 
         <div className="home__hero-content container" ref={contentRef}>
           <p className="eyebrow home__eyebrow">{t("home.kicker")}</p>
@@ -209,15 +173,6 @@ export default function Home() {
             <span className="home__title-accent">{t("home.title_l2")}</span>
           </h1>
           <p className="home__thesis">{t("home.thesis")}</p>
-
-          <StatRotator
-            items={[
-              { num: t("home.stat1_num"), text: t("home.stat1_text") },
-              { num: t("home.stat2_num"), text: t("home.stat2_text") },
-              { num: t("home.stat3_num"), text: t("home.stat3_text") },
-              { num: t("home.stat4_num"), text: t("home.stat4_text") },
-            ]}
-          />
 
           <div className="home__hero-foot">
             <button
@@ -238,13 +193,6 @@ export default function Home() {
             >
               {t("home.funfacts")} <span aria-hidden="true">✦</span>
             </button>
-            <span className="home__live">
-              <span
-                className={`home__live-dot home__live-dot--${seaLevel.status}`}
-                aria-hidden="true"
-              />
-              {live}
-            </span>
           </div>
         </div>
 
