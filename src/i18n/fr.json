@@ -964,7 +964,10 @@
       "mix_tree_take": "Le poids du pétrole saute aux yeux ; les sources propres n'occupent encore qu'une fraction de la surface.",
       "tab_mix_donut": "Mix : donut détaillé",
       "mix_donut_find": "Composition du mix électrique d'un territoire (ou d'une région) pour une année : choisissez la zone et l'année. Le centre indique la part renouvelable.",
-      "mix_donut_take": "Source par source, on voit exactement de quoi dépend l'électricité de chaque île — et le chemin qu'il reste à parcourir."
+      "mix_donut_take": "Source par source, on voit exactement de quoi dépend l'électricité de chaque île — et le chemin qu'il reste à parcourir.",
+      "tab_mix_leader": "Mix : volume par source",
+      "mix_leader_find": "Production électrique totale de chaque source (longueur de barre) pour l'année du curseur ; le label indique le territoire qui en produit le plus et sa part.",
+      "mix_leader_take": "Le pétrole domine le volume du Pacifique, mais chaque source a son « champion » — souvent un seul territoire qui pèse l'essentiel."
     },
     "mix": {
       "fossil": "Fossile",
@@ -979,7 +982,8 @@
       "tree_title": "D'où vient l'électricité — par source",
       "donut_title": "Mix électrique détaillé",
       "donut_terr": "Territoire",
-      "donut_center": "Renouvelable"
+      "donut_center": "Renouvelable",
+      "leader_title": "Par source : volume total et premier consommateur"
     }
   },
   "act6": {

@@ -22,6 +22,7 @@ import PowerMixChart from "../../components/charts/PowerMixChart";
 import MixCompositionChart from "../../components/charts/MixCompositionChart";
 import TreemapChart from "../../components/charts/TreemapChart";
 import DonutChart from "../../components/charts/DonutChart";
+import SourceLeaderChart from "../../components/charts/SourceLeaderChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
@@ -371,6 +372,36 @@ export default function Act5Momentum() {
     };
   }, [mix.data, dRegion, dTerr, dYear, tk]);
   const donutScope = dTerr === "all" ? t(`act1.filter.${dRegion}`) : ((dTerrOpts.find((o) => o.v === dTerr) || {}).label || "");
+  // Par source : volume total + premier territoire consommateur (mixYear).
+  const mixSourceLeader = useMemo(() => {
+    const d = mix.data;
+    if (!d || mixYear == null) return [];
+    const bySource = {};
+    Object.keys(d.byArea)
+      .filter((g) => isPict(g) && inRegion(g))
+      .forEach((g) => {
+        const det = d.byArea[g].detail || {};
+        Object.keys(det).forEach((lab) => {
+          const v = (det[lab] || {})[mixYear] || 0;
+          if (v <= 0) return;
+          if (!bySource[lab]) bySource[lab] = { total: 0, top: null, topVal: 0 };
+          bySource[lab].total += v;
+          if (v > bySource[lab].topVal) { bySource[lab].topVal = v; bySource[lab].top = g; }
+        });
+      });
+    return Object.keys(bySource)
+      .map((lab) => {
+        const e = bySource[lab];
+        return {
+          label: lab,
+          total: Math.round(e.total * 10) / 10,
+          color: energyColor(lab, tk),
+          topName: e.top ? pictName(e.top, lang) : "",
+          topShare: e.total > 0 ? Math.round((e.topVal / e.total) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.total - a.total);
+  }, [mix.data, mixYear, inRegion, lang, tk]);
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
@@ -530,6 +561,7 @@ export default function Act5Momentum() {
                 </div>
                 {donut.series.length ? (
                   <DonutChart
+                    key={`${dRegion}-${dTerr}-${dYear}`}
                     labels={donut.labels}
                     series={donut.series}
                     colors={donut.colors}
@@ -542,6 +574,15 @@ export default function Act5Momentum() {
                 )}
               </div>
             ),
+          },
+          {
+            id: "mix_leader",
+            empty: !mixReady || mixSourceLeader.length === 0,
+            tab: t("act5.board.tab_mix_leader"),
+            title: `${t("act5.mix.leader_title")} · ${mixYear ?? ""}`,
+            finding: t("act5.board.mix_leader_find"),
+            takeaway: t("act5.board.mix_leader_take"),
+            node: <SourceLeaderChart points={mixSourceLeader} unit={t("act5.mix.unit")} />,
           },
         ]
       : [];

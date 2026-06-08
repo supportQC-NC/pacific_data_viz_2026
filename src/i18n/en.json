@@ -964,7 +964,10 @@
       "mix_tree_take": "Oil's weight is obvious; clean sources still cover only a fraction of the area.",
       "tab_mix_donut": "Mix: detailed donut",
       "mix_donut_find": "Electricity mix composition of one territory (or region) for a given year: pick the area and year. The centre shows the renewable share.",
-      "mix_donut_take": "Source by source, you see exactly what each island's power depends on — and how far there is to go."
+      "mix_donut_take": "Source by source, you see exactly what each island's power depends on — and how far there is to go.",
+      "tab_mix_leader": "Mix: volume by source",
+      "mix_leader_find": "Total electricity output of each source (bar length) for the slider year; the label shows the territory that produces the most and its share.",
+      "mix_leader_take": "Oil dominates Pacific volume, but each source has its 'champion' — often a single territory carrying most of it."
     },
     "mix": {
       "fossil": "Fossil",
@@ -979,7 +982,8 @@
       "tree_title": "Where the power comes from — by source",
       "donut_title": "Electricity mix in detail",
       "donut_terr": "Territory",
-      "donut_center": "Renewable"
+      "donut_center": "Renewable",
+      "leader_title": "By source: total volume and top consumer"
     }
   },
   "act6": {
