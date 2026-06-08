@@ -407,18 +407,15 @@ export default function Act3Territory() {
                   </Suspense>
                 </ErrorBoundary>
                 <div className="act6coast__legend">
-                  <span className="act6coast__item">
-                    <i className="act6coast__dot act6coast__dot--ero" aria-hidden="true" />{" "}
-                    {t("act3.coast.legend_erosion")}
-                  </span>
-                  <span className="act6coast__item">
-                    <i className="act6coast__dot act6coast__dot--sta" aria-hidden="true" />{" "}
-                    {t("act3.coast.legend_stable")}
-                  </span>
-                  <span className="act6coast__item">
-                    <i className="act6coast__dot act6coast__dot--acc" aria-hidden="true" />{" "}
-                    {t("act3.coast.legend_accretion")}
-                  </span>
+                  <div className="act6coast__scale">
+                    <span className="act6coast__end">
+                      {t("act3.coast.legend_erosion")}
+                    </span>
+                    <span className="act6coast__bar" aria-hidden="true" />
+                    <span className="act6coast__end">
+                      {t("act3.coast.legend_accretion")}
+                    </span>
+                  </div>
                   <span className="act6coast__attr">{t("act3.coast.attr")}</span>
                 </div>
               </div>

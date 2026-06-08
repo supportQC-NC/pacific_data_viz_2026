@@ -398,58 +398,134 @@ export default function OceanMap({
     }
   }, [loaded, fc, centers]);
 
-  // Couche optionnelle "trait de côte" (Digital Earth Pacific — Landsat
-  // Coastlines, CC BY-NC 4.0). Cercles colores par r = taux de variation
-  // annuel du trait de cote (m/an) : <0 recul (rouge), >0 avancee (bleu).
-  // Activee seulement si coastlineUrl est fourni (Acte 6) -> autres actes
-  // inchanges. Couche inseree SOUS les colonnes/labels.
+  // Couche optionnelle « trait de côte » (Digital Earth Pacific — Landsat
+  // Coastlines, CC BY-NC 4.0). Lisibilité à deux niveaux :
+  //   • DE LOIN : deux nappes de chaleur (recul = rouge, avancée = bleu) qui
+  //     révèlent les zones chaudes de changement côtier.
+  //   • EN ZOOMANT : points précis (taille ∝ intensité m/an, halo blanc) qui
+  //     apparaissent en fondu ; survol = valeur exacte. Inséré SOUS les
+  //     colonnes/labels. Inactif si coastlineUrl absent (autres actes intacts).
   useEffect(() => {
     if (!loaded || !mapRef.current || !coastlineUrl) return undefined;
     const map = mapRef.current;
     let cancelled = false;
+    const cw = (mapLabels[lang] || mapLabels.fr).coast || {};
+
+    // |r| = intensité ; poids signés pour chaque nappe (capés à 2 m/an).
+    const absR = ["max", ["*", -1, ["get", "r"]], ["get", "r"]];
+    const eroW = ["interpolate", ["linear"], ["max", ["*", -1, ["get", "r"]], 0], 0, 0, 2, 1];
+    const accW = ["interpolate", ["linear"], ["max", ["get", "r"], 0], 0, 0, 2, 1];
+
+    const cpop = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      className: "pm-popup",
+    });
+    const onMove = (e) => {
+      map.getCanvas().style.cursor = "pointer";
+      const r = Number(e.features[0].properties.r);
+      const dir = r < -0.2 ? cw.ero : r > 0.2 ? cw.acc : cw.sta;
+      cpop
+        .setLngLat(e.lngLat)
+        .setHTML(
+          `<strong>${dir || ""}</strong><br/>${r > 0 ? "+" : ""}${r.toFixed(2)} ${cw.unit || ""}`,
+        )
+        .addTo(map);
+    };
+    const onLeave = () => {
+      map.getCanvas().style.cursor = "";
+      cpop.remove();
+    };
+
     fetch(coastlineUrl)
       .then((r) => r.json())
       .then((gj) => {
         if (cancelled || !mapRef.current) return;
-        if (!map.getSource("coast")) {
-          map.addSource("coast", { type: "geojson", data: gj });
-          map.addLayer(
-            {
-              id: "coast",
-              type: "circle",
-              source: "coast",
-              paint: {
-                "circle-radius": [
-                  "interpolate", ["linear"], ["zoom"], 1, 1.4, 4, 3, 7, 5.5,
-                ],
-                "circle-color": [
-                  "interpolate", ["linear"], ["get", "r"],
-                  -2, "#e8453c", -0.2, "#f0b67a", 0, "#e6edf3",
-                  0.2, "#7fd4c1", 2, "#2c7fb8",
-                ],
-                "circle-opacity": 0.85,
-                "circle-stroke-width": 0.4,
-                "circle-stroke-color": "rgba(0,0,0,0.35)",
-              },
-            },
-            map.getLayer("cols") ? "cols" : undefined,
-          );
-        } else {
+        if (map.getSource("coast")) {
           map.getSource("coast").setData(gj);
+          return;
         }
+        map.addSource("coast", { type: "geojson", data: gj });
+        const before = map.getLayer("cols") ? "cols" : undefined;
+
+        map.addLayer(
+          {
+            id: "coast-ero-heat",
+            type: "heatmap",
+            source: "coast",
+            paint: {
+              "heatmap-weight": eroW,
+              "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.2],
+              "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 2, 14, 6, 26],
+              "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.85, 6.5, 0],
+              "heatmap-color": [
+                "interpolate", ["linear"], ["heatmap-density"],
+                0, "rgba(232,69,60,0)", 0.3, "rgba(232,69,60,0.5)", 1, "rgba(255,77,109,0.95)",
+              ],
+            },
+          },
+          before,
+        );
+        map.addLayer(
+          {
+            id: "coast-acc-heat",
+            type: "heatmap",
+            source: "coast",
+            paint: {
+              "heatmap-weight": accW,
+              "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.2],
+              "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 2, 14, 6, 26],
+              "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.8, 6.5, 0],
+              "heatmap-color": [
+                "interpolate", ["linear"], ["heatmap-density"],
+                0, "rgba(44,127,184,0)", 0.3, "rgba(44,127,184,0.5)", 1, "rgba(0,230,255,0.95)",
+              ],
+            },
+          },
+          before,
+        );
+        map.addLayer(
+          {
+            id: "coast",
+            type: "circle",
+            source: "coast",
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], absR, 0, 2.4, 0.5, 4, 2, 7, 6, 11],
+              "circle-color": [
+                "interpolate", ["linear"], ["get", "r"],
+                -2, "#e8453c", -0.2, "#f0b67a", 0, "#e6edf3", 0.2, "#7fd4c1", 2, "#2c7fb8",
+              ],
+              "circle-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0, 6, 0.92],
+              "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 4, 0, 6, 1.1],
+              "circle-stroke-color": "rgba(255,255,255,0.85)",
+            },
+          },
+          before,
+        );
+
+        map.on("mousemove", "coast", onMove);
+        map.on("mouseleave", "coast", onLeave);
       })
       .catch(() => {});
+
     return () => {
       cancelled = true;
       try {
         const m = mapRef.current;
-        if (m && m.getLayer("coast")) m.removeLayer("coast");
-        if (m && m.getSource("coast")) m.removeSource("coast");
+        if (m) {
+          m.off("mousemove", "coast", onMove);
+          m.off("mouseleave", "coast", onLeave);
+          ["coast", "coast-acc-heat", "coast-ero-heat"].forEach((id) => {
+            if (m.getLayer(id)) m.removeLayer(id);
+          });
+          if (m.getSource("coast")) m.removeSource("coast");
+        }
+        cpop.remove();
       } catch (e) {
         /* carte deja detruite */
       }
     };
-  }, [loaded, coastlineUrl]);
+  }, [loaded, coastlineUrl, lang]);
 
   useEffect(() => {
     if (!mapRef.current) return undefined;
