@@ -192,3 +192,41 @@ $glow-h: 220px;
     }
   }
 }
+
+/* =====================================================================
+   À COLLER À LA FIN DE src/components/Footer/Footer.scss
+   Logo de marque en tête du bloc « footer__brand ».
+   ===================================================================== */
+
+.footer__brandhead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+
+.footer__logomark {
+  height: 44px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  flex: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Halo adaptatif (même logique que le header). */
+[data-theme="dark"] .footer__logomark {
+  filter: drop-shadow(0 0 1px rgba(180, 220, 235, 0.4))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+}
+
+[data-theme="light"] .footer__logomark {
+  filter: drop-shadow(0 1px 2px rgba(8, 40, 60, 0.16));
+}
+
+@media (max-width: 640px) {
+  .footer__logomark {
+    height: 38px;
+  }
+}

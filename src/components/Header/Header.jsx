@@ -1,11 +1,12 @@
 // src/components/Header/Header.jsx
 // ============================================================
 // En-tête global — design éditorial premium.
-//   • Marque : pastille « sonar » qui pulse + nom (Fraunces) + tagline mono.
+//   • Marque : LOGO de l'application (logo.png) + nom (Fraunces) + tagline mono.
 //   • Navigation : lien « À propos ».
 //   • Langue : segmented control FR | EN (le segment actif glisse).
 //   • Thème : switch à rail, soleil/lune visibles, curseur lumineux.
 // S'efface pendant l'immersion. react-icons. Aucune chaîne en dur, zéro inline.
+// Le logo s'adapte au thème via un halo défini dans Header.scss (data-theme).
 // ============================================================
 
 import React, { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { FiSun, FiMoon } from "react-icons/fi";
 import { useTheme } from "../../store/context/themeContext";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
+import logo from "../../logo.png";
 import "./Header.scss";
 
 export default function Header() {
@@ -37,10 +39,7 @@ export default function Header() {
     <header className={`header ${scrolled ? "header--scrolled" : ""}`}>
       <div className="header__inner container">
         <Link to="/" className="header__brand" aria-label={t("brand")}>
-          <span className="header__mark" aria-hidden="true">
-            <span className="header__mark-core" />
-            <span className="header__mark-ring" />
-          </span>
+          <img className="header__logo" src={logo} alt="" aria-hidden="true" />
           <span className="header__brand-stack">
             <span className="header__brand-text">{t("brand")}</span>
             <span className="header__tagline">{t("header.tagline")}</span>

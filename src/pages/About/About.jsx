@@ -3,6 +3,14 @@
 // Page « À propos » — projet, auteur, conviction (le pouvoir de la data),
 // puis catalogue des jeux de données alimenté par datasetCatalog.js
 // (source de vérité unique : libellé, description, 1–2 sources). i18n via t().
+//
+// Refonte design : sections numérotées (rythme éditorial), cartes de données
+// à hauteur égale avec liens-sources en « pills » (origine + Pacific Data Hub),
+// bannière plateforme et CTA concours affirmés, entrée en cascade (CSS).
+// Pour CORRIGER les liens : éditer src/data/datasetCatalog.js
+//   • constantes PDH / PDH_STAT (en haut)
+//   • le tableau `sources: [{ label, url }]` de chaque jeu
+// Le lien du concours est CHALLENGE_URL ci-dessous.
 // ============================================================
 
 import React from "react";
@@ -60,6 +68,20 @@ function initialsFrom(name) {
     .toUpperCase();
 }
 
+// En-tête de section : numéro éditorial (décoratif) + eyebrow + icône.
+function SecHead({ num, icon, children }) {
+  return (
+    <div className="about__sec-head">
+      <span className="about__sec-num" aria-hidden="true">
+        {num}
+      </span>
+      <p className="eyebrow about__sec-eyebrow">
+        {icon} {children}
+      </p>
+    </div>
+  );
+}
+
 export default function About() {
   const { t, lang } = useLang();
   const authorName = t("about.author.name");
@@ -67,6 +89,7 @@ export default function About() {
 
   return (
     <main className="about">
+      <div className="about__glow" aria-hidden="true" />
       <div className="about__inner container">
         {/* En-tête */}
         <header className="about__head">
@@ -81,9 +104,9 @@ export default function About() {
         {/* Auteur + conviction (2 colonnes) */}
         <div className="about__duo">
           <section className="about__author">
-            <p className="eyebrow about__sec-eyebrow">
-              <FiUser aria-hidden="true" /> {t("about.author.eyebrow")}
-            </p>
+            <SecHead num="01" icon={<FiUser aria-hidden="true" />}>
+              {t("about.author.eyebrow")}
+            </SecHead>
             <div className="about__author-card">
               <div className="about__author-id">
                 <span className="about__author-avatar" aria-hidden="true">
@@ -104,9 +127,9 @@ export default function About() {
           </section>
 
           <section className="about__story">
-            <p className="eyebrow about__sec-eyebrow">
-              <FiZap aria-hidden="true" /> {t("about.story.eyebrow")}
-            </p>
+            <SecHead num="02" icon={<FiZap aria-hidden="true" />}>
+              {t("about.story.eyebrow")}
+            </SecHead>
             <h2 className="about__h2">{t("about.story.title")}</h2>
             <p className="about__story-p">{t("about.story.p1")}</p>
             <blockquote className="about__quote">
@@ -118,9 +141,9 @@ export default function About() {
 
         {/* Données */}
         <section className="about__data">
-          <p className="eyebrow about__sec-eyebrow">
-            <FiDatabase aria-hidden="true" /> {t("about.data.eyebrow")}
-          </p>
+          <SecHead num="03" icon={<FiDatabase aria-hidden="true" />}>
+            {t("about.data.eyebrow")}
+          </SecHead>
           <h2 className="about__h2">{t("about.data.title")}</h2>
           <p className="about__data-lead">{t("about.data.lead")}</p>
 
@@ -158,14 +181,14 @@ export default function About() {
                   {pick(d.labelFr, d.labelEn)}
                 </h3>
                 <p className="about__card-desc">{pick(d.descFr, d.descEn)}</p>
-                <div className="about__card-src">
-                  {d.sources.map((s) => (
+                <div className="about__card-sources">
+                  {d.sources.map((s, i) => (
                     <a
                       key={s.url}
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="about__card-link"
+                      className={`about__src-pill ${i === 0 ? "is-origin" : ""}`}
                     >
                       {s.label} <FiArrowUpRight aria-hidden="true" />
                     </a>
@@ -181,9 +204,9 @@ export default function About() {
         {/* Concours */}
         <section className="about__challenge">
           <div className="about__challenge-text">
-            <p className="eyebrow about__sec-eyebrow">
-              <FiAward aria-hidden="true" /> {t("about.challenge.title")}
-            </p>
+            <SecHead num="04" icon={<FiAward aria-hidden="true" />}>
+              {t("about.challenge.title")}
+            </SecHead>
             <p>{t("about.challenge.body")}</p>
           </div>
           <a

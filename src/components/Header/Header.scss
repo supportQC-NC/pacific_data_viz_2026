@@ -304,3 +304,52 @@ $switch-thumb: 22px;
   .header__mark-core,
   .header__mark-ring { animation: none; }
 }
+
+/* =====================================================================
+   À COLLER À LA FIN DE src/components/Header/Header.scss
+   Logo de marque (remplace l'ancienne pastille « sonar »).
+   Le halo s'adapte au thème via [data-theme] → visible sur fond clair ET sombre.
+   ===================================================================== */
+
+/* Aligner verticalement le logo avec le bloc nom + tagline. */
+.header__brand {
+  align-items: center;
+}
+
+.header__logo {
+  height: 36px;
+  width: auto;
+  display: block;
+  align-self: center;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter var(--t-base) var(--ease-out),
+    transform var(--t-base) var(--ease-out);
+}
+
+.header__brand:hover .header__logo {
+  transform: scale(1.04);
+}
+
+/* Mode sombre : le fond est quasi noir (#020912) → on détache les contours
+   navy du logo avec un léger liseré clair + une ombre portée. */
+[data-theme="dark"] .header__logo {
+  filter: drop-shadow(0 0 1px rgba(180, 220, 235, 0.45))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* Mode clair : fond très clair (#eef4f6) → fine ombre froide pour la profondeur. */
+[data-theme="light"] .header__logo {
+  filter: drop-shadow(0 1px 2px rgba(8, 40, 60, 0.18));
+}
+
+@media (max-width: 640px) {
+  .header__logo {
+    height: 30px;
+  }
+}
+
+/* (Optionnel) L'ancienne pastille n'est plus utilisée : ces règles peuvent
+   être supprimées de Header.scss si tu veux nettoyer.
+   .header__mark { ... }  @keyframes pulse { ... } */
