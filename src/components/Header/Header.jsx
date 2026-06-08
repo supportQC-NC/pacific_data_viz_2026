@@ -1,7 +1,7 @@
 // src/components/Header/Header.jsx
 // ============================================================
 // En-tête global — design éditorial premium.
-//   • Marque : LOGO de l'application (logo.png) + nom (Fraunces) + tagline mono.
+//   • Marque : LOGO de l'application (logo.png) + nom (Fraunces).
 //   • Navigation : lien « À propos ».
 //   • Langue : segmented control FR | EN (le segment actif glisse).
 //   • Thème : switch à rail, soleil/lune visibles, curseur lumineux.
@@ -42,7 +42,6 @@ export default function Header() {
           <img className="header__logo" src={logo} alt="" aria-hidden="true" />
           <span className="header__brand-stack">
             <span className="header__brand-text">{t("brand")}</span>
-            <span className="header__tagline">{t("header.tagline")}</span>
           </span>
         </Link>
 

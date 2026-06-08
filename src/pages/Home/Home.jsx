@@ -1,77 +1,21 @@
 // src/pages/Home/Home.jsx
 // ============================================================
-// Accueil — ouverture cinématique (thèse + chiffre-choc + ligne de flottaison
-// animée) puis récit en 3 CHAPITRES regroupant les 11 actes, présentés en
-// grille éditoriale avec une icône thématique par acte.
-// GSAP pour l'entrée + parallax ; IntersectionObserver pour la révélation des
-// actes. Aucun style inline en JSX. Respecte prefers-reduced-motion.
+// Accueil — ouverture cinématique (hero + marée animée), puis MANIFESTE
+// éditorial et les TROIS façons de lire les données. La navigation par acte
+// vit désormais sur une page dédiée (/actes).
+// GSAP pour l'entrée + parallax du hero. Aucun style inline. Respecte
+// prefers-reduced-motion.
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
-import {
-  FiCloud,
-  FiDroplet,
-  FiMap,
-  FiUsers,
-  FiTrendingUp,
-  FiSun,
-  FiFeather,
-  FiWind,
-  FiBarChart2,
-  FiHeart,
-  FiLayers,
-} from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
+import HomeIntro from "../../components/HomeIntro/HomeIntro";
+import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import "./Home.scss";
-
-// Icône thématique par acte.
-const ACT_ICONS = {
-  a1: <FiCloud />,
-  a2: <FiDroplet />,
-  a3: <FiMap />,
-  a4: <FiUsers />,
-  a5: <FiTrendingUp />,
-  a6: <FiSun />,
-  a7: <FiFeather />,
-  a8: <FiWind />,
-  a9: <FiBarChart2 />,
-  a10: <FiHeart />,
-  a11: <FiLayers />,
-};
-
-// Récit complet : 11 actes répartis en 3 chapitres narratifs.
-const CHAPTERS = [
-  {
-    id: "c1",
-    acts: [
-      { id: "a1", to: "/emissions" },
-      { id: "a2", to: "/ocean" },
-      { id: "a3", to: "/territory" },
-      { id: "a4", to: "/impact" },
-    ],
-  },
-  {
-    id: "c2",
-    acts: [
-      { id: "a5", to: "/momentum" },
-      { id: "a6", to: "/agriculture" },
-      { id: "a7", to: "/vivant" },
-      { id: "a8", to: "/ciel" },
-      { id: "a9", to: "/economie" },
-    ],
-  },
-  {
-    id: "c3",
-    acts: [
-      { id: "a10", to: "/sante" },
-      { id: "a11", to: "/synthese" },
-    ],
-  },
-];
 
 export default function Home() {
   const { t } = useLang();
@@ -81,12 +25,15 @@ export default function Home() {
 
   const heroRef = useRef(null);
   const contentRef = useRef(null);
-  const storyRef = useRef(null);
-  const actsRef = useRef([]);
 
-  const scrollToStory = () =>
-    storyRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Descendre sous le hero (vers le manifeste / les modes de lecture).
+  const scrollDown = () =>
+    window.scrollTo({
+      top: heroRef.current ? heroRef.current.offsetHeight : window.innerHeight,
+      behavior: "smooth",
+    });
 
+  const goActs = () => navigate("/actes");
   const beginExperience = () => setGateOpen(true);
 
   const reduced =
@@ -113,7 +60,7 @@ export default function Home() {
     return () => ctx.revert();
   }, [reduced]);
 
-  // Parallax du contenu + montée lente de la ligne de flottaison au scroll.
+  // Parallax du contenu du hero au scroll.
   useEffect(() => {
     if (reduced || !contentRef.current) return undefined;
     const setY = gsap.quickSetter(contentRef.current, "y", "px");
@@ -137,26 +84,6 @@ export default function Home() {
       if (raf) cancelAnimationFrame(raf);
     };
   }, [reduced]);
-
-  // Révélation des actes au scroll.
-  useEffect(() => {
-    const nodes = actsRef.current.filter(Boolean);
-    if (!nodes.length) return undefined;
-    const revealObs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("is-in");
-            revealObs.unobserve(e.target);
-          }
-        }),
-      { threshold: 0.16 },
-    );
-    nodes.forEach((n) => revealObs.observe(n));
-    return () => revealObs.disconnect();
-  }, []);
-
-  let globalIdx = -1;
 
   return (
     <main className="home">
@@ -183,7 +110,7 @@ export default function Home() {
             </button>
             <button
               className="home__cta home__cta--ghost"
-              onClick={scrollToStory}
+              onClick={scrollDown}
             >
               {t("home.cta")} <span aria-hidden="true">↓</span>
             </button>
@@ -198,90 +125,20 @@ export default function Home() {
 
         <button
           className="home__scrollcue"
-          onClick={scrollToStory}
+          onClick={scrollDown}
           aria-label={t("home.cta")}
         >
           <span className="home__scrollcue-line" />
         </button>
       </section>
 
-      <section className="home__story container" ref={storyRef}>
-        <header className="home__story-head">
-          <h2 className="home__story-intro">{t("home.acts_intro")}</h2>
-          <p className="home__story-lead">{t("home.acts_lead")}</p>
-        </header>
+      <HomeIntro />
 
-        {CHAPTERS.map((chap, ci) => (
-          <section className="home__chapter" key={chap.id}>
-            <div className="home__chapter-head">
-              <span className="home__chapter-num">
-                {String(ci + 1).padStart(2, "0")}
-              </span>
-              <div className="home__chapter-meta">
-                <p className="eyebrow home__chapter-kicker">
-                  {t(`home.${chap.id}_kicker`)}
-                </p>
-                <h3 className="home__chapter-title">
-                  {t(`home.${chap.id}_title`)}
-                </h3>
-                <p className="home__chapter-desc">
-                  {t(`home.${chap.id}_desc`)}
-                </p>
-              </div>
-            </div>
-
-            <ol className="home__acts">
-              {chap.acts.map((a) => {
-                globalIdx += 1;
-                const idx = globalIdx;
-                return (
-                  <li
-                    key={a.id}
-                    data-idx={idx}
-                    ref={(el) => {
-                      actsRef.current[idx] = el;
-                    }}
-                    className="act act--link"
-                    onClick={() => navigate(a.to)}
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") navigate(a.to);
-                    }}
-                  >
-                    <span className="act__ghost" aria-hidden="true">
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                    <div className="act__inner">
-                      <div className="act__meta">
-                        <span className="act__icon" aria-hidden="true">
-                          {ACT_ICONS[a.id]}
-                        </span>
-                        <span className="act__index">
-                          {String(idx + 1).padStart(2, "0")}
-                        </span>
-                        <p className="eyebrow act__tag">
-                          {t(`home.acts.${a.id}_tag`)}
-                        </p>
-                      </div>
-                      <h4 className="act__title">
-                        {t(`home.acts.${a.id}_title`)}
-                      </h4>
-                      <p className="act__text">{t(`home.acts.${a.id}_text`)}</p>
-                      <span className="act__action">
-                        {t("home.act_explore")}{" "}
-                        <span aria-hidden="true">→</span>
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        ))}
-
-        <p className="home__closing">{t("home.closing")}</p>
-      </section>
+      <ReadingModes
+        onBrowse={goActs}
+        onGuided={beginExperience}
+        onFunFacts={() => navigate("/le-saviez-vous")}
+      />
     </main>
   );
 }

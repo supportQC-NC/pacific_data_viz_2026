@@ -1,0 +1,102 @@
+// src/components/ReadingModes/ReadingModes.scss
+// ============================================================
+// « Trois façons de lire ». Cartes-boutons. Tout en tokens (light/dark).
+// ============================================================
+
+.readmodes {
+  position: relative;
+  padding: clamp(3rem, 6vw, 5rem) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.readmodes__inner {
+  max-width: 1100px;
+}
+
+.readmodes__kicker {
+  color: var(--c-accent);
+  margin: 0 0 var(--sp-3);
+}
+
+.readmodes__lead {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  line-height: 1.2;
+  color: var(--c-text);
+  max-width: 30ch;
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+}
+
+.readmodes__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-6);
+}
+
+// Carte cliquable
+.readmodes__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  gap: var(--sp-2);
+  padding: var(--sp-6);
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: transform 0.18s, border-color 0.2s, box-shadow 0.2s;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--c-accent) 55%, transparent);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--c-accent-deep) 22%, transparent);
+  }
+}
+
+.readmodes__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: var(--sp-2);
+  border-radius: var(--r-md);
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+  font-size: 1.25rem;
+}
+
+.readmodes__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  color: var(--c-text);
+}
+
+.readmodes__text {
+  font-size: var(--fs-sm, 0.96rem);
+  line-height: 1.55;
+  color: var(--c-text-soft);
+}
+
+.readmodes__action {
+  margin-top: auto;
+  padding-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+@media (max-width: 860px) {
+  .readmodes__grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+}

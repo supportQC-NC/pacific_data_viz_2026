@@ -8,8 +8,8 @@
   },
   "home": {
     "kicker": "Pacific Dataviz Challenge 2026 · Changement climatique",
-    "title_l1": "En première ligne du climat,",
-    "title_l2": "le Pacifique montre la voie.",
+    "title_l1": "Lire le Pacifique",
+    "title_l2": "par ses données",
     "subtitle": "Une plongée dans les données du Pacifique : la mer qui monte, qui chauffe, et les peuples qui en portent le poids.",
     "cta": "Découvrir l'histoire",
     "live_label": "Données en direct · niveau de la mer",
@@ -105,7 +105,33 @@
     "m5_kicker": "Mouvement V",
     "m5_title": "La riposte, puis le verdict",
     "m5_desc": "Les leviers d'adaptation — part des renouvelables, mutation économique — et la synthèse qui croise responsabilité et vulnérabilité.",
-    "funfacts": "Le saviez-vous ?"
+    "funfacts": "Le saviez-vous ?",
+    "sea_caption": "Montée du niveau de la mer · {y0}–{y1}",
+    "intro": {
+      "kicker": "Le parti pris",
+      "lead": "Le Pacifique est en première ligne du réchauffement. Datamoana en fait le récit — par la donnée.",
+      "body1": "Pensée comme un site en plusieurs actes, la plateforme mobilise un maximum de données ouvertes pour éclairer chaque facette du défi climatique régional : montée des eaux, océan qui se réchauffe, autonomie alimentaire, santé, économie.",
+      "body2": "L'ambition n'est pas seulement de constater, mais de comprendre les mécanismes et d'ouvrir des pistes de solution pour les peuples du Pacifique — premiers exposés, et déjà en mouvement.",
+      "p1_title": "Mesurer",
+      "p1_text": "Des données ouvertes, réelles et vérifiables, à l’échelle des 22 territoires.",
+      "p2_title": "Comprendre",
+      "p2_text": "Onze actes pour relier les chiffres aux réalités vécues sur le terrain.",
+      "p3_title": "Agir",
+      "p3_text": "Donner aux décideurs et aux communautés de quoi bâtir des solutions."
+    },
+    "modes": {
+      "kicker": "Trois façons de lire",
+      "lead": "L'idée : rester accessible et compréhensible par le plus grand nombre. À vous de choisir votre entrée.",
+      "browse_title": "Par acte",
+      "browse_text": "Explorez librement : choisissez l'acte qui vous parle et plongez directement dedans.",
+      "browse_action": "Voir les actes",
+      "guided_title": "Visite guidée",
+      "guided_text": "« Commencer l’expérience » vous emmène à travers les onze actes, dans l’ordre du récit.",
+      "guided_action": "Commencer l'expérience",
+      "fun_title": "En un fait",
+      "fun_text": "« Le saviez-vous ? » : des faits marquants tirés des vraies données, pour entrer par la curiosité.",
+      "fun_action": "Le saviez-vous ?"
+    }
   },
   "footer": {
     "tagline": "Donner un visage aux données du changement climatique dans le Pacifique.",

@@ -8,8 +8,8 @@
   },
   "home": {
     "kicker": "Pacific Dataviz Challenge 2026 · Climate change",
-    "title_l1": "On the climate front line,",
-    "title_l2": "the Pacific leads the way.",
+    "title_l1": "Reading the Pacific",
+    "title_l2": "through its data",
     "subtitle": "A dive into Pacific data: a sea that rises, that warms, and the peoples who carry its weight.",
     "cta": "Discover the story",
     "live_label": "Live data · sea level",
@@ -105,7 +105,33 @@
     "m5_kicker": "Movement V",
     "m5_title": "The response, then the verdict",
     "m5_desc": "The levers of adaptation — renewable share, economic transformation — and the synthesis that crosses responsibility with vulnerability.",
-    "funfacts": "Did you know?"
+    "funfacts": "Did you know?",
+    "sea_caption": "Sea-level rise · {y0}–{y1}",
+    "intro": {
+      "kicker": "The intent",
+      "lead": "The Pacific is on the front line of warming. Datamoana tells that story — through data.",
+      "body1": "Built as a website in several acts, the platform draws on as much open data as possible to shed light on every facet of the regional climate challenge: rising seas, a warming ocean, food autonomy, health, the economy.",
+      "body2": "The aim is not only to document, but to understand the mechanisms and open paths to solutions for the peoples of the Pacific — the most exposed, and already on the move.",
+      "p1_title": "Measure",
+      "p1_text": "Open, real, verifiable data across the 22 territories.",
+      "p2_title": "Understand",
+      "p2_text": "Eleven acts connecting the figures to realities lived on the ground.",
+      "p3_title": "Act",
+      "p3_text": "Giving decision-makers and communities what they need to build solutions."
+    },
+    "modes": {
+      "kicker": "Three ways to read",
+      "lead": "The idea: stay accessible and understandable to as many people as possible. Pick your way in.",
+      "browse_title": "By act",
+      "browse_text": "Explore freely: pick the act that speaks to you and dive straight in.",
+      "browse_action": "See the acts",
+      "guided_title": "Guided tour",
+      "guided_text": "“Start the experience” takes you through the eleven acts, in narrative order.",
+      "guided_action": "Start the experience",
+      "fun_title": "In one fact",
+      "fun_text": "“Did you know?”: striking facts drawn from real data, to enter through curiosity.",
+      "fun_action": "Did you know?"
+    }
   },
   "footer": {
     "tagline": "Giving a face to climate-change data across the Pacific.",

@@ -1,0 +1,95 @@
+// src/components/HomeIntro/HomeIntro.scss
+// ============================================================
+// Manifeste éditorial (avant les actes). Tout en tokens (light/dark).
+// ============================================================
+
+.homeintro {
+  position: relative;
+  padding: clamp(4rem, 9vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
+  border-bottom: var(--border-hair) solid var(--c-line);
+  animation: homeintro-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.homeintro__inner {
+  max-width: 1100px;
+}
+
+.homeintro__kicker {
+  color: var(--c-accent);
+  margin: 0 0 var(--sp-4);
+}
+
+.homeintro__lead {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.7rem, 4.2vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--c-text);
+  max-width: 22ch;
+  margin: 0 0 var(--sp-8);
+}
+
+.homeintro__body {
+  max-width: 62ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+
+  p {
+    margin: 0;
+    font-size: var(--fs-md, 1.12rem);
+    line-height: 1.65;
+    color: var(--c-text-soft);
+  }
+}
+
+// Triade Mesurer / Comprendre / Agir
+.homeintro__pillars {
+  list-style: none;
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-8);
+}
+
+.homeintro__pillar {
+  padding-top: var(--sp-4);
+  border-top: 2px solid color-mix(in srgb, var(--c-accent) 55%, transparent);
+}
+
+.homeintro__pillar-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  color: var(--c-accent);
+}
+
+.homeintro__pillar-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+  color: var(--c-text);
+  margin: var(--sp-2) 0 var(--sp-2);
+}
+
+.homeintro__pillar-text {
+  margin: 0;
+  font-size: var(--fs-sm, 0.98rem);
+  line-height: 1.55;
+  color: var(--c-text-soft);
+}
+
+@keyframes homeintro-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .homeintro__pillars { grid-template-columns: 1fr; gap: var(--sp-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeintro { animation: none; }
+}
