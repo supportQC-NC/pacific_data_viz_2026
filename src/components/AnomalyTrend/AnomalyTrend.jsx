@@ -6,7 +6,7 @@
 // • SURVOL INTERACTIF : l'année suit le curseur, lecture moyenne + min/max
 //   (à défaut, marqueur sur l'année courante du curseur partagé)
 // • Légende intégrée (moyenne / dispersion)
-// Props : data [{year,mean,min,max}], currentYear, unit, tone "sea"|"warm",
+// Props : data [{year,mean,min,max}], currentYear, unit, tone "sea"|"warm"|"green",
 //         baselineLabel, meanLabel, bandLabel
 // ============================================================
 
@@ -94,8 +94,9 @@ export default function AnomalyTrend({
   const cur = active != null ? data.find((d) => d.year === active) : null;
   const cx = active != null ? x(active) : null;
 
-  // Position du panneau de lecture (borné).
-  const readoutW = 150;
+  // Position du panneau de lecture (borné). Boîte élargie + lignes empilées
+  // pour qu'année, moyenne et plage ne se chevauchent JAMAIS.
+  const readoutW = 188;
   const rX = cx != null ? Math.min(Math.max(cx - readoutW / 2, M.left), W - M.right - readoutW) : 0;
 
   return (
@@ -112,8 +113,12 @@ export default function AnomalyTrend({
         <g className="atrend__legend" transform={`translate(${M.left},16)`}>
           <line className="atrend__legend-mean" x1="0" x2="22" y1="0" y2="0" />
           <text className="atrend__legend-txt" x="28" dy="0.32em">{meanLabel}</text>
-          <rect className="atrend__legend-band" x="92" y="-5" width="22" height="10" rx="2" />
-          <text className="atrend__legend-txt" x="120" dy="0.32em">{bandLabel}</text>
+          {bandLabel ? (
+            <>
+              <rect className="atrend__legend-band" x="92" y="-5" width="22" height="10" rx="2" />
+              <text className="atrend__legend-txt" x="120" dy="0.32em">{bandLabel}</text>
+            </>
+          ) : null}
         </g>
 
         {yTicks.map((tk) => (
@@ -172,16 +177,16 @@ export default function AnomalyTrend({
           </g>
         )}
 
-        {/* Panneau de lecture */}
+        {/* Panneau de lecture : L1 = année (g.) + plage (d.) · L2 = moyenne */}
         {cur && (
-          <g className="atrend__readout" transform={`translate(${rX},${M.top - 36})`}>
-            <rect width={readoutW} height="30" rx="5" />
-            <text className="atrend__readout-yr" x="8" y="12">{active}</text>
-            <text className="atrend__readout-mean" x="8" y="24">
-              {meanLabel} {fmt(cur.mean)} {unit}
-            </text>
-            <text className="atrend__readout-rng" x={readoutW - 8} y="24" textAnchor="end">
+          <g className="atrend__readout" transform={`translate(${rX},${M.top - 38})`}>
+            <rect width={readoutW} height="34" rx="6" />
+            <text className="atrend__readout-yr" x="10" y="14">{active}</text>
+            <text className="atrend__readout-rng" x={readoutW - 10} y="14" textAnchor="end">
               {fmt(cur.min)} – {fmt(cur.max)}
+            </text>
+            <text className="atrend__readout-mean" x="10" y="27">
+              {meanLabel} {fmt(cur.mean)} {unit}
             </text>
           </g>
         )}
