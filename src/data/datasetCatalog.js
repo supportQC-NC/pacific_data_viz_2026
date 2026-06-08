@@ -90,6 +90,17 @@ const DATASET_CATALOG = [
     ],
   },
   {
+    id: "powermix",
+    labelFr: "Mix électrique par source",
+    labelEn: "Electricity mix by source",
+    descFr: "Production d'électricité désagrégée par source (fossile, hydro, solaire, éolien, géothermie, biomasse), en GWh.",
+    descEn: "Electricity generation disaggregated by source (fossil, hydro, solar, wind, geothermal, biomass), in GWh.",
+    sources: [
+      { label: "IRENA · via FMI (IMF.STA:RE)", url: "https://data.imf.org/en/datasets/IMF.STA:RE" },
+      { label: "Pacific Data Hub .Stat", url: PDH_STAT },
+    ],
+  },
+  {
     id: "biodiversity",
     labelFr: "Biodiversité — Liste Rouge",
     labelEn: "Biodiversity — Red List",

@@ -18,7 +18,6 @@ import { gsap } from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSynthese } from "../../services/syntheseApi";
-import { worldAvgFor } from "../../data/worldAvg";
 import PICT_GEO from "../../data/pictGeo";
 import Loader from "../../components/Loader/Loader";
 import AtlasMap from "../../components/AtlasMap/AtlasMap";
@@ -248,10 +247,6 @@ export default function Act11Synthese() {
     [composite],
   );
 
-  const worldRef = useMemo(() => {
-    const yr = data && data.emissions ? data.emissions.lastYear : null;
-    return worldAvgFor(yr) ?? worldAvgFor(2023);
-  }, [data]);
   const pacMed = useMemo(() => {
     const emi = latest.emissions || {};
     return median(areas.map((a) => emi[a]).filter(Number.isFinite)) ?? 0;
@@ -348,25 +343,27 @@ export default function Act11Synthese() {
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
-    if (pts.length < 3 || !Number.isFinite(worldRef)) return null;
-    const ratio = pacMed > 0 ? worldRef / pacMed : null;
+    if (pts.length < 3) return null;
     const yMed = medianY;
     const below = pts.filter(
-      (a) => emi[a] < worldRef && composite[a] > yMed,
+      (a) => emi[a] < pacMed && composite[a] > yMed,
     ).length;
     const most = areas.reduce(
       (m, a) => (!m || composite[a] > composite[m] ? a : m),
       null,
     );
+    const top = pts.reduce((m, a) => (!m || emi[a] > emi[m] ? a : m), null);
     return {
-      ratio,
+      pacMed: Math.round(pacMed * 10) / 10,
+      topEmi: top ? Math.round(emi[top] * 10) / 10 : 0,
+      topName: top ? pictName(top, lang) : "",
       below,
       total: pts.length,
       mostCode: most,
       mostName: most ? pictName(most, lang) : "",
       mostScore: most ? Math.round(composite[most]) : 0,
     };
-  }, [areas, latest, worldRef, pacMed, medianY, lang]);
+  }, [areas, latest, pacMed, medianY, composite, lang]);
 
   const focusLine = useMemo(() => {
     if (!focus) return null;
@@ -399,10 +396,10 @@ export default function Act11Synthese() {
       text: t("act11.story.resp_text"),
       stat: stats
         ? {
-            value: Math.round(stats.ratio),
-            suffix: "×",
+            value: stats.pacMed,
+            suffix: ` ${t("act11.story.resp_unit")}`,
             label: t("act11.stat_emi_label"),
-            tone: "warm",
+            tone: "positive",
           }
         : null,
       visual: (
@@ -415,9 +412,9 @@ export default function Act11Synthese() {
               color: tk.positive,
             },
             {
-              label: t("act11.story.resp_world"),
-              value: worldRef || 0,
-              color: tk.negative,
+              label: stats ? stats.topName : "",
+              value: stats ? stats.topEmi : 0,
+              color: tk.warm,
             },
           ]}
         />
@@ -493,7 +490,6 @@ export default function Act11Synthese() {
           groups={scatterGroups}
           medianX={medianX}
           medianY={medianY}
-          worldRef={worldRef}
           selected={focus}
           onSelect={(c) => setFocus((s) => (s === c ? null : c))}
           xName={t("act11.scatter_x_unit")}
@@ -514,7 +510,6 @@ export default function Act11Synthese() {
     t,
     stats,
     pacMed,
-    worldRef,
     tk,
     seaTrend,
     atlasPoints,
@@ -676,10 +671,10 @@ export default function Act11Synthese() {
             {stats ? (
               <div className="scene__kpis scene__anim">
                 <Kpi
-                  value={Math.round(stats.ratio)}
-                  suffix="×"
+                  value={stats.pacMed}
+                  suffix={` ${t("act11.story.resp_unit")}`}
                   label={t("act11.stat_emi_label")}
-                  tone="warm"
+                  tone="positive"
                 />
                 <Kpi
                   value={stats.mostScore}

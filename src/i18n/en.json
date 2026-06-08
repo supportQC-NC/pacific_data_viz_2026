@@ -943,7 +943,20 @@
       "map_find": "The geography of renewable share for the chosen year (green = greener).",
       "map_take": "Transition hotspots cluster; vast areas remain on fossil fuels.",
       "evo_find": "Who progressed most (and who fell back) on renewable share since the start.",
-      "evo_take": "The biggest gains reveal the models the region could follow."
+      "evo_take": "The biggest gains reveal the models the region could follow.",
+      "tab_mix_band": "Mix: fossil / renewable",
+      "tab_mix_detail": "Mix: by source",
+      "mix_band_find": "Electricity generation (GWh) stacked, fossil against renewable, by year.",
+      "mix_band_take": "At a glance, the renewable share eats into the fossil one over time.",
+      "mix_detail_find": "Electricity generation (GWh) broken down by source: coal, gas, oil, hydro, solar, wind, geothermal, biomass…",
+      "mix_detail_take": "The detail shows which technologies drive the transition: solar and wind rising, thermal slowly receding."
+    },
+    "mix": {
+      "fossil": "Fossil",
+      "renew": "Renewable",
+      "unit": "GWh",
+      "band_title": "The greening mix — fossil vs renewable",
+      "detail_title": "Electricity mix by source"
     }
   },
   "act6": {
@@ -1641,7 +1654,7 @@
     "q_tr": "high responsibility · high exposure",
     "q_bl": "low responsibility · low exposure",
     "q_br": "high responsibility · low exposure",
-    "stat_emi_label": "Pacific median GHG",
+    "stat_emi_label": "Pacific median emissions",
     "stat_emi_sub": "below the world per-capita average",
     "stat_inj_label": "Low responsibility, high exposure",
     "stat_inj_sub": "territories below the world average AND above the vulnerability median",
@@ -1700,8 +1713,8 @@
       "voyage_title": "Eleven acts, one story",
       "voyage_text": "Before the verdict, let's retrace the path — each act, a piece of the Pacific's climate puzzle.",
       "resp_k": "Act 01 · Responsibility",
-      "resp_title": "Those who emitted almost nothing",
-      "resp_text": "Per capita, the Pacific's emissions are tiny next to the world average. Responsibility lies elsewhere.",
+      "resp_title": "Tiny emitters, on the front line",
+      "resp_text": "The Pacific is among the world's lowest per-capita CO₂ emitters. Yet its territories bear the brunt of rising seas, cyclones and erosion. The responsibility lies elsewhere; the bill is paid here.",
       "resp_pac": "Pacific (median)",
       "resp_world": "World average",
       "ocean_k": "Act 02 · The ocean",
@@ -1733,7 +1746,8 @@
       "recap_a8": "Sky — disrupted rainfall and temperatures.",
       "recap_a9": "Economy — tourism and energy, exposed wealth.",
       "recap_a10": "Health — water and disease, persistent fragilities.",
-      "recap_a11": "Synthesis — it all converges: the climate debt."
+      "recap_a11": "Synthesis — it all converges: the climate debt.",
+      "resp_unit": "t CO₂/capita"
     },
     "outro": {
       "kicker": "End of the journey",
@@ -1888,7 +1902,8 @@
       "col_source": "Original source",
       "col_access": "Access",
       "link_label": "View",
-      "note": "Technical access via the SDMX API: stats-sdmx-disseminate.pacificdata.org"
+      "note": "Technical access via the SDMX API: stats-sdmx-disseminate.pacificdata.org",
+      "integrity": "Data transparency — All visualisations rely on real data fetched live from the Pacific Data Hub and official sources. When data is unavailable, the app shows “data unavailable” rather than estimated values: nothing is fabricated or hard-coded. The only documented exception — the coastline (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), a large geospatial dataset provided as a precomputed extract; its per-territory figures (retreat, growth, spread) are an approximate aggregation, obtained by attaching each coastline segment to the nearest territory. Territory coordinates are used only to place points on the map."
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",

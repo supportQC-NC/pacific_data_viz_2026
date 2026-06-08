@@ -49,6 +49,7 @@ const TOPIC_ICONS = {
   seaLevel: <FiActivity />,
   coastline: <FiMapPin />,
   landcover: <FiLayers />,
+  powermix: <FiZap />,
   sst: <FiThermometer />,
   rain: <FiCloudRain />,
   agriculture: <FiSun />,
@@ -203,6 +204,7 @@ export default function About() {
           </div>
 
           <p className="about__note">{t("about.data.note")}</p>
+          <p className="about__note about__note--method">{t("about.data.integrity")}</p>
         </section>
 
         {/* Concours */}

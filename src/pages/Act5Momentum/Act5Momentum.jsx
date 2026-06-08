@@ -18,6 +18,8 @@ import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
 import EvolutionPanel from "../../components/EvolutionPanel/EvolutionPanel";
 import BarRace from "../../components/BarRace/BarRace";
 import TrendChart from "../../components/charts/TrendChart";
+import PowerMixChart from "../../components/charts/PowerMixChart";
+import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
 import "./Act5Momentum.scss";
@@ -147,10 +149,26 @@ export default function Act5Momentum() {
 
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
+  const [mix, setMix] = useState({ status: "loading", data: null });
 
   useEffect(() => {
     dispatch(loadDataset("renewables"));
   }, [dispatch]);
+
+  useEffect(() => {
+    let alive = true;
+    const ctrl = new AbortController();
+    setMix((prev) => (prev.data ? prev : { status: "loading", data: null }));
+    fetchPowerMix({ lang, signal: ctrl.signal }).then((res) => {
+      if (!alive) return;
+      const ok = res.source === "live" && res.years.length > 0;
+      setMix({ status: ok ? "ready" : "empty", data: ok ? res : null });
+    });
+    return () => {
+      alive = false;
+      ctrl.abort();
+    };
+  }, [lang]);
 
   const ready = renew.status === "succeeded";
   const failed = renew.status === "failed";
@@ -190,6 +208,44 @@ export default function Act5Momentum() {
   const points = useMemo(() => (data && currentYear != null ? pointsAt(data, currentYear, lang, inRegion) : []), [data, currentYear, lang, inRegion]);
   const regionalMean = useMemo(() => (points.length ? points.reduce((s, p) => s + p.value, 0) / points.length : 0), [points]);
   const overallMax = useMemo(() => (data ? Math.max(1, data.range.max) : 100), [data]);
+
+  // ---- Mix électrique par source (powerApi, en parallèle des renouvelables) ----
+  const mixReady = mix.status === "ready" && !!mix.data;
+  const mixYears = useMemo(() => (mix.data ? mix.data.years : []), [mix.data]);
+  const sumByYear = useCallback(
+    (pick) => {
+      const d = mix.data;
+      if (!d) return [];
+      return mixYears.map((y) => {
+        let acc = 0;
+        Object.keys(d.byArea).forEach((geo) => {
+          if (!isPict(geo) || !inRegion(geo)) return;
+          acc += pick(d.byArea[geo], y);
+        });
+        return acc;
+      });
+    },
+    [mix.data, mixYears, inRegion],
+  );
+  const mixBandSeries = useMemo(() => {
+    if (!mix.data) return [];
+    return [
+      { name: t("act5.mix.fossil"), color: tk.warm, data: sumByYear((a, y) => a.fossil[y] || 0) },
+      { name: t("act5.mix.renew"), color: tk.positive, data: sumByYear((a, y) => a.renew[y] || 0) },
+    ];
+  }, [mix.data, sumByYear, t, tk]);
+  const mixDetailSeries = useMemo(() => {
+    const d = mix.data;
+    if (!d) return [];
+    const fossilPal = [tk.warm, tk.negative, tk.accentDeep, tk.secondary];
+    const renewPal = [tk.positive, tk.accent, tk.secondary, tk.accentDeep, tk.warm];
+    let fi = 0;
+    let ri = 0;
+    return d.detailSources.map((sx) => {
+      const color = sx.kind === "fossil" ? fossilPal[fi++ % fossilPal.length] : renewPal[ri++ % renewPal.length];
+      return { name: sx.label, color, data: sumByYear((a, y) => (a.detail[sx.label] || {})[y] || 0) };
+    });
+  }, [mix.data, sumByYear, tk]);
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
@@ -283,6 +339,24 @@ export default function Act5Momentum() {
                 <EvolutionPanel series={series} labels={evoLabels} unit={unit} mode="absolute" topN={5} />
               </div>
             ),
+          },
+          {
+            id: "mix_band",
+            empty: !mixReady || mixBandSeries.every((sx) => sx.data.every((v) => !v)),
+            tab: t("act5.board.tab_mix_band"),
+            title: t("act5.mix.band_title"),
+            finding: t("act5.board.mix_band_find"),
+            takeaway: t("act5.board.mix_band_take"),
+            node: <PowerMixChart series={mixBandSeries} years={mixYears} unit={t("act5.mix.unit")} />,
+          },
+          {
+            id: "mix_detail",
+            empty: !mixReady || mixDetailSeries.length === 0,
+            tab: t("act5.board.tab_mix_detail"),
+            title: t("act5.mix.detail_title"),
+            finding: t("act5.board.mix_detail_find"),
+            takeaway: t("act5.board.mix_detail_take"),
+            node: <PowerMixChart series={mixDetailSeries} years={mixYears} unit={t("act5.mix.unit")} />,
           },
         ]
       : [];

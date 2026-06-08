@@ -943,7 +943,20 @@
       "map_find": "La géographie de la part renouvelable pour l'année choisie (vert = plus vertueux).",
       "map_take": "Les foyers de transition se concentrent ; de vastes zones restent au fossile.",
       "evo_find": "Qui a le plus progressé (et qui a reculé) sur sa part renouvelable depuis le début.",
-      "evo_take": "Les plus fortes hausses dessinent les modèles à suivre pour la région."
+      "evo_take": "Les plus fortes hausses dessinent les modèles à suivre pour la région.",
+      "tab_mix_band": "Mix : fossile / renouvelable",
+      "tab_mix_detail": "Mix : par source",
+      "mix_band_find": "Production d'électricité (GWh) empilée, fossile contre renouvelable, par année.",
+      "mix_band_take": "On lit d'un coup d'œil la part du renouvelable qui grignote celle du fossile au fil du temps.",
+      "mix_detail_find": "Production d'électricité (GWh) détaillée par source : charbon, gaz, pétrole, hydro, solaire, éolien, géothermie, biomasse…",
+      "mix_detail_take": "Le détail révèle quelles technologies portent la transition : montée du solaire et de l'éolien, recul progressif du thermique."
+    },
+    "mix": {
+      "fossil": "Fossile",
+      "renew": "Renouvelable",
+      "unit": "GWh",
+      "band_title": "Le mix qui verdit — fossile vs renouvelable",
+      "detail_title": "Mix électrique par source"
     }
   },
   "act6": {
@@ -1641,7 +1654,7 @@
     "q_tr": "très responsables · très exposés",
     "q_bl": "peu responsables · peu exposés",
     "q_br": "très responsables · peu exposés",
-    "stat_emi_label": "GES médian du Pacifique",
+    "stat_emi_label": "Émissions médianes du Pacifique",
     "stat_emi_sub": "sous la moyenne mondiale par habitant",
     "stat_inj_label": "Peu responsables, très exposés",
     "stat_inj_sub": "territoires sous la moyenne mondiale ET au-dessus de la médiane de vulnérabilité",
@@ -1700,8 +1713,8 @@
       "voyage_title": "Onze actes, une seule histoire",
       "voyage_text": "Avant le verdict, retraçons le chemin parcouru — chaque acte, une pièce du puzzle climatique du Pacifique.",
       "resp_k": "Acte 01 · La responsabilité",
-      "resp_title": "Ceux qui n'ont presque rien émis",
-      "resp_text": "Rapportées à l'habitant, les émissions du Pacifique sont infimes face à la moyenne mondiale. La responsabilité est ailleurs.",
+      "resp_title": "Minuscules émetteurs, en première ligne",
+      "resp_text": "Le Pacifique compte parmi les plus faibles émetteurs de CO₂ par habitant de la planète. Pourtant, ce sont ses territoires qui encaissent de plein fouet la montée des eaux, les cyclones et l'érosion. La responsabilité est ailleurs ; la facture, ici.",
       "resp_pac": "Pacifique (médiane)",
       "resp_world": "Moyenne mondiale",
       "ocean_k": "Acte 02 · L'océan",
@@ -1733,7 +1746,8 @@
       "recap_a8": "Ciel — pluies et températures déréglées.",
       "recap_a9": "Économie — tourisme et énergie, richesses exposées.",
       "recap_a10": "Santé — eau et maladies, fragilités persistantes.",
-      "recap_a11": "Synthèse — tout se croise : la dette climatique."
+      "recap_a11": "Synthèse — tout se croise : la dette climatique.",
+      "resp_unit": "t CO₂/hab."
     },
     "outro": {
       "kicker": "Fin du voyage",
@@ -1888,7 +1902,8 @@
       "col_source": "Source d'origine",
       "col_access": "Accès",
       "link_label": "Consulter",
-      "note": "Accès technique via l'API SDMX : stats-sdmx-disseminate.pacificdata.org"
+      "note": "Accès technique via l'API SDMX : stats-sdmx-disseminate.pacificdata.org",
+      "integrity": "Transparence des données — Toutes les visualisations reposent sur des données réelles récupérées en direct auprès du Pacific Data Hub et de sources officielles. En cas d'indisponibilité, l'application affiche « données indisponibles » plutôt que des valeurs estimées : aucune donnée n'est inventée ni codée en dur. Seule exception documentée — le trait de côte (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), jeu géospatial volumineux fourni en extrait précalculé ; ses chiffres par territoire (recul, avancée, dispersion) sont une agrégation approchée, obtenue en rattachant chaque segment de côte au territoire le plus proche. Les coordonnées des territoires servent uniquement à placer les points sur la carte."
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
