@@ -170,6 +170,11 @@
       "text": "Douze actes, des données réelles, une région en première ligne. À vous de choisir comment la lire.",
       "guided": "Commencer l’expérience",
       "browse": "Parcourir les actes"
+    },
+    "territories": {
+      "kicker": "La région",
+      "title": "Les 22 territoires du Pacifique",
+      "subtitle": "Chaque chiffre de Datamoana se rapporte à l'un de ces 22 pays et territoires insulaires — de la Papouasie-Nouvelle-Guinée à Pitcairn."
     }
   },
   "footer": {
@@ -2008,7 +2013,8 @@
       "note": "Accès technique via l'API SDMX : stats-sdmx-disseminate.pacificdata.org",
       "integrity": "Transparence des données — Toutes les visualisations reposent sur des données réelles récupérées en direct auprès du Pacific Data Hub et de sources officielles. En cas d'indisponibilité, l'application affiche « données indisponibles » plutôt que des valeurs estimées : aucune donnée n'est inventée ni codée en dur. Seule exception documentée — le trait de côte (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), jeu géospatial volumineux fourni en extrait précalculé ; ses chiffres par territoire (recul, avancée, dispersion) sont une agrégation approchée, obtenue en rattachant chaque segment de côte au territoire le plus proche. Les coordonnées des territoires servent uniquement à placer les points sur la carte.",
       "coastline_dl": "Télécharger le jeu de données du trait de côte (GeoJSON)",
-      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0"
+      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0",
+      "card_cta": "Explorer le jeu"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
@@ -2204,5 +2210,28 @@
       "intensity_all": "Tous",
       "intensity_intense": "Intenses (CT+)"
     }
+  },
+  "dataset": {
+    "back": "Retour aux données",
+    "eyebrow": "Jeu de données",
+    "provider": "Fournisseur",
+    "frequency": "Fréquence",
+    "license": "Licence",
+    "sources": "Sources",
+    "table_title": "Données brutes",
+    "table_hint": "Triez, filtrez et exportez. Lignes :",
+    "loading": "Chargement des données…",
+    "error": "Données indisponibles pour le moment.",
+    "empty": "Aucune donnée à afficher.",
+    "no_table": "Tableau brut bientôt disponible — ce jeu se consulte aujourd'hui directement dans les actes.",
+    "unknown": "Jeu de données introuvable.",
+    "col_territory": "Territoire",
+    "col_code": "Code",
+    "col_year": "Année",
+    "col_value": "Valeur",
+    "search": "Filtrer…",
+    "export": "Exporter CSV",
+    "prev": "Page précédente",
+    "next": "Page suivante"
   }
 }

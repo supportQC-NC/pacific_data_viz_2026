@@ -170,6 +170,11 @@
       "text": "Twelve acts, real data, a region on the front line. It’s up to you how to read it.",
       "guided": "Start the experience",
       "browse": "Browse the acts"
+    },
+    "territories": {
+      "kicker": "The region",
+      "title": "The 22 Pacific territories",
+      "subtitle": "Every figure in Datamoana relates to one of these 22 island countries and territories — from Papua New Guinea to Pitcairn."
     }
   },
   "footer": {
@@ -2008,7 +2013,8 @@
       "note": "Technical access via the SDMX API: stats-sdmx-disseminate.pacificdata.org",
       "integrity": "Data transparency — All visualisations rely on real data fetched live from the Pacific Data Hub and official sources. When data is unavailable, the app shows “data unavailable” rather than estimated values: nothing is fabricated or hard-coded. The only documented exception — the coastline (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), a large geospatial dataset provided as a precomputed extract; its per-territory figures (retreat, growth, spread) are an approximate aggregation, obtained by attaching each coastline segment to the nearest territory. Territory coordinates are used only to place points on the map.",
       "coastline_dl": "Download the coastline dataset (GeoJSON)",
-      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0"
+      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0",
+      "card_cta": "Explore dataset"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
@@ -2204,5 +2210,28 @@
       "intensity_all": "All",
       "intensity_intense": "Intense (CT+)"
     }
+  },
+  "dataset": {
+    "back": "Back to data",
+    "eyebrow": "Dataset",
+    "provider": "Provider",
+    "frequency": "Frequency",
+    "license": "License",
+    "sources": "Sources",
+    "table_title": "Raw data",
+    "table_hint": "Sort, filter and export. Rows:",
+    "loading": "Loading data…",
+    "error": "Data unavailable right now.",
+    "empty": "No data to display.",
+    "no_table": "Raw table coming soon — this dataset is currently explored within the acts.",
+    "unknown": "Dataset not found.",
+    "col_territory": "Territory",
+    "col_code": "Code",
+    "col_year": "Year",
+    "col_value": "Value",
+    "search": "Filter…",
+    "export": "Export CSV",
+    "prev": "Previous page",
+    "next": "Next page"
   }
 }

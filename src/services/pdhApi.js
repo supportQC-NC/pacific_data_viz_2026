@@ -20,6 +20,14 @@ export const DATASETS = {
   disastersAffected: { flow: 'SPC,DF_SDG_11,3.0',         key: 'A.VC_DSR_AFFCT.........', start: 2000 },
   disastersLoss:     { flow: 'SPC,DF_SDG_11,3.0',         key: 'A.VC_DSR_AALT...._T.....', start: 2000 },
   renewables:        { flow: 'SPC,DF_SDG,3.0',            key: 'A.EG_FEC_RNEW.._T._T._T._T._T._T._Z._T', start: 1990 },
+  // --- Séries supplémentaires (mêmes schémas que ci-dessus) exposées sur la
+  //     page « jeu de données » pour afficher les données brutes. ---
+  rain:              { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.RAIN_ANOM.',  start: 1970 },
+  tourism:           { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.TRSM_ARR.',   start: 1990 },
+  electricity:       { flow: 'SPC,DF_CLIMATE_CHANGE,1.0', key: 'A.POWER_GEN.',  start: 1970 },
+  water:             { flow: 'SPC,DF_SDG_06,3.0',         key: 'A.SH_H2O_SAFE...._T.....', start: 2000 },
+  tuberculosis:      { flow: 'SPC,DF_SDG_03,3.0',         key: 'A.SH_TBS_INCD.........', start: 2000 },
+  redList:           { flow: 'SPC,DF_SDG_15,3.0',         key: 'A.ER_RSK_LST.........', start: 1993 },
 };
 
 function buildUrl({ flow, key, start }) {

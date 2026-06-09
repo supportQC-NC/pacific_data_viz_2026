@@ -1,0 +1,92 @@
+// src/components/Territories/Territories.scss
+// ============================================================
+// Galerie des 22 territoires. Tokens uniquement, dark/light via variables.
+// ============================================================
+
+.territories {
+  padding-block: var(--sp-16);
+
+  &__inner {
+    max-width: var(--maxw);
+  }
+
+  &__kicker {
+    margin-bottom: var(--sp-2);
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+  }
+
+  &__lead {
+    max-width: var(--maxw-text);
+    margin-top: var(--sp-3);
+    color: var(--c-text-soft);
+    font-size: var(--fs-md);
+    line-height: var(--lh-base);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--sp-4);
+    margin-top: var(--sp-8);
+    list-style: none;
+    padding: 0;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-3);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+    text-align: center;
+    transition:
+      border-color var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+
+    &:hover {
+      border-color: var(--c-line-strong);
+      transform: translateY(-3px);
+    }
+  }
+
+  // Cadre du drapeau : ratio fixe, l'image (svg ou png) est contenue dedans.
+  &__flag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-bg-2);
+    box-shadow: inset 0 0 0 var(--border-hair) var(--c-line);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &__fallback {
+    font-family: var(--font-mono);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-wide);
+    color: var(--c-text-mute);
+  }
+
+  &__name {
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    line-height: 1.3;
+  }
+}

@@ -17,6 +17,7 @@ import HomeIntro from "../../components/HomeIntro/HomeIntro";
 import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
+import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
 import ClosingCta from "../../components/ClosingCta/ClosingCta";
 import "./Home.scss";
@@ -147,6 +148,8 @@ export default function Home() {
       />
 
       <PacificTeaser />
+
+      <Territories />
 
       <DataMethod />
 

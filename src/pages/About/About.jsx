@@ -42,7 +42,6 @@ import {
   FiBarChart2,
   FiGitMerge,
 } from "react-icons/fi";
-import { WiHurricane } from "react-icons/wi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
 import mePhoto from "../../me.jpg";
@@ -102,7 +101,6 @@ const TOPIC_ICONS = {
   energy: <FiZap />,
   envtaxes: <FiPercent />,
   meteo: <FiWind />,
-  cyclones: <WiHurricane />,
 };
 
 // En-tête de section : numéro éditorial (décoratif) + eyebrow + icône.
@@ -272,7 +270,7 @@ export default function About() {
           {/* Catalogue (grille de cartes, alimentée par datasetCatalog.js) */}
           <div className="about__grid">
             {DATASET_CATALOG.map((d) => (
-              <article className="about__card" key={d.id}>
+              <Link className="about__card" key={d.id} to={`/data/${d.id}`}>
                 <span className="about__card-icon" aria-hidden="true">
                   {TOPIC_ICONS[d.id]}
                 </span>
@@ -280,20 +278,10 @@ export default function About() {
                   {pick(d.labelFr, d.labelEn)}
                 </h3>
                 <p className="about__card-desc">{pick(d.descFr, d.descEn)}</p>
-                <div className="about__card-sources">
-                  {d.sources.map((s, i) => (
-                    <a
-                      key={s.url}
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`about__src-pill ${i === 0 ? "is-origin" : ""}`}
-                    >
-                      {s.label} <FiArrowUpRight aria-hidden="true" />
-                    </a>
-                  ))}
-                </div>
-              </article>
+                <span className="about__src-pill is-origin about__card-cta">
+                  {t("about.data.card_cta")} <FiArrowUpRight aria-hidden="true" />
+                </span>
+              </Link>
             ))}
           </div>
 

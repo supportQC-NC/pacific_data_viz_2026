@@ -1,0 +1,183 @@
+// src/components/RawDataTable/RawDataTable.scss
+// ============================================================
+// Tableau de données brutes — tokens uniquement, dark/light via variables.
+// ============================================================
+
+.rawtable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__search {
+    flex: 1 1 200px;
+    min-width: 0;
+    padding: var(--sp-2) var(--sp-3);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    background: var(--c-bg-2);
+    color: var(--c-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    transition: border-color var(--t-fast) var(--ease-out);
+
+    &::placeholder {
+      color: var(--c-text-mute);
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--c-accent);
+    }
+  }
+
+  &__export {
+    padding: var(--sp-2) var(--sp-4);
+    border: var(--border-hair) solid color-mix(in srgb, var(--c-accent) 40%, transparent);
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--c-accent);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    transition:
+      background var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out);
+
+    &:hover {
+      background: color-mix(in srgb, var(--c-accent) 12%, transparent);
+      border-color: var(--c-accent);
+    }
+  }
+
+  &__scroll {
+    position: relative;
+    max-height: clamp(360px, 56vh, 560px);
+    overflow: auto;
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+
+  &__th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: var(--sp-3) var(--sp-4);
+    text-align: left;
+    white-space: nowrap;
+    background: var(--c-bg-2);
+    color: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    border-bottom: var(--border-hair) solid var(--c-line-strong);
+
+    &--sort {
+      cursor: pointer;
+      user-select: none;
+    }
+    &--sort:hover {
+      color: var(--c-accent);
+    }
+    &--num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__row {
+    transition: background var(--t-fast) var(--ease-out);
+
+    &:nth-child(even) {
+      background: color-mix(in srgb, var(--c-text) 3%, transparent);
+    }
+    &:hover {
+      background: color-mix(in srgb, var(--c-accent) 8%, transparent);
+    }
+  }
+
+  &__td {
+    padding: var(--sp-2) var(--sp-4);
+    color: var(--c-text);
+    border-bottom: var(--border-hair) solid var(--c-line);
+
+    &--num {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--c-text);
+    }
+  }
+
+  &__empty {
+    padding: var(--sp-8);
+    text-align: center;
+    color: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+  }
+
+  &__pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  &__count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+  }
+
+  &__pager-btns {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__pg {
+    width: 30px;
+    height: 30px;
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    color: var(--c-text-soft);
+    font-size: var(--fs-md);
+    line-height: 1;
+    transition:
+      border-color var(--t-fast) var(--ease-out),
+      color var(--t-fast) var(--ease-out);
+
+    &:hover:not(:disabled) {
+      border-color: var(--c-accent);
+      color: var(--c-accent);
+    }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__pg-info {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+    min-width: 56px;
+    text-align: center;
+  }
+}
