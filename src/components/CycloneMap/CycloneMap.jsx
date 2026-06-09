@@ -27,6 +27,7 @@ const HOME_VIEW = { center: [172, -18], zoom: 3.1, pitch: 35, bearing: -6 };
 export const PER_CYCLONE_MS = 1300;
 export const DRAW_MIN = 1200;
 export const DRAW_MAX = 16000;
+const SPEEDS = [0.5, 1, 2];
 
 function cssVarRaw(name, fallback) {
   if (typeof window === "undefined") return fallback;
@@ -156,6 +157,8 @@ export default function CycloneMap({
   noTokenMsg = "",
   territories = [],
   focus = null,
+  speed = 1,
+  onSpeedChange = null,
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -164,8 +167,10 @@ export default function CycloneMap({
   const colorsRef = useRef(resolveStageColors());
   const labelsRef = useRef(labels);
   const stageLabelsRef = useRef(stageLabels);
+  const drawIdxRef = useRef(-1);
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(false);
+  const [drawingId, setDrawingId] = useState(null);
 
   useEffect(() => {
     labelsRef.current = labels;
@@ -536,6 +541,8 @@ export default function CycloneMap({
       srcLine.setData({ type: "FeatureCollection", features: [] });
       if (srcPts) srcPts.setData({ type: "FeatureCollection", features: [] });
       setHead([]);
+      drawIdxRef.current = -1;
+      setDrawingId(null);
       return undefined;
     }
 
@@ -624,22 +631,38 @@ export default function CycloneMap({
     if (reduceMotion) {
       buildAt(1);
       setHead([]);
+      drawIdxRef.current = -1;
+      setDrawingId(null);
       return undefined;
     }
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    const dur = Math.min(DRAW_MAX, Math.max(DRAW_MIN, N * PER_CYCLONE_MS));
+    const base = Math.min(DRAW_MAX, Math.max(DRAW_MIN, N * PER_CYCLONE_MS));
+    const dur = base / (speed > 0 ? speed : 1);
     const start = performance.now();
+    // On affiche le 1er cyclone immédiatement ; le tick fera défiler les suivants.
+    drawIdxRef.current = 0;
+    setDrawingId(activeCyclones[0] ? activeCyclones[0].id : null);
     const tick = (now) => {
       const p = clamp01((now - start) / dur);
       buildAt(p);
-      if (p < 1) rafRef.current = requestAnimationFrame(tick);
-      else setHead([]); // tracé terminé → on retire la tête
+      if (p < 1) {
+        const idx = Math.min(N - 1, Math.floor(p * N));
+        if (idx !== drawIdxRef.current) {
+          drawIdxRef.current = idx;
+          setDrawingId(activeCyclones[idx] ? activeCyclones[idx].id : null);
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        setHead([]); // tracé terminé → on retire la tête
+        drawIdxRef.current = -1;
+        setDrawingId(null); // retour au cyclone le plus intense de la saison
+      }
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [allMode, activeCyclones, currentOrder, orderOf, loaded, reduceMotion]);
+  }, [allMode, activeCyclones, currentOrder, orderOf, loaded, reduceMotion, speed]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -659,11 +682,23 @@ export default function CycloneMap({
 
   const hasTimeline = seasons.length > 0 && typeof onTogglePlay === "function";
   const curSeason = allMode ? labels.allSeasons || "" : seasons[currentOrder] || "";
+  const display = (drawingId != null ? activeCyclones.find((c) => c.id === drawingId) : null) || headline;
+  const cycleSpeed = () => {
+    if (!onSpeedChange) return;
+    const i = SPEEDS.indexOf(speed);
+    onSpeedChange(SPEEDS[(i + 1) % SPEEDS.length] || 1);
+  };
 
   return (
     <div className={`cmap ${full ? "cmap--full" : ""}`}>
       <div className="cmap__stage">
         <div ref={containerRef} className="cmap__map" />
+
+        {!allMode && curSeason ? (
+          <span className="cmap__bigseason" aria-hidden="true">
+            {curSeason}
+          </span>
+        ) : null}
 
         <div className="cmap__readout" aria-hidden={!hasTimeline}>
           <span className="cmap__season">{curSeason}</span>
@@ -672,11 +707,11 @@ export default function CycloneMap({
               {activeCyclones.length} {labels.cyclones || ""}
             </span>
           )}
-          {headline && (
+          {display && (
             <span className="cmap__headline">
-              <em className="cmap__headline-dot" data-stage={headline.stage} aria-hidden="true" />
-              <span className="cmap__headline-name">{headline.name}</span>
-              <span className="cmap__headline-stage">{stageLabels[headline.stage] || ""}</span>
+              <em className="cmap__headline-dot" data-stage={display.stage} aria-hidden="true" />
+              <span className="cmap__headline-name">{display.name}</span>
+              <span className="cmap__headline-stage">{stageLabels[display.stage] || ""}</span>
             </span>
           )}
         </div>
@@ -729,6 +764,18 @@ export default function CycloneMap({
               aria-label={labels.season}
             />
             <span className="cmap__scrub-val">{seasons[currentOrder] || ""}</span>
+            {onSpeedChange ? (
+              <button
+                type="button"
+                className="cmap__speed"
+                onClick={cycleSpeed}
+                title={`${speed}\u00d7`}
+                aria-label={`${speed}\u00d7`}
+              >
+                {speed}
+                {"\u00d7"}
+              </button>
+            ) : null}
           </div>
         )}
       </div>

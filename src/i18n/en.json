@@ -2134,7 +2134,15 @@
       "bystage_series": "Tracks",
       "season_title": "Cyclones per season",
       "season_find": "The count swings widely from year to year. Science is cautious about frequency: what rises with warming is mainly the share of intense cyclones and the intensity of their rainfall.",
-      "season_series": "Cyclones"
+      "season_series": "Cyclones",
+      "exposure_title": "Most exposed territories",
+      "exposure_find": "Number of cyclones whose track passed within 300 km of the territory, split by peak stage.",
+      "cross_title": "Cyclone exposure × human impact",
+      "cross_find": "Each dot is a territory: horizontally, the number of cyclones that passed within 300 km; vertically (log scale), the total people affected by disasters (all causes, SDG source). A cross between our cyclone dataset and the Act 4 “disasters” data.",
+      "cross_series": "Territories",
+      "cross_x": "Cyclones passing within 300 km",
+      "cross_y": "People affected (disasters)",
+      "cross_affected_unit": "people affected"
     },
     "board": {
       "tab_map": "Map",
@@ -2146,7 +2154,10 @@
       "start": "Explore the tracks",
       "conclusion": "Conclude",
       "back_intro": "Intro",
-      "revise_data": "Review the data"
+      "revise_data": "Review the data",
+      "tab_exposure": "Exposure",
+      "tab_source": "Source & scope",
+      "tab_cross": "Exposure × impact"
     },
     "outro": {
       "kicker": "From sky to land",
@@ -2154,6 +2165,23 @@
       "text": "Cyclones are a reminder that the climate does not warm in silence — it strikes. The question now is what the region can still manage to grow, season after season.",
       "next": "Continue",
       "home": "Back to home"
+    },
+    "source": {
+      "title": "Where this data comes from",
+      "disclaimer": "NOT official contest data: it comes from an open dataset published on data.gouv.nc (the New Caledonian Government's Géorep platform), used here for exploration.",
+      "provider_label": "Producer",
+      "provider": "Météo-France — Weather & Climate Service · Government of New Caledonia",
+      "license_label": "Licence",
+      "license": "CC BY-NC-ND 4.0 — attribution, non-commercial, no redistributed modifications.",
+      "genealogy": "Storm genealogy: SPEArTC archive (Diamond, Lorrey, Knapp & Levinson, 2012) for the southwest Pacific.",
+      "scope_title": "Geographic scope — not all of the Pacific is covered",
+      "scope_nc": "New Caledonia warning zone: 13°S to 25°S × 158°E to 172°E.",
+      "scope_swp": "Southwest Pacific basin: 5°S to 25°S × 135°E to 120°W.",
+      "scope_wf": "Wallis & Futuna: 400-nautical-mile circle (≈ 741 km) around 13.4°S / 177.1°W.",
+      "scope_note": "A system is recorded as soon as it crosses one of these domains, since the 1977/1978 season.",
+      "links_label": "Data access",
+      "link_datagouv": "data.gouv.nc",
+      "link_georep": "Géorep record"
     }
   }
 }

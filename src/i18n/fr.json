@@ -2134,7 +2134,15 @@
       "bystage_series": "Trajectoires",
       "season_title": "Cyclones par saison",
       "season_find": "Le décompte varie fortement d'une année à l'autre. La science reste prudente sur la fréquence : ce qui augmente avec le réchauffement, c'est surtout la proportion de cyclones intenses et l'intensité de leurs pluies.",
-      "season_series": "Cyclones"
+      "season_series": "Cyclones",
+      "exposure_title": "Territoires les plus exposés",
+      "exposure_find": "Nombre de cyclones dont la trajectoire est passée à moins de 300 km du territoire, réparti par stade de pointe.",
+      "cross_title": "Exposition cyclonique × impact humain",
+      "cross_find": "Chaque point est un territoire : à gauche/droite, le nombre de cyclones passés à moins de 300 km ; en hauteur (échelle log.), le total de personnes affectées par les catastrophes (toutes causes, source SDG). Croisement de notre jeu cyclones avec les données « catastrophes » de l'Acte 4.",
+      "cross_series": "Territoires",
+      "cross_x": "Cyclones passés à moins de 300 km",
+      "cross_y": "Personnes affectées (catastrophes)",
+      "cross_affected_unit": "personnes affectées"
     },
     "board": {
       "tab_map": "Carte",
@@ -2146,7 +2154,10 @@
       "start": "Explorer les trajectoires",
       "conclusion": "Conclure",
       "back_intro": "Intro",
-      "revise_data": "Revoir les données"
+      "revise_data": "Revoir les données",
+      "tab_exposure": "Exposition",
+      "tab_source": "Source & portée",
+      "tab_cross": "Exposition × impact"
     },
     "outro": {
       "kicker": "Du ciel à la terre",
@@ -2154,6 +2165,23 @@
       "text": "Les cyclones rappellent que le climat ne se réchauffe pas en silence : il frappe. Reste à voir ce que la région parvient encore à faire pousser, saison après saison.",
       "next": "Continuer",
       "home": "Retour à l'accueil"
+    },
+    "source": {
+      "title": "D'où viennent ces données",
+      "disclaimer": "Données NON officielles du concours : elles proviennent d'un jeu ouvert publié sur data.gouv.nc (plateforme Géorep du Gouvernement de la Nouvelle-Calédonie), utilisé ici à titre exploratoire.",
+      "provider_label": "Producteur",
+      "provider": "Météo-France — Service de la météo et du climat · Gouvernement de la Nouvelle-Calédonie",
+      "license_label": "Licence",
+      "license": "CC BY-NC-ND 4.0 — attribution, usage non commercial, pas de modification redistribuée.",
+      "genealogy": "Généalogie des phénomènes : archive SPEArTC (Diamond, Lorrey, Knapp & Levinson, 2012) pour le Pacifique sud-ouest.",
+      "scope_title": "Portée géographique — tout le Pacifique n'est pas couvert",
+      "scope_nc": "Zone d'alerte Nouvelle-Calédonie : 13°S à 25°S × 158°E à 172°E.",
+      "scope_swp": "Bassin Pacifique sud-ouest : 5°S à 25°S × 135°E à 120°O.",
+      "scope_wf": "Wallis-et-Futuna : cercle de 400 milles nautiques (≈ 741 km) autour de 13,4°S / 177,1°O.",
+      "scope_note": "Un phénomène est recensé dès qu'il traverse l'un de ces domaines, depuis la saison 1977/1978.",
+      "links_label": "Accès aux données",
+      "link_datagouv": "data.gouv.nc",
+      "link_georep": "Fiche Géorep"
     }
   }
 }
