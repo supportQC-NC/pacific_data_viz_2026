@@ -2000,7 +2000,9 @@
       "col_access": "Accès",
       "link_label": "Consulter",
       "note": "Accès technique via l'API SDMX : stats-sdmx-disseminate.pacificdata.org",
-      "integrity": "Transparence des données — Toutes les visualisations reposent sur des données réelles récupérées en direct auprès du Pacific Data Hub et de sources officielles. En cas d'indisponibilité, l'application affiche « données indisponibles » plutôt que des valeurs estimées : aucune donnée n'est inventée ni codée en dur. Seule exception documentée — le trait de côte (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), jeu géospatial volumineux fourni en extrait précalculé ; ses chiffres par territoire (recul, avancée, dispersion) sont une agrégation approchée, obtenue en rattachant chaque segment de côte au territoire le plus proche. Les coordonnées des territoires servent uniquement à placer les points sur la carte."
+      "integrity": "Transparence des données — Toutes les visualisations reposent sur des données réelles récupérées en direct auprès du Pacific Data Hub et de sources officielles. En cas d'indisponibilité, l'application affiche « données indisponibles » plutôt que des valeurs estimées : aucune donnée n'est inventée ni codée en dur. Seule exception documentée — le trait de côte (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), jeu géospatial volumineux fourni en extrait précalculé ; ses chiffres par territoire (recul, avancée, dispersion) sont une agrégation approchée, obtenue en rattachant chaque segment de côte au territoire le plus proche. Les coordonnées des territoires servent uniquement à placer les points sur la carte.",
+      "coastline_dl": "Télécharger le jeu de données du trait de côte (GeoJSON)",
+      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
@@ -2023,11 +2025,40 @@
       "meteo": "Réseau météorologique"
     },
     "story": {
-      "eyebrow": "Ma conviction",
-      "title": "Le pouvoir d'une donnée bien racontée",
-      "p1": "Je suis passionné par ce que la donnée révèle quand on la met en scène : elle transforme des chiffres en décisions, et parfois en anticipation.",
-      "walmart": "L'exemple qui m'a ouvert les yeux : avant un ouragan, Walmart a fouillé des années de ventes et vu que les Pop-Tarts à la fraise partaient ~7 fois plus que d'habitude (la bière en tête). Magasins réapprovisionnés à l'avance, rayons vidés.",
-      "p3": "Imaginez la même anticipation pour nos veilles de cyclone dans le Pacifique : savoir, avant la tempête, ce dont chaque île aura besoin. C'est ça, le pouvoir de la data — et l'esprit de Datamoana."
+      "eyebrow": "Le pouvoir de la donnée",
+      "title": "Quand un chiffre fait basculer une décision",
+      "lead": "Je ne fais pas des graphiques pour décorer. Je cherche le moment où une donnée change une décision — où un motif invisible à l'œil devient une action concrète. Une histoire résume cette conviction mieux que n'importe quel discours.",
+      "case_kicker": "Cas d'école",
+      "case_title": "Walmart, les Pop-Tarts et l'ouragan",
+      "context": "En 2004, à l'approche de l'ouragan Frances en Floride, les analystes de Walmart fouillent des années de tickets de caisse pour anticiper la demande. Leur but : savoir quoi placer en rayon avant que la tempête ne touche terre.",
+      "found_title": "Ce que les données ont révélé",
+      "found_1": "Les ventes de Pop-Tarts à la fraise grimpaient jusqu'à 7 fois la normale juste avant un ouragan.",
+      "found_2": "L'article le plus vendu à l'approche d'une tempête n'était pas l'eau ni les piles, mais la bière.",
+      "found_3": "Des corrélations contre-intuitives, qu'aucune connaissance du terrain n'aurait permis de deviner.",
+      "why_title": "L'explication probable",
+      "why_1": "Les Pop-Tarts se conservent longtemps.",
+      "why_2": "Elles ne demandent ni cuisson ni réfrigération.",
+      "why_3": "Elles restent consommables même en pleine coupure de courant.",
+      "why_4": "La bière, elle, s'achète en prévision de plusieurs jours bloqués à la maison.",
+      "outcome": "Résultat : Walmart a commencé à pré-positionner des palettes de Pop-Tarts et de bière dans les magasins situés sur la trajectoire des tempêtes — une décision logistique née d'un simple croisement de données.",
+      "legend_title": "Pourquoi cette histoire est devenue légendaire",
+      "legend_lead": "Parce qu'elle condense, en une anecdote, tout ce que je pratique au quotidien en Business Intelligence et Power BI :",
+      "concept_1_t": "Data Mining",
+      "concept_1_d": "Faire émerger des motifs cachés dans les données.",
+      "concept_2_t": "Analyse prédictive",
+      "concept_2_d": "Anticiper la demande à venir.",
+      "concept_3_t": "Supply Chain",
+      "concept_3_d": "Placer le bon stock au bon endroit, au bon moment.",
+      "concept_4_t": "Business Intelligence",
+      "concept_4_d": "Transformer la donnée en décisions concrètes.",
+      "concept_5_t": "Corrélations inattendues",
+      "concept_5_d": "Repérer des comportements impossibles à deviner à l'œil nu.",
+      "close": "La valeur de la donnée n'est pas seulement dans les tableaux de bord : elle est dans la découverte d'opportunités invisibles à l'œil humain. C'est exactement ce que je cherche à provoquer ici, avec les données du Pacifique.",
+      "sources_label": "Sources",
+      "src_popular": "Grand public",
+      "src_case": "Étude de cas",
+      "src_ds": "Data science",
+      "src_bigdata": "Big Data"
     }
   },
   "funfacts": {

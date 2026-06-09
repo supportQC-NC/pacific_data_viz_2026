@@ -143,29 +143,16 @@
   color: var(--c-text);
 }
 
-/* ---------- Duo auteur + conviction ---------- */
-.about__duo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-8);
+/* ---------- 01 — Auteur (photo + texte) ---------- */
+.about__author {
   margin-bottom: var(--sp-16);
-  align-items: start;
-}
-/* min-width:0 = les colonnes peuvent se rétracter et le texte passe à la ligne
-   au lieu de déborder (sinon clipping/overflow). */
-.about__author,
-.about__story {
-  min-width: 0;
-}
-@media (max-width: 900px) {
-  .about__duo {
-    grid-template-columns: 1fr;
-    gap: var(--sp-12);
-  }
 }
 
 .about__author-card {
-  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
   margin-top: var(--sp-4);
   padding: var(--sp-8);
   min-width: 0;
@@ -176,41 +163,32 @@
   box-shadow: var(--soft-lg);
 }
 
-.about__author-id {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  margin-bottom: var(--sp-6);
-}
-
-.about__author-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
+.about__author-photo {
   flex: none;
-  border-radius: var(--r-pill);
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: var(--fw-semi);
-  letter-spacing: 0.02em;
-  color: var(--c-bg);
-  background: var(--grad-primary-accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-accent) 14%, transparent), var(--soft);
+  width: 140px;
+  height: 168px;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  border: var(--border-hair) solid var(--c-line);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--c-accent) 14%, transparent),
+    var(--soft-lg);
 }
 
 .about__author-text {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  min-width: 0;
+  min-width: 12rem;
 }
 
 .about__author-name {
   font-family: var(--font-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
   color: var(--c-text);
+  margin: 0;
 }
 
 .about__author-role {
@@ -222,7 +200,7 @@
 }
 
 .about__author-body {
-  margin: 0;
+  margin: var(--sp-4) 0 0;
   line-height: var(--lh-base);
   color: var(--c-text-soft);
   overflow-wrap: break-word;
@@ -230,6 +208,7 @@
 
 .about__author-note {
   display: inline-block;
+  align-self: flex-start;
   max-width: 100%;
   margin-top: var(--sp-6);
   padding: var(--sp-2) var(--sp-4);
@@ -244,27 +223,213 @@
   overflow-wrap: break-word;
 }
 
-/* ---------- Conviction ---------- */
+@media (max-width: 560px) {
+  .about__author-photo {
+    width: 100%;
+    height: 220px;
+  }
+}
+
+/* ---------- 02 — Conviction (récit Walmart, pleine largeur) ---------- */
+.about__story {
+  margin-bottom: var(--sp-16);
+}
+
+.about__story-lead {
+  max-width: 70ch;
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+
 .about__story-p {
+  max-width: 72ch;
   line-height: var(--lh-base);
   color: var(--c-text-soft);
   margin: 0 0 var(--sp-4);
   overflow-wrap: break-word;
 }
 
-.about__quote {
+/* Le cas, encadré comme une « pièce à conviction » */
+.about__case {
   position: relative;
+  overflow: hidden;
+  padding: var(--sp-8);
+  border-radius: var(--r-lg);
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-accent) 22%, transparent);
+  background:
+    radial-gradient(120% 130% at 100% 0%, color-mix(in srgb, var(--c-accent) 9%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: var(--soft-lg);
+}
+.about__case::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--grad-primary-accent);
+}
+
+.about__case-kicker {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.about__case-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  margin: 0 0 var(--sp-4);
+  color: var(--c-text);
+}
+
+.about__case-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
   margin: var(--sp-6) 0;
-  padding: var(--sp-6);
-  padding-left: var(--sp-8);
+}
+@media (max-width: 720px) {
+  .about__case-cols {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+}
+
+.about__case-block {
+  min-width: 0;
+}
+
+.about__case-h {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.about__case-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.about__case-list li {
+  position: relative;
+  padding-left: var(--sp-6);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  overflow-wrap: break-word;
+}
+.about__case-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-accent) 18%, transparent);
+}
+
+.about__case-outcome {
+  margin: var(--sp-6) 0 0;
+  padding: var(--sp-4) var(--sp-6);
   border-radius: var(--r-md);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--c-accent) 10%, transparent),
-    color-mix(in srgb, var(--c-accent) 3%, transparent)
-  );
-  border: var(--border-hair) solid color-mix(in srgb, var(--c-accent) 24%, transparent);
   border-left: 3px solid var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 8%, transparent);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text);
+}
+
+.about__case-sources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-6);
+  border-top: var(--hair);
+}
+.about__case-sources-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.about__case-sources-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* Concepts illustrés (grille de chips) */
+.about__concepts {
+  margin-top: var(--sp-12);
+}
+
+.about__concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--sp-3);
+  margin: var(--sp-6) 0;
+}
+
+.about__concept {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-6);
+  border: var(--hair);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--soft);
+  transition: border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.about__concept:hover {
+  border-color: color-mix(in srgb, var(--c-accent) 40%, transparent);
+  transform: translateY(-3px);
+}
+.about__concept-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  font-size: 16px;
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 13%, transparent);
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-accent) 22%, transparent);
+}
+.about__concept-term {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.about__concept-def {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+
+.about__story-close {
+  max-width: 72ch;
+  margin: var(--sp-6) 0 0;
   font-family: var(--font-display);
   font-size: var(--fs-md);
   font-style: italic;
@@ -272,7 +437,7 @@
   color: var(--c-text);
 }
 
-/* ---------- Données ---------- */
+/* ---------- 03 — Données ---------- */
 .about__data {
   margin-bottom: var(--sp-16);
 }
@@ -488,7 +653,7 @@
   color: var(--c-text-mute);
 }
 
-/* ---------- Concours ---------- */
+/* ---------- 04 — Concours ---------- */
 .about__challenge {
   display: flex;
   align-items: center;
@@ -548,15 +713,17 @@
 /* ---------- Entrée en cascade (respecte prefers-reduced-motion) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .about__head,
-  .about__duo,
+  .about__author,
+  .about__story,
   .about__data,
   .about__challenge {
     animation: aboutIn 0.7s var(--ease-out) both;
   }
   .about__head { animation-delay: 0.02s; }
-  .about__duo { animation-delay: 0.1s; }
-  .about__data { animation-delay: 0.18s; }
-  .about__challenge { animation-delay: 0.26s; }
+  .about__author { animation-delay: 0.1s; }
+  .about__story { animation-delay: 0.16s; }
+  .about__data { animation-delay: 0.22s; }
+  .about__challenge { animation-delay: 0.28s; }
 }
 
 @keyframes aboutIn {

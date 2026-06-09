@@ -2000,7 +2000,9 @@
       "col_access": "Access",
       "link_label": "View",
       "note": "Technical access via the SDMX API: stats-sdmx-disseminate.pacificdata.org",
-      "integrity": "Data transparency — All visualisations rely on real data fetched live from the Pacific Data Hub and official sources. When data is unavailable, the app shows “data unavailable” rather than estimated values: nothing is fabricated or hard-coded. The only documented exception — the coastline (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), a large geospatial dataset provided as a precomputed extract; its per-territory figures (retreat, growth, spread) are an approximate aggregation, obtained by attaching each coastline segment to the nearest territory. Territory coordinates are used only to place points on the map."
+      "integrity": "Data transparency — All visualisations rely on real data fetched live from the Pacific Data Hub and official sources. When data is unavailable, the app shows “data unavailable” rather than estimated values: nothing is fabricated or hard-coded. The only documented exception — the coastline (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), a large geospatial dataset provided as a precomputed extract; its per-territory figures (retreat, growth, spread) are an approximate aggregation, obtained by attaching each coastline segment to the nearest territory. Territory coordinates are used only to place points on the map.",
+      "coastline_dl": "Download the coastline dataset (GeoJSON)",
+      "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
@@ -2023,11 +2025,40 @@
       "meteo": "Weather network"
     },
     "story": {
-      "eyebrow": "What drives me",
-      "title": "The power of a well-told dataset",
-      "p1": "I'm passionate about what data reveals once you stage it: it turns numbers into decisions — sometimes into anticipation.",
-      "walmart": "The example that opened my eyes: before a hurricane, Walmart mined years of sales and found strawberry Pop-Tarts selling about 7× the usual rate (beer led the list). Stores pre-stocked in the storm's path, shelves cleared.",
-      "p3": "Picture that same anticipation for our cyclone watches in the Pacific: knowing, before the storm, what each island will need. That's the power of data — and the spirit of Datamoana."
+      "eyebrow": "The power of data",
+      "title": "When a number changes a decision",
+      "lead": "I don't build charts for decoration. I look for the moment a single number changes a decision — when a pattern invisible to the eye becomes a concrete action. One story sums up that conviction better than any pitch.",
+      "case_kicker": "Case study",
+      "case_title": "Walmart, Pop-Tarts and the hurricane",
+      "context": "In 2004, as Hurricane Frances bore down on Florida, Walmart's analysts dug through years of checkout data to anticipate demand. The goal: know what to stock before the storm made landfall.",
+      "found_title": "What the data revealed",
+      "found_1": "Strawberry Pop-Tarts sales jumped to about 7 times normal right before a hurricane.",
+      "found_2": "The top-selling item ahead of a storm wasn't water or batteries — it was beer.",
+      "found_3": "Counter-intuitive correlations that no amount of field experience would have guessed.",
+      "why_title": "The likely explanation",
+      "why_1": "Pop-Tarts keep for a long time.",
+      "why_2": "They need no cooking and no refrigeration.",
+      "why_3": "They stay edible even during a power outage.",
+      "why_4": "Beer, meanwhile, gets bought ahead of several days stuck at home.",
+      "outcome": "The outcome: Walmart began pre-positioning pallets of Pop-Tarts and beer in stores along storm tracks — a logistics decision born from a simple cross-reading of data.",
+      "legend_title": "Why this story became legendary",
+      "legend_lead": "Because it packs, into one anecdote, everything I practise day to day in Business Intelligence and Power BI:",
+      "concept_1_t": "Data mining",
+      "concept_1_d": "Surfacing hidden patterns in the data.",
+      "concept_2_t": "Predictive analytics",
+      "concept_2_d": "Anticipating future demand.",
+      "concept_3_t": "Supply chain",
+      "concept_3_d": "Putting the right stock in the right place, at the right time.",
+      "concept_4_t": "Business intelligence",
+      "concept_4_d": "Turning data into concrete decisions.",
+      "concept_5_t": "Unexpected correlations",
+      "concept_5_d": "Spotting behaviour impossible to guess with the naked eye.",
+      "close": "The value of data isn't only in dashboards: it's in uncovering opportunities invisible to the human eye. That's exactly what I'm trying to spark here, with the data of the Pacific.",
+      "sources_label": "Sources",
+      "src_popular": "Mainstream",
+      "src_case": "Case study",
+      "src_ds": "Data science",
+      "src_bigdata": "Big Data"
     }
   },
   "funfacts": {

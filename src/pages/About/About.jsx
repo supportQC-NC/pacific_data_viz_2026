@@ -1,16 +1,16 @@
 // src/pages/About/About.jsx
 // ============================================================
-// Page « À propos » — projet, auteur, conviction (le pouvoir de la data),
-// puis catalogue des jeux de données alimenté par datasetCatalog.js
-// (source de vérité unique : libellé, description, 1–2 sources). i18n via t().
+// Page « À propos » — projet, auteur (avec photo), conviction (le pouvoir
+// de la data via le cas Walmart / Pop-Tarts), puis catalogue des jeux de
+// données alimenté par datasetCatalog.js. i18n via t() — aucun texte en dur.
 //
-// Refonte design : sections numérotées (rythme éditorial), cartes de données
-// à hauteur égale avec liens-sources en « pills » (origine + Pacific Data Hub),
-// bannière plateforme et CTA concours affirmés, entrée en cascade (CSS).
-// Pour CORRIGER les liens : éditer src/data/datasetCatalog.js
-//   • constantes PDH / PDH_STAT (en haut)
-//   • le tableau `sources: [{ label, url }]` de chaque jeu
-// Le lien du concours est CHALLENGE_URL ci-dessous.
+// Layout : 01 Auteur (photo + texte) → 02 Conviction (récit Walmart EN
+// PLEINE LARGEUR, sous la présentation, avec sources cliquables) → 03
+// Données → 04 Concours. Sections numérotées (rythme éditorial).
+//
+// Pour CORRIGER les liens des datasets : éditer src/data/datasetCatalog.js.
+// Le lien du concours est CHALLENGE_URL ci-dessous. La photo de l'auteur est
+// src/me.jpg (importée ci-dessous). Les sources du récit sont WALMART_SOURCES.
 // ============================================================
 
 import React from "react";
@@ -36,12 +36,52 @@ import {
   FiWind,
   FiMapPin,
   FiLayers,
+  FiSearch,
+  FiTrendingUp,
+  FiTruck,
+  FiBarChart2,
+  FiGitMerge,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
+import mePhoto from "../../me.jpg";
 import "./About.scss";
 
 const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
+
+// Sources du récit Walmart (liens réels, paramètres de tracking retirés).
+// `kind` -> libellé traduit (about.story.src_*).
+const WALMART_SOURCES = [
+  {
+    url: "https://www.countryliving.com/food-drinks/a44550/walmart-strawberry-pop-tarts-before-hurricane/",
+    label: "Country Living",
+    kind: "popular",
+  },
+  {
+    url: "https://blog.othor.ai/the-pop-tarts-phenomenon-walmarts-data-driven-supply-chain-revolution-b1b7d0b1f6fa",
+    label: "Othor AI",
+    kind: "case",
+  },
+  {
+    url: "https://www.snowdatascience.org/post/how-data-science-helped-walmart-predict-sales-during-a-hurricane",
+    label: "Snow Data Science",
+    kind: "ds",
+  },
+  {
+    url: "https://www.forbes.com/sites/bernardmarr/2016/08/25/the-most-practical-big-data-use-cases-of-2016/",
+    label: "Forbes",
+    kind: "bigdata",
+  },
+];
+
+// Concepts illustrés par le récit (terme + icône, définition via i18n).
+const CONCEPTS = [
+  { n: 1, icon: <FiSearch /> },
+  { n: 2, icon: <FiTrendingUp /> },
+  { n: 3, icon: <FiTruck /> },
+  { n: 4, icon: <FiBarChart2 /> },
+  { n: 5, icon: <FiGitMerge /> },
+];
 
 // Icône par domaine (clé = id du catalogue).
 const TOPIC_ICONS = {
@@ -62,16 +102,6 @@ const TOPIC_ICONS = {
   envtaxes: <FiPercent />,
   meteo: <FiWind />,
 };
-
-function initialsFrom(name) {
-  return String(name || "")
-    .trim()
-    .split(/\s+/)
-    .map((w) => w[0] || "")
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 // En-tête de section : numéro éditorial (décoratif) + eyebrow + icône.
 function SecHead({ num, icon, children }) {
@@ -106,45 +136,107 @@ export default function About() {
           <p className="about__lead">{t("about.lead")}</p>
         </header>
 
-        {/* Auteur + conviction (2 colonnes) */}
-        <div className="about__duo">
-          <section className="about__author">
-            <SecHead num="01" icon={<FiUser aria-hidden="true" />}>
-              {t("about.author.eyebrow")}
-            </SecHead>
-            <div className="about__author-card">
-              <div className="about__author-id">
-                <span className="about__author-avatar" aria-hidden="true">
-                  {initialsFrom(authorName)}
-                </span>
-                <span className="about__author-text">
-                  <span className="about__author-name">{authorName}</span>
-                  <span className="about__author-role">
-                    {t("about.author.role")}
-                  </span>
-                </span>
-              </div>
+        {/* 01 — Auteur (photo + texte) */}
+        <section className="about__author">
+          <SecHead num="01" icon={<FiUser aria-hidden="true" />}>
+            {t("about.author.eyebrow")}
+          </SecHead>
+          <div className="about__author-card">
+            <img
+              className="about__author-photo"
+              src={mePhoto}
+              alt={authorName}
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="about__author-text">
+              <h2 className="about__author-name">{authorName}</h2>
+              <span className="about__author-role">{t("about.author.role")}</span>
               <p className="about__author-body">{t("about.author.body")}</p>
-              <span className="about__author-note">
-                {t("about.author.note")}
-              </span>
+              <span className="about__author-note">{t("about.author.note")}</span>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="about__story">
-            <SecHead num="02" icon={<FiZap aria-hidden="true" />}>
-              {t("about.story.eyebrow")}
-            </SecHead>
-            <h2 className="about__h2">{t("about.story.title")}</h2>
-            <p className="about__story-p">{t("about.story.p1")}</p>
-            <blockquote className="about__quote">
-              {t("about.story.walmart")}
-            </blockquote>
-            <p className="about__story-p">{t("about.story.p3")}</p>
-          </section>
-        </div>
+        {/* 02 — Conviction : le récit Walmart, en pleine largeur */}
+        <section className="about__story">
+          <SecHead num="02" icon={<FiZap aria-hidden="true" />}>
+            {t("about.story.eyebrow")}
+          </SecHead>
+          <h2 className="about__h2">{t("about.story.title")}</h2>
+          <p className="about__story-lead">{t("about.story.lead")}</p>
 
-        {/* Données */}
+          <article className="about__case">
+            <p className="about__case-kicker">{t("about.story.case_kicker")}</p>
+            <h3 className="about__case-title">{t("about.story.case_title")}</h3>
+            <p className="about__story-p">{t("about.story.context")}</p>
+
+            <div className="about__case-cols">
+              <div className="about__case-block">
+                <h4 className="about__case-h">{t("about.story.found_title")}</h4>
+                <ul className="about__case-list">
+                  <li>{t("about.story.found_1")}</li>
+                  <li>{t("about.story.found_2")}</li>
+                  <li>{t("about.story.found_3")}</li>
+                </ul>
+              </div>
+              <div className="about__case-block">
+                <h4 className="about__case-h">{t("about.story.why_title")}</h4>
+                <ul className="about__case-list">
+                  <li>{t("about.story.why_1")}</li>
+                  <li>{t("about.story.why_2")}</li>
+                  <li>{t("about.story.why_3")}</li>
+                  <li>{t("about.story.why_4")}</li>
+                </ul>
+              </div>
+            </div>
+
+            <p className="about__case-outcome">{t("about.story.outcome")}</p>
+
+            <div className="about__case-sources">
+              <span className="about__case-sources-label">
+                {t("about.story.sources_label")}
+              </span>
+              <div className="about__case-sources-list">
+                {WALMART_SOURCES.map((s) => (
+                  <a
+                    key={s.url}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="about__src-pill is-origin"
+                  >
+                    {s.label} {"\u00b7"} {t(`about.story.src_${s.kind}`)}{" "}
+                    <FiArrowUpRight aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </article>
+
+          <div className="about__concepts">
+            <h3 className="about__case-title">{t("about.story.legend_title")}</h3>
+            <p className="about__story-p">{t("about.story.legend_lead")}</p>
+            <div className="about__concept-grid">
+              {CONCEPTS.map((c) => (
+                <div className="about__concept" key={c.n}>
+                  <span className="about__concept-icon" aria-hidden="true">
+                    {c.icon}
+                  </span>
+                  <span className="about__concept-term">
+                    {t(`about.story.concept_${c.n}_t`)}
+                  </span>
+                  <span className="about__concept-def">
+                    {t(`about.story.concept_${c.n}_d`)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="about__story-close">{t("about.story.close")}</p>
+          </div>
+        </section>
+
+        {/* 03 — Données */}
         <section className="about__data">
           <SecHead num="03" icon={<FiDatabase aria-hidden="true" />}>
             {t("about.data.eyebrow")}
@@ -204,10 +296,12 @@ export default function About() {
           </div>
 
           <p className="about__note">{t("about.data.note")}</p>
-          <p className="about__note about__note--method">{t("about.data.integrity")}</p>
+          <p className="about__note about__note--method">
+            {t("about.data.integrity")}
+          </p>
         </section>
 
-        {/* Concours */}
+        {/* 04 — Concours */}
         <section className="about__challenge">
           <div className="about__challenge-text">
             <SecHead num="04" icon={<FiAward aria-hidden="true" />}>
