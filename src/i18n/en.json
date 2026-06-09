@@ -16,7 +16,7 @@
     "live_loading": "Connecting to the Pacific Data Hub…",
     "live_error": "Data unavailable right now",
     "live_coverage": "territories tracked",
-    "acts_intro": "Eleven acts, a region in action.",
+    "acts_intro": "Twelve acts, a region in action.",
     "acts": {
       "a1_tag": "Act 01",
       "a1_title": "The founding paradox",
@@ -44,7 +44,7 @@
       "a8_text": "Rainfall, temperatures, monitoring network: observing the atmosphere better to prepare for it better.",
       "a9_tag": "Act 09",
       "a9_title": "An economy reinventing itself",
-      "a9_text": "Tourism, electricity, green taxation: the economic levers of a sustainable transition.",
+      "a9_text": "Tourism and green taxation: the economic levers of a sustainable transition.",
       "a10_tag": "Act 10",
       "a10_title": "Water and health first",
       "a10_text": "Access to drinking water and health: tangible progress closest to people.",
@@ -71,7 +71,7 @@
     "act_soon": "Soon",
     "acts_kicker": "The descent",
     "live_demo": "Demonstration data · sea level",
-    "thesis": "The Pacific's climate story in eleven acts: not a fate, but a region that measures, adapts and acts — told through its own data.",
+    "thesis": "The Pacific's climate story in twelve acts: not a fate, but a region that measures, adapts and acts — told through its own data.",
     "shock_num": "0.03%",
     "shock_text": "of global emissions, yet one of the loudest voices for climate. The Pacific turns its vulnerability into leadership.",
     "acts_lead": "From emissions to solutions, each act crosses the Pacific's open data to show a reality — and the response rising to meet it. Follow the thread: it leads to action.",
@@ -92,7 +92,7 @@
     "stat2_text": "average sea-level rise",
     "stat3_num": "22",
     "stat3_text": "Pacific territories tracked",
-    "stat4_num": "11 acts",
+    "stat4_num": "12 acts",
     "stat4_text": "to read a region that adapts",
     "m1_kicker": "Movement I",
     "m1_title": "Responsibility",
@@ -119,7 +119,7 @@
       "p1_title": "Measure",
       "p1_text": "Open, real, verifiable data across the 22 territories.",
       "p2_title": "Understand",
-      "p2_text": "Eleven acts connecting the figures to realities lived on the ground.",
+      "p2_text": "Twelve acts connecting the figures to realities lived on the ground.",
       "p3_title": "Act",
       "p3_text": "Giving decision-makers and communities what they need to build solutions."
     },
@@ -130,7 +130,7 @@
       "browse_text": "Explore freely: pick the act that speaks to you and dive straight in.",
       "browse_action": "See the acts",
       "guided_title": "Guided tour",
-      "guided_text": "“Start the experience” takes you through the eleven acts, in narrative order.",
+      "guided_text": "“Start the experience” takes you through the twelve acts, in narrative order.",
       "guided_action": "Start the experience",
       "fun_title": "In one fact",
       "fun_text": "“Did you know?”: striking facts drawn from real data, to enter through curiosity.",
@@ -167,7 +167,7 @@
     "closing_cta": {
       "kicker": "Ready?",
       "title": "Step into the Pacific’s story",
-      "text": "Eleven acts, real data, a region on the front line. It’s up to you how to read it.",
+      "text": "Twelve acts, real data, a region on the front line. It’s up to you how to read it.",
       "guided": "Start the experience",
       "browse": "Browse the acts"
     }
@@ -1465,7 +1465,7 @@
   "act9": {
     "tag": "Act 09",
     "title": "The exposed economy",
-    "lead": "Behind the climate, whole economies. The tourism that keeps the islands alive, the electricity they produce, and green taxation — a lever still barely used.",
+    "lead": "Behind the climate, whole economies. The tourism that keeps the islands alive, and green taxation — a lever still barely used.",
     "unavailable": "Economic data momentarily unavailable. Please try again shortly.",
     "credit": "Sources: tourism UN Tourism (CC-BY) · electricity IMF/IRENA · taxation IMF/OECD. Data: Pacific Data Hub (SPC).",
     "tour_total_name": "Pacific total",
@@ -1557,7 +1557,7 @@
       "next": "Next act: health",
       "home": "Back to home"
     },
-    "thesis": "The Pacific economy — tourism, energy, taxation — rests on a narrow, dependent base, on the front line of climate shocks.",
+    "thesis": "The Pacific economy — tourism and environmental taxation — rests on a narrow, dependent base, on the front line of climate shocks.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -1582,20 +1582,22 @@
       "tab_map": "3D map",
       "radar_title": "Profile by sub-region and decade",
       "map_title": "Economic geography",
-      "trend_find": "The regional trajectory of the indicator, year after year.",
+      "trend_find": "The regional total, year by year: a single line for the overall dynamic. Sharp drops mark shocks (e.g. the 2020 collapse).",
       "trend_take": "The Pacific economy rests on a narrow base, highly exposed to shocks.",
-      "multiples_find": "Each mini-chart a territory: its own trajectory, current point marked.",
+      "multiples_find": "One mini-chart per territory: the line follows its arrivals year after year. Each card has its own scale — read the shape (the trend), not the level. The large figure is the latest known value, the ▲/▼ badge the change since the start. Click a card to enlarge it.",
       "multiples_take": "A few territories concentrate most; the rest stay marginal.",
-      "race_find": "The territories' race on the indicator, year after year.",
+      "race_find": "The territory ranking reshuffling year by year: bars overtake one another as one pulls ahead. Watch who climbs and who falls back.",
       "race_take": "The ranking barely moves: economic positions are lastingly entrenched.",
-      "change_find": "For each territory, the first year's value linked to the last year's.",
+      "change_find": "For each territory, its first known value (muted dot) linked to its latest (warm dot). Colour gives the direction (up / down), the bar length the size of the change. Sorted by latest value.",
       "change_take": "Growth and decline coexist — economic resilience isn't shared.",
-      "heat_find": "Territories × years: intensity shows the level at a glance.",
+      "heat_find": "Territories (rows) × years (columns): colour shows the level of arrivals, from dark (low) to gold (high). Grey marks a year with no data. The busiest sits on top.",
       "heat_take": "Ruptures (shocks, crises) read as dark bands across the grid.",
-      "radar_find": "The average profile of each sub-region, decade by decade.",
+      "radar_find": "Each sub-region's average profile, decade by decade: the larger the area, the higher the arrivals. Compare the shapes across Melanesia, Polynesia and Micronesia.",
       "radar_take": "Melanesia, Polynesia and Micronesia don't follow the same economic model.",
-      "map_find": "The geography of the indicator for the last year.",
-      "map_take": "Economic wealth concentrates on a few island hubs."
+      "map_find": "The geography of the latest known year: each territory shaded by its level. Hover a territory for detail.",
+      "map_take": "Economic wealth concentrates on a few island hubs.",
+      "heat_nodata": "No data",
+      "zoom_close": "Close"
     }
   },
   "act10": {
@@ -1811,7 +1813,7 @@
       "prev": "Previous",
       "next": "Next",
       "voyage_k": "The journey",
-      "voyage_title": "Eleven acts, one story",
+      "voyage_title": "Twelve acts, one story",
       "voyage_text": "Before the verdict, let's retrace the path — each act, a piece of the Pacific's climate puzzle.",
       "resp_k": "Act 01 · Responsibility",
       "resp_title": "Tiny emitters, on the front line",
@@ -1853,7 +1855,7 @@
     "outro": {
       "kicker": "End of the journey",
       "title": "A debt they never took on",
-      "text": "Eleven acts, dozens of datasets, one conclusion: those who pay for the climate aren't those who disrupted it. The rest is up to us.",
+      "text": "Twelve acts, dozens of datasets, one conclusion: those who pay for the climate aren't those who disrupted it. The rest is up to us.",
       "home": "Replay the journey",
       "restart": "Relive from act 1",
       "next": "Back to home"
@@ -2010,7 +2012,7 @@
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
-      "body": "Datamoana is my entry to the 2026 Pacific Dataviz Challenge, whose theme is climate change in the Pacific. Eleven acts, 23 official datasets crossed, one story.",
+      "body": "Datamoana is my entry to the 2026 Pacific Dataviz Challenge, whose theme is climate change in the Pacific. Twelve acts, 23 official datasets crossed, one story.",
       "cta": "Official competition website"
     },
     "topics": {

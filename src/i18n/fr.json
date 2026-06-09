@@ -16,7 +16,7 @@
     "live_loading": "Connexion au Pacific Data Hub…",
     "live_error": "Données indisponibles pour le moment",
     "live_coverage": "territoires suivis",
-    "acts_intro": "Onze actes, une région qui agit.",
+    "acts_intro": "Douze actes, une région qui agit.",
     "acts": {
       "a1_tag": "Acte 01",
       "a1_title": "Le paradoxe fondateur",
@@ -44,7 +44,7 @@
       "a8_text": "Pluies, températures, réseau de surveillance : mieux observer l'atmosphère pour mieux s'y préparer.",
       "a9_tag": "Acte 09",
       "a9_title": "Une économie qui se réinvente",
-      "a9_text": "Tourisme, électricité, fiscalité verte : les leviers économiques d'une transition durable.",
+      "a9_text": "Tourisme et fiscalité verte : les leviers économiques d'une transition durable.",
       "a10_tag": "Acte 10",
       "a10_title": "L'eau et la santé d'abord",
       "a10_text": "L'accès à l'eau potable et la santé : les progrès tangibles au plus près des habitants.",
@@ -71,7 +71,7 @@
     "act_soon": "Bientôt",
     "acts_kicker": "La descente",
     "live_demo": "Données de démonstration · niveau de la mer",
-    "thesis": "L'histoire climatique du Pacifique en onze actes : non pas une fatalité, mais une région qui mesure, s'adapte et agit — racontée par ses propres données.",
+    "thesis": "L'histoire climatique du Pacifique en douze actes : non pas une fatalité, mais une région qui mesure, s'adapte et agit — racontée par ses propres données.",
     "shock_num": "0,03 %",
     "shock_text": "des émissions mondiales, mais une voix parmi les plus fortes pour le climat. Le Pacifique transforme sa vulnérabilité en leadership.",
     "acts_lead": "Des émissions aux solutions, chaque acte croise les données ouvertes du Pacifique pour montrer une réalité — et la réponse qu'on lui oppose. Suivez le fil : il mène à l'action.",
@@ -92,7 +92,7 @@
     "stat2_text": "de montée moyenne du niveau de la mer",
     "stat3_num": "22",
     "stat3_text": "territoires du Pacifique suivis",
-    "stat4_num": "11 actes",
+    "stat4_num": "12 actes",
     "stat4_text": "pour lire une région qui s'adapte",
     "m1_kicker": "Mouvement I",
     "m1_title": "La responsabilité",
@@ -119,7 +119,7 @@
       "p1_title": "Mesurer",
       "p1_text": "Des données ouvertes, réelles et vérifiables, à l’échelle des 22 territoires.",
       "p2_title": "Comprendre",
-      "p2_text": "Onze actes pour relier les chiffres aux réalités vécues sur le terrain.",
+      "p2_text": "Douze actes pour relier les chiffres aux réalités vécues sur le terrain.",
       "p3_title": "Agir",
       "p3_text": "Donner aux décideurs et aux communautés de quoi bâtir des solutions."
     },
@@ -130,7 +130,7 @@
       "browse_text": "Explorez librement : choisissez l'acte qui vous parle et plongez directement dedans.",
       "browse_action": "Voir les actes",
       "guided_title": "Visite guidée",
-      "guided_text": "« Commencer l’expérience » vous emmène à travers les onze actes, dans l’ordre du récit.",
+      "guided_text": "« Commencer l’expérience » vous emmène à travers les douze actes, dans l’ordre du récit.",
       "guided_action": "Commencer l'expérience",
       "fun_title": "En un fait",
       "fun_text": "« Le saviez-vous ? » : des faits marquants tirés des vraies données, pour entrer par la curiosité.",
@@ -167,7 +167,7 @@
     "closing_cta": {
       "kicker": "Prêt ?",
       "title": "Entrez dans l’histoire du Pacifique",
-      "text": "Onze actes, des données réelles, une région en première ligne. À vous de choisir comment la lire.",
+      "text": "Douze actes, des données réelles, une région en première ligne. À vous de choisir comment la lire.",
       "guided": "Commencer l’expérience",
       "browse": "Parcourir les actes"
     }
@@ -1465,7 +1465,7 @@
   "act9": {
     "tag": "Acte 09",
     "title": "L'économie exposée",
-    "lead": "Derrière le climat, des économies entières. Le tourisme qui fait vivre les îles, l'électricité qu'elles produisent, et la fiscalité verte — un levier encore presque inutilisé.",
+    "lead": "Derrière le climat, des économies entières. Le tourisme qui fait vivre les îles, et la fiscalité environnementale — un levier encore presque inutilisé.",
     "unavailable": "Données économiques momentanément indisponibles. Réessaie dans un instant.",
     "credit": "Sources : tourisme ONU Tourisme (CC-BY) · électricité FMI/IRENA · fiscalité FMI/OCDE. Données Pacific Data Hub (SPC).",
     "tour_total_name": "Total Pacifique",
@@ -1557,7 +1557,7 @@
       "next": "Acte suivant : la santé",
       "home": "Retour à l'accueil"
     },
-    "thesis": "L'économie du Pacifique — tourisme, énergie, fiscalité — repose sur un socle étroit et dépendant, en première ligne face aux chocs climatiques.",
+    "thesis": "L'économie du Pacifique — tourisme et fiscalité environnementale — repose sur un socle étroit et dépendant, en première ligne face aux chocs climatiques.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -1582,20 +1582,22 @@
       "tab_map": "Carte 3D",
       "radar_title": "Profil par sous-région et décennie",
       "map_title": "Géographie économique",
-      "trend_find": "La trajectoire régionale de l'indicateur, année après année.",
+      "trend_find": "Le total régional, année après année : une seule ligne pour lire la dynamique d'ensemble. Les décrochages marquent les chocs (ex. la chute de 2020).",
       "trend_take": "L'économie du Pacifique dépend d'un socle étroit et très exposé aux chocs.",
-      "multiples_find": "Chaque mini-graphe un territoire : sa propre trajectoire, point courant marqué.",
+      "multiples_find": "Un mini-graphe par territoire : la courbe suit ses arrivées année après année. Chaque carte a sa propre échelle — on lit la forme (la tendance), pas le niveau. Le grand chiffre est la dernière valeur connue, le badge ▲/▼ l'évolution depuis le début. Cliquez une carte pour l'agrandir.",
       "multiples_take": "Quelques territoires concentrent l'essentiel ; les autres restent marginaux.",
-      "race_find": "La course des territoires sur l'indicateur, année après année.",
+      "race_find": "Le classement des territoires qui se réordonne année après année : les barres se dépassent quand l'un prend l'avantage. Regardez qui grimpe et qui décroche.",
       "race_take": "Le classement bouge peu : les positions économiques sont durablement installées.",
-      "change_find": "Pour chaque territoire, la valeur de la première année reliée à celle de la dernière.",
+      "change_find": "Pour chaque territoire, sa première valeur connue (point sourd) reliée à sa dernière (point chaud). La couleur donne le sens (hausse / baisse), la longueur du trait l'ampleur du changement. Trié par valeur finale.",
       "change_take": "Croissances et reculs cohabitent — la résilience économique n'est pas partagée.",
-      "heat_find": "Territoires × années : l'intensité dit le niveau, d'un coup d'œil.",
+      "heat_find": "Territoires (lignes) × années (colonnes) : la couleur dit le niveau de fréquentation, du sombre (faible) au doré (fort). Le gris signale une année sans donnée. Le plus fréquenté est en haut.",
       "heat_take": "Les ruptures (chocs, crises) se lisent en bandes sombres sur la grille.",
-      "radar_find": "Le profil moyen de chaque sous-région, décennie par décennie.",
+      "radar_find": "Le profil moyen de chaque sous-région, décennie par décennie : plus l'aire est étendue, plus la fréquentation est élevée. Comparez les formes entre Mélanésie, Polynésie et Micronésie.",
       "radar_take": "Mélanésie, Polynésie et Micronésie ne suivent pas le même modèle économique.",
-      "map_find": "La géographie de l'indicateur pour la dernière année.",
-      "map_take": "La richesse économique se concentre sur quelques pôles insulaires."
+      "map_find": "La géographie de la dernière année connue : chaque territoire est coloré selon son niveau. Survolez un territoire pour le détail.",
+      "map_take": "La richesse économique se concentre sur quelques pôles insulaires.",
+      "heat_nodata": "Sans donnée",
+      "zoom_close": "Fermer"
     }
   },
   "act10": {
@@ -1811,7 +1813,7 @@
       "prev": "Précédent",
       "next": "Suivant",
       "voyage_k": "Le voyage",
-      "voyage_title": "Onze actes, une seule histoire",
+      "voyage_title": "Douze actes, une seule histoire",
       "voyage_text": "Avant le verdict, retraçons le chemin parcouru — chaque acte, une pièce du puzzle climatique du Pacifique.",
       "resp_k": "Acte 01 · La responsabilité",
       "resp_title": "Minuscules émetteurs, en première ligne",
@@ -1853,7 +1855,7 @@
     "outro": {
       "kicker": "Fin du voyage",
       "title": "Une dette qu'ils n'ont pas contractée",
-      "text": "Onze actes, des dizaines de jeux de données, une seule conclusion : ceux qui paient le climat ne sont pas ceux qui l'ont déréglé. À nous d'agir.",
+      "text": "Douze actes, des dizaines de jeux de données, une seule conclusion : ceux qui paient le climat ne sont pas ceux qui l'ont déréglé. À nous d'agir.",
       "home": "Revoir le voyage",
       "restart": "Revivre depuis l'acte 1",
       "next": "Retour à l'accueil"
@@ -2010,7 +2012,7 @@
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",
-      "body": "Datamoana est ma contribution au Pacific Dataviz Challenge 2026, dont le thème est le changement climatique dans le Pacifique. Onze actes, 23 jeux de données officiels croisés, une seule histoire.",
+      "body": "Datamoana est ma contribution au Pacific Dataviz Challenge 2026, dont le thème est le changement climatique dans le Pacifique. Douze actes, 23 jeux de données officiels croisés, une seule histoire.",
       "cta": "Site officiel du concours"
     },
     "topics": {

@@ -1,6 +1,6 @@
 // src/pages/Act9Eco/Act9Eco.jsx
 // ============================================================
-// Acte 09 — L'économie : tourisme, électricité, fiscalité verte.
+// Acte 09 — L'économie : tourisme et fiscalité environnementale.
 // Format DASHBOARD (ActBoard) : filtres GLOBAUX (mesure + sous-région +
 // territoire). Onglets variés : tendance (signature), petits multiples,
 // course animée, évolution (haltères), chaleur, RADAR par décennie
@@ -22,7 +22,8 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import ApexChart from "../../components/ApexChart/ApexChart";
+import { baseChart, baseGrid, MONO } from "../../components/charts/apexBase";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RadarChart from "../../components/charts/RadarChart";
@@ -101,13 +102,22 @@ function buildRankMax(series) {
 }
 function buildDumbbell(series, yearA, yearB) {
   return series
-    .map((s) => ({
-      area: s.area,
-      name: s.name,
-      a: valueAt(s.values, yearA),
-      b: valueAt(s.values, yearB),
-    }))
-    .filter((r) => Number.isFinite(r.a) && Number.isFinite(r.b));
+    .map((s) => {
+      const vals = (s.values || []).filter((p) => Number.isFinite(p.value));
+      if (vals.length < 2) return null;
+      const av = valueAt(vals, yearA);
+      const bv = valueAt(vals, yearB);
+      return {
+        area: s.area,
+        name: s.name,
+        // Repli : si le territoire n'a pas de donnée dès yearA (séries qui
+        // démarrent plus tard), on prend sa PREMIÈRE valeur connue ; idem
+        // dernière. Ainsi aucun territoire avec ≥ 2 points n'est éliminé.
+        a: Number.isFinite(av) ? av : vals[0].value,
+        b: Number.isFinite(bv) ? bv : vals[vals.length - 1].value,
+      };
+    })
+    .filter((r) => r && Number.isFinite(r.a) && Number.isFinite(r.b));
 }
 function totalLine(series, years, name) {
   const vals = years
@@ -222,23 +232,20 @@ export default function Act9Eco() {
 
   const data = state.data;
   const tour = data?.tourism;
-  const power = data?.power;
   const tax = data?.envTax;
 
   const tourAll = useMemo(() => toSeries(tour, lang), [tour, lang]);
-  const powerAll = useMemo(() => toSeries(power, lang), [power, lang]);
   const taxAll = useMemo(() => toSeries(tax, lang), [tax, lang]);
 
   const countryOptions = useMemo(() => {
     const set = new Set([
       ...tourAll.map((s) => s.area),
-      ...powerAll.map((s) => s.area),
       ...taxAll.map((s) => s.area),
     ]);
     return [...set]
       .map((a) => ({ area: a, name: pictName(a, lang) }))
       .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [tourAll, powerAll, taxAll, lang]);
+  }, [tourAll, taxAll, lang]);
 
   const areaVisible = useCallback(
     (a) =>
@@ -252,10 +259,6 @@ export default function Act9Eco() {
     () => tourAll.filter((s) => areaVisible(s.area)),
     [tourAll, areaVisible],
   );
-  const powerS = useMemo(
-    () => powerAll.filter((s) => areaVisible(s.area)),
-    [powerAll, areaVisible],
-  );
   const taxS = useMemo(
     () => taxAll.filter((s) => areaVisible(s.area)),
     [taxAll, areaVisible],
@@ -266,20 +269,14 @@ export default function Act9Eco() {
     ind?.lastYear ?? ind?.years?.[ind?.years?.length - 1] ?? fb1,
   ];
   const [tourA, tourB] = span(tour, 1995, 2024);
-  const [powerA, powerB] = span(power, 2000, 2023);
   const [taxA, taxB] = span(tax, 1995, 2021);
 
   const tourYears = useMemo(() => tour?.years || [], [tour]);
-  const powerYears = useMemo(() => power?.years || [], [power]);
   const taxYears = useMemo(() => tax?.years || [], [tax]);
 
   const tourLine = useMemo(
     () => totalLine(tourS, tourYears, t("act9.tour_total_name")),
     [tourS, tourYears, t],
-  );
-  const powerLine = useMemo(
-    () => totalLine(powerS, powerYears, t("act9.power_total_name")),
-    [powerS, powerYears, t],
   );
   const taxLine = useMemo(
     () => medianLine(taxS, taxYears, t("act9.tax_median_name")),
@@ -287,16 +284,11 @@ export default function Act9Eco() {
   );
 
   const tourRank = useMemo(() => buildRank(tourS, tourB), [tourS, tourB]);
-  const powerRank = useMemo(() => buildRank(powerS, powerB), [powerS, powerB]);
   const taxRank = useMemo(() => buildRankMax(taxS), [taxS]);
 
   const tourDumb = useMemo(
     () => buildDumbbell(tourS, tourA, tourB),
     [tourS, tourA, tourB],
-  );
-  const powerDumb = useMemo(
-    () => buildDumbbell(powerS, powerA, powerB),
-    [powerS, powerA, powerB],
   );
   const taxDumb = useMemo(
     () => buildDumbbell(taxS, taxA, taxB),
@@ -307,10 +299,6 @@ export default function Act9Eco() {
     () => raceFrom(tourS, tourYears, lang),
     [tourS, tourYears, lang],
   );
-  const powerRace = useMemo(
-    () => raceFrom(powerS, powerYears, lang),
-    [powerS, powerYears, lang],
-  );
   const taxRace = useMemo(
     () => raceFrom(taxS, taxYears, lang),
     [taxS, taxYears, lang],
@@ -320,10 +308,6 @@ export default function Act9Eco() {
   const tourSub = useMemo(
     () => subAverages(tourAll, tourYears, t),
     [tourAll, tourYears, t],
-  );
-  const powerSub = useMemo(
-    () => subAverages(powerAll, powerYears, t),
-    [powerAll, powerYears, t],
   );
   const taxSub = useMemo(
     () => subAverages(taxAll, taxYears, t),
@@ -349,26 +333,6 @@ export default function Act9Eco() {
           heat: t("act9.tour_hm_title"),
           change: t("act9.tour_cmp_title"),
           rank: t("act9.tour_rank_title"),
-        },
-      };
-    if (metric === "power")
-      return {
-        series: powerS,
-        line: powerLine,
-        rank: powerRank,
-        dumb: powerDumb,
-        race: powerRace,
-        sub: powerSub,
-        years: powerYears,
-        unit: t("act9.power_unit"),
-        A: powerA,
-        B: powerB,
-        titles: {
-          trend: t("act9.regional_power_title"),
-          multiples: t("act9.power_title"),
-          heat: t("act9.power_hm_title"),
-          change: t("act9.power_cmp_title"),
-          rank: t("act9.power_rank_title"),
         },
       };
     return {
@@ -401,15 +365,6 @@ export default function Act9Eco() {
     tourYears,
     tourA,
     tourB,
-    powerS,
-    powerLine,
-    powerRank,
-    powerDumb,
-    powerRace,
-    powerSub,
-    powerYears,
-    powerA,
-    powerB,
     taxS,
     taxLine,
     taxRank,
@@ -428,6 +383,84 @@ export default function Act9Eco() {
       .filter(Number.isFinite);
     return xs.length ? { min: 0, max: Math.max(...xs) } : { min: 0, max: 1 };
   }, [M.series]);
+
+  // Carte de chaleur ApexCharts : territoires (lignes, triés par dernier
+  // niveau) × années (colonnes). Labels lisibles (clair sur fond sombre).
+  const heatOptions = useMemo(() => {
+    const years = M.years;
+    const rows = [...M.series].sort(
+      (a, b) => (valueAt(b.values, M.B) || 0) - (valueAt(a.values, M.B) || 0),
+    );
+    const NODATA = -1; // sentinelle « pas de donnée » → case grise
+    const series = rows
+      .map((s) => ({
+        name: s.name,
+        data: years.map((y) => {
+          const v = valueAt(s.values, y);
+          return { x: String(y), y: v == null ? NODATA : v };
+        }),
+      }))
+      .reverse(); // série 0 en bas → territoire le plus fréquenté en haut
+    // Palette SOBRE (camaïeu chaud) par QUANTILES : paliers équilibrés malgré la
+    // forte asymétrie (Fidji ≫ Niue). Sombre → clair = faible → forte affluence.
+    // Le GRIS isole les années sans donnée (plus parlant qu'une case vide).
+    const HEAT = ["#4a4640", "#6e5e4d", "#94774f", "#bd8a4e", "#d9a55a"];
+    const GREY = "#39424d";
+    const all = series
+      .flatMap((s) => s.data.map((d) => d.y))
+      .filter((v) => Number.isFinite(v) && v > 0)
+      .sort((a, b) => a - b);
+    const nodataLabel = t("act9.board.heat_nodata");
+    const ranges = [{ from: -1.5, to: -0.5, color: GREY, name: nodataLabel }];
+    if (all.length >= 5) {
+      const q = (p) => all[Math.min(all.length - 1, Math.floor(p * all.length))];
+      const edges = [0, q(0.2), q(0.4), q(0.6), q(0.8), all[all.length - 1] + 1];
+      for (let i = 1; i < edges.length; i += 1) {
+        if (edges[i] <= edges[i - 1]) edges[i] = edges[i - 1] + 1e-6;
+      }
+      HEAT.forEach((c, i) => {
+        const lo = edges[i];
+        const hi = edges[i + 1];
+        let name;
+        if (i === 0) name = `< ${fmtVal(edges[1])}`;
+        else if (i === HEAT.length - 1) name = `≥ ${fmtVal(lo)}`;
+        else name = `${fmtVal(lo)} – ${fmtVal(hi)}`;
+        ranges.push({ from: lo, to: hi, color: c, name });
+      });
+    } else if (all.length) {
+      ranges.push({ from: 0, to: all[all.length - 1] + 1, color: HEAT[2], name: M.unit });
+    }
+    return {
+      chart: baseChart(tk, { type: "heatmap" }),
+      series,
+      dataLabels: { enabled: false },
+      plotOptions: { heatmap: { radius: 2, enableShades: false, colorScale: { ranges } } },
+      stroke: { width: 1, colors: [tk.line] },
+      legend: {
+        show: true,
+        position: "bottom",
+        horizontalAlign: "center",
+        fontFamily: MONO,
+        fontSize: "10px",
+        labels: { colors: tk.textMute },
+        markers: { width: 11, height: 11, radius: 2 },
+        itemMargin: { horizontal: 7, vertical: 3 },
+      },
+      grid: baseGrid(tk),
+      xaxis: {
+        type: "category",
+        labels: { rotate: -45, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "9px" } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: {
+        labels: { show: true, maxWidth: 150, style: { colors: tk.text, fontFamily: MONO, fontSize: "11px" } },
+      },
+      tooltip: {
+        y: { formatter: (v) => (v == null || v < 0 ? nodataLabel : `${fmtVal(v)} ${M.unit}`) },
+      },
+    };
+  }, [M.series, M.years, M.B, M.unit, tk, t]);
 
   const kpiItems = useMemo(() => {
     if (!M.rank.length) return [];
@@ -460,13 +493,6 @@ export default function Act9Eco() {
     ];
   }, [M.rank, M.unit, t]);
 
-  const heatLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
   const retry = useCallback(() => {
@@ -485,7 +511,6 @@ export default function Act9Eco() {
   }));
   const metricOpts = [
     { v: "tour", label: t("act9.board.metric_tour") },
-    { v: "power", label: t("act9.board.metric_power") },
     { v: "tax", label: t("act9.board.metric_tax") },
   ];
   const countryOpts = [
@@ -493,11 +518,12 @@ export default function Act9Eco() {
     ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
   ];
 
+  // Une fois le jeu de données chargé, on reste « ready » : un filtre qui ne
+  // renvoie aucune série n'affiche PLUS le loader plein écran (bug), mais
+  // l'état « vide » propre à chaque onglet.
   const status =
     state.status === "ready"
-      ? M.series.length
-        ? "ready"
-        : "empty"
+      ? "ready"
       : state.status === "loading"
         ? "loading"
         : "empty";
@@ -564,7 +590,7 @@ export default function Act9Eco() {
                   years={M.years}
                   unit={M.unit}
                   currentYear={M.B}
-                  labels={{ last: t("act6.smallmult_last") }}
+                  labels={{ last: t("act6.smallmult_last"), close: t("act9.board.zoom_close") }}
                 />
               </div>
             ),
@@ -616,13 +642,7 @@ export default function Act9Eco() {
             takeaway: t("act9.board.heat_take"),
             node: (
               <div className="act9b__fit">
-                <EmissionsHeatmap
-                  series={M.series}
-                  years={M.years}
-                  unit={M.unit}
-                  scale="sequential"
-                  labels={heatLabels}
-                />
+                <ApexChart options={heatOptions} />
               </div>
             ),
           },
