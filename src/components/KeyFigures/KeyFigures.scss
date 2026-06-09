@@ -1,0 +1,91 @@
+// src/components/KeyFigures/KeyFigures.scss
+// ============================================================
+// Bandeau de chiffres-clés réels. Tokens (light/dark). Reveal via data-inview.
+// ============================================================
+
+.keyfigs {
+  position: relative;
+  padding: clamp(2.5rem, 5vw, 4rem) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.keyfigs__inner {
+  max-width: 1100px;
+}
+
+.keyfigs__kicker {
+  color: var(--c-accent);
+  margin: 0 0 var(--sp-6);
+}
+
+.keyfigs__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-8);
+}
+
+.keyfig {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.keyfigs[data-inview="true"] .keyfig {
+  opacity: 1;
+  transform: none;
+}
+
+.keyfig:nth-child(2) { transition-delay: 0.08s; }
+.keyfig:nth-child(3) { transition-delay: 0.16s; }
+.keyfig:nth-child(4) { transition-delay: 0.24s; }
+
+.keyfig__value {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold, 700);
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+  line-height: 1;
+  color: var(--c-accent);
+  letter-spacing: -0.02em;
+}
+
+.keyfig__unit {
+  font-size: 0.5em;
+  font-weight: var(--fw-semi);
+  color: var(--c-text-soft);
+}
+
+.keyfig__label {
+  font-size: var(--fs-sm, 0.95rem);
+  line-height: 1.4;
+  color: var(--c-text-soft);
+  max-width: 22ch;
+}
+
+.keyfig--empty {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm, 0.95rem);
+  color: var(--c-text-mute);
+}
+
+.keyfigs__source {
+  margin: var(--sp-6) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 860px) {
+  .keyfigs__grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keyfig { opacity: 1; transform: none; transition: none; }
+}

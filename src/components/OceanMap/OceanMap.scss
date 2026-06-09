@@ -1,7 +1,8 @@
 /* src/components/OceanMap/OceanMap.scss
    ============================================================
    Globe Mapbox + colonnes. Scene (carte + overlays) puis legende.
-   Bouton plein ecran + barre de lecture (play + curseur d'annee).
+   Bouton plein ecran + barre de lecture (play + curseur d'annee) +
+   navigation pas-a-pas du trait de cote (point precedent / suivant).
    ============================================================ */
 
 .omap {
@@ -152,6 +153,59 @@
   color: var(--c-text);
 }
 
+/* ---- Navigation pas-a-pas du trait de cote ---- */
+.omap__coastnav {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-3);
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-pill);
+  border: var(--border-hair) solid var(--c-line-strong);
+  background: color-mix(in srgb, var(--c-bg) 70%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.omap__coastbtn {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: var(--border-hair) solid var(--c-line-strong);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.omap__coastbtn:hover {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-bg);
+  transform: translateY(-1px);
+}
+.omap__coastbtn:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.omap__coastlabel {
+  flex: 0 0 auto;
+  min-width: 64px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-soft);
+}
+
 /* ---- Legende ---- */
 .omap__legend {
   display: flex;
@@ -196,6 +250,18 @@
   font-family: var(--font-body);
   font-size: var(--fs-sm);
   padding: var(--sp-2) var(--sp-3);
+}
+
+.pm-popup .mapboxgl-popup-content strong {
+  color: var(--c-accent);
+}
+
+.pm-popup .pm-popup__meta {
+  display: block;
+  margin-top: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
 }
 
 .pm-popup .mapboxgl-popup-tip {

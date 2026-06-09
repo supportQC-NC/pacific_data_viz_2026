@@ -15,6 +15,10 @@ import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
 import ReadingModes from "../../components/ReadingModes/ReadingModes";
+import KeyFigures from "../../components/KeyFigures/KeyFigures";
+import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
+import DataMethod from "../../components/DataMethod/DataMethod";
+import ClosingCta from "../../components/ClosingCta/ClosingCta";
 import "./Home.scss";
 
 export default function Home() {
@@ -132,6 +136,8 @@ export default function Home() {
         </button>
       </section>
 
+      <KeyFigures />
+
       <HomeIntro />
 
       <ReadingModes
@@ -139,6 +145,12 @@ export default function Home() {
         onGuided={beginExperience}
         onFunFacts={() => navigate("/le-saviez-vous")}
       />
+
+      <PacificTeaser />
+
+      <DataMethod />
+
+      <ClosingCta onGuided={beginExperience} />
     </main>
   );
 }

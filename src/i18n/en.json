@@ -131,6 +131,41 @@
       "fun_title": "In one fact",
       "fun_text": "“Did you know?”: striking facts drawn from real data, to enter through curiosity.",
       "fun_action": "Did you know?"
+    },
+    "keyfigures": {
+      "kicker": "The Pacific in figures",
+      "loading": "Loading key figures…",
+      "source": "Source: Pacific Data Hub · Pacific Community (SPC)",
+      "territories_label": "Pacific territories tracked",
+      "sea_label": "average sea-level rise",
+      "renew_label": "renewable energy on average",
+      "sst_label": "sea-surface temperature anomaly"
+    },
+    "teaser": {
+      "kicker": "The whole region",
+      "title": "22 territories, one front line",
+      "lead": "From the largest to the most remote, every Pacific territory faces climate change. Step into the story, act by act.",
+      "cta": "Explore the acts",
+      "notoken": "Interactive map unavailable (Mapbox token missing)."
+    },
+    "method": {
+      "kicker": "Data & method",
+      "title": "Real, traceable figures",
+      "lead": "This platform relies only on open, verifiable data. No value is made up: when data is missing, we say so.",
+      "sources_title": "Sources",
+      "sources_text": "Data from the Pacific Data Hub and the Pacific Community (SPC), across the 22 territories.",
+      "sources_link": "Pacific Data Hub",
+      "integrity_title": "Integrity",
+      "integrity_text": "Records and trends are computed live from official series. No dressed-up numbers, no hidden extrapolation.",
+      "tech_title": "Technology",
+      "tech_text": "React, interactive mapping, ECharts & ApexCharts visualizations, GPU animations (canvas, GSAP)."
+    },
+    "closing_cta": {
+      "kicker": "Ready?",
+      "title": "Step into the Pacific’s story",
+      "text": "Eleven acts, real data, a region on the front line. It’s up to you how to read it.",
+      "guided": "Start the experience",
+      "browse": "Browse the acts"
     }
   },
   "footer": {

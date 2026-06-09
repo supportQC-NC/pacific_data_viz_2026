@@ -131,6 +131,41 @@
       "fun_title": "En un fait",
       "fun_text": "« Le saviez-vous ? » : des faits marquants tirés des vraies données, pour entrer par la curiosité.",
       "fun_action": "Le saviez-vous ?"
+    },
+    "keyfigures": {
+      "kicker": "Le Pacifique en chiffres",
+      "loading": "Chargement des chiffres-clés…",
+      "source": "Source : Pacific Data Hub · Communauté du Pacifique (SPC)",
+      "territories_label": "territoires du Pacifique suivis",
+      "sea_label": "de montée moyenne du niveau de la mer",
+      "renew_label": "d’énergie renouvelable en moyenne",
+      "sst_label": "d’anomalie de température de surface"
+    },
+    "teaser": {
+      "kicker": "Toute la région",
+      "title": "22 territoires, une même ligne de front",
+      "lead": "Du plus grand au plus isolé, chaque territoire du Pacifique fait face au changement climatique. Entrez dans le récit, acte par acte.",
+      "cta": "Explorer les actes",
+      "notoken": "Carte interactive indisponible (token Mapbox manquant)."
+    },
+    "method": {
+      "kicker": "Données & méthode",
+      "title": "Des chiffres réels, traçables",
+      "lead": "Cette plateforme ne s’appuie que sur des données ouvertes et vérifiables. Aucune valeur n’est inventée : quand une donnée manque, nous le disons.",
+      "sources_title": "Sources",
+      "sources_text": "Données du Pacific Data Hub et de la Communauté du Pacifique (SPC), à l’échelle des 22 territoires.",
+      "sources_link": "Pacific Data Hub",
+      "integrity_title": "Intégrité",
+      "integrity_text": "Records et tendances sont calculés en direct depuis les séries officielles. Pas de chiffre maquillé, pas d’extrapolation cachée.",
+      "tech_title": "Technologie",
+      "tech_text": "React, cartographie interactive, visualisations ECharts & ApexCharts, animations GPU (canvas, GSAP)."
+    },
+    "closing_cta": {
+      "kicker": "Prêt ?",
+      "title": "Entrez dans l’histoire du Pacifique",
+      "text": "Onze actes, des données réelles, une région en première ligne. À vous de choisir comment la lire.",
+      "guided": "Commencer l’expérience",
+      "browse": "Parcourir les actes"
     }
   },
   "footer": {

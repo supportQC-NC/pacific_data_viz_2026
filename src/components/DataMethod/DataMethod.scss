@@ -1,0 +1,88 @@
+// src/components/DataMethod/DataMethod.scss
+// ============================================================
+// « Données & méthode ». Tokens (light/dark). Reveal via data-inview.
+// ============================================================
+
+.datamethod {
+  position: relative;
+  padding: clamp(3rem, 6vw, 5rem) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.datamethod__inner { max-width: 1100px; }
+
+.datamethod__kicker { color: var(--c-accent); margin: 0 0 var(--sp-3); }
+
+.datamethod__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+  line-height: 1.15;
+  color: var(--c-text);
+  margin: 0 0 var(--sp-3);
+}
+
+.datamethod__lead {
+  font-size: var(--fs-md, 1.1rem);
+  line-height: 1.6;
+  color: var(--c-text-soft);
+  max-width: 60ch;
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+}
+
+.datamethod__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-8);
+}
+
+.datamethod__card {
+  padding-top: var(--sp-4);
+  border-top: 2px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.datamethod[data-inview="true"] .datamethod__card { opacity: 1; transform: none; }
+.datamethod__card:nth-child(2) { transition-delay: 0.08s; }
+.datamethod__card:nth-child(3) { transition-delay: 0.16s; }
+
+.datamethod__card-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-2);
+}
+
+.datamethod__card-text {
+  font-size: var(--fs-sm, 0.96rem);
+  line-height: 1.6;
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+.datamethod__link {
+  display: inline-block;
+  margin-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  color: var(--c-accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+
+  &:hover { border-bottom-color: var(--c-accent); }
+}
+
+@media (max-width: 860px) {
+  .datamethod__grid { grid-template-columns: 1fr; gap: var(--sp-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .datamethod__card { opacity: 1; transform: none; transition: none; }
+}

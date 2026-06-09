@@ -1,0 +1,134 @@
+// src/components/PacificTeaser/PacificTeaser.scss
+// ============================================================
+// Teaser carte Mapbox (globe satellite). Tokens (light/dark).
+// ============================================================
+
+.pacteaser {
+  position: relative;
+  padding: clamp(3rem, 6vw, 5.5rem) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.pacteaser__inner {
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.pacteaser__kicker { color: var(--c-accent); margin: 0 0 var(--sp-3); }
+
+.pacteaser__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: clamp(1.6rem, 3.6vw, 2.6rem);
+  line-height: 1.15;
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+  max-width: 16ch;
+}
+
+.pacteaser__lead {
+  font-size: var(--fs-md, 1.1rem);
+  line-height: 1.6;
+  color: var(--c-text-soft);
+  max-width: 46ch;
+  margin: 0 0 var(--sp-6);
+}
+
+.pacteaser__cta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm, 0.95rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border: none;
+  border-radius: var(--r-pill, 999px);
+  padding: var(--sp-3) var(--sp-8);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--c-accent) 35%, transparent);
+  }
+}
+
+// Carte Mapbox (aperçu cliquable)
+.pacteaser__map {
+  position: relative;
+  height: clamp(300px, 34vw, 440px);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: color-mix(in srgb, var(--c-accent) 55%, transparent);
+    box-shadow: 0 18px 44px color-mix(in srgb, var(--c-accent-deep) 26%, transparent);
+  }
+}
+
+.pacteaser__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Vignette + liseré pour fondre la carte dans le thème sombre.
+.pacteaser__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-accent) 18%, transparent);
+  background:
+    radial-gradient(120% 100% at 50% 50%, transparent 55%, color-mix(in srgb, var(--c-bg) 60%, transparent) 100%);
+  transition: background 0.3s;
+}
+
+.pacteaser__map:hover .pacteaser__overlay {
+  background:
+    radial-gradient(120% 100% at 50% 50%, transparent 62%, color-mix(in srgb, var(--c-bg) 45%, transparent) 100%);
+}
+
+// Repli sans token
+.pacteaser__notoken {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: clamp(300px, 34vw, 440px);
+  padding: var(--sp-8);
+  border: var(--border-hair) dashed var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm, 0.95rem);
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 860px) {
+  .pacteaser__inner { grid-template-columns: 1fr; }
+}
+
+// Infobox (popup Mapbox) au survol d'un territoire.
+.pacteaser-popup .mapboxgl-popup-content {
+  background: var(--c-surface);
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+  border-radius: var(--r-pill, 999px);
+  padding: var(--sp-2) var(--sp-4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.pacteaser-popup .mapboxgl-popup-tip { display: none; }
+.pacteaser-popup__name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--c-text);
+  white-space: nowrap;
+}

@@ -3,7 +3,10 @@
 // Carte Mapbox SATELLITE en PROJECTION GLOBE — colonnes extrudees.
 // Double encodage : HAUTEUR ∝ valeur, COULEUR = position vs mediane
 // (rampe "semantic" vert -> cyan -> rouge centree sur `mid`). La VALEUR
-// s'affiche sur chaque colonne. Globe + atmosphere + terrain + ciel.
+// s'affiche sur chaque colonne. Globe + atmosphere + terrain + ciel +
+// BATIMENTS 3D (on "monte" dans la ville : relief montagne + immeubles).
+// Survol fiable a tout zoom (couche "hit" en pixels) + infobox enrichie
+// (nom · valeur · derniere mesure). Controle de navigation (zoom + pitch).
 // Bouton PLEIN ECRAN (toggle CSS + map.resize(), Echap pour fermer).
 // CONTROLE PLAY + curseur d'annee sur la carte, pilote par le parent
 // (props years/yearIndex/playing/onTogglePlay/onScrub) -> une seule
@@ -12,8 +15,9 @@
 // Token : REACT_APP_MAPBOX_TOKEN.
 // ============================================================
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PICT_GEO from "../../data/pictGeo";
+import { pictName } from "../../i18n/pictNames";
 import { useLang } from "../../store/context/langContext";
 import mapLabels from "../../i18n/mapLabels";
 import "./OceanMap.scss";
@@ -88,6 +92,23 @@ function colorExpr(lo, hi, pal, mid) {
   ];
 }
 
+// Territoire PICT le plus proche d'un point (decalage antimeridien) -> sert
+// a nommer un point de littoral par l'ile a laquelle il appartient.
+function nearestPict(ll) {
+  const wlng = ll.lng < 0 ? ll.lng + 360 : ll.lng;
+  let best = null;
+  let bd = Infinity;
+  Object.entries(PICT_GEO).forEach(([code, [clng, clat]]) => {
+    const w = clng < 0 ? clng + 360 : clng;
+    const d = (w - wlng) * (w - wlng) + (clat - ll.lat) * (clat - ll.lat);
+    if (d < bd) {
+      bd = d;
+      best = code;
+    }
+  });
+  return best;
+}
+
 function squareKm([lng, lat], km) {
   const dLat = km / 111;
   const dLng = km / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -128,8 +149,12 @@ export default function OceanMap({
   const popupRef = useRef(null);
   const rafRef = useRef(0);
   const fittedKeyRef = useRef("");
+  const coastPtsRef = useRef([]);
+  const coastIdxRef = useRef(-1);
+  const showCoastRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(false);
+  const [coastNav, setCoastNav] = useState(null);
 
   const min = range?.min ?? -1;
   const max = range?.max ?? 1;
@@ -185,7 +210,13 @@ export default function OceanMap({
           type: "Point",
           coordinates: [f.properties.lng, f.properties.lat],
         },
-        properties: { code: f.properties.code, val: f.properties.value },
+        properties: {
+          code: f.properties.code,
+          val: f.properties.value,
+          name: f.properties.name,
+          value: f.properties.value,
+          year: f.properties.year,
+        },
       })),
     }),
     [fc],
@@ -202,11 +233,15 @@ export default function OceanMap({
       zoom: 2.0,
       pitch: 45,
       bearing: -8,
-      maxPitch: 72,
+      maxPitch: 80,
       renderWorldCopies: true,
       antialias: true,
     });
     mapRef.current = map;
+
+    // Navigation 3D : zoom +/- et boussole d'inclinaison (pour vraiment se
+    // balader : pivoter, incliner, plonger sur les cotes et les villes).
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-left");
 
     map.on("load", () => {
       map.addLayer({
@@ -238,13 +273,50 @@ export default function OceanMap({
           maxzoom: 14,
         });
       }
-      map.setTerrain({ source: "dem", exaggeration: 1.3 });
+      map.setTerrain({ source: "dem", exaggeration: 1.5 });
       map.setLight({
         anchor: "viewport",
         color: "#ffffff",
         intensity: 0.45,
         position: [1.4, 210, 30],
       });
+
+      // BATIMENTS 3D : extrusion des empreintes du style (source composite,
+      // source-layer "building"). Apparaissent en zoomant (>= z13) -> on voit
+      // les immeubles en volume sur le littoral. Inseres SOUS les colonnes de
+      // donnees. Sans effet si le style n'expose pas la couche "building".
+      if (!map.getLayer("3d-buildings") && map.getSource("composite")) {
+        map.addLayer({
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: 13,
+          paint: {
+            "fill-extrusion-color": "#9fb2c4",
+            "fill-extrusion-height": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              0,
+              15.5,
+              ["get", "height"],
+            ],
+            "fill-extrusion-base": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              0,
+              15.5,
+              ["get", "min_height"],
+            ],
+            "fill-extrusion-opacity": 0.85,
+          },
+        });
+      }
 
       map.addSource("cols", {
         type: "geojson",
@@ -293,24 +365,43 @@ export default function OceanMap({
         },
       });
 
+      // Couche de survol INVISIBLE en pixels : cible de taille d'ecran
+      // constante (et meme un peu plus large en zoomant) -> on survole
+      // facilement le territoire a tout niveau de zoom.
+      map.addLayer({
+        id: "hit",
+        type: "circle",
+        source: "centers",
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 1.5, 12, 6, 20, 10, 30],
+          "circle-color": "#000000",
+          "circle-opacity": 0,
+        },
+      });
+
       const popup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false,
         className: "pm-popup",
       });
       popupRef.current = popup;
-      map.on("mousemove", "cols", (e) => {
+
+      const measuredLabel =
+        ml.measured || (lang === "fr" ? "Dernière mesure" : "Last measurement");
+      const popupHtml = (pr) => {
+        const v = Number(pr.value).toLocaleString();
+        const meta = pr.year ? `<br/>${measuredLabel} \u00b7 ${pr.year}` : "";
+        return `<strong>${pr.name}</strong><br/>${v} ${unit}${meta}`;
+      };
+      map.on("mousemove", "hit", (e) => {
         map.getCanvas().style.cursor = "pointer";
         const f = e.features[0];
-        const v = f.properties.value;
         popup
-          .setLngLat(e.lngLat)
-          .setHTML(
-            `<strong>${f.properties.name}</strong><br/>${Number(v).toLocaleString()} ${unit}${f.properties.year ? ` · ${f.properties.year}` : ""}`,
-          )
+          .setLngLat(f.geometry.coordinates)
+          .setHTML(popupHtml(f.properties))
           .addTo(map);
       });
-      map.on("mouseleave", "cols", () => {
+      map.on("mouseleave", "hit", () => {
         map.getCanvas().style.cursor = "";
         popup.remove();
       });
@@ -421,16 +512,19 @@ export default function OceanMap({
       closeOnClick: false,
       className: "pm-popup",
     });
+    const coastHtml = (r, ll) => {
+      const dir = r < -0.2 ? cw.ero : r > 0.2 ? cw.acc : cw.sta;
+      const place = nearestPict(ll);
+      const placeName = place ? pictName(place, lang) : "";
+      const lines = [];
+      if (placeName) lines.push(`<strong>${placeName}</strong>`);
+      lines.push(`${dir || ""} \u00b7 ${r > 0 ? "+" : ""}${r.toFixed(2)} ${cw.unit || ""}`);
+      return lines.join("<br/>");
+    };
     const onMove = (e) => {
       map.getCanvas().style.cursor = "pointer";
       const r = Number(e.features[0].properties.r);
-      const dir = r < -0.2 ? cw.ero : r > 0.2 ? cw.acc : cw.sta;
-      cpop
-        .setLngLat(e.lngLat)
-        .setHTML(
-          `<strong>${dir || ""}</strong><br/>${r > 0 ? "+" : ""}${r.toFixed(2)} ${cw.unit || ""}`,
-        )
-        .addTo(map);
+      cpop.setLngLat(e.lngLat).setHTML(coastHtml(r, e.lngLat)).addTo(map);
     };
     const onLeave = () => {
       map.getCanvas().style.cursor = "";
@@ -441,6 +535,22 @@ export default function OceanMap({
       .then((r) => r.json())
       .then((gj) => {
         if (cancelled || !mapRef.current) return;
+        const pts = gj.features.map((f) => ({
+          lng: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+          r: Number(f.properties.r),
+        }));
+        coastPtsRef.current = pts;
+        coastIdxRef.current = -1;
+        setCoastNav({ idx: -1, total: pts.length });
+        showCoastRef.current = (i) => {
+          const p = pts[i];
+          if (!p) return;
+          cpop
+            .setLngLat([p.lng, p.lat])
+            .setHTML(coastHtml(p.r, { lng: p.lng, lat: p.lat }))
+            .addTo(map);
+        };
         if (map.getSource("coast")) {
           map.getSource("coast").setData(gj);
           return;
@@ -490,15 +600,25 @@ export default function OceanMap({
             type: "circle",
             source: "coast",
             paint: {
-              "circle-radius": ["interpolate", ["linear"], absR, 0, 2.2, 0.5, 4.5, 2, 8, 6, 13],
+              "circle-radius": [
+                "interpolate", ["linear"], ["zoom"],
+                2,  ["interpolate", ["linear"], absR, 0, 2, 1, 4, 6, 9],
+                6,  ["interpolate", ["linear"], absR, 0, 3, 1, 6, 6, 13],
+                11, ["interpolate", ["linear"], absR, 0, 6, 1, 12, 6, 24],
+                16, ["interpolate", ["linear"], absR, 0, 11, 1, 20, 6, 38],
+              ],
               "circle-color": [
                 "interpolate", ["linear"], ["get", "r"],
                 -2, "#b3122a", -0.6, "#e8453c", -0.2, "#f3a08a",
                 0, "#aeb7bd",
                 0.2, "#86c6e6", 0.6, "#2c7fb8", 2, "#0b4f9e",
               ],
-              "circle-opacity": ["interpolate", ["linear"], absR, 0, 0.4, 0.4, 0.95],
-              "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 2, 0.4, 6, 1.1],
+              "circle-opacity": [
+                "interpolate", ["linear"], ["zoom"],
+                2,  ["interpolate", ["linear"], absR, 0, 0.35, 0.4, 0.9],
+                12, ["interpolate", ["linear"], absR, 0, 0.75, 0.4, 1],
+              ],
+              "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 2, 0.4, 6, 1.1, 12, 1.7, 16, 2.4],
               "circle-stroke-color": "rgba(255,255,255,0.9)",
             },
           },
@@ -523,6 +643,10 @@ export default function OceanMap({
           if (m.getSource("coast")) m.removeSource("coast");
         }
         cpop.remove();
+        coastPtsRef.current = [];
+        coastIdxRef.current = -1;
+        showCoastRef.current = null;
+        setCoastNav(null);
       } catch (e) {
         /* carte deja detruite */
       }
@@ -546,10 +670,48 @@ export default function OceanMap({
     return () => window.removeEventListener("keydown", onKey);
   }, [full]);
 
+  // Navigation pas-a-pas le long du littoral : recentre sur le point
+  // precedent/suivant en CONSERVANT le zoom courant, et ouvre sa bulle.
+  // 1er appel : on part du point le plus proche du centre actuel.
+  const goCoast = useCallback((dir) => {
+    const map = mapRef.current;
+    const pts = coastPtsRef.current;
+    if (!map || !pts.length) return;
+    let idx = coastIdxRef.current;
+    if (idx < 0) {
+      const c = map.getCenter();
+      const wc = c.lng < 0 ? c.lng + 360 : c.lng;
+      let bd = Infinity;
+      let bi = 0;
+      pts.forEach((p, i) => {
+        const w = p.lng < 0 ? p.lng + 360 : p.lng;
+        const d = (w - wc) * (w - wc) + (p.lat - c.lat) * (p.lat - c.lat);
+        if (d < bd) {
+          bd = d;
+          bi = i;
+        }
+      });
+      idx = bi;
+    } else {
+      idx = (idx + dir + pts.length) % pts.length;
+    }
+    coastIdxRef.current = idx;
+    const p = pts[idx];
+    map.flyTo({ center: [p.lng, p.lat], zoom: map.getZoom(), speed: 0.8 });
+    if (showCoastRef.current) showCoastRef.current(idx);
+    setCoastNav({ idx, total: pts.length });
+  }, []);
+
   if (!TOKEN) return <div className="omap omap--notoken">{noTokenMsg}</div>;
 
   const hasTimeline = years.length > 0 && typeof onTogglePlay === "function";
   const curYear = years.length ? years[yearIndex ?? 0] : "";
+  const coastPrevLabel =
+    ml.coastPrev || (lang === "fr" ? "Point précédent" : "Previous point");
+  const coastNextLabel =
+    ml.coastNext || (lang === "fr" ? "Point suivant" : "Next point");
+  const coastBrowseLabel =
+    ml.coastBrowse || (lang === "fr" ? "Parcourir la côte" : "Browse coast");
 
   return (
     <div className={`omap ${full ? "omap--full" : ""}`}>
@@ -655,6 +817,36 @@ export default function OceanMap({
               aria-label={ml.year}
             />
             <span className="omap__year">{curYear}</span>
+          </div>
+        )}
+
+        {coastNav && (
+          <div className="omap__coastnav">
+            <button
+              type="button"
+              className="omap__coastbtn"
+              onClick={() => goCoast(-1)}
+              aria-label={coastPrevLabel}
+              title={coastPrevLabel}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M14 6 L8 12 L14 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <span className="omap__coastlabel">
+              {coastNav.idx < 0 ? coastBrowseLabel : `${coastNav.idx + 1} / ${coastNav.total}`}
+            </span>
+            <button
+              type="button"
+              className="omap__coastbtn"
+              onClick={() => goCoast(1)}
+              aria-label={coastNextLabel}
+              title={coastNextLabel}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M10 6 L16 12 L10 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         )}
       </div>
