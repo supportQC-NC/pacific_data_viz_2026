@@ -2147,9 +2147,13 @@
       "intensify_find": "Part des cyclones atteignant le stade « cyclone tropical » ou plus, par saison (trait fin) et en moyenne glissante sur 5 saisons (trait épais) : d'environ 38 % dans les années 1970 à plus de 50 % récemment, alors que le nombre de phénomènes par saison reste stable. À nuancer : les premières saisons, avant l'ère satellite moderne, sous-estiment probablement les intensités.",
       "intensify_raw": "Part par saison",
       "intensify_trend": "Moyenne 5 saisons",
-      "month_title": "Quand frappent-ils ?",
-      "month_find": "Genèse des cyclones par mois (saison australe, de juillet à juin). Le pic se concentre de décembre à avril.",
-      "month_series": "Cyclones"
+      "month_title": "Calendrier d'activité",
+      "month_find": "Genèse des cyclones par mois (saison australe, juillet → juin, en lignes) et par décennie (en colonnes). Plus une case est vive, plus de cyclones se sont formés ce mois-là. Le cœur de saison se concentre de décembre à avril.",
+      "month_series": "Cyclones",
+      "wp_title": "La signature vent–pression",
+      "wp_find": "Un point = un cyclone : sa pression minimale (axe horizontal, en hPa) face à son vent maximal (axe vertical, en nœuds), coloré par stade de pointe. Plus la pression chute, plus le vent grimpe — la relation physique qui définit l'intensité d'un cyclone.",
+      "wp_x": "Pression minimale (hPa)",
+      "wp_y": "Vent maximal (kt)"
     },
     "board": {
       "tab_map": "Carte",
@@ -2166,7 +2170,8 @@
       "tab_source": "Source & portée",
       "tab_cross": "Exposition × impact",
       "tab_intensify": "Intensification",
-      "tab_month": "Saisonnalité"
+      "tab_month": "Saisonnalité",
+      "tab_windpress": "Vent × pression"
     },
     "outro": {
       "kicker": "Du ciel à la terre",

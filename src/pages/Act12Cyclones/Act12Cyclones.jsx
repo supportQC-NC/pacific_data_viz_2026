@@ -310,25 +310,54 @@ export default function Act12Cyclones() {
     return { seasons, share, roll };
   }, [cyclones, seasons]);
 
-  // ---- Saisonnalité : genèse par mois (vue filtrée) ----
-  const seasonality = useMemo(() => {
-    const counts = new Array(12).fill(0);
+  // ---- Calendrier d'activité : genèse par MOIS × DÉCENNIE (heatmap) ----
+  const calendar = useMemo(() => {
+    const order = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]; // saison australe : juil. → juin
+    const grid = {};
+    order.forEach((mo) => {
+      grid[mo] = {};
+    });
+    const decSet = new Set();
     view.forEach((cy) => {
       if (cy.startTime == null) return;
-      const mo = new Date(cy.startTime).getMonth();
-      if (mo >= 0 && mo <= 11) counts[mo] += 1;
+      const d = new Date(cy.startTime);
+      const mo = d.getMonth();
+      const dec = Math.floor(d.getFullYear() / 10) * 10;
+      if (mo < 0 || mo > 11) return;
+      decSet.add(dec);
+      grid[mo][dec] = (grid[mo][dec] || 0) + 1;
     });
-    // Ordre « saison australe » : juillet → juin (le pic déc.–avril reste groupé).
-    const order = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-    const labels = order.map((mo) => {
+    const decades = [...decSet].sort((a, b) => a - b);
+    const monthLabels = order.map((mo) => {
       try {
         return new Date(2001, mo, 1).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { month: "short" });
       } catch (e) {
         return String(mo + 1);
       }
     });
-    return { labels, values: order.map((mo) => counts[mo]) };
+    // Une série par mois (lignes), inversée pour que juillet apparaisse en haut.
+    const series = order
+      .map((mo, i) => ({
+        name: monthLabels[i],
+        data: decades.map((dec) => ({ x: `${dec}s`, y: grid[mo][dec] || 0 })),
+      }))
+      .reverse();
+    return { series, hasData: decades.length > 0 };
   }, [view, lang]);
+
+  // ---- Relation vent × pression (signature physique), un point = un cyclone ----
+  const windPress = useMemo(() => {
+    const byStage = {};
+    stages.forEach((s) => {
+      byStage[s.id] = [];
+    });
+    view.forEach((cy) => {
+      if (cy.maxWind == null || cy.minPressureHpa == null) return;
+      const sid = cy.stage || "DTFA";
+      (byStage[sid] = byStage[sid] || []).push({ x: cy.minPressureHpa, y: cy.maxWind, name: cy.name || cy.id });
+    });
+    return stages.map((s) => ({ name: stageLabels[s.id], data: byStage[s.id] || [] }));
+  }, [view, stages, stageLabels]);
 
   // Exposition par territoire (croisement tracés × points PICT). Calcul lourd
   // isolé (dépend des cyclones seulement) ; le nommage suit la langue.
@@ -367,7 +396,7 @@ export default function Act12Cyclones() {
   }, [status, view]);
 
   const exposure = useMemo(
-    () => exposureRaw.slice(0, 12).map((r) => ({ ...r, name: pictName(r.code, lang) })),
+    () => exposureRaw.slice(0, 10).map((r) => ({ ...r, name: pictName(r.code, lang) || r.code })),
     [exposureRaw, lang],
   );
 
@@ -484,15 +513,31 @@ export default function Act12Cyclones() {
         show: true,
         position: "bottom",
         fontFamily: MONO,
-        fontSize: "11px",
+        fontSize: "10px",
         labels: { colors: tk.textMute },
         markers: { width: 9, height: 9, radius: 2 },
-        itemMargin: { horizontal: 6, vertical: 2 },
+        itemMargin: { horizontal: 5, vertical: 2 },
       },
       grid: baseGrid(tk),
-      xaxis: baseXaxis(tk, { categories: cats }),
-      yaxis: baseYaxis(tk),
-      tooltip: baseTooltip(),
+      // Axe catégoriel EXPLICITE : sinon ApexCharts bascule l'axe en numérique
+      // sur un empilé horizontal et masque les noms de territoires.
+      xaxis: {
+        type: "category",
+        categories: cats,
+        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        axisBorder: { show: true, color: tk.line },
+        axisTicks: { show: true, color: tk.line },
+      },
+      yaxis: {
+        labels: {
+          show: true,
+          maxWidth: 170,
+          style: { colors: tk.text, fontFamily: MONO, fontSize: "11px" },
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      tooltip: baseTooltip({ shared: true, intersect: false }),
     };
   }, [exposure, stages, stageLabels, stageColors, tk]);
 
@@ -532,20 +577,76 @@ export default function Act12Cyclones() {
     };
   }, [intensify, tk, t]);
 
-  const seasonalityBarOptions = useMemo(
+  const calendarHeatOptions = useMemo(
     () => ({
-      chart: baseChart(tk, { type: "bar" }),
-      series: [{ name: t("act12.viz.month_series"), data: seasonality.values }],
+      chart: baseChart(tk, { type: "heatmap" }),
+      series: calendar.series,
       colors: [tk.accent],
-      plotOptions: { bar: { borderRadius: 3, columnWidth: "62%" } },
       dataLabels: { enabled: false },
+      plotOptions: {
+        heatmap: {
+          radius: 2,
+          enableShades: true,
+          shadeIntensity: 0.55,
+          colorScale: { ranges: [{ from: 0, to: 0, color: tk.line, name: "0" }] },
+        },
+      },
       legend: { show: false },
       grid: baseGrid(tk),
-      xaxis: baseXaxis(tk, { categories: seasonality.labels }),
-      yaxis: baseYaxis(tk),
-      tooltip: baseTooltip(),
+      xaxis: {
+        type: "category",
+        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } } },
+      tooltip: { y: { formatter: (v) => `${v}` } },
     }),
-    [seasonality, tk, t],
+    [calendar, tk],
+  );
+
+  const windPressOptions = useMemo(
+    () => ({
+      chart: baseChart(tk, { type: "scatter" }),
+      series: windPress,
+      colors: stages.map((s) => stageColors[s.id] || tk.accent),
+      markers: { size: 6, strokeWidth: 0, hover: { size: 8 } },
+      dataLabels: { enabled: false },
+      legend: {
+        show: true,
+        position: "bottom",
+        fontFamily: MONO,
+        fontSize: "10px",
+        labels: { colors: tk.textMute },
+        markers: { width: 9, height: 9, radius: 2 },
+        itemMargin: { horizontal: 5, vertical: 2 },
+      },
+      grid: baseGrid(tk),
+      xaxis: {
+        type: "numeric",
+        title: { text: t("act12.viz.wp_x"), style: { color: tk.textMute, fontFamily: MONO, fontSize: "11px", fontWeight: 400 } },
+        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        axisBorder: { show: true, color: tk.line },
+        axisTicks: { show: true, color: tk.line },
+        tooltip: { enabled: false },
+      },
+      yaxis: {
+        title: { text: t("act12.viz.wp_y"), style: { color: tk.textMute, fontFamily: MONO, fontSize: "11px", fontWeight: 400 } },
+        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+      },
+      tooltip: {
+        custom: ({ seriesIndex, dataPointIndex, w }) => {
+          const d = w.config.series[seriesIndex] && w.config.series[seriesIndex].data[dataPointIndex];
+          if (!d) return "";
+          return (
+            `<div class="cmap-pop"><span class="cmap-pop__name">${d.name}</span>` +
+            `<span class="cmap-pop__row">${Math.round(d.y)} ${t("act12.map.kt")}</span>` +
+            `<span class="cmap-pop__row">${Math.round(d.x)} ${t("act12.map.hpa")}</span></div>`
+          );
+        },
+      },
+    }),
+    [windPress, stages, stageColors, tk, t],
   );
 
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
@@ -607,6 +708,14 @@ export default function Act12Cyclones() {
             node: <ApexChart options={intensifyLineOptions} />,
           },
           {
+            id: "windpress",
+            tab: t("act12.board.tab_windpress"),
+            title: t("act12.viz.wp_title"),
+            finding: t("act12.viz.wp_find"),
+            empty: !windPress.some((s) => s.data.length),
+            node: <ApexChart options={windPressOptions} />,
+          },
+          {
             id: "exposure",
             tab: t("act12.board.tab_exposure"),
             title: t("act12.viz.exposure_title"),
@@ -635,8 +744,8 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_month"),
             title: t("act12.viz.month_title"),
             finding: t("act12.viz.month_find"),
-            empty: !seasonality.values.some((v) => v > 0),
-            node: <ApexChart options={seasonalityBarOptions} />,
+            empty: !calendar.hasData,
+            node: <ApexChart options={calendarHeatOptions} />,
           },
           {
             id: "source",
