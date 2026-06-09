@@ -1,24 +1,18 @@
 // src/components/CycloneMap/CycloneMap.jsx
 // ============================================================
-// Acte 12 — Carte Mapbox SATELLITE en PROJECTION GLOBE des TRAJECTOIRES
-// cycloniques. Pièce maîtresse visuelle :
-//   • Chaque trajectoire est colorée par STADE (barème Météo-France NC,
-//     6 niveaux), épaisseur ∝ intensité, halo flou (« tempête lumineuse »).
-//   • ACCUMULATION : la timeline déroule les 47 saisons. Les saisons passées
-//     restent en « cicatrices » faibles ; la saison active brille.
-//   • DESSIN SÉQUENTIEL « UN PAR UN, POINT PAR POINT » : à l'activation d'une
-//     saison, ses cyclones se tracent l'un APRÈS l'autre, chacun point par
-//     point, avec des POINTS lumineux qui apparaissent sur chaque position.
-//     `prefers-reduced-motion` → tracé instantané.
-//   • MARQUEURS DES TERRITOIRES suivis dans les autres jeux de données (PICT :
-//     Nouvelle-Calédonie, Fidji, Vanuatu, Guam… ) avec leur nom.
-//   • RECADRAGE : un changement de `focus` (filtre région) recentre la carte.
-//   • Survol d'une trajectoire → bulletin (nom · saison · stade · vent · pression).
-//
-// PILOTAGE PAR LE PARENT (comme OceanMap) : seasons / seasonIndex / playing /
-// onTogglePlay / onScrub / focus / territories. Mapbox via window.mapboxgl
-// (CDN). Aucune couleur/chaîne en dur : couleurs via variables CSS (--cy-* et
-// --c-*), libellés via props `labels` / `stageLabels` (i18n parent).
+// Acte 12 — Carte Mapbox SATELLITE (globe) des TRAJECTOIRES cycloniques.
+// PRIORITÉ LISIBILITÉ : on voit CHAQUE LIGNE se tracer, pas un nuage de points.
+//   • Historique (saisons passées) : trait FIN et TRÈS DISCRET (arrière-plan).
+//   • Saison active : ligne ÉPAISSE + halo néon, dessinée SÉQUENTIELLEMENT
+//     (un cyclone après l'autre), couleur qui CHANGE le long du tracé selon
+//     l'intensité au fix près (si la couche points est chargée). Une TÊTE
+//     lumineuse (comète) avance au bout de la ligne pendant le tracé.
+//   • Points par fix : MASQUÉS en vue large, ils réapparaissent au zoom
+//     (inspection + survol vent/pression/date). Plus de nuage de points.
+//   • Marqueurs des territoires (PICT) ; recadrage au filtre région.
+//   • prefers-reduced-motion → tracé instantané.
+// Mapbox via window.mapboxgl (CDN). Couleurs via --cy-*/--c-* ; libellés via
+// props (i18n parent). Aucune couleur/chaîne en dur.
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -29,17 +23,16 @@ const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const HOME_VIEW = { center: [172, -18], zoom: 3.1, pitch: 35, bearing: -6 };
 
-// Cadence du dessin séquentiel.
-const PER_CYCLONE_MS = 520;
-const DRAW_MIN = 600;
-const DRAW_MAX = 9000;
+// Cadence RALENTIE : on doit suivre chaque ligne se tracer.
+export const PER_CYCLONE_MS = 1300;
+export const DRAW_MIN = 1200;
+export const DRAW_MAX = 16000;
 
 function cssVarRaw(name, fallback) {
   if (typeof window === "undefined") return fallback;
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return v || fallback;
 }
-
 function resolveStageColors() {
   return {
     DTFA: cssVarRaw("--cy-dtfa", "#4ad9c0"),
@@ -51,7 +44,6 @@ function resolveStageColors() {
     fallback: cssVarRaw("--cy-dtfa", "#4ad9c0"),
   };
 }
-
 function resolveMisc() {
   return {
     accent: cssVarRaw("--c-accent", "#00e6ff"),
@@ -60,29 +52,50 @@ function resolveMisc() {
     bg: cssVarRaw("--c-bg", "#020912"),
   };
 }
-
 function stageColorExpr(c) {
   return [
-    "match",
-    ["get", "stage"],
-    "DTFA", c.DTFA,
-    "DTM", c.DTM,
-    "DTFO", c.DTFO,
-    "CT", c.CT,
-    "CTI", c.CTI,
-    "CTTI", c.CTTI,
+    "match", ["get", "stage"],
+    "DTFA", c.DTFA, "DTM", c.DTM, "DTFO", c.DTFO, "CT", c.CT, "CTI", c.CTI, "CTTI", c.CTTI,
     c.fallback,
   ];
 }
 
-const WIDTH_EXPR = [
-  "interpolate",
-  ["linear"],
-  ["zoom"],
-  2, ["+", 0.5, ["*", 0.42, ["coalesce", ["get", "rank"], 0]]],
-  6, ["+", 1.4, ["*", 1.05, ["coalesce", ["get", "rank"], 0]]],
+// IMPORTANT : une interpolation sur le ZOOM doit être au PREMIER NIVEAU de
+// l'expression (Mapbox rejette ["*", interpolate(zoom), k] → la propriété est
+// ignorée et la ligne ne s'affiche pas). On intègre donc le facteur d'épaisseur
+// DANS les paliers. Le terme `rank` (data-driven) reste autorisé en sortie.
+const ACTIVE_LINE_W = [
+  "interpolate", ["linear"], ["zoom"],
+  2, ["+", 1.8, ["*", 0.8, ["coalesce", ["get", "rank"], 0]]],
+  6, ["+", 4.2, ["*", 1.8, ["coalesce", ["get", "rank"], 0]]],
 ];
+const ACTIVE_GLOW_W = [
+  "interpolate", ["linear"], ["zoom"],
+  2, ["+", 6, ["*", 2, ["coalesce", ["get", "rank"], 0]]],
+  6, ["+", 13, ["*", 4, ["coalesce", ["get", "rank"], 0]]],
+];
+const HIST_LINE_W = ["interpolate", ["linear"], ["zoom"], 2, 0.5, 6, 1.4];
+const HIST_GLOW_W = ["interpolate", ["linear"], ["zoom"], 2, 1.2, 6, 3];
 
+// Points (fixes) : petits, et SURTOUT invisibles en vue large (anti-nuage).
+const PT_RADIUS = [
+  "interpolate", ["linear"], ["zoom"],
+  3, ["interpolate", ["linear"], ["coalesce", ["get", "wind"], 0], 0, 1.4, 60, 2.2, 130, 3.2],
+  6, ["interpolate", ["linear"], ["coalesce", ["get", "wind"], 0], 0, 2.6, 60, 4.2, 130, 6.5],
+];
+const PT_OPACITY = ["interpolate", ["linear"], ["zoom"], 4, 0, 5, 0.35, 6, 0.85];
+
+function clamp01(v) {
+  return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+function fmtDate(t) {
+  if (t == null) return "";
+  try {
+    return new Date(Number(t)).toLocaleDateString();
+  } catch (e) {
+    return "";
+  }
+}
 function segProps(cy, sOrder) {
   return {
     id: cy.id,
@@ -96,7 +109,6 @@ function segProps(cy, sOrder) {
     pmin: cy.minPressureHpa == null ? null : cy.minPressureHpa,
   };
 }
-
 function sliceSegments(segments, progress) {
   if (progress >= 1) return segments;
   const total = segments.reduce((n, s) => n + s.length, 0);
@@ -114,8 +126,14 @@ function sliceSegments(segments, progress) {
   }
   return out;
 }
-
-function lineFeaturesFor(cy, sOrder, segments) {
+function lastCoordOf(segments) {
+  for (let i = segments.length - 1; i >= 0; i -= 1) {
+    const s = segments[i];
+    if (s && s.length) return s[s.length - 1];
+  }
+  return null;
+}
+function wholeLineFeatures(cy, sOrder, segments) {
   return segments
     .filter((line) => line && line.length >= 2)
     .map((line) => ({
@@ -123,10 +141,6 @@ function lineFeaturesFor(cy, sOrder, segments) {
       properties: segProps(cy, sOrder),
       geometry: { type: "LineString", coordinates: line },
     }));
-}
-
-function clamp01(v) {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
 }
 
 export default function CycloneMap({
@@ -140,8 +154,8 @@ export default function CycloneMap({
   stageLabels = {},
   labels = {},
   noTokenMsg = "",
-  territories = [], // [{ code, name, lng, lat }]
-  focus = null, // { center:[lng,lat], zoom } | null → vue par défaut
+  territories = [],
+  focus = null,
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -176,7 +190,7 @@ export default function CycloneMap({
     const features = [];
     cyclones.forEach((cy) => {
       const sOrder = orderOf.has(cy.season) ? orderOf.get(cy.season) : 0;
-      features.push(...lineFeaturesFor(cy, sOrder, cy.segments || []));
+      features.push(...wholeLineFeatures(cy, sOrder, cy.segments || []));
     });
     return { type: "FeatureCollection", features };
   }, [cyclones, orderOf]);
@@ -187,7 +201,6 @@ export default function CycloneMap({
   const activeCyclones = useMemo(() => {
     if (allMode) return [];
     const season = seasons[currentOrder];
-    // déjà triés chronologiquement (cycloneApi trie par date de début)
     return cyclones.filter((cy) => cy.season === season);
   }, [allMode, cyclones, seasons, currentOrder]);
 
@@ -198,7 +211,6 @@ export default function CycloneMap({
     )[0];
   }, [activeCyclones]);
 
-  // Territoires (PICT) → FeatureCollection de points.
   const pictFC = useMemo(
     () => ({
       type: "FeatureCollection",
@@ -213,19 +225,18 @@ export default function CycloneMap({
     [territories],
   );
 
-  // ---- Application des couleurs (thème-aware) ----
   const applyColors = useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.getLayer("tracks-line")) return;
     const c = resolveStageColors();
     colorsRef.current = c;
     const expr = stageColorExpr(c);
-    map.setPaintProperty("tracks-line", "line-color", expr);
-    map.setPaintProperty("tracks-glow", "line-color", expr);
-    map.setPaintProperty("active-line", "line-color", expr);
-    map.setPaintProperty("active-glow", "line-color", expr);
-    if (map.getLayer("active-pts")) map.setPaintProperty("active-pts", "circle-color", expr);
-
+    ["tracks-line", "tracks-glow", "active-line", "active-glow"].forEach((id) => {
+      if (map.getLayer(id)) map.setPaintProperty(id, "line-color", expr);
+    });
+    ["active-pts", "active-head"].forEach((id) => {
+      if (map.getLayer(id)) map.setPaintProperty(id, "circle-color", expr);
+    });
     const m = resolveMisc();
     if (map.getLayer("pict-dot")) {
       map.setPaintProperty("pict-dot", "circle-color", m.accent);
@@ -270,11 +281,7 @@ export default function CycloneMap({
       map.addLayer({
         id: "sky",
         type: "sky",
-        paint: {
-          "sky-type": "atmosphere",
-          "sky-atmosphere-sun": [0.0, 90.0],
-          "sky-atmosphere-sun-intensity": 6,
-        },
+        paint: { "sky-type": "atmosphere", "sky-atmosphere-sun": [0.0, 90.0], "sky-atmosphere-sun-intensity": 6 },
       });
       if (typeof map.setFog === "function") {
         map.setFog({
@@ -287,12 +294,7 @@ export default function CycloneMap({
         });
       }
       if (!map.getSource("dem")) {
-        map.addSource("dem", {
-          type: "raster-dem",
-          url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-          tileSize: 512,
-          maxzoom: 14,
-        });
+        map.addSource("dem", { type: "raster-dem", url: "mapbox://mapbox.mapbox-terrain-dem-v1", tileSize: 512, maxzoom: 14 });
       }
       map.setTerrain({ source: "dem", exaggeration: 1.2 });
 
@@ -305,68 +307,53 @@ export default function CycloneMap({
       map.addSource("tracks", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addSource("active", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addSource("active-pts", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addSource("active-head", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
 
-      // Points des territoires suivis (sous les tracés).
       map.addLayer({
         id: "pict-dot",
         type: "circle",
         source: "pict",
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 2.4, 6, 5],
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 2.2, 6, 4.5],
           "circle-color": m.accent,
           "circle-stroke-color": m.bg,
           "circle-stroke-width": 1,
-          "circle-opacity": 0.9,
+          "circle-opacity": 0.85,
         },
       });
 
-      // Halo + trait (historique).
+      // Historique : FIN et DISCRET (arrière-plan). Glow quasi nul (anti-bouillie).
       map.addLayer({
         id: "tracks-glow",
         type: "line",
         source: "tracks",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colorExpr, "line-width": ["*", WIDTH_EXPR, 2.6], "line-blur": 6, "line-opacity": 0.18 },
+        paint: { "line-color": colorExpr, "line-width": HIST_GLOW_W, "line-blur": 4, "line-opacity": 0.06 },
       });
       map.addLayer({
         id: "tracks-line",
         type: "line",
         source: "tracks",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colorExpr, "line-width": WIDTH_EXPR, "line-opacity": 0.5 },
+        paint: { "line-color": colorExpr, "line-width": HIST_LINE_W, "line-opacity": 0.28 },
       });
 
-      // Halo + trait (saison active, dessin séquentiel).
+      // Saison active : la STAR. Halo néon large + trait épais.
       map.addLayer({
         id: "active-glow",
         type: "line",
         source: "active",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colorExpr, "line-width": ["*", WIDTH_EXPR, 3.4], "line-blur": 8, "line-opacity": 0.5 },
+        paint: { "line-color": colorExpr, "line-width": ACTIVE_GLOW_W, "line-blur": 10, "line-opacity": 0.5 },
       });
       map.addLayer({
         id: "active-line",
         type: "line",
         source: "active",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colorExpr, "line-width": ["*", WIDTH_EXPR, 1.5], "line-opacity": 0.98 },
+        paint: { "line-color": colorExpr, "line-width": ACTIVE_LINE_W, "line-opacity": 1 },
       });
 
-      // Points « position par position » de la saison active.
-      map.addLayer({
-        id: "active-pts",
-        type: "circle",
-        source: "active-pts",
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 1.6, 6, 3.4],
-          "circle-color": colorExpr,
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 0.6,
-          "circle-opacity": 0.95,
-        },
-      });
-
-      // Libellés des territoires (au-dessus).
       map.addLayer({
         id: "pict-label",
         type: "symbol",
@@ -381,14 +368,10 @@ export default function CycloneMap({
           "text-allow-overlap": false,
           "text-optional": true,
         },
-        paint: {
-          "text-color": m.textSoft,
-          "text-halo-color": m.bg,
-          "text-halo-width": 1.4,
-        },
+        paint: { "text-color": m.textSoft, "text-halo-color": m.bg, "text-halo-width": 1.4 },
       });
 
-      // Couche de survol invisible (au-dessus, capte le hover des tracés).
+      // Survol historique (invisible) — saisons strictement antérieures.
       map.addLayer({
         id: "tracks-hit",
         type: "line",
@@ -397,39 +380,75 @@ export default function CycloneMap({
         paint: { "line-color": "#000", "line-width": 14, "line-opacity": 0.001 },
       });
 
-      const popup = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        className: "cmap-popup",
-        offset: 12,
+      // Points par fix : MASQUÉS en vue large (opacité = 0 sous z5), révélés au zoom.
+      map.addLayer({
+        id: "active-pts",
+        type: "circle",
+        source: "active-pts",
+        paint: {
+          "circle-radius": PT_RADIUS,
+          "circle-color": colorExpr,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 0.5,
+          "circle-opacity": PT_OPACITY,
+          "circle-stroke-opacity": PT_OPACITY,
+        },
       });
+
+      // TÊTE lumineuse (comète) au bout de la ligne en cours de tracé.
+      map.addLayer({
+        id: "active-head",
+        type: "circle",
+        source: "active-head",
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 3, 6, 6.5],
+          "circle-color": colorExpr,
+          "circle-blur": 0.7,
+          "circle-opacity": 0.95,
+        },
+      });
+
+      const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: "cmap-popup", offset: 12 });
       popupRef.current = popup;
 
-      const onMove = (e) => {
+      const fmtWind = (L, w, wk) =>
+        w != null && w !== "" && w !== "null"
+          ? `${Math.round(Number(w))} ${L.kt || ""}${wk != null && wk !== "" && wk !== "null" ? ` · ${Math.round(Number(wk))} ${L.kmh || ""}` : ""}`
+          : "—";
+      const fmtPres = (L, p) => (p != null && p !== "" && p !== "null" ? `${Math.round(Number(p))} ${L.hpa || ""}` : "—");
+
+      const onMoveTrack = (e) => {
         const f = e.features && e.features[0];
         if (!f) return;
         map.getCanvas().style.cursor = "pointer";
         const p = f.properties || {};
         const L = labelsRef.current || {};
         const SL = stageLabelsRef.current || {};
-        const stg = SL[p.stage] || p.stage || "";
-        const wind =
-          p.vmax != null && p.vmax !== "" && p.vmax !== "null"
-            ? `${Math.round(Number(p.vmax))} ${L.kt || ""}${
-                p.vmaxKmh != null && p.vmaxKmh !== "" ? ` · ${p.vmaxKmh} ${L.kmh || ""}` : ""
-              }`
-            : "—";
-        const pres =
-          p.pmin != null && p.pmin !== "" && p.pmin !== "null"
-            ? `${Math.round(Number(p.pmin))} ${L.hpa || ""}`
-            : "—";
         const html =
           `<div class="cmap-pop">` +
           `<span class="cmap-pop__name">${p.name || ""}</span>` +
           `<span class="cmap-pop__season">${p.season || ""}</span>` +
-          `<span class="cmap-pop__stage" data-stage="${p.stage}">${stg}</span>` +
-          `<span class="cmap-pop__row"><em>${L.wind || ""}</em> ${wind}</span>` +
-          `<span class="cmap-pop__row"><em>${L.pressure || ""}</em> ${pres}</span>` +
+          `<span class="cmap-pop__stage" data-stage="${p.stage}">${SL[p.stage] || p.stage || ""}</span>` +
+          `<span class="cmap-pop__row"><em>${L.wind || ""}</em> ${fmtWind(L, p.vmax, p.vmaxKmh)}</span>` +
+          `<span class="cmap-pop__row"><em>${L.pressure || ""}</em> ${fmtPres(L, p.pmin)}</span>` +
+          `</div>`;
+        popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+      };
+      const onMovePt = (e) => {
+        const f = e.features && e.features[0];
+        if (!f) return;
+        map.getCanvas().style.cursor = "pointer";
+        const p = f.properties || {};
+        const L = labelsRef.current || {};
+        const SL = stageLabelsRef.current || {};
+        const d = fmtDate(p.t);
+        const html =
+          `<div class="cmap-pop">` +
+          `<span class="cmap-pop__name">${p.name || ""}</span>` +
+          `<span class="cmap-pop__season">${p.season || ""}${d ? ` · ${d}` : ""}</span>` +
+          `<span class="cmap-pop__stage" data-stage="${p.stage}">${SL[p.stage] || p.stage || ""}</span>` +
+          `<span class="cmap-pop__row"><em>${L.wind || ""}</em> ${fmtWind(L, p.wind, p.windKmh)}</span>` +
+          `<span class="cmap-pop__row"><em>${L.pressure || ""}</em> ${fmtPres(L, p.pressure)}</span>` +
           `</div>`;
         popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
       };
@@ -437,10 +456,12 @@ export default function CycloneMap({
         map.getCanvas().style.cursor = "";
         popup.remove();
       };
-      map.on("mousemove", "tracks-hit", onMove);
-      map.on("mouseleave", "tracks-hit", onLeave);
-      map.on("mousemove", "active-line", onMove);
+      map.on("mousemove", "active-pts", onMovePt);
+      map.on("mouseleave", "active-pts", onLeave);
+      map.on("mousemove", "active-line", onMoveTrack);
       map.on("mouseleave", "active-line", onLeave);
+      map.on("mousemove", "tracks-hit", onMoveTrack);
+      map.on("mouseleave", "tracks-hit", onLeave);
 
       setLoaded(true);
     });
@@ -454,7 +475,6 @@ export default function CycloneMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---- Thème → re-résolution des couleurs ----
   useEffect(() => {
     if (typeof MutationObserver === "undefined") return undefined;
     const obs = new MutationObserver(() => applyColors());
@@ -462,69 +482,60 @@ export default function CycloneMap({
     return () => obs.disconnect();
   }, [applyColors]);
 
-  // ---- Source historique ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !map.getSource("tracks")) return;
     map.getSource("tracks").setData(allFC);
   }, [allFC, loaded]);
 
-  // ---- Marqueurs des territoires ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !map.getSource("pict")) return;
     map.getSource("pict").setData(pictFC);
   }, [pictFC, loaded]);
 
-  // ---- Recadrage sur changement de focus (filtre région) ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
     if (focus && Array.isArray(focus.center)) {
-      map.flyTo({
-        center: focus.center,
-        zoom: focus.zoom ?? HOME_VIEW.zoom,
-        pitch: HOME_VIEW.pitch,
-        speed: 0.8,
-        essential: true,
-      });
+      map.flyTo({ center: focus.center, zoom: focus.zoom ?? HOME_VIEW.zoom, pitch: HOME_VIEW.pitch, speed: 0.8, essential: true });
     } else {
       map.flyTo({ ...HOME_VIEW, speed: 0.8, essential: true });
     }
   }, [focus, loaded]);
 
-  // ---- Filtre & opacité « historique » selon la saison ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !map.getLayer("tracks-line")) return;
     if (allMode) {
-      map.setFilter("tracks-line", null);
-      map.setFilter("tracks-glow", null);
-      map.setFilter("tracks-hit", null);
-      map.setPaintProperty("tracks-line", "line-opacity", 0.55);
-      map.setPaintProperty("tracks-glow", "line-opacity", 0.2);
+      ["tracks-line", "tracks-glow", "tracks-hit"].forEach((id) => map.setFilter(id, null));
+      map.setPaintProperty("tracks-line", "line-opacity", 0.34);
+      map.setPaintProperty("tracks-glow", "line-opacity", 0.05);
       return;
     }
     const fHist = ["<", ["get", "sOrder"], currentOrder];
-    const fSeen = ["<=", ["get", "sOrder"], currentOrder];
     map.setFilter("tracks-line", fHist);
     map.setFilter("tracks-glow", fHist);
-    map.setFilter("tracks-hit", fSeen);
-    const opa = ["interpolate", ["linear"], ["-", currentOrder, ["get", "sOrder"]], 0, 0.85, 3, 0.4, 10, 0.16];
+    map.setFilter("tracks-hit", fHist);
+    // Historique TRÈS estompé (cicatrices), pour ne pas masquer la saison active.
+    const opa = ["interpolate", ["linear"], ["-", currentOrder, ["get", "sOrder"]], 0, 0.3, 3, 0.14, 10, 0.06];
     map.setPaintProperty("tracks-line", "line-opacity", opa);
-    map.setPaintProperty("tracks-glow", "line-opacity", ["*", opa, 0.4]);
+    map.setPaintProperty("tracks-glow", "line-opacity", ["*", opa, 0.18]);
   }, [allMode, currentOrder, loaded]);
 
-  // ---- Dessin SÉQUENTIEL « un par un, point par point » ----
+  // ---- Dessin SÉQUENTIEL (au fix près si dispo) + tête comète ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !map.getSource("active")) return undefined;
     const srcLine = map.getSource("active");
     const srcPts = map.getSource("active-pts");
+    const srcHead = map.getSource("active-head");
+    const setHead = (features) => srcHead && srcHead.setData({ type: "FeatureCollection", features });
 
     if (allMode || !activeCyclones.length) {
       srcLine.setData({ type: "FeatureCollection", features: [] });
       if (srcPts) srcPts.setData({ type: "FeatureCollection", features: [] });
+      setHead([]);
       return undefined;
     }
 
@@ -532,40 +543,97 @@ export default function CycloneMap({
     const buildAt = (globalProgress) => {
       const lineFeatures = [];
       const ptFeatures = [];
+      const headFeatures = [];
       activeCyclones.forEach((cy, i) => {
-        // Chaque cyclone occupe une tranche [i/N, (i+1)/N] du temps total →
-        // ils se dessinent l'un après l'autre.
         const local = clamp01(globalProgress * N - i);
         if (local <= 0) return;
+        const drawing = local < 1; // ce cyclone est-il en cours de tracé ?
         const sOrder = orderOf.has(cy.season) ? orderOf.get(cy.season) : currentOrder;
-        const segs = sliceSegments(cy.segments || [], local);
-        lineFeatures.push(...lineFeaturesFor(cy, sOrder, segs));
-        segs.forEach((line) =>
-          line.forEach(([lng, lat]) => {
+
+        if (cy.hasFixes && cy.fixes && cy.fixes.length > 1) {
+          const k = Math.max(2, Math.round(local * cy.fixes.length));
+          const fs = cy.fixes.slice(0, k);
+          for (let j = 0; j < fs.length - 1; j += 1) {
+            const a = fs[j];
+            const b = fs[j + 1];
+            const useB = (b.stageRank ?? -1) >= (a.stageRank ?? -1);
+            lineFeatures.push({
+              type: "Feature",
+              properties: {
+                name: cy.name || "",
+                season: cy.season || "",
+                stage: (useB ? b.stage : a.stage) || cy.stage || "DTFA",
+                rank: Math.max(a.stageRank ?? 0, b.stageRank ?? 0),
+              },
+              geometry: { type: "LineString", coordinates: [[a.lng, a.lat], [b.lng, b.lat]] },
+            });
+          }
+          fs.forEach((fx) => {
             ptFeatures.push({
               type: "Feature",
-              properties: { stage: cy.stage || "DTFA" },
-              geometry: { type: "Point", coordinates: [lng, lat] },
+              properties: {
+                name: cy.name || "",
+                season: cy.season || "",
+                stage: fx.stage || cy.stage || "DTFA",
+                rank: fx.stageRank ?? cy.stageRank ?? 0,
+                wind: fx.wind == null ? null : fx.wind,
+                windKmh: fx.windKmh == null ? null : fx.windKmh,
+                pressure: fx.pressure == null ? null : fx.pressure,
+                t: fx.t == null ? null : fx.t,
+              },
+              geometry: { type: "Point", coordinates: [fx.lng, fx.lat] },
             });
-          }),
-        );
+          });
+          if (drawing) {
+            const head = fs[fs.length - 1];
+            headFeatures.push({
+              type: "Feature",
+              properties: { stage: head.stage || cy.stage || "DTFA" },
+              geometry: { type: "Point", coordinates: [head.lng, head.lat] },
+            });
+          }
+        } else {
+          const segs = sliceSegments(cy.segments || [], local);
+          lineFeatures.push(...wholeLineFeatures(cy, sOrder, segs));
+          segs.forEach((line) =>
+            line.forEach(([lng, lat]) => {
+              ptFeatures.push({
+                type: "Feature",
+                properties: { name: cy.name || "", season: cy.season || "", stage: cy.stage || "DTFA", wind: null },
+                geometry: { type: "Point", coordinates: [lng, lat] },
+              });
+            }),
+          );
+          if (drawing) {
+            const head = lastCoordOf(segs);
+            if (head) {
+              headFeatures.push({
+                type: "Feature",
+                properties: { stage: cy.stage || "DTFA" },
+                geometry: { type: "Point", coordinates: [head[0], head[1]] },
+              });
+            }
+          }
+        }
       });
       srcLine.setData({ type: "FeatureCollection", features: lineFeatures });
       if (srcPts) srcPts.setData({ type: "FeatureCollection", features: ptFeatures });
+      setHead(headFeatures);
     };
 
     if (reduceMotion) {
       buildAt(1);
+      setHead([]);
       return undefined;
     }
-
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const dur = Math.min(DRAW_MAX, Math.max(DRAW_MIN, N * PER_CYCLONE_MS));
     const start = performance.now();
     const tick = (now) => {
       const p = clamp01((now - start) / dur);
-      buildAt(p); // progression linéaire → cadence régulière, un cyclone à la fois
+      buildAt(p);
       if (p < 1) rafRef.current = requestAnimationFrame(tick);
+      else setHead([]); // tracé terminé → on retire la tête
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
@@ -573,7 +641,6 @@ export default function CycloneMap({
     };
   }, [allMode, activeCyclones, currentOrder, orderOf, loaded, reduceMotion]);
 
-  // ---- Plein écran : resize ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return undefined;

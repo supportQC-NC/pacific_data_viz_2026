@@ -45,6 +45,13 @@ const REGION_FOCUS = {
   micronesia: { center: [150, 8], zoom: 3.5 },
 };
 
+// Cadence de lecture auto — alignée sur le dessin séquentiel de CycloneMap :
+// chaque saison se dessine ENTIÈREMENT avant de passer à la suivante.
+const PER_CYCLONE_MS = 1300;
+const DRAW_MIN = 1200;
+const DRAW_MAX = 16000;
+const SEASON_DWELL_MS = 1200;
+
 // Couleurs de stade (--cy-*) en valeurs concrètes pour ApexCharts.
 function readStageColors() {
   if (typeof window === "undefined") return {};
@@ -142,22 +149,30 @@ export default function Act12Cyclones() {
     if (seasons.length && seasonIdx === null) setSeasonIdx(seasons.length - 1);
   }, [seasons, seasonIdx]);
 
-  // Lecture automatique : on déroule les saisons (cadence laissant le temps de
-  // voir démarrer le dessin séquentiel).
+  // Nombre de cyclones de la saison courante (pour caler la durée de lecture).
+  const activeCount = useMemo(() => {
+    if (seasonIdx == null || !seasons.length) return 0;
+    const s = seasons[seasonIdx];
+    return cyclones.filter((c) => c.season === s).length;
+  }, [cyclones, seasons, seasonIdx]);
+
+  // Lecture automatique : on attend que la saison soit ENTIÈREMENT dessinée
+  // (durée ∝ nombre de cyclones) + un temps de pause, puis on avance.
   useEffect(() => {
-    if (!playing || !seasons.length) return undefined;
-    const id = setInterval(() => {
+    if (!playing || !seasons.length || seasonIdx == null) return undefined;
+    const dur = Math.min(DRAW_MAX, Math.max(DRAW_MIN, activeCount * PER_CYCLONE_MS)) + SEASON_DWELL_MS;
+    const id = setTimeout(() => {
       setSeasonIdx((i) => {
         const next = (i ?? 0) + 1;
         if (next >= seasons.length) {
           setPlaying(false);
-          return seasons.length - 1;
+          return i;
         }
         return next;
       });
-    }, 1600);
-    return () => clearInterval(id);
-  }, [playing, seasons]);
+    }, dur);
+    return () => clearTimeout(id);
+  }, [playing, seasonIdx, seasons, activeCount]);
 
   const togglePlay = useCallback(() => {
     setSeasonIdx((i) => (i === seasons.length - 1 ? 0 : i));
