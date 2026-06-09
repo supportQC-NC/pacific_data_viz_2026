@@ -161,6 +161,7 @@ export default function Act12Cyclones() {
   const [seasonIdx, setSeasonIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [intensity, setIntensity] = useState("all"); // all | intense (CT+)
 
   // ---- Chargement (fichier statique) ----
   useEffect(() => {
@@ -182,6 +183,14 @@ export default function Act12Cyclones() {
   const cyclones = useMemo(() => res?.cyclones || [], [res]);
   const seasons = useMemo(() => res?.seasons || [], [res]);
   const stages = res?.stages || STAGES;
+
+  // Vue filtrée : « toutes » ou « intenses » (cyclone tropical et plus, rang ≥ 3).
+  // Alimente carte + graphes d'exploration. L'intensification (tendance long
+  // terme) reste calculée sur l'ENSEMBLE des données.
+  const view = useMemo(
+    () => (intensity === "intense" ? cyclones.filter((c) => (c.stageRank ?? -1) >= 3) : cyclones),
+    [cyclones, intensity],
+  );
 
   const stageLabels = useMemo(() => {
     const out = {};
@@ -215,8 +224,8 @@ export default function Act12Cyclones() {
   const activeCount = useMemo(() => {
     if (seasonIdx == null || !seasons.length) return 0;
     const s = seasons[seasonIdx];
-    return cyclones.filter((c) => c.season === s).length;
-  }, [cyclones, seasons, seasonIdx]);
+    return view.filter((c) => c.season === s).length;
+  }, [view, seasons, seasonIdx]);
 
   // Lecture automatique : on attend que la saison soit ENTIÈREMENT dessinée
   // (durée ∝ nombre de cyclones) + un temps de pause, puis on avance.
@@ -246,10 +255,10 @@ export default function Act12Cyclones() {
     setSeasonIdx(i);
   }, []);
 
-  // ---- Agrégats ----
+  // ---- Agrégats (sur la vue filtrée) ----
   const bySeason = useMemo(() => {
     const m = new Map();
-    cyclones.forEach((cy) => {
+    view.forEach((cy) => {
       const e = m.get(cy.season) || { count: 0, peakRank: -1, peakStage: "DTFA" };
       e.count += 1;
       if ((cy.stageRank ?? -1) > e.peakRank) {
@@ -259,7 +268,7 @@ export default function Act12Cyclones() {
       m.set(cy.season, e);
     });
     return seasons.map((s) => ({ season: s, ...(m.get(s) || { count: 0, peakRank: -1, peakStage: "DTFA" }) }));
-  }, [cyclones, seasons]);
+  }, [view, seasons]);
 
   const busiest = useMemo(
     () => bySeason.reduce((best, r) => (r.count > (best?.count ?? -1) ? r : best), null),
@@ -267,27 +276,70 @@ export default function Act12Cyclones() {
   );
 
   const mostIntense = useMemo(() => {
-    if (!cyclones.length) return null;
-    return [...cyclones].sort(
+    if (!view.length) return null;
+    return [...view].sort(
       (a, b) => (b.stageRank ?? -1) - (a.stageRank ?? -1) || (b.maxWind ?? 0) - (a.maxWind ?? 0),
     )[0];
-  }, [cyclones]);
+  }, [view]);
 
   const maxWind = useMemo(
-    () => cyclones.reduce((mx, cy) => (cy.maxWind != null && cy.maxWind > mx ? cy.maxWind : mx), 0),
-    [cyclones],
+    () => view.reduce((mx, cy) => (cy.maxWind != null && cy.maxWind > mx ? cy.maxWind : mx), 0),
+    [view],
   );
+
+  // ---- Intensification (TENDANCE long terme — toujours sur TOUTES les données) ----
+  // Part de cyclones atteignant le stade « cyclone tropical » ou plus (rang ≥ 3),
+  // par saison, + moyenne glissante sur 5 saisons pour lisser le bruit.
+  const intensify = useMemo(() => {
+    const m = new Map();
+    cyclones.forEach((cy) => {
+      const e = m.get(cy.season) || { n: 0, intense: 0 };
+      e.n += 1;
+      if ((cy.stageRank ?? -1) >= 3) e.intense += 1;
+      m.set(cy.season, e);
+    });
+    const share = seasons.map((s) => {
+      const e = m.get(s);
+      return e && e.n ? Math.round((100 * e.intense) / e.n) : null;
+    });
+    const roll = share.map((_, i) => {
+      const win = [];
+      for (let k = Math.max(0, i - 4); k <= i; k += 1) if (share[k] != null) win.push(share[k]);
+      return win.length ? Math.round(win.reduce((a, b) => a + b, 0) / win.length) : null;
+    });
+    return { seasons, share, roll };
+  }, [cyclones, seasons]);
+
+  // ---- Saisonnalité : genèse par mois (vue filtrée) ----
+  const seasonality = useMemo(() => {
+    const counts = new Array(12).fill(0);
+    view.forEach((cy) => {
+      if (cy.startTime == null) return;
+      const mo = new Date(cy.startTime).getMonth();
+      if (mo >= 0 && mo <= 11) counts[mo] += 1;
+    });
+    // Ordre « saison australe » : juillet → juin (le pic déc.–avril reste groupé).
+    const order = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+    const labels = order.map((mo) => {
+      try {
+        return new Date(2001, mo, 1).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { month: "short" });
+      } catch (e) {
+        return String(mo + 1);
+      }
+    });
+    return { labels, values: order.map((mo) => counts[mo]) };
+  }, [view, lang]);
 
   // Exposition par territoire (croisement tracés × points PICT). Calcul lourd
   // isolé (dépend des cyclones seulement) ; le nommage suit la langue.
   const exposureRaw = useMemo(() => {
-    if (status !== "ready" || !cyclones.length) return [];
+    if (status !== "ready" || !view.length) return [];
     const codes = Object.keys(PICT_GEO);
     const counts = {};
     codes.forEach((c) => {
       counts[c] = {};
     });
-    cyclones.forEach((cy) => {
+    view.forEach((cy) => {
       const pts = cy.path || [];
       if (pts.length < 2) return;
       const stage = cy.stage || "DTFA";
@@ -312,7 +364,7 @@ export default function Act12Cyclones() {
       })
       .filter((r) => r.total > 0)
       .sort((a, b) => b.total - a.total);
-  }, [status, cyclones]);
+  }, [status, view]);
 
   const exposure = useMemo(
     () => exposureRaw.slice(0, 12).map((r) => ({ ...r, name: pictName(r.code, lang) })),
@@ -325,7 +377,7 @@ export default function Act12Cyclones() {
     return [
       {
         key: "total",
-        value: res.count,
+        value: view.length,
         unit: t("act12.kpi.cyclones_unit"),
         label: `${t("act12.kpi.total")} · ${res.firstSeason} → ${res.lastSeason}`,
         tone: "accent",
@@ -333,7 +385,7 @@ export default function Act12Cyclones() {
       {
         key: "intense",
         value: mostIntense ? mostIntense.name : "—",
-        unit: mostIntense ? stageLabels[mostIntense.peakStage] : "",
+        unit: mostIntense ? stageLabels[mostIntense.stage] : "",
         label: t("act12.kpi.intense"),
         tone: "warm",
       },
@@ -352,7 +404,7 @@ export default function Act12Cyclones() {
         tone: "warm",
       },
     ];
-  }, [status, res, mostIntense, busiest, maxWind, stageLabels, t]);
+  }, [status, res, view, mostIntense, busiest, maxWind, stageLabels, t]);
 
   // ---- Libellés carte (i18n) ----
   const mapLabels = useMemo(
@@ -377,7 +429,7 @@ export default function Act12Cyclones() {
   const stageBarOptions = useMemo(() => {
     const ordered = [...stages];
     const cats = ordered.map((s) => stageLabels[s.id]);
-    const vals = ordered.map((s) => res?.byStage?.[s.id] || 0);
+    const vals = ordered.map((s) => view.filter((c) => c.stage === s.id).length);
     const colors = ordered.map((s) => stageColors[s.id] || tk.accent);
     return {
       chart: baseChart(tk, { type: "bar" }),
@@ -391,7 +443,7 @@ export default function Act12Cyclones() {
       yaxis: baseYaxis(tk),
       tooltip: baseTooltip(),
     };
-  }, [stages, stageLabels, res, stageColors, tk, t]);
+  }, [stages, stageLabels, view, stageColors, tk, t]);
 
   const seasonBarOptions = useMemo(() => {
     const cats = bySeason.map((r) => r.season);
@@ -444,9 +496,73 @@ export default function Act12Cyclones() {
     };
   }, [exposure, stages, stageLabels, stageColors, tk]);
 
+  const intensifyLineOptions = useMemo(() => {
+    return {
+      chart: baseChart(tk, { type: "line" }),
+      series: [
+        { name: t("act12.viz.intensify_raw"), data: intensify.share },
+        { name: t("act12.viz.intensify_trend"), data: intensify.roll },
+      ],
+      colors: [tk.textMute, tk.warm],
+      stroke: { width: [1.5, 3.5], curve: "smooth", dashArray: [4, 0] },
+      markers: { size: 0 },
+      dataLabels: { enabled: false },
+      legend: {
+        show: true,
+        position: "top",
+        horizontalAlign: "left",
+        fontFamily: MONO,
+        fontSize: "11px",
+        labels: { colors: tk.textMute },
+        markers: { width: 9, height: 9, radius: 2 },
+      },
+      grid: baseGrid(tk),
+      xaxis: baseXaxis(tk, {
+        categories: intensify.seasons,
+        tickAmount: Math.min(10, Math.max(2, intensify.seasons.length - 1)),
+        labels: { rotate: -45, rotateAlways: false, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
+      }),
+      yaxis: baseYaxis(tk, {
+        min: 0,
+        max: 100,
+        tickAmount: 5,
+        labels: { formatter: (v) => `${Math.round(v)} %`, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+      }),
+      tooltip: { shared: true, intersect: false, y: { formatter: (v) => (v == null ? "—" : `${Math.round(v)} %`) } },
+    };
+  }, [intensify, tk, t]);
+
+  const seasonalityBarOptions = useMemo(
+    () => ({
+      chart: baseChart(tk, { type: "bar" }),
+      series: [{ name: t("act12.viz.month_series"), data: seasonality.values }],
+      colors: [tk.accent],
+      plotOptions: { bar: { borderRadius: 3, columnWidth: "62%" } },
+      dataLabels: { enabled: false },
+      legend: { show: false },
+      grid: baseGrid(tk),
+      xaxis: baseXaxis(tk, { categories: seasonality.labels }),
+      yaxis: baseYaxis(tk),
+      tooltip: baseTooltip(),
+    }),
+    [seasonality, tk, t],
+  );
+
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
+  const intensityOpts = [
+    { v: "all", label: t("act12.filter.intensity_all") },
+    { v: "intense", label: t("act12.filter.intensity_intense") },
+  ];
   const filtersEl = (
-    <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+    <>
+      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
+      <Select
+        label={t("act12.filter.intensity_label")}
+        options={intensityOpts}
+        value={intensity}
+        onChange={setIntensity}
+      />
+    </>
   );
 
   // ---- Charts ActBoard ----
@@ -463,7 +579,7 @@ export default function Act12Cyclones() {
               <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
                 <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <CycloneMap
-                    cyclones={cyclones}
+                    cyclones={view}
                     seasons={seasons}
                     seasonIndex={seasonIdx}
                     playing={playing}
@@ -481,6 +597,14 @@ export default function Act12Cyclones() {
                 </Suspense>
               </ErrorBoundary>
             ),
+          },
+          {
+            id: "intensify",
+            tab: t("act12.board.tab_intensify"),
+            title: t("act12.viz.intensify_title"),
+            finding: t("act12.viz.intensify_find"),
+            empty: !intensify.seasons.length,
+            node: <ApexChart options={intensifyLineOptions} />,
           },
           {
             id: "exposure",
@@ -505,6 +629,14 @@ export default function Act12Cyclones() {
             finding: t("act12.viz.season_find"),
             empty: !bySeason.length,
             node: <ApexChart options={seasonBarOptions} />,
+          },
+          {
+            id: "month",
+            tab: t("act12.board.tab_month"),
+            title: t("act12.viz.month_title"),
+            finding: t("act12.viz.month_find"),
+            empty: !seasonality.values.some((v) => v > 0),
+            node: <ApexChart options={seasonalityBarOptions} />,
           },
           {
             id: "source",

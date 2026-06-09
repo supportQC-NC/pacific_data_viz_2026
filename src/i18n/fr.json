@@ -2142,7 +2142,14 @@
       "cross_series": "Territoires",
       "cross_x": "Cyclones passés à moins de 300 km",
       "cross_y": "Personnes affectées (catastrophes)",
-      "cross_affected_unit": "personnes affectées"
+      "cross_affected_unit": "personnes affectées",
+      "intensify_title": "L'intensité grimpe, pas la fréquence",
+      "intensify_find": "Part des cyclones atteignant le stade « cyclone tropical » ou plus, par saison (trait fin) et en moyenne glissante sur 5 saisons (trait épais) : d'environ 38 % dans les années 1970 à plus de 50 % récemment, alors que le nombre de phénomènes par saison reste stable. À nuancer : les premières saisons, avant l'ère satellite moderne, sous-estiment probablement les intensités.",
+      "intensify_raw": "Part par saison",
+      "intensify_trend": "Moyenne 5 saisons",
+      "month_title": "Quand frappent-ils ?",
+      "month_find": "Genèse des cyclones par mois (saison australe, de juillet à juin). Le pic se concentre de décembre à avril.",
+      "month_series": "Cyclones"
     },
     "board": {
       "tab_map": "Carte",
@@ -2157,7 +2164,9 @@
       "revise_data": "Revoir les données",
       "tab_exposure": "Exposition",
       "tab_source": "Source & portée",
-      "tab_cross": "Exposition × impact"
+      "tab_cross": "Exposition × impact",
+      "tab_intensify": "Intensification",
+      "tab_month": "Saisonnalité"
     },
     "outro": {
       "kicker": "Du ciel à la terre",
@@ -2182,6 +2191,11 @@
       "links_label": "Accès aux données",
       "link_datagouv": "data.gouv.nc",
       "link_georep": "Fiche Géorep"
+    },
+    "filter": {
+      "intensity_label": "Intensité",
+      "intensity_all": "Tous",
+      "intensity_intense": "Intenses (CT+)"
     }
   }
 }

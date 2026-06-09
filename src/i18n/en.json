@@ -2142,7 +2142,14 @@
       "cross_series": "Territories",
       "cross_x": "Cyclones passing within 300 km",
       "cross_y": "People affected (disasters)",
-      "cross_affected_unit": "people affected"
+      "cross_affected_unit": "people affected",
+      "intensify_title": "Intensity is rising, not frequency",
+      "intensify_find": "Share of cyclones reaching tropical-cyclone stage or above, per season (thin line) and as a 5-season rolling average (thick line): from about 38% in the 1970s to over 50% recently, while the number of systems per season stays flat. A caveat: the earliest seasons, before the modern satellite era, likely underestimate intensities.",
+      "intensify_raw": "Per season",
+      "intensify_trend": "5-season average",
+      "month_title": "When do they strike?",
+      "month_find": "Cyclone genesis by month (austral season, July to June). The peak is concentrated from December to April.",
+      "month_series": "Cyclones"
     },
     "board": {
       "tab_map": "Map",
@@ -2157,7 +2164,9 @@
       "revise_data": "Review the data",
       "tab_exposure": "Exposure",
       "tab_source": "Source & scope",
-      "tab_cross": "Exposure × impact"
+      "tab_cross": "Exposure × impact",
+      "tab_intensify": "Intensification",
+      "tab_month": "Seasonality"
     },
     "outro": {
       "kicker": "From sky to land",
@@ -2182,6 +2191,11 @@
       "links_label": "Data access",
       "link_datagouv": "data.gouv.nc",
       "link_georep": "Géorep record"
+    },
+    "filter": {
+      "intensity_label": "Intensity",
+      "intensity_all": "All",
+      "intensity_intense": "Intense (CT+)"
     }
   }
 }
