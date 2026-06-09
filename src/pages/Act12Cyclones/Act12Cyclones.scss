@@ -1,0 +1,19 @@
+// src/pages/Act12Cyclones/Act12Cyclones.scss
+// ============================================================
+// Styles spécifiques à l'Acte 12. L'essentiel du chrome vient de ActBoard ;
+// la carte (CycloneMap) et les graphes (ApexChart) portent leur propre style.
+// Ici, seulement un garde-fou de hauteur pour que les graphes ApexCharts
+// disposent d'une zone de rendu dans le board (ils calculent leur hauteur
+// depuis le conteneur).
+// ============================================================
+
+.act12-chart {
+  width: 100%;
+  min-height: 420px;
+}
+
+// Les graphes Apex de cet acte remplissent la zone du board.
+.board__chart .apexchart {
+  width: 100%;
+  min-height: 420px;
+}

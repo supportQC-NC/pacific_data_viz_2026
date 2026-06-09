@@ -1,7 +1,7 @@
 // src/pages/ActsIndex/ActsIndex.jsx
 // ============================================================
 // Page dédiée à la NAVIGATION PAR ACTE (sortie de l'accueil).
-// Récit en 3 chapitres regroupant les 11 actes, en grille éditoriale avec
+// Récit en 3 chapitres regroupant les actes, en grille éditoriale avec
 // une icône thématique par acte. Révélation au scroll (IntersectionObserver).
 // Réutilise les styles existants des actes (Home.scss). FR/EN, zéro inline.
 // ============================================================
@@ -21,6 +21,7 @@ import {
   FiHeart,
   FiLayers,
 } from "react-icons/fi";
+import { WiHurricane } from "react-icons/wi";
 import { useLang } from "../../store/context/langContext";
 import "../Home/Home.scss";
 
@@ -37,9 +38,10 @@ const ACT_ICONS = {
   a9: <FiBarChart2 />,
   a10: <FiHeart />,
   a11: <FiLayers />,
+  a12: <WiHurricane />,
 };
 
-// Récit complet : 11 actes répartis en 3 chapitres narratifs.
+// Récit complet : actes répartis en 3 chapitres narratifs.
 const CHAPTERS = [
   {
     id: "c1",
@@ -57,6 +59,7 @@ const CHAPTERS = [
       { id: "a6", to: "/agriculture" },
       { id: "a7", to: "/vivant" },
       { id: "a8", to: "/ciel" },
+      { id: "a12", to: "/cyclones" },
       { id: "a9", to: "/economie" },
     ],
   },

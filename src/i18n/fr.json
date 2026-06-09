@@ -61,7 +61,11 @@
       "a8_name": "",
       "a9_name": "",
       "a10_name": "",
-      "a11_name": "Synthèse"
+      "a11_name": "Synthèse",
+      "a12_name": "Cyclones",
+      "a12_tag": "Climat physique · cyclones",
+      "a12_title": "Cyclones",
+      "a12_text": "Quarante-sept saisons de trajectoires tropicales qui balaient la Nouvelle-Calédonie et le Pacifique sud-ouest."
     },
     "act_explore": "Explorer l'acte",
     "act_soon": "Bientôt",
@@ -2088,6 +2092,68 @@
       "biggest_change": "Pour {metric}, {area} est passé de {v0} à {v1} entre {year0} et {year1}.",
       "median_multiple": "Pour {metric}, {area} pèse {mult} la médiane du Pacifique.",
       "region_top": "Pour {metric}, {area} est la sous-région la plus élevée ({value} en moyenne)."
+    }
+  },
+  "act12": {
+    "thesis": "Depuis 1977, des centaines de phénomènes tropicaux ont traversé la région. Superposées saison après saison, leurs trajectoires dessinent une trame — et ce n'est pas leur nombre qui inquiète le plus, mais leur force.",
+    "no_data": "Données cyclones introuvables. Dépose le fichier dans public/data/cyclones/ puis réessaie.",
+    "kpi": {
+      "total": "Trajectoires recensées",
+      "intense": "Le plus intense",
+      "busy": "Saison la plus active",
+      "wind": "Vent maximal relevé",
+      "cyclones_unit": "cyclones"
+    },
+    "stage": {
+      "dtfa": "Dépression tropicale faible",
+      "dtm": "Dépression tropicale modérée",
+      "dtfo": "Dépression tropicale forte",
+      "ct": "Cyclone tropical",
+      "cti": "Cyclone tropical intense",
+      "ctti": "Cyclone tropical très intense"
+    },
+    "map": {
+      "play": "Lire",
+      "pause": "Pause",
+      "expand": "Plein écran",
+      "close": "Fermer",
+      "all_seasons": "Toutes les saisons",
+      "cyclones": "cyclones",
+      "wind": "Vent",
+      "pressure": "Pression",
+      "season": "Saison",
+      "kt": "nœuds",
+      "kmh": "km/h",
+      "hpa": "hPa"
+    },
+    "viz": {
+      "map_title": "47 saisons de trajectoires",
+      "map_find": "Faites défiler les saisons : les trajectoires passées restent en filigrane sur l'océan, la saison active se dessine.",
+      "bystage_title": "Répartition par stade d'intensité",
+      "bystage_find": "Combien de trajectoires ont atteint chaque stade, de la dépression faible au cyclone très intense.",
+      "bystage_series": "Trajectoires",
+      "season_title": "Cyclones par saison",
+      "season_find": "Le décompte varie fortement d'une année à l'autre. La science reste prudente sur la fréquence : ce qui augmente avec le réchauffement, c'est surtout la proportion de cyclones intenses et l'intensité de leurs pluies.",
+      "season_series": "Cyclones"
+    },
+    "board": {
+      "tab_map": "Carte",
+      "tab_stage": "Stades",
+      "tab_season": "Par saison",
+      "signature": "Signature",
+      "switch_hint": "← → pour changer de vue",
+      "takeaway_kicker": "À retenir",
+      "start": "Explorer les trajectoires",
+      "conclusion": "Conclure",
+      "back_intro": "Intro",
+      "revise_data": "Revoir les données"
+    },
+    "outro": {
+      "kicker": "Du ciel à la terre",
+      "title": "La force, plus que le nombre",
+      "text": "Les cyclones rappellent que le climat ne se réchauffe pas en silence : il frappe. Reste à voir ce que la région parvient encore à faire pousser, saison après saison.",
+      "next": "Continuer",
+      "home": "Retour à l'accueil"
     }
   }
 }

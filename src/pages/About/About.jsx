@@ -42,6 +42,7 @@ import {
   FiBarChart2,
   FiGitMerge,
 } from "react-icons/fi";
+import { WiHurricane } from "react-icons/wi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
 import mePhoto from "../../me.jpg";
@@ -101,6 +102,7 @@ const TOPIC_ICONS = {
   energy: <FiZap />,
   envtaxes: <FiPercent />,
   meteo: <FiWind />,
+  cyclones: <WiHurricane />,
 };
 
 // En-tête de section : numéro éditorial (décoratif) + eyebrow + icône.

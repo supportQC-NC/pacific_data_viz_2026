@@ -112,6 +112,35 @@ const SOURCES = {
       link: "https://unstats.un.org/sdgs/dataportal",
     },
   },
+
+  cyclones: {
+    fr: {
+      provider: "Météo-France · Gouvernement de la Nouvelle-Calédonie (plateforme Géorep)",
+      dataset:
+        "Base de données cycloniques pour la Nouvelle-Calédonie — couche « Historique des trajectoires » (depuis 1840 ; phénomènes documentés ici 1977/78 → 2023/24)",
+      frequency: "Par saison cyclonique (jeu figé)",
+      updated: "2026-05-04",
+      license: "CC BY-NC-ND 4.0",
+      method:
+        "FICHIER STATIQUE TÉLÉCHARGÉ (GeoJSON), intégré tel quel — aucun appel API en direct. Chaque trajectoire est une ligne (LineString ou MultiLineString lorsqu'elle franchit l'antiméridien ; les segments sont conservés séparés). Le stade affiché vient du libellé officiel `type_max` (dépression tropicale faible/modérée/forte → cyclone tropical/intense/très intense), et non d'un seuil recalculé. Vent max `vmax_traj` en nœuds (déduit de la cohérence interne) ; pression min `pmin_traj` en hPa. Limite : ce fichier ne contient pas le vent/la pression position par position — l'animation trace la trajectoire et séquence les cyclones par date de début. Source d'origine : base SPEArTC (Diamond et al., 2012).",
+      example:
+        "Saison 1977/1978, cyclone TOM : du 5 au 17 novembre 1977, stade max « dépression tropicale modérée », vent max 44,7 nœuds, pression min 990 hPa.",
+      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+    },
+    en: {
+      provider: "Météo-France · Government of New Caledonia (Géorep platform)",
+      dataset:
+        "Tropical-cyclone database for New Caledonia — “Track history” layer (since 1840; events documented here 1977/78 → 2023/24)",
+      frequency: "Per cyclone season (static dataset)",
+      updated: "2026-05-04",
+      license: "CC BY-NC-ND 4.0",
+      method:
+        "STATIC DOWNLOADED FILE (GeoJSON), used as-is — no live API call. Each track is a line (LineString, or MultiLineString when it crosses the antimeridian; segments are kept separate). The stage shown comes from the official `type_max` label (weak/moderate/severe tropical depression → tropical cyclone/intense/very intense), not from a recomputed threshold. Max wind `vmax_traj` in knots (inferred from internal consistency); min pressure `pmin_traj` in hPa. Limit: this file has no per-position wind/pressure — the animation draws the track and sequences cyclones by start date. Original source: SPEArTC archive (Diamond et al., 2012).",
+      example:
+        "Season 1977/1978, cyclone TOM: 5–17 November 1977, peak stage “moderate tropical depression”, max wind 44.7 knots, min pressure 990 hPa.",
+      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+    },
+  },
 };
 
 export function getDatasetSource(id, lang = "fr") {

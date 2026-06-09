@@ -1,0 +1,368 @@
+// src/components/CycloneMap/CycloneMap.scss
+// ============================================================
+// Styles de la carte des trajectoires cycloniques.
+// Les TOKENS DE STADE (--cy-*) sont définis ici pour rester groupés avec le
+// composant ; ils peuvent être remontés tels quels dans src/index.scss si tu
+// préfères les centraliser. Variantes light/dark via [data-theme].
+// Aucune couleur en dur hors de ces définitions de variables.
+// ============================================================
+
+// ---- Tokens de stade (barème Météo-France Nouvelle-Calédonie) ----
+// Dégradé du calme (teal) au catastrophique (blanc incandescent + halo magenta).
+:root,
+[data-theme="dark"] {
+  --cy-dtfa: #4ad9c0; // dépression tropicale faible
+  --cy-dtm: #38bdf8;  // dépression tropicale modérée
+  --cy-dtfo: #fbbf24; // dépression tropicale forte
+  --cy-ct: #fb923c;   // cyclone tropical
+  --cy-cti: #f43f5e;  // cyclone tropical intense
+  --cy-ctti: #ffffff; // cyclone tropical très intense
+  --cy-ctti-glow: rgba(255, 61, 240, 0.85); // halo magenta de l'apex
+}
+
+[data-theme="light"] {
+  --cy-dtfa: #0fae93;
+  --cy-dtm: #0a85c7;
+  --cy-dtfo: #d18a00;
+  --cy-ct: #e06a1f;
+  --cy-cti: #d61f43;
+  --cy-ctti: #b3138f;
+  --cy-ctti-glow: rgba(179, 19, 143, 0.5);
+}
+
+.cmap {
+  position: relative;
+  width: 100%;
+
+  &__stage {
+    position: relative;
+  }
+
+  &__map {
+    width: 100%;
+    height: 540px;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: var(--border-hair) solid var(--c-line);
+  }
+
+  // ---- Plein écran ----
+  &--full {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    background: var(--c-bg);
+    padding: var(--sp-3);
+    display: flex;
+    flex-direction: column;
+
+    .cmap__stage {
+      flex: 1;
+      min-height: 0;
+    }
+    .cmap__map {
+      height: 100%;
+    }
+  }
+
+  // ---- État sans token Mapbox ----
+  &--notoken {
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    padding: var(--sp-8);
+    border: var(--border-hair) dashed var(--c-line-strong);
+    border-radius: var(--r-md);
+    color: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    text-align: center;
+  }
+
+  // ---- Lecture saison + bulletin (haut-gauche) ----
+  &__readout {
+    position: absolute;
+    top: var(--sp-3);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100% - 120px);
+    padding: var(--sp-2) var(--sp-4);
+    background: color-mix(in srgb, var(--c-bg) 62%, transparent);
+    backdrop-filter: blur(10px);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    pointer-events: none;
+  }
+
+  &__season {
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semi);
+    letter-spacing: var(--ls-tight);
+    color: var(--c-text);
+  }
+
+  &__count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-accent);
+  }
+
+  &__headline {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding-left: var(--sp-3);
+    border-left: var(--border-hair) solid var(--c-line-strong);
+  }
+
+  &__headline-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--cy-dtfa);
+  }
+
+  &__headline-name {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-med);
+    color: var(--c-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__headline-stage {
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  // ---- Bouton plein écran (haut-droite) ----
+  &__expand {
+    position: absolute;
+    top: var(--sp-3);
+    right: var(--sp-3);
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--r-sm);
+    color: var(--c-text);
+    background: color-mix(in srgb, var(--c-bg) 60%, transparent);
+    backdrop-filter: blur(10px);
+    border: var(--border-hair) solid var(--c-line);
+    transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--c-accent);
+      border-color: var(--c-line-strong);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  // ---- Timeline (bas) ----
+  &__timeline {
+    position: absolute;
+    left: 50%;
+    bottom: var(--sp-3);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    width: min(560px, calc(100% - 32px));
+    padding: var(--sp-2) var(--sp-4);
+    background: color-mix(in srgb, var(--c-bg) 62%, transparent);
+    backdrop-filter: blur(10px);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+  }
+
+  &__play {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 50%;
+    color: var(--c-bg);
+    background: var(--c-accent);
+    box-shadow: var(--shadow-glow);
+    transition: transform var(--t-fast) var(--ease-out);
+
+    &:hover {
+      transform: scale(1.06);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  &__scrub {
+    flex: 1;
+    appearance: none;
+    height: 4px;
+    border-radius: var(--r-pill);
+    background: var(--c-line-strong);
+    cursor: pointer;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--c-accent);
+      box-shadow: var(--shadow-glow);
+      cursor: pointer;
+    }
+    &::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border: none;
+      border-radius: 50%;
+      background: var(--c-accent);
+      cursor: pointer;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 4px;
+    }
+  }
+
+  &__scrub-val {
+    flex: none;
+    min-width: 76px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+  }
+
+  // ---- Légende des stades ----
+  &__legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    margin-top: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__legend-swatch {
+    width: 22px;
+    height: 4px;
+    border-radius: var(--r-pill);
+    background: var(--cy-dtfa);
+  }
+}
+
+// ---- Couleur par stade (légende, bulletin, popup) ----
+// Un seul jeu de sélecteurs d'attribut, réutilisé partout.
+@each $id, $var in (DTFA: --cy-dtfa, DTM: --cy-dtm, DTFO: --cy-dtfo, CT: --cy-ct, CTI: --cy-cti, CTTI: --cy-ctti) {
+  .cmap__legend-swatch[data-stage="#{$id}"],
+  .cmap__headline-dot[data-stage="#{$id}"] {
+    background: var(#{$var});
+  }
+  .cmap-pop__stage[data-stage="#{$id}"] {
+    color: var(#{$var});
+  }
+}
+
+// L'apex (CTTI) : halo magenta pour le rendre « incandescent ».
+.cmap__legend-swatch[data-stage="CTTI"],
+.cmap__headline-dot[data-stage="CTTI"] {
+  box-shadow: 0 0 8px 1px var(--cy-ctti-glow);
+}
+
+// ---- Popup Mapbox (survol d'une trajectoire) ----
+.cmap-popup .mapboxgl-popup-content {
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow-glow);
+}
+.cmap-popup .mapboxgl-popup-tip {
+  border-top-color: var(--c-surface);
+}
+
+.cmap-pop {
+  display: grid;
+  gap: 2px;
+  min-width: 150px;
+  font-family: var(--font-body);
+
+  &__name {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--c-text);
+  }
+  &__season {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+    margin-bottom: var(--sp-1);
+  }
+  &__stage {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semi);
+    margin-bottom: var(--sp-1);
+  }
+  &__row {
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+
+    em {
+      font-style: normal;
+      color: var(--c-text-mute);
+      text-transform: uppercase;
+      letter-spacing: var(--ls-wide);
+      margin-right: var(--sp-2);
+    }
+  }
+}
+
+// ---- Mouvement réduit : pas d'effets superflus ----
+@media (prefers-reduced-motion: reduce) {
+  .cmap__play:hover {
+    transform: none;
+  }
+}
+
+// ---- Responsive ----
+@media (max-width: 720px) {
+  .cmap__map {
+    height: 420px;
+  }
+  .cmap__readout {
+    flex-direction: column;
+    gap: var(--sp-1);
+    border-radius: var(--r-md);
+  }
+  .cmap__headline {
+    border-left: none;
+    padding-left: 0;
+  }
+}

@@ -3,7 +3,7 @@
 // Contexte du PARCOURS GUIDÉ (« Commencer l'expérience »).
 // SOURCE DE VÉRITÉ UNIQUE pour : l'ordre des actes, leur NUMÉRO, leur
 // MOUVEMENT narratif, et le voisinage (précédent / suivant).
-// - Ordre canonique des 11 actes (id + route) → JOURNEY
+// - Ordre canonique des actes (id + route) → JOURNEY
 // - Regroupement en 5 MOUVEMENTS narratifs (pour la Home et l'ouvre-chapitre)
 // - Helpers : numberOf, padOf, movementOf, byPath, neighbors
 // - Mode guidé activé ou non ; suivi des intros vues ; persistance légère
@@ -24,24 +24,25 @@ export const JOURNEY = [
   { id: "a1", to: "/emissions" },   // 01 · Le paradoxe fondateur (émissions)
   { id: "a2", to: "/ocean" },       // 02 · L'océan (SST)
   { id: "a8", to: "/ciel" },        // 03 · Lire le ciel (pluie + temp. terre + météo)
-  { id: "a6", to: "/agriculture" }, // 04 · Nourrir demain (agriculture)
-  { id: "a7", to: "/vivant" },      // 05 · Protéger le vivant (Liste Rouge + pêche)
-  { id: "a3", to: "/territory" },   // 06 · La côte, ligne de front (niveau mer + population)
-  { id: "a10", to: "/sante" },      // 07 · L'eau et la santé (eau + tuberculose)
-  { id: "a4", to: "/impact" },      // 08 · L'humain au cœur (catastrophes)
-  { id: "a5", to: "/momentum" },    // 09 · L'élan renouvelable (renouvelables)
-  { id: "a9", to: "/economie" },    // 10 · Une économie qui se réinvente (tourisme + élec. + fiscalité)
-  { id: "a11", to: "/synthese" },   // 11 · La voie tracée (synthèse)
+  { id: "a12", to: "/cyclones" },   // 04 · Les cyclones (trajectoires 1977→2024)
+  { id: "a6", to: "/agriculture" }, // 05 · Nourrir demain (agriculture)
+  { id: "a7", to: "/vivant" },      // 06 · Protéger le vivant (Liste Rouge + pêche)
+  { id: "a3", to: "/territory" },   // 07 · La côte, ligne de front (niveau mer + population)
+  { id: "a10", to: "/sante" },      // 08 · L'eau et la santé (eau + tuberculose)
+  { id: "a4", to: "/impact" },      // 09 · L'humain au cœur (catastrophes)
+  { id: "a5", to: "/momentum" },    // 10 · L'élan renouvelable (renouvelables)
+  { id: "a9", to: "/economie" },    // 11 · Une économie qui se réinvente (tourisme + élec. + fiscalité)
+  { id: "a11", to: "/synthese" },   // 12 · La voie tracée (synthèse)
 ];
 
 // Mouvements narratifs (regroupent les actes par famille de données).
 // L'ordre des `acts` DOIT suivre l'ordre de JOURNEY.
 export const MOVEMENTS = [
-  { id: "m1", acts: ["a1"] },              // Le constat / la responsabilité
-  { id: "m2", acts: ["a2", "a8"] },        // Le climat physique
-  { id: "m3", acts: ["a6", "a7"] },        // Ressources & vivant
-  { id: "m4", acts: ["a3", "a10", "a4"] }, // L'humain en première ligne
-  { id: "m5", acts: ["a5", "a9", "a11"] }, // La riposte, puis le verdict
+  { id: "m1", acts: ["a1"] },                // Le constat / la responsabilité
+  { id: "m2", acts: ["a2", "a8", "a12"] },   // Le climat physique (+ cyclones)
+  { id: "m3", acts: ["a6", "a7"] },          // Ressources & vivant
+  { id: "m4", acts: ["a3", "a10", "a4"] },   // L'humain en première ligne
+  { id: "m5", acts: ["a5", "a9", "a11"] },   // La riposte, puis le verdict
 ];
 
 const MODE_KEY = "pdc-journey-mode";

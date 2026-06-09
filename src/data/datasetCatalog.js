@@ -188,6 +188,25 @@ const DATASET_CATALOG = [
       { label: "Pacific Data Hub .Stat", url: PDH_STAT },
     ],
   },
+  {
+    id: "cyclones",
+    labelFr: "Cyclones tropicaux",
+    labelEn: "Tropical cyclones",
+    // NB : jeu de données figé, intégré comme FICHIER GeoJSON statique téléchargé
+    // (pas d'appel API en direct). Couche « Historique des trajectoires ».
+    descFr: "Trajectoires historiques des cyclones (1977–2024) — fichier GeoJSON statique téléchargé depuis Géorep.",
+    descEn: "Historical cyclone tracks (1977–2024) — static GeoJSON file downloaded from Géorep.",
+    sources: [
+      {
+        label: "Météo-France · Gouv. Nouvelle-Calédonie (Géorep)",
+        url: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+      },
+      {
+        label: "Géorep · Téléchargement GeoJSON (CC BY-NC-ND 4.0)",
+        url: "https://georep-dtsi-sgt.opendata.arcgis.com/datasets/dtsi-sgt::base-de-donn%C3%A9es-cycloniques-pour-la-nouvelle-cal%C3%A9donie-de-m%C3%A9t%C3%A9o-france/explore?layer=1",
+      },
+    ],
+  },
 ];
 
 export function datasetById(id) {

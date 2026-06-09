@@ -61,7 +61,11 @@
       "a8_name": "",
       "a9_name": "",
       "a10_name": "",
-      "a11_name": "Synthesis"
+      "a11_name": "Synthesis",
+      "a12_name": "Cyclones",
+      "a12_tag": "Physical climate · cyclones",
+      "a12_title": "Cyclones",
+      "a12_text": "Forty-seven seasons of tropical tracks sweeping across New Caledonia and the south-west Pacific."
     },
     "act_explore": "Explore the act",
     "act_soon": "Soon",
@@ -2088,6 +2092,68 @@
       "biggest_change": "For {metric}, {area} went from {v0} to {v1} between {year0} and {year1}.",
       "median_multiple": "For {metric}, {area} is {mult} the Pacific median.",
       "region_top": "For {metric}, {area} is the highest sub-region ({value} on average)."
+    }
+  },
+  "act12": {
+    "thesis": "Since 1977, hundreds of tropical systems have crossed the region. Layered season after season, their tracks reveal a pattern — and it is not their number that is most worrying, but their strength.",
+    "no_data": "Cyclone data not found. Drop the file into public/data/cyclones/ and try again.",
+    "kpi": {
+      "total": "Recorded tracks",
+      "intense": "Most intense",
+      "busy": "Busiest season",
+      "wind": "Peak wind recorded",
+      "cyclones_unit": "cyclones"
+    },
+    "stage": {
+      "dtfa": "Weak tropical depression",
+      "dtm": "Moderate tropical depression",
+      "dtfo": "Severe tropical depression",
+      "ct": "Tropical cyclone",
+      "cti": "Intense tropical cyclone",
+      "ctti": "Very intense tropical cyclone"
+    },
+    "map": {
+      "play": "Play",
+      "pause": "Pause",
+      "expand": "Fullscreen",
+      "close": "Close",
+      "all_seasons": "All seasons",
+      "cyclones": "cyclones",
+      "wind": "Wind",
+      "pressure": "Pressure",
+      "season": "Season",
+      "kt": "knots",
+      "kmh": "km/h",
+      "hpa": "hPa"
+    },
+    "viz": {
+      "map_title": "47 seasons of tracks",
+      "map_find": "Scrub through the seasons: past tracks linger as faint scars on the ocean while the active season draws itself in.",
+      "bystage_title": "Distribution by intensity stage",
+      "bystage_find": "How many tracks reached each stage, from weak depression to very intense cyclone.",
+      "bystage_series": "Tracks",
+      "season_title": "Cyclones per season",
+      "season_find": "The count swings widely from year to year. Science is cautious about frequency: what rises with warming is mainly the share of intense cyclones and the intensity of their rainfall.",
+      "season_series": "Cyclones"
+    },
+    "board": {
+      "tab_map": "Map",
+      "tab_stage": "Stages",
+      "tab_season": "Per season",
+      "signature": "Signature",
+      "switch_hint": "← → to switch view",
+      "takeaway_kicker": "Takeaway",
+      "start": "Explore the tracks",
+      "conclusion": "Conclude",
+      "back_intro": "Intro",
+      "revise_data": "Review the data"
+    },
+    "outro": {
+      "kicker": "From sky to land",
+      "title": "Strength, more than numbers",
+      "text": "Cyclones are a reminder that the climate does not warm in silence — it strikes. The question now is what the region can still manage to grow, season after season.",
+      "next": "Continue",
+      "home": "Back to home"
     }
   }
 }
