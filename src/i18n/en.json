@@ -2353,6 +2353,26 @@
     "energy": {
       "fossil": "Fossil",
       "renew": "Renewable"
-    }
+    },
+    "cross_title": "Cross-readings",
+    "cross": {
+      "climate": {
+        "title": "Warming & rising seas",
+        "note": "Two signals of disruption on the same territory: sea-surface temperature and sea level, rising in step."
+      },
+      "carbon": {
+        "title": "Carbon & clean energy",
+        "note": "Per-capita carbon footprint against the renewable-energy share: does the transition show up in emissions?"
+      },
+      "health": {
+        "title": "Safe water & disease",
+        "note": "Access to safe drinking water and tuberculosis incidence often move in opposite directions."
+      },
+      "human": {
+        "title": "Population & tourism",
+        "note": "Human pressure: resident population and visitor inflows, two forces weighing on resources."
+      }
+    },
+    "loading_one": "Loading"
   }
 }

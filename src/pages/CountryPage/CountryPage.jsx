@@ -3,10 +3,10 @@
 // 4e mode de lecture : EXPLORER PAR TERRITOIRE (récit). Route /territoire/:code.
 // Carte 3D -> en-tête -> chapitres. Sources réelles du projet :
 //   • pdhApi (climateSlice)   : climat, tourisme, eau, santé, biodiversité…
-//   • powerApi (DF_POWER_GEN) : électricité PAR SOURCE -> PowerMixChart empilé
+//   • powerApi (DF_POWER_GEN) : électricité PAR SOURCE -> histogramme empilé par source
 //   • agriApi (DF_AGRI_PROD)  : CULTURES & ÉLEVAGE par produit -> multi-courbes
 // Commentaire d'évolution enrichi (dernier relevé, qualification, période, %, pic).
-// Composants du projet (TrendChart / AnnualBarsChart / PowerMixChart). Cyclones
+// Composants du projet (TrendChart / AnnualBarsChart / StackedColsChart / DualAxisChart). Cyclones
 // exclus. 100 % données réelles.
 // ============================================================
 
@@ -24,8 +24,10 @@ import { fetchAgriProduction } from "../../services/agriApi";
 import { fetchPowerMix } from "../../services/powerApi";
 import TrendChart from "../../components/charts/TrendChart";
 import AnnualBarsChart from "../../components/charts/AnnualBarsChart";
-import PowerMixChart from "../../components/charts/PowerMixChart";
+import StackedColsChart from "../../components/charts/StackedColsChart";
+import DualAxisChart from "../../components/charts/DualAxisChart";
 import CountryMiniMap from "../../components/CountryMiniMap/CountryMiniMap";
+import Loader from "../../components/Loader/Loader";
 import "./CountryPage.scss";
 
 const DEC = {
@@ -56,6 +58,14 @@ const CHAPTERS = [
   { key: "crops", kind: "crops" },
   { key: "livestock", kind: "livestock" },
   { key: "shocks", ind: ["disastersAffected", "disastersLoss"] },
+];
+
+// Croisements à double axe (lecture combinée de deux indicateurs).
+const CROSS = [
+  { key: "climate", l: "sst", r: "seaLevel" },
+  { key: "carbon", l: "emissions", r: "renewables" },
+  { key: "health", l: "water", r: "tuberculosis" },
+  { key: "human", l: "population", r: "tourism" },
 ];
 
 // Couleur d'une source d'énergie (répliqué de l'Acte 5 pour cohérence visuelle).
@@ -110,6 +120,8 @@ export default function CountryPage() {
   const datasets = useSelector((s) => s.climate.datasets);
   const [agriRaw, setAgriRaw] = useState({ status: "idle", res: null });
   const [powerRaw, setPowerRaw] = useState({ status: "idle", res: null });
+  const [tick, setTick] = useState(0);
+  const [graceOver, setGraceOver] = useState(false);
 
   const nf = lang === "fr" ? "fr-FR" : "en-US";
   const valid = isPict(code);
@@ -127,18 +139,24 @@ export default function CountryPage() {
   useEffect(() => {
     if (!valid) return undefined;
     let alive = true;
-    const ctrl = new AbortController();
-    setAgriRaw({ status: "loading", res: null });
-    fetchAgriProduction({ lang, signal: ctrl.signal })
-      .then((res) => alive && setAgriRaw({ status: "ok", res: res || null }))
-      .catch(() => alive && setAgriRaw({ status: "failed", res: null }));
-    setPowerRaw({ status: "loading", res: null });
-    fetchPowerMix({ lang, signal: ctrl.signal })
-      .then((res) => alive && setPowerRaw({ status: "ok", res: res || null }))
-      .catch(() => alive && setPowerRaw({ status: "failed", res: null }));
+    setAgriRaw((p) => (p.res ? p : { status: "loading", res: null }));
+    setPowerRaw((p) => (p.res ? p : { status: "loading", res: null }));
+    fetchAgriProduction({ lang })
+      .then((res) => {
+        if (!alive) return;
+        if (res && res.commodities && res.commodities.length) setAgriRaw({ status: "ok", res });
+        else setAgriRaw((p) => (p.res ? p : { status: "failed", res: null }));
+      })
+      .catch(() => alive && setAgriRaw((p) => (p.res ? p : { status: "failed", res: null })));
+    fetchPowerMix({ lang })
+      .then((res) => {
+        if (!alive) return;
+        if (res && res.byArea && Object.keys(res.byArea).length) setPowerRaw({ status: "ok", res });
+        else setPowerRaw((p) => (p.res ? p : { status: "failed", res: null }));
+      })
+      .catch(() => alive && setPowerRaw((p) => (p.res ? p : { status: "failed", res: null })));
     return () => {
       alive = false;
-      ctrl.abort();
     };
   }, [valid, lang]);
 
@@ -185,6 +203,38 @@ export default function CountryPage() {
       const ds = datasets[id];
       return !ds || ds.status === "idle" || ds.status === "loading";
     });
+
+  // Sécurité : on révèle la page au bout de ~9,5 s même si une source traîne
+  // (timeout SDMX à 8 s) — jamais de loader infini.
+  useEffect(() => {
+    if (!valid) return undefined;
+    const id = setTimeout(() => setGraceOver(true), 9500);
+    return () => clearTimeout(id);
+  }, [valid]);
+
+  const loading = anyLoading && !graceOver;
+
+  // Fait défiler le label du loader pendant le chargement.
+  useEffect(() => {
+    if (!loading) return undefined;
+    const id = setInterval(() => setTick((n) => n + 1), 650);
+    return () => clearInterval(id);
+  }, [loading]);
+
+  // Indicateurs encore en cours de chargement (pour le label défilant).
+  const pending = [
+    ...ALL.filter((id) => {
+      const ds = datasets[id];
+      return !ds || ds.status === "idle" || ds.status === "loading";
+    }).map((id) => t(`country.ind.${id}`)),
+    ...(powerRaw.status === "loading" ? [t("country.ind.electricity")] : []),
+    ...(agriRaw.status === "loading"
+      ? [t("country.story.crops.kicker"), t("country.story.livestock.kicker")]
+      : []),
+  ];
+  const loadingLabel = pending.length
+    ? `${t("country.loading_one")} ${pending[tick % pending.length]}\u2026`
+    : t("country.loading");
 
   const resolve = (d) =>
     d.label != null
@@ -264,7 +314,7 @@ export default function CountryPage() {
       const feature = buildSeries({ id: "electricity", label: t("country.ind.electricity"), unit: "GWh" }, totalVals, 0);
       if (!feature) return null;
       const viz = (
-        <PowerMixChart
+        <StackedColsChart
           series={sources.map((s) => ({ name: s.name, color: s.color, data: years.map((y) => s.map[y] || 0) }))}
           years={years}
           unit="GWh"
@@ -308,6 +358,19 @@ export default function CountryPage() {
       : null;
     return { key: ch.key, feature, viz, chips };
   }).filter(Boolean);
+
+  const crosses = CROSS.map((x) => {
+    const L = data[x.l];
+    const R = data[x.r];
+    if (!L || !R || !L.multi || !R.multi) return null;
+    return { key: x.key, L: resolve(L), R: resolve(R) };
+  }).filter(Boolean);
+
+  // Loader plein écran (pluie binaire) tant que TOUS les indicateurs ne sont
+  // pas chargés : la page n'est servie qu'une fois complète.
+  if (loading) {
+    return <Loader fullscreen label={loadingLabel} />;
+  }
 
   return (
     <main className="country">
@@ -396,6 +459,32 @@ export default function CountryPage() {
         ) : (
           <p className="country__hint">{t("country.no_data")}</p>
         )}
+
+        {crosses.length ? (
+          <div className="country__story country__crosses">
+            <p className="eyebrow country__section">{t("country.cross_title")}</p>
+            {crosses.map((x) => (
+              <section className="country__chapter" key={`x-${x.key}`}>
+                <div className="country__ch-head">
+                  <h2 className="country__ch-title">{t(`country.cross.${x.key}.title`)}</h2>
+                  <p className="country__ch-narr">{t(`country.cross.${x.key}.note`)}</p>
+                </div>
+                <div className="country__ch-viz">
+                  <DualAxisChart
+                    seaSeries={[{ values: x.L.values }]}
+                    seaYears={x.L.years}
+                    sstSeries={[{ values: x.R.values }]}
+                    sstYears={x.R.years}
+                    seaName={x.L.label}
+                    sstName={x.R.label}
+                    seaUnit={x.L.unit}
+                    sstUnit={x.R.unit}
+                  />
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : null}
 
         {chapters.length && anyLoading ? (
           <p className="country__hint country__hint--soft">{t("country.loading")}</p>

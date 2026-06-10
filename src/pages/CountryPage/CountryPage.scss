@@ -106,6 +106,16 @@
     gap: var(--sp-16);
   }
 
+  &__crosses {
+    margin-top: var(--sp-20);
+  }
+
+  &__section {
+    padding-bottom: var(--sp-3);
+    border-bottom: var(--border-hair) solid var(--c-line);
+    color: var(--c-accent);
+  }
+
   &__chapter {
     padding-top: var(--sp-10);
     border-top: var(--border-hair) solid var(--c-line);

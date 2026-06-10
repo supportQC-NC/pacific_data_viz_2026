@@ -2353,6 +2353,26 @@
     "energy": {
       "fossil": "Fossile",
       "renew": "Renouvelable"
-    }
+    },
+    "cross_title": "Croisements",
+    "cross": {
+      "climate": {
+        "title": "Réchauffement & montée des eaux",
+        "note": "Deux signaux du dérèglement sur le même territoire : température de surface de la mer et niveau marin, qui progressent de concert."
+      },
+      "carbon": {
+        "title": "Carbone & énergie propre",
+        "note": "Empreinte carbone par habitant face à la part d'énergie renouvelable : la transition se lit-elle dans les émissions ?"
+      },
+      "health": {
+        "title": "Eau potable & maladies",
+        "note": "Accès à l'eau potable sûre et incidence de la tuberculose évoluent souvent en sens inverse."
+      },
+      "human": {
+        "title": "Population & tourisme",
+        "note": "Pression humaine : habitants résidents et flux de visiteurs, deux dynamiques qui pèsent sur les ressources."
+      }
+    },
+    "loading_one": "Chargement de"
   }
 }
