@@ -17,6 +17,8 @@ import Loader from "../../components/Loader/Loader";
 import EventTimeline from "../../components/EventTimeline/EventTimeline";
 import RankBars from "../../components/RankBars/RankBars";
 import TrendChart from "../../components/charts/TrendChart";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
+import CoverageChart from "../../components/charts/CoverageChart";
 import "./Act4Impact.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -64,6 +66,24 @@ function buildTotals(d, lang) {
       return { area: a, code: a, name: pictName(a, lang), value: total };
     })
     .filter((r) => r.value > 0);
+}
+
+function buildCoverageSeries(d, lang, inRegion) {
+  if (!d) return { series: [], years: [] };
+  const yearsSet = new Set();
+  const series = d.areas
+    .filter((a) => isPict(a) && inRegion(a))
+    .map((a) => {
+      const values = (d.byArea[a] || [])
+        .filter((p) => Number.isFinite(p.value) && p.value > 0)
+        .map((p) => {
+          yearsSet.add(p.year);
+          return { year: p.year, value: p.value };
+        });
+      return { area: a, name: pictName(a, lang), values };
+    })
+    .filter((s) => s.values.length);
+  return { series, years: [...yearsSet].sort((x, y) => x - y) };
 }
 
 /* ---------- Menu déroulant (filtres globaux) ---------- */
@@ -123,6 +143,11 @@ export default function Act4Impact() {
   const metricLabel = isLoss ? t("act4.loss_title") : t("act4.affected_title");
   const selMax = useMemo(() => selTotals.reduce((m, r) => Math.max(m, r.value), 0), [selTotals]);
 
+  const coverage = useMemo(
+    () => buildCoverageSeries(isLoss ? loss.data : affected.data, lang, inRegion),
+    [isLoss, loss.data, affected.data, lang, inRegion],
+  );
+
   // Total par année (la fréquence/intensité s'aggrave-t-elle avec le temps ?).
   const annual = useMemo(() => {
     const m = new Map();
@@ -162,6 +187,21 @@ export default function Act4Impact() {
     </>
   );
 
+  // Carte d'identité DOUBLE (personnes affectées + pertes) — 100 % i18n / fiches UNDRR.
+  const spotlightRows = [
+    { k: t("act4.spotlight.r1k"), v: t("act4.spotlight.r1v") },
+    { k: t("act4.spotlight.r2k"), v: t("act4.spotlight.r2v") },
+    { k: t("act4.spotlight.r3k"), v: t("act4.spotlight.r3v") },
+    { k: t("act4.spotlight.r4k"), v: t("act4.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act4.spotlight.n1"),
+    t("act4.spotlight.n2"),
+    t("act4.spotlight.n3"),
+    t("act4.spotlight.n4"),
+    t("act4.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready"
       ? [
@@ -177,6 +217,22 @@ export default function Act4Impact() {
               <div className="act4b__scroll">
                 <EventTimeline events={selEvents} unit={selUnit} format={selFormat} />
               </div>
+            ),
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act4.board.tab_read"),
+            title: t("act4.read_title"),
+            finding: t("act4.board.read_find"),
+            takeaway: t("act4.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act4.spotlight.ex_kicker"), text: t("act4.spotlight.ex_text") }}
+                link={{ href: "https://www.preventionweb.net/files/54970_collectionoftechnicalguidancenoteso.pdf", label: t("act4.spotlight.link_label") }}
+              />
             ),
           },
           {
@@ -216,6 +272,21 @@ export default function Act4Impact() {
               </ErrorBoundary>
             ),
           },
+          {
+            id: "coverage",
+            empty: coverage.series.length === 0,
+            tab: t("act4.board.tab_coverage"),
+            title: `${t("act4.coverage_title")} · ${metricLabel}`,
+            finding: t("act4.board.coverage_find"),
+            takeaway: t("act4.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={coverage.series}
+                years={coverage.years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
         ]
       : [];
 
@@ -231,7 +302,7 @@ export default function Act4Impact() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 4, total: 11 }}
+      progress={{ index: 9, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act1.empty"),

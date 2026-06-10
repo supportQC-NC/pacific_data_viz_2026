@@ -1,99 +1,165 @@
 // src/components/EvolutionPanel/EvolutionPanel.scss
+// ============================================================
+// Panneau d'évolution (progressions / reculs).
+// Cards COMPACTES : une seule rangée par territoire —
+//   nom · barre flexible · (valeurs + variation) à droite.
+// Toutes les valeurs passent par les variables globales (index.scss).
+// Aucune valeur en dur arbitraire, aucun style inline dans le JSX.
+// ============================================================
+
 .evo {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-8);
+  gap: var(--sp-6);
 }
+
 @media (max-width: 720px) {
   .evo {
     grid-template-columns: 1fr;
-    gap: var(--sp-6);
+    gap: var(--sp-5);
   }
 }
+
 .evo__col {
   min-width: 0;
 }
+
 .evo__head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-2);
-  margin: 0 0 var(--sp-3);
+  margin: 0 0 var(--sp-2);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
 .evo__head--down {
-  color: var(--c-accent);
+  color: var(--c-negative);
 }
+
 .evo__head--up {
-  color: var(--c-warm);
+  color: var(--c-positive);
 }
+
 .evo__span {
   color: var(--c-text-mute);
   text-transform: none;
   letter-spacing: 0;
 }
+
 .evo__list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--sp-2);
+  gap: var(--sp-1);
 }
+
+// ---- Card compacte : nom | barre | méta, sur une seule rangée ----
 .evo__item {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-  padding: var(--sp-2) var(--sp-3);
+  grid-template-columns: minmax(5rem, auto) 1fr auto;
+  align-items: center;
+  column-gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-sm);
   background: var(--c-surface);
 }
+
 .evo__name {
   color: var(--c-text);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   font-weight: var(--fw-semi);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .evo__bar {
   width: 100%;
-  height: 8px;
+  height: 6px;
   display: block;
 }
+
 .evo__bar-track {
   fill: var(--c-line);
 }
+
 .evo__bar-fill--down {
-  fill: var(--c-accent);
+  fill: var(--c-negative);
 }
+
 .evo__bar-fill--up {
-  fill: var(--c-warm);
+  fill: var(--c-positive);
 }
+
+// Bloc méta : valeurs au-dessus, variation en dessous, alignés à droite
+.evo__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+}
+
 .evo__vals {
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+  font-size: 0.68rem;
   color: var(--c-text-mute);
+  white-space: nowrap;
 }
+
 .evo__pct {
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+  font-size: 0.68rem;
   font-weight: var(--fw-bold);
-  justify-self: start;
+  white-space: nowrap;
 }
+
 .evo__pct--down {
-  color: var(--c-accent);
+  color: var(--c-negative);
 }
+
 .evo__pct--up {
-  color: var(--c-warm);
+  color: var(--c-positive);
 }
+
+// Écrans très étroits : la barre glisse sous le nom + méta
+@media (max-width: 400px) {
+  .evo__item {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name meta"
+      "bar  bar";
+    row-gap: 4px;
+  }
+
+  .evo__name {
+    grid-area: name;
+  }
+
+  .evo__meta {
+    grid-area: meta;
+  }
+
+  .evo__bar {
+    grid-area: bar;
+  }
+}
+
 .evo__unit {
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
   margin: var(--sp-2) 0 0;
   color: var(--c-text-mute);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
+
 .evo__empty {
   color: var(--c-text-mute);
   font-family: var(--font-mono);

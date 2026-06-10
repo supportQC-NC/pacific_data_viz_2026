@@ -22,7 +22,9 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
+import CoverageChart from "../../components/charts/CoverageChart";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RadarChart from "../../components/charts/RadarChart";
@@ -43,12 +45,14 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v) =>
+const fmtVal = (v, decimals) =>
   !Number.isFinite(v)
     ? "—"
-    : Math.abs(v) < 10
-      ? String(Math.round(v * 100) / 100).replace(".", ",")
-      : String(Math.round(v));
+    : decimals === 0
+      ? String(Math.round(v))
+      : Math.abs(v) < 10
+        ? String(Math.round(v * 100) / 100).replace(".", ",")
+        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -273,6 +277,7 @@ export default function Act10Sante() {
   );
 
   const isWater = metric === "water";
+  const metricDecimals = isWater ? 1 : 0;
   const M = isWater
     ? {
         series: waterS,
@@ -337,35 +342,28 @@ export default function Act10Sante() {
     return [
       {
         key: "med",
-        value: fmtVal(med),
+        value: fmtVal(med, metricDecimals),
         unit: M.unit,
         label: t("act10.board.kpi_med"),
         tone: "accent",
       },
       {
         key: "high",
-        value: fmtVal(high.value),
+        value: fmtVal(high.value, metricDecimals),
         unit: high.name,
         label: t("act10.board.kpi_high"),
         tone: M.highTone,
       },
       {
         key: "low",
-        value: fmtVal(low.value),
+        value: fmtVal(low.value, metricDecimals),
         unit: low.name,
         label: t("act10.board.kpi_low"),
         tone: M.lowTone,
       },
     ];
-  }, [M.rank, M.unit, M.highTone, M.lowTone, t]);
+  }, [M.rank, M.unit, M.highTone, M.lowTone, metricDecimals, t]);
 
-  const heatLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
 
   const retry = useCallback(() => {
     setState({ status: "loading", data: null });
@@ -425,6 +423,21 @@ export default function Act10Sante() {
     </>
   );
 
+  // Carte d'identité DOUBLE (eau + tuberculose) — 100 % i18n / métadonnées ONU.
+  const spotlightRows = [
+    { k: t("act10.spotlight.r1k"), v: t("act10.spotlight.r1v") },
+    { k: t("act10.spotlight.r2k"), v: t("act10.spotlight.r2v") },
+    { k: t("act10.spotlight.r3k"), v: t("act10.spotlight.r3v") },
+    { k: t("act10.spotlight.r4k"), v: t("act10.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act10.spotlight.n1"),
+    t("act10.spotlight.n2"),
+    t("act10.spotlight.n3"),
+    t("act10.spotlight.n4"),
+    t("act10.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready"
       ? [
@@ -445,6 +458,22 @@ export default function Act10Sante() {
                   unit={M.unit}
                 />
               </div>
+            ),
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act10.board.tab_read"),
+            title: t("act10.read_title"),
+            finding: t("act10.board.read_find"),
+            takeaway: t("act10.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act10.spotlight.ex_kicker"), text: t("act10.spotlight.ex_text") }}
+                link={{ href: "https://washdata.org/", label: t("act10.spotlight.link_label") }}
+              />
             ),
           },
           {
@@ -478,6 +507,7 @@ export default function Act10Sante() {
                 series={M.race}
                 years={M.years}
                 unit={M.unit}
+                decimals={metricDecimals}
                 tk={tk}
                 labels={{
                   play: t("act1.race.play"),
@@ -495,13 +525,16 @@ export default function Act10Sante() {
             finding: t("act10.board.change_find"),
             takeaway: t("act10.board.change_take"),
             node: (
-              <DumbbellChart
-                rows={M.dumb}
-                yearA={M.A}
-                yearB={M.B}
-                unit={M.unit}
-                labels={M.cmp}
-              />
+              <div className="act10b__scroll">
+                <DumbbellChart
+                  rows={M.dumb}
+                  yearA={M.A}
+                  yearB={M.B}
+                  unit={M.unit}
+                  decimals={metricDecimals}
+                  labels={M.cmp}
+                />
+              </div>
             ),
           },
           {
@@ -512,13 +545,14 @@ export default function Act10Sante() {
             finding: t("act10.board.heat_find"),
             takeaway: t("act10.board.heat_take"),
             node: (
-              <div className="act10b__fit">
-                <EmissionsHeatmap
+              <div className="act10b__scroll">
+                <ApexYearHeatmap
                   series={M.series}
                   years={M.years}
                   unit={M.unit}
                   scale="sequential"
-                  labels={heatLabels}
+                  decimals={metricDecimals}
+                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
                 />
               </div>
             ),
@@ -567,6 +601,21 @@ export default function Act10Sante() {
               </ErrorBoundary>
             ),
           },
+          {
+            id: "coverage",
+            empty: M.series.length === 0,
+            tab: t("act10.board.tab_coverage"),
+            title: t("act10.coverage_title"),
+            finding: t("act10.board.coverage_find"),
+            takeaway: t("act10.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={M.series}
+                years={M.years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
         ]
       : [];
 
@@ -582,7 +631,7 @@ export default function Act10Sante() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 10, total: 11 }}
+      progress={{ index: 8, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act10.unavailable"),
@@ -602,7 +651,7 @@ export default function Act10Sante() {
         kicker: t("act10.outro.kicker"),
         title: t("act10.outro.title"),
         text: t("act10.outro.text"),
-        primary: { to: "/synthese", label: t("act10.outro.next") },
+        primary: { to: "/impact", label: t("act10.outro.next") },
         secondary: { to: "/", label: t("act10.outro.home") },
       }}
     />

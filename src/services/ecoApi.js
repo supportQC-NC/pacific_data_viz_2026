@@ -1,15 +1,24 @@
 // src/services/ecoApi.js
 // ============================================================
-// Acte 09 — « L'économie exposée ». Trois indicateurs réels du PDH :
-//   • Tourisme    : DF_CLIMATE_CHANGE, A.TRSM_ARR.   (effectifs d'arrivées ; ONU Tourisme)
-//   • Électricité : DF_CLIMATE_CHANGE, A.POWER_GEN.  (GWh ; FMI/IRENA)
-//   • Fiscalité   : DF_ENV_TAXES,      A..           (% du PIB ; FMI/OCDE, désagrégé par type)
+// Acte 09 — « L'économie exposée ». Deux jeux officiels du PDH,
+// exploités à fond (total + ventilation par catégorie) :
 //
-// Particularités :
+//   • Tourisme  : DF_CLIMATE_CHANGE, A.TRSM_ARR.  (effectifs d'arrivées ; ONU Tourisme, CC-BY)
+//                 → ventilé par niveau de visiteur : total / touristes / excursionnistes.
+//   • Fiscalité : DF_ENV_TAXES, A..               (% du PIB ; FMI ↠ OCDE)
+//                 → ventilé par type de taxe : énergie / transport / pollution / ressources (+ total).
+//
+// (DF_CLIMATE_CHANGE / POWER_GEN reste défini mais n'est plus exposé dans l'acte.)
+//
+// Principes :
 //   – Nombres formatés FR (point = millier, virgule = décimale) → parseur locale-aware.
-//   – Fiscalité : dimension « type de taxe ». On reconstruit le TOTAL %PIB par
-//     géo-année (ligne « total » si présente, sinon somme des types), et on ne
-//     garde que les observations en pourcentage du PIB.
+//   – On NE code PAS en dur les codes SDMX de catégorie (inconnus selon les
+//     versions) : chaque catégorie est CLASSÉE par regex sur son libellé
+//     (FR + EN), comme powerApi le fait pour renew/fossil. Robuste aux codes.
+//   – Fiscalité : on ne garde que les observations en % du PIB. Le TOTAL est la
+//     ligne « total » si présente, sinon la somme des types documentés.
+//   – Chaque indicateur renvoie le TOTAL (compat. onglets existants) ET un
+//     objet `breakdown.byCat` ventilé par catégorie (nouvel usage).
 // 100 % données API. Aucune valeur inventée. Zéro style inline.
 // ============================================================
 
@@ -34,6 +43,7 @@ const INDICATORS = {
     tailMin: 1,
     tailMax: 3,
     kind: "count",
+    cat: true, // dimension « niveau de visiteur » : total / touristes / excursionnistes
   },
   power: {
     flow: "SPC,DF_CLIMATE_CHANGE,1.0",
@@ -48,10 +58,43 @@ const INDICATORS = {
     tailMin: 2,
     tailMax: 3,
     kind: "percent",
-    cat: true, // dimension « type de taxe » → on agrège en total
+    cat: true, // dimension « type de taxe » → énergie / transport / pollution / ressources
     pctOnly: true, // on ne garde que le % du PIB
   },
 };
+
+// ---- Classification des catégories par libellé (robuste aux codes SDMX) ----
+// Fiscalité environnementale : 4 types + total.
+const TAX_CATS = [
+  { id: "energy", re: /(energ|énerg)/i },
+  { id: "transport", re: /(transport|véhic|vehic|carburant|fuel)/i },
+  { id: "pollution", re: /(pollut|émiss|emiss|déchet|dechet|waste)/i },
+  { id: "resource", re: /(ressource|resource|extract|minér|miner|water)/i },
+];
+// Tourisme : niveaux de visiteur.
+const TRSM_CATS = [
+  { id: "tourist", re: /(touriste|tourist|nuit|overnight|stay)/i },
+  { id: "excursionist", re: /(excursion|journ|day[- ]?(trip|visit)|same[- ]?day)/i },
+];
+
+// Total / agrégat (toutes catégories confondues).
+const TOTAL_RE = /^(_T|_Z|TOT|TOTAL|ALL|_O|ENV)$/i;
+const TOTAL_LABEL_RE = /(total|tous|toutes|ensemble|all|overall|visiteurs?|visitors?|inbound)/i;
+const PCT_RE = /(POURCENT|PERCENT|PIB|GDP|%)/i;
+
+// classe une catégorie (code + libellé) → id normalisé ou "total" ou null
+function classifyCat(kind, code, label) {
+  const c = String(code || "");
+  const l = String(label || "");
+  if (TOTAL_RE.test(c)) return "total";
+  const table = kind === "tax" ? TAX_CATS : TRSM_CATS;
+  for (const cat of table) {
+    if (cat.re.test(l) || cat.re.test(c)) return cat.id;
+  }
+  // Libellé d'agrégat (total/visiteurs/inbound…) non capté par un type précis.
+  if (TOTAL_LABEL_RE.test(l)) return "total";
+  return null;
+}
 
 function keysFor(ind) {
   const out = [];
@@ -78,10 +121,6 @@ function headersFor(lang) {
 }
 
 // parseur UNIVERSEL : auto-détecte point/virgule, milliers vs décimale.
-// Robuste quelle que soit la locale renvoyée par l'API (l'API SDMX renvoie
-// en réalité un point décimal, mais on couvre aussi le format français).
-// Règle : si les deux séparateurs sont présents, le DERNIER est la décimale ;
-// si un seul est présent, 3 chiffres après = millier, sinon = décimale.
 function num(s) {
   let c = String(s == null ? "" : s).replace(/[^0-9.,-]/g, "");
   if (!c || c === "-") return NaN;
@@ -104,17 +143,10 @@ function num(s) {
   if (!Number.isFinite(v)) return NaN;
   return neg ? -v : v;
 }
-function makeNum() {
-  return num;
-}
 
-const TOTAL_RE = /^(_T|_Z|TOT|TOTAL|ALL|_O|ENV)$/i;
-const PCT_RE = /(POURCENT|PERCENT|PIB|GDP|%)/i;
-
-function parse(text, { lang = "fr", cat = false, pctOnly = false, quiet = false } = {}) {
+function parse(text, { cat = false, pctOnly = false, quiet = false } = {}) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return { rows: [], header: lines[0] || "", unit: "" };
-  const num = makeNum(lang);
   const head = lines[0];
   const delim = head.split(";").length > head.split(",").length ? ";" : ",";
   const clean = (s) => (s == null ? "" : s).replace(/^"|"$/g, "").trim();
@@ -131,7 +163,8 @@ function parse(text, { lang = "fr", cat = false, pctOnly = false, quiet = false 
   const iTime = idx("TIME_PERIOD", "TIME");
   const iVal = idx("OBS_VALUE", "VALUE");
   const iUnit = idx("UNIT_MEASURE", "UNIT");
-  const iCat = cat ? idxLike(/(ENV_TAX|TAX|TYPE|TECH)/) : -1;
+  // Dimension catégorie : type de taxe OU niveau de visiteur OU indicateur tourisme.
+  const iCat = cat ? idxLike(/(ENV_TAX|TAX|TYPE|TECH|INDICATOR|TRSM|VISITOR|TOURISM|MEASURE)/) : -1;
   if (!quiet) {
     // eslint-disable-next-line no-console
     console.info("[ecoApi] colonnes:", header.join(" | "));
@@ -152,63 +185,29 @@ function parse(text, { lang = "fr", cat = false, pctOnly = false, quiet = false 
     if (pctOnly && uLabel && !PCT_RE.test(uLabel)) continue; // on jette tout ce qui n'est pas un %
     if (!unit && iUnit >= 0) unit = labelNext(c, iUnit) || clean(c[iUnit]);
     const catCode = iCat >= 0 ? (clean(c[iCat]) || "").split(":")[0].trim() : "";
-    rows.push({ geo, year, value, cat: catCode });
+    const catLabel = iCat >= 0 ? labelNext(c, iCat) : "";
+    rows.push({ geo, year, value, cat: catCode, catLabel });
   }
   return { rows, header: head, unit };
 }
 
-// une valeur par géo-année (dernière connue)
-function group(rows, unit) {
-  const byArea = {};
-  const yearsSet = new Set();
-  let min = Infinity;
-  let max = -Infinity;
-  rows.forEach(({ geo, year, value }) => {
-    const m = (byArea[geo] = byArea[geo] || new Map());
-    m.set(year, value);
-    yearsSet.add(year);
-    if (value < min) min = value;
-    if (value > max) max = value;
-  });
-  Object.keys(byArea).forEach((geo) => {
-    byArea[geo] = [...byArea[geo].entries()]
-      .map(([year, value]) => ({ year, value }))
-      .sort((a, b) => a.year - b.year);
-  });
-  const years = [...yearsSet].sort((a, b) => a - b);
-  return {
-    byArea,
-    years,
-    areas: Object.keys(byArea),
-    unit: unit || "",
-    range: { min: min === Infinity ? 0 : min, max: max === -Infinity ? 0 : max },
-    firstYear: years[0] ?? null,
-    lastYear: years[years.length - 1] ?? null,
-  };
-}
+// ---------------------------------------------------------------------------
+// Agrégateurs
+// ---------------------------------------------------------------------------
 
-// total par géo-année : ligne « total » si présente, sinon somme des catégories (types de taxe)
-function groupSum(rows, unit) {
-  const acc = {};
-  rows.forEach(({ geo, year, value, cat }) => {
-    const g = (acc[geo] = acc[geo] || {});
-    const cell = (g[year] = g[year] || { total: null, sum: 0 });
-    if (TOTAL_RE.test(cat)) cell.total = value;
-    else cell.sum += value;
-  });
+// met en forme un dictionnaire géo → Map(année→valeur).
+function shapeByArea(byAreaMap) {
   const byArea = {};
   const yearsSet = new Set();
   let min = Infinity;
   let max = -Infinity;
-  Object.entries(acc).forEach(([geo, years]) => {
-    byArea[geo] = Object.entries(years)
-      .map(([y, cell]) => {
-        const v = cell.total != null ? cell.total : cell.sum;
-        const year = parseInt(y, 10);
+  Object.entries(byAreaMap).forEach(([geo, m]) => {
+    byArea[geo] = [...m.entries()]
+      .map(([year, value]) => {
         yearsSet.add(year);
-        if (v < min) min = v;
-        if (v > max) max = v;
-        return { year, value: v };
+        if (value < min) min = value;
+        if (value > max) max = value;
+        return { year, value };
       })
       .sort((a, b) => a.year - b.year);
   });
@@ -217,16 +216,92 @@ function groupSum(rows, unit) {
     byArea,
     years,
     areas: Object.keys(byArea),
-    unit: unit || "",
     range: { min: min === Infinity ? 0 : min, max: max === -Infinity ? 0 : max },
     firstYear: years[0] ?? null,
     lastYear: years[years.length - 1] ?? null,
   };
 }
 
+// total simple (jeu sans catégorie) : une valeur par géo-année.
+function group(rows, unit) {
+  const byAreaMap = {};
+  rows.forEach(({ geo, year, value }) => {
+    const m = (byAreaMap[geo] = byAreaMap[geo] || new Map());
+    m.set(year, value);
+  });
+  return { ...shapeByArea(byAreaMap), unit: unit || "" };
+}
+
+// jeu AVEC catégorie : reconstruit le TOTAL par géo-année (ligne « total » si
+// présente, sinon somme des catégories non-total) ET conserve la ventilation.
+function groupCat(rows, unit, kind) {
+  const acc = {}; // total : geo → year → { total, sum, seen }
+  const byCatMap = {}; // ventilation : id → geo → Map(year→value)
+  const catLabels = {}; // id → libellé lisible
+
+  rows.forEach(({ geo, year, value, cat, catLabel }) => {
+    const id = classifyCat(kind, cat, catLabel);
+
+    // --- total ---
+    const g = (acc[geo] = acc[geo] || {});
+    const cell = (g[year] = g[year] || { total: null, sum: 0, seen: 0, raw: null });
+    if (id === "total") cell.total = value;
+    else if (id) {
+      cell.sum += value;
+      cell.seen += 1;
+    } else {
+      // Aucune catégorie reconnue (colonne catégorie absente, ou une seule
+      // série non étiquetée) : on garde la valeur brute comme repli pour le total.
+      cell.raw = cell.raw == null ? value : cell.raw + value;
+    }
+
+    // --- ventilation (on ignore le pseudo-total) ---
+    if (id && id !== "total" && Number.isFinite(value) && value > 0) {
+      if (!catLabels[id]) catLabels[id] = catLabel || cat || id;
+      const cmap = (byCatMap[id] = byCatMap[id] || {});
+      const m = (cmap[geo] = cmap[geo] || new Map());
+      m.set(year, (m.get(year) || 0) + value);
+    }
+  });
+
+  // total : valeur "total" si présente, sinon somme des catégories.
+  // On NE retient PAS les zéros : dans un jeu très lacunaire (fiscalité), une
+  // valeur 0,00 traduit le plus souvent une non-déclaration, pas un vrai zéro.
+  const totalMap = {};
+  Object.entries(acc).forEach(([geo, years]) => {
+    const m = (totalMap[geo] = new Map());
+    Object.entries(years).forEach(([y, cell]) => {
+      const v =
+        cell.total != null
+          ? cell.total
+          : cell.seen > 0
+            ? cell.sum
+            : cell.raw != null
+              ? cell.raw
+              : null;
+      if (v != null && v > 0) m.set(parseInt(y, 10), v);
+    });
+  });
+
+  const base = { ...shapeByArea(totalMap), unit: unit || "" };
+
+  const byCat = {};
+  Object.entries(byCatMap).forEach(([id, geoMap]) => {
+    byCat[id] = { ...shapeByArea(geoMap), unit: unit || "", label: catLabels[id] || id };
+  });
+
+  base.breakdown = { byCat, cats: Object.keys(byCat), unit: unit || "", labels: catLabels };
+  // eslint-disable-next-line no-console
+  console.info(
+    `[ecoApi] groupCat(${kind}) — total: ${base.areas.length} territoires · cats:`,
+    Object.entries(catLabels).map(([id, l]) => `${id}="${l}"`).join(" · ") || "(aucune)",
+  );
+  return base;
+}
+
 async function fetchIndicator(name, ind, lang, signal) {
   const keys = keysFor(ind);
-  const popts = { lang, cat: !!ind.cat, pctOnly: !!ind.pctOnly };
+  const popts = { cat: !!ind.cat, pctOnly: !!ind.pctOnly };
   for (const src of BASES) {
     for (const key of keys) {
       try {
@@ -246,7 +321,10 @@ async function fetchIndicator(name, ind, lang, signal) {
         if (!full.ok) continue;
         const parsed = parse(await full.text(), popts);
         if (!parsed.rows.length) continue;
-        const grouped = ind.cat ? groupSum(parsed.rows, parsed.unit) : group(parsed.rows, parsed.unit);
+        const kindCat = name === "envTax" ? "tax" : name === "tourism" ? "trsm" : null;
+        const grouped = ind.cat
+          ? groupCat(parsed.rows, parsed.unit, kindCat)
+          : group(parsed.rows, parsed.unit);
         // eslint-disable-next-line no-console
         console.info(
           `[ecoApi] ${name} OK —`,
@@ -257,6 +335,7 @@ async function fetchIndicator(name, ind, lang, signal) {
           "obs ·",
           "unité:",
           grouped.unit,
+          grouped.breakdown ? `· cat: ${grouped.breakdown.cats.join("/")}` : "",
           "· via",
           src.tag,
           "clé",
@@ -278,6 +357,7 @@ async function fetchIndicator(name, ind, lang, signal) {
     areas: [],
     unit: "",
     range: { min: 0, max: 0 },
+    breakdown: { byCat: {}, cats: [], unit: "" },
   };
 }
 

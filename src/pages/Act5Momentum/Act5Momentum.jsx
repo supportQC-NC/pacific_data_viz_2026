@@ -27,6 +27,8 @@ import StackedColsChart from "../../components/charts/StackedColsChart";
 import FunnelChart from "../../components/charts/FunnelChart";
 import ShareAreaChart from "../../components/charts/ShareAreaChart";
 import { fetchPowerMix } from "../../services/powerApi";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
+import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
 import "./Act5Momentum.scss";
@@ -491,6 +493,21 @@ export default function Act5Momentum() {
     </>
   );
 
+  // Carte d'identité DOUBLE (part renouvelable + production par source) — 100 % i18n / fiches officielles.
+  const spotlightRows = [
+    { k: t("act5.spotlight.r1k"), v: t("act5.spotlight.r1v") },
+    { k: t("act5.spotlight.r2k"), v: t("act5.spotlight.r2v") },
+    { k: t("act5.spotlight.r3k"), v: t("act5.spotlight.r3v") },
+    { k: t("act5.spotlight.r4k"), v: t("act5.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act5.spotlight.n1"),
+    t("act5.spotlight.n2"),
+    t("act5.spotlight.n3"),
+    t("act5.spotlight.n4"),
+    t("act5.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready" && currentYear != null
       ? [
@@ -506,6 +523,22 @@ export default function Act5Momentum() {
               <div className="act5b__scroll">
                 <AnomalyTrend data={trend} currentYear={currentYear} unit={unit} tone="green" baselineLabel={t("act5.baseline")} meanLabel={t("act5.mean_label")} />
               </div>
+            ),
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act5.board.tab_read"),
+            title: t("act5.read_title"),
+            finding: t("act5.board.read_find"),
+            takeaway: t("act5.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act5.spotlight.ex_kicker"), text: t("act5.spotlight.ex_text") }}
+                link={{ href: "https://stats.pacificdata.org", label: t("act5.spotlight.link_label") }}
+              />
             ),
           },
           {
@@ -550,7 +583,7 @@ export default function Act5Momentum() {
             takeaway: t("act5.board.evo_take"),
             node: (
               <div className="act5b__scroll">
-                <EvolutionPanel series={series} labels={evoLabels} unit={unit} mode="absolute" topN={5} />
+                <EvolutionPanel series={series} labels={evoLabels} unit={unit} mode="absolute" topN={8} />
               </div>
             ),
           },
@@ -660,6 +693,21 @@ export default function Act5Momentum() {
             takeaway: t("act5.board.mix_share_evo_take"),
             node: <ShareAreaChart series={mixShareEvo.series} years={mixShareEvo.years} unit={t("act5.mix.unit")} />,
           },
+          {
+            id: "coverage",
+            empty: series.length === 0,
+            tab: t("act5.board.tab_coverage"),
+            title: t("act5.coverage_title"),
+            finding: t("act5.board.coverage_find"),
+            takeaway: t("act5.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={series}
+                years={years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
         ]
       : [];
 
@@ -675,7 +723,7 @@ export default function Act5Momentum() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 5, total: 11 }}
+      progress={{ index: 10, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act1.empty"),
@@ -695,7 +743,7 @@ export default function Act5Momentum() {
         kicker: t("act5.outro.kicker"),
         title: t("act5.outro.title"),
         text: t("act5.outro.text"),
-        primary: { to: "/agriculture", label: t("act5.outro.next") },
+        primary: { to: "/economie", label: t("act5.outro.next") },
         secondary: { to: "/", label: t("act5.outro.home") },
       }}
     />

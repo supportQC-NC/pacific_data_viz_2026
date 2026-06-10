@@ -22,8 +22,9 @@ export default function BeeswarmChart({
   unit,
   refLabel,
   scaleLabels,
+  defaultLog = true,
 }) {
-  const [logScale, setLogScale] = useState(true);
+  const [logScale, setLogScale] = useState(defaultLog);
   const [hover, setHover] = useState(null);
 
   const groupsRef = useRef(new Map());

@@ -62,6 +62,28 @@ const INDICATORS = {
     role: "vuln",
     dir: "down",
   },
+  // --- Indicateurs de CONTEXTE (récap des autres actes) ---
+  // Ils ne nourrissent PAS l'indice de vulnérabilité : ce ne sont pas des
+  // stress comparables, mais des éclairages (énergie, fiscalité, tourisme).
+  // role:"context" => affichés dans des slides récap, jamais dans le composite.
+  renew: {
+    flows: ["SPC,DF_SDG_07,1.0", "SPC,DF_SDG_07,2.0", "SPC,DF_SDG_07,3.0"],
+    keys: ["A.EG_FEC_RNEW", "A.EG_FEC_RNEW.", "A.EG_FEC_RNEW..", "A.EG_FEC_RNEW.....", "A.EG_FEC_RNEW........"],
+    role: "context",
+    dir: "up",
+  },
+  envtax: {
+    flows: ["SPC,DF_ENV_TAXES,1.0"],
+    keys: ["A.", "A..", "A..."],
+    role: "context",
+    dir: "up",
+  },
+  tourism: {
+    flows: ["SPC,DF_CLIMATE_CHANGE,1.0"],
+    keys: ["A.TRSM_ARR.", "A.TRSM_ARR..", "A.TRSM_ARR..."],
+    role: "context",
+    dir: "up",
+  },
 };
 
 function buildUrl(base, flow, key, start) {

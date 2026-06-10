@@ -28,6 +28,12 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RadarChart from "../../components/charts/RadarChart";
 import BarRace from "../../components/BarRace/BarRace";
+import StackedColsChart from "../../components/charts/StackedColsChart";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
+import CoverageChart from "../../components/charts/CoverageChart";
+import TreemapChart from "../../components/charts/TreemapChart";
+import ParetoChart from "../../components/charts/ParetoChart";
+import DonutChart from "../../components/charts/DonutChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act9Eco.scss";
 
@@ -119,6 +125,37 @@ function buildDumbbell(series, yearA, yearB) {
     })
     .filter((r) => r && Number.isFinite(r.a) && Number.isFinite(r.b));
 }
+
+// Ventilation régionale par catégorie → séries empilées {name,color,data[]} alignées sur `years`.
+// `breakdown.byCat` = { id: { byArea, years } }. On somme sur les territoires visibles.
+function breakdownStack(breakdown, years, order, labels, colors, areaVisible) {
+  if (!breakdown || !breakdown.byCat) return [];
+  return order
+    .filter((id) => breakdown.byCat[id])
+    .map((id) => {
+      const cat = breakdown.byCat[id];
+      const data = years.map((y) => {
+        let sum = 0;
+        let n = 0;
+        (cat.areas || []).forEach((area) => {
+          if (!areaVisible(area)) return;
+          const v = valueAt(cat.byArea[area] || [], y);
+          if (Number.isFinite(v) && v > 0) {
+            sum += v;
+            n += 1;
+          }
+        });
+        // Moyenne des déclarants : reste à l'échelle réelle (% du PIB / arrivées),
+        // et ne gonfle pas avec le nombre de pays visibles.
+        return n > 0 ? sum / n : null;
+      });
+      return { id, name: labels[id] || id, color: colors[id], data };
+    })
+    // On garde toute catégorie présente dans le jeu (même rare), pour une
+    // légende complète ; on retire seulement celles totalement vides.
+    .filter((s) => s.data.some((v) => Number.isFinite(v)));
+}
+
 function totalLine(series, years, name) {
   const vals = years
     .map((y) => {
@@ -264,6 +301,7 @@ export default function Act9Eco() {
     [taxAll, areaVisible],
   );
 
+
   const span = (ind, fb0, fb1) => [
     ind?.firstYear ?? ind?.years?.[0] ?? fb0,
     ind?.lastYear ?? ind?.years?.[ind?.years?.length - 1] ?? fb1,
@@ -273,6 +311,102 @@ export default function Act9Eco() {
 
   const tourYears = useMemo(() => tour?.years || [], [tour]);
   const taxYears = useMemo(() => tax?.years || [], [tax]);
+
+  // --- Ventilations (désagrégation) ---
+  // Fiscalité : composition par type de taxe (énergie/transport/pollution/ressources).
+  const taxCatOrder = ["energy", "transport", "pollution", "resource"];
+  const taxCatLabels = {
+    energy: t("act9.tax_cat_energy"),
+    transport: t("act9.tax_cat_transport"),
+    pollution: t("act9.tax_cat_pollution"),
+    resource: t("act9.tax_cat_resource"),
+  };
+  const taxCatColors = {
+    energy: tk.warm,
+    transport: tk.accent,
+    pollution: tk.negative,
+    resource: tk.positive,
+  };
+  const taxStack = useMemo(
+    () =>
+      breakdownStack(
+        tax?.breakdown,
+        taxYears,
+        taxCatOrder,
+        taxCatLabels,
+        taxCatColors,
+        areaVisible,
+      ),
+    [tax, taxYears, taxCatLabels, taxCatColors, areaVisible],
+  );
+
+  // Tourisme : touristes (nuitées) vs excursionnistes (journée).
+  const tourCatOrder = ["tourist", "excursionist"];
+  const tourCatLabels = {
+    tourist: t("act9.tour_cat_tourist"),
+    excursionist: t("act9.tour_cat_excursionist"),
+  };
+  const tourCatColors = { tourist: tk.accent, excursionist: tk.warm };
+  const tourStack = useMemo(
+    () =>
+      breakdownStack(
+        tour?.breakdown,
+        tourYears,
+        tourCatOrder,
+        tourCatLabels,
+        tourCatColors,
+        areaVisible,
+      ),
+    [tour, tourYears, tourCatLabels, tourCatColors, areaVisible],
+  );
+
+  // Tourisme — qui capte les visiteurs (treemap) à la dernière année connue de chaque territoire.
+  const tourTree = useMemo(() => {
+    const palette = [tk.accent, tk.warm, tk.positive, tk.negative, tk.accentDeep, tk.secondary];
+    return tourS
+      .map((s, i) => {
+        const last = s.values[s.values.length - 1];
+        return last ? { label: s.name, value: last.value, color: palette[i % palette.length] } : null;
+      })
+      .filter(Boolean)
+      .sort((x, y) => y.value - x.value);
+  }, [tourS, tk]);
+
+  // Tourisme — concentration (pareto) sur la même base.
+  const tourPareto = useMemo(
+    () => tourTree.map((p) => ({ name: p.label, value: p.value })),
+    [tourTree],
+  );
+
+  // Fiscalité — composition moyenne par type de taxe (donut) : moyenne sur les
+  // déclarants visibles, toutes années confondues, de chaque type.
+  const taxDonut = useMemo(() => {
+    const order = ["energy", "transport", "pollution", "resource"];
+    const labels = [];
+    const values = [];
+    const colors = [];
+    order.forEach((id) => {
+      const cat = tax?.breakdown?.byCat?.[id];
+      if (!cat) return;
+      let sum = 0;
+      let n = 0;
+      (cat.areas || []).forEach((area) => {
+        if (!areaVisible(area)) return;
+        (cat.byArea[area] || []).forEach((p) => {
+          if (Number.isFinite(p.value) && p.value > 0) {
+            sum += p.value;
+            n += 1;
+          }
+        });
+      });
+      if (n > 0) {
+        labels.push(taxCatLabels[id]);
+        values.push(Math.round((sum / n) * 100) / 100);
+        colors.push(taxCatColors[id]);
+      }
+    });
+    return { labels, values, colors };
+  }, [tax, taxCatLabels, taxCatColors, areaVisible]);
 
   const tourLine = useMemo(
     () => totalLine(tourS, tourYears, t("act9.tour_total_name")),
@@ -333,7 +467,11 @@ export default function Act9Eco() {
           heat: t("act9.tour_hm_title"),
           change: t("act9.tour_cmp_title"),
           rank: t("act9.tour_rank_title"),
+          compo: t("act9.tour_compo_title"),
         },
+        stack: tourStack,
+        compoFind: t("act9.board.tour_compo_find"),
+        compoTake: t("act9.board.tour_compo_take"),
       };
     return {
       series: taxS,
@@ -352,7 +490,11 @@ export default function Act9Eco() {
         heat: t("act9.tax_hm_title"),
         change: t("act9.tax_cmp_title"),
         rank: t("act9.tax_rank_title"),
+        compo: t("act9.tax_compo_title"),
       },
+      stack: taxStack,
+      compoFind: t("act9.board.tax_compo_find"),
+      compoTake: t("act9.board.tax_compo_take"),
     };
   }, [
     metric,
@@ -365,6 +507,8 @@ export default function Act9Eco() {
     tourYears,
     tourA,
     tourB,
+    tourStack,
+    taxStack,
     taxS,
     taxLine,
     taxRank,
@@ -554,6 +698,21 @@ export default function Act9Eco() {
     </>
   );
 
+  // Carte d'identité DOUBLE (tourisme + fiscalité) — 100 % i18n / fiches officielles.
+  const spotlightRows = [
+    { k: t("act9.spotlight.r1k"), v: t("act9.spotlight.r1v") },
+    { k: t("act9.spotlight.r2k"), v: t("act9.spotlight.r2v") },
+    { k: t("act9.spotlight.r3k"), v: t("act9.spotlight.r3v") },
+    { k: t("act9.spotlight.r4k"), v: t("act9.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act9.spotlight.n1"),
+    t("act9.spotlight.n2"),
+    t("act9.spotlight.n3"),
+    t("act9.spotlight.n4"),
+    t("act9.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready"
       ? [
@@ -591,6 +750,68 @@ export default function Act9Eco() {
                   unit={M.unit}
                   currentYear={M.B}
                   labels={{ last: t("act6.smallmult_last"), close: t("act9.board.zoom_close") }}
+                />
+              </div>
+            ),
+          },
+          {
+            id: "compo",
+            empty: !M.stack || M.stack.length === 0,
+            tab: t("act9.board.tab_compo"),
+            title: M.titles.compo,
+            finding: M.compoFind,
+            takeaway: M.compoTake,
+            node: (
+              <div className="act9b__fit">
+                <StackedColsChart series={M.stack} years={M.years} unit={M.unit} />
+              </div>
+            ),
+          },
+          metric === "tour" && {
+            id: "tree",
+            empty: tourTree.length === 0,
+            tab: t("act9.board.tab_tree"),
+            title: t("act9.tour_tree_title"),
+            finding: t("act9.board.tree_find"),
+            takeaway: t("act9.board.tree_take"),
+            node: (
+              <div className="act9b__fit">
+                <TreemapChart points={tourTree} unit={t("act9.tour_unit")} />
+              </div>
+            ),
+          },
+          metric === "tour" && {
+            id: "pareto",
+            empty: tourPareto.length < 2,
+            tab: t("act9.board.tab_pareto"),
+            title: t("act9.tour_pareto_title"),
+            finding: t("act9.board.pareto_find"),
+            takeaway: t("act9.board.pareto_take"),
+            node: (
+              <div className="act9b__fit">
+                <ParetoChart
+                  rows={tourPareto}
+                  unit={t("act9.tour_unit")}
+                  cumulLabel={t("act9.board.pareto_cumul")}
+                />
+              </div>
+            ),
+          },
+          metric === "tax" && {
+            id: "donut",
+            empty: taxDonut.values.length === 0,
+            tab: t("act9.board.tab_donut"),
+            title: t("act9.tax_donut_title"),
+            finding: t("act9.board.donut_find"),
+            takeaway: t("act9.board.donut_take"),
+            node: (
+              <div className="act9b__fit">
+                <DonutChart
+                  labels={taxDonut.labels}
+                  series={taxDonut.values}
+                  colors={taxDonut.colors}
+                  unit={t("act9.tax_unit")}
+                  centerLabel={t("act9.tax_donut_center")}
                 />
               </div>
             ),
@@ -690,7 +911,38 @@ export default function Act9Eco() {
               </ErrorBoundary>
             ),
           },
-        ]
+          {
+            id: "read",
+            empty: false,
+            tab: t("act9.board.tab_read"),
+            title: t("act9.read_title"),
+            finding: t("act9.board.read_find"),
+            takeaway: t("act9.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act9.spotlight.ex_kicker"), text: t("act9.spotlight.ex_text") }}
+                link={{ href: "https://stats.pacificdata.org", label: t("act9.spotlight.link_label") }}
+              />
+            ),
+          },
+          {
+            id: "coverage",
+            empty: M.series.length === 0,
+            tab: t("act9.board.tab_coverage"),
+            title: M.titles.multiples,
+            finding: t("act9.board.coverage_find"),
+            takeaway: t("act9.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={M.series}
+                years={M.years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
+        ].filter(Boolean)
       : [];
 
   return (
@@ -705,7 +957,7 @@ export default function Act9Eco() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 9, total: 11 }}
+      progress={{ index: 11, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act9.unavailable"),
@@ -725,7 +977,7 @@ export default function Act9Eco() {
         kicker: t("act9.outro.kicker"),
         title: t("act9.outro.title"),
         text: t("act9.outro.text"),
-        primary: { to: "/sante", label: t("act9.outro.next") },
+        primary: { to: "/synthese", label: t("act9.outro.next") },
         secondary: { to: "/", label: t("act9.outro.home") },
       }}
     />

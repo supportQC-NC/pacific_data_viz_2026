@@ -21,7 +21,9 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
+import CoverageChart from "../../components/charts/CoverageChart";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import BarRace from "../../components/BarRace/BarRace";
@@ -41,12 +43,14 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v) =>
+const fmtVal = (v, decimals) =>
   !Number.isFinite(v)
     ? "—"
-    : Math.abs(v) < 10
-      ? String(Math.round(v * 100) / 100).replace(".", ",")
-      : String(Math.round(v));
+    : decimals === 0
+      ? String(Math.round(v))
+      : Math.abs(v) < 10
+        ? String(Math.round(v * 100) / 100).replace(".", ",")
+        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -256,6 +260,7 @@ export default function Act7Vivant() {
   );
 
   const isRl = metric === "redlist";
+  const metricDecimals = isRl ? 2 : 0;
   const M = isRl
     ? {
         series: rlSeries,
@@ -313,35 +318,28 @@ export default function Act7Vivant() {
     return [
       {
         key: "med",
-        value: fmtVal(M.med),
+        value: fmtVal(M.med, metricDecimals),
         unit: M.unit,
         label: t("act7.board.kpi_med"),
         tone: "accent",
       },
       {
         key: "high",
-        value: fmtVal(high.value),
+        value: fmtVal(high.value, metricDecimals),
         unit: high.name,
         label: t("act7.board.kpi_high"),
         tone: "positive",
       },
       {
         key: "low",
-        value: fmtVal(low.value),
+        value: fmtVal(low.value, metricDecimals),
         unit: low.name,
         label: t("act7.board.kpi_low"),
         tone: "negative",
       },
     ];
-  }, [M.rank, M.med, M.unit, t]);
+  }, [M.rank, M.med, M.unit, metricDecimals, t]);
 
-  const heatLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
   const retry = useCallback(() => {
@@ -402,6 +400,21 @@ export default function Act7Vivant() {
     </>
   );
 
+  // Carte d'identité DOUBLE (Liste Rouge + pêches) — 100 % i18n / fiches officielles.
+  const spotlightRows = [
+    { k: t("act7.spotlight.r1k"), v: t("act7.spotlight.r1v") },
+    { k: t("act7.spotlight.r2k"), v: t("act7.spotlight.r2v") },
+    { k: t("act7.spotlight.r3k"), v: t("act7.spotlight.r3v") },
+    { k: t("act7.spotlight.r4k"), v: t("act7.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act7.spotlight.n1"),
+    t("act7.spotlight.n2"),
+    t("act7.spotlight.n3"),
+    t("act7.spotlight.n4"),
+    t("act7.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready"
       ? [
@@ -422,6 +435,22 @@ export default function Act7Vivant() {
                   unit={M.unit}
                 />
               </div>
+            ),
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act7.board.tab_read"),
+            title: t("act7.read_title"),
+            finding: t("act7.board.read_find"),
+            takeaway: t("act7.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act7.spotlight.ex_kicker"), text: t("act7.spotlight.ex_text") }}
+                link={{ href: "https://stats.pacificdata.org/vis?df[ds]=ds:SPC2&df[id]=DF_SDG_15&df[ag]=SPC&df[vs]=3.0&dq=A.ER_RSK_LST.........", label: t("act7.spotlight.link_label") }}
+              />
             ),
           },
           {
@@ -455,6 +484,7 @@ export default function Act7Vivant() {
                 series={M.race}
                 years={M.years}
                 unit={M.unit}
+                decimals={metricDecimals}
                 tk={tk}
                 labels={{
                   play: t("act1.race.play"),
@@ -472,13 +502,16 @@ export default function Act7Vivant() {
             finding: t("act7.board.change_find"),
             takeaway: t("act7.board.change_take"),
             node: (
-              <DumbbellChart
-                rows={M.dumb}
-                yearA={M.A}
-                yearB={M.B}
-                unit={M.unit}
-                labels={cmpLabels}
-              />
+              <div className="act7b__scroll">
+                <DumbbellChart
+                  rows={M.dumb}
+                  yearA={M.A}
+                  yearB={M.B}
+                  unit={M.unit}
+                  decimals={metricDecimals}
+                  labels={cmpLabels}
+                />
+              </div>
             ),
           },
           {
@@ -489,13 +522,14 @@ export default function Act7Vivant() {
             finding: t("act7.board.heat_find"),
             takeaway: t("act7.board.heat_take"),
             node: (
-              <div className="act7b__fit">
-                <EmissionsHeatmap
+              <div className="act7b__scroll">
+                <ApexYearHeatmap
                   series={M.series}
                   years={M.years}
                   unit={M.unit}
                   scale="sequential"
-                  labels={heatLabels}
+                  decimals={metricDecimals}
+                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
                 />
               </div>
             ),
@@ -531,6 +565,21 @@ export default function Act7Vivant() {
               </ErrorBoundary>
             ),
           },
+          {
+            id: "coverage",
+            empty: M.series.length === 0,
+            tab: t("act7.board.tab_coverage"),
+            title: t("act7.coverage_title"),
+            finding: t("act7.board.coverage_find"),
+            takeaway: t("act7.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={M.series}
+                years={M.years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
         ]
       : [];
 
@@ -546,7 +595,7 @@ export default function Act7Vivant() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 7, total: 11 }}
+      progress={{ index: 6, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act7.unavailable"),
@@ -566,7 +615,7 @@ export default function Act7Vivant() {
         kicker: t("act7.outro.kicker"),
         title: t("act7.outro.title"),
         text: t("act7.outro.text"),
-        primary: { to: "/ciel", label: t("act7.outro.next") },
+        primary: { to: "/territory", label: t("act7.outro.next") },
         secondary: { to: "/", label: t("act7.outro.home") },
       }}
     />

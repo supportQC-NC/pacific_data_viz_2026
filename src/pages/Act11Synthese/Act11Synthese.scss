@@ -419,3 +419,568 @@
     line-height: 1.4;
   }
 }
+
+
+// ============================================================
+// AJOUT Act11 — à coller à la FIN de src/pages/Act11Synthese/Act11Synthese.scss
+// (ou dans le fichier de styles importé par Act11Synthese.jsx).
+//
+//  1) Correction de .vbar__fill : la largeur et la couleur passent désormais par
+//     des custom properties (--vbar-w / --vbar-bg) au lieu de valeurs CSS dures
+//     dans le style inline du JSX.
+//  2) Styles du Studio de pondérations interactif (curseurs).
+// Toutes les valeurs viennent des variables globales (index.scss).
+// ============================================================
+
+// 1) Barre comparative : on consomme les custom properties posées par le JSX.
+.vbar__fill {
+  width: var(--vbar-w, 0%);
+  background: var(--vbar-bg, var(--c-accent));
+}
+
+// 2) Studio de pondérations
+.wstudio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.wstudio__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wstudio__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wstudio__name {
+  font-size: var(--fs-sm);
+  color: var(--c-text-soft);
+  line-height: 1.2;
+}
+
+.wstudio__val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+// Curseur : piste remplie jusqu'à --w-pct, avec un dégradé sobre.
+.wstudio__range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--c-accent) 0%,
+    var(--c-accent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) 100%
+  );
+  cursor: pointer;
+  outline: none;
+}
+
+.wstudio__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  box-shadow: var(--shadow-glow, 0 0 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.15s var(--ease-out, ease);
+}
+
+.wstudio__range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.wstudio__range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  cursor: pointer;
+}
+
+.wstudio__reset {
+  align-self: flex-start;
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out, ease), color 0.2s var(--ease-out, ease);
+}
+
+.wstudio__reset:hover {
+  color: var(--c-text);
+  border-color: var(--c-accent);
+}
+// ============================================================
+// AJOUT Act11 — à coller à la FIN de src/pages/Act11Synthese/Act11Synthese.scss
+// (ou dans le fichier de styles importé par Act11Synthese.jsx).
+//
+//  1) Correction de .vbar__fill : la largeur et la couleur passent désormais par
+//     des custom properties (--vbar-w / --vbar-bg) au lieu de valeurs CSS dures
+//     dans le style inline du JSX.
+//  2) Styles du Studio de pondérations interactif (curseurs).
+// Toutes les valeurs viennent des variables globales (index.scss).
+// ============================================================
+
+// 1) Barre comparative : on consomme les custom properties posées par le JSX.
+.vbar__fill {
+  width: var(--vbar-w, 0%);
+  background: var(--vbar-bg, var(--c-accent));
+}
+
+// 2) Studio de pondérations
+.wstudio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.wstudio__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wstudio__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wstudio__name {
+  font-size: var(--fs-sm);
+  color: var(--c-text-soft);
+  line-height: 1.2;
+}
+
+.wstudio__val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+// Curseur : piste remplie jusqu'à --w-pct, avec un dégradé sobre.
+.wstudio__range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--c-accent) 0%,
+    var(--c-accent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) 100%
+  );
+  cursor: pointer;
+  outline: none;
+}
+
+.wstudio__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  box-shadow: var(--shadow-glow, 0 0 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.15s var(--ease-out, ease);
+}
+
+.wstudio__range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.wstudio__range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  cursor: pointer;
+}
+
+.wstudio__reset {
+  align-self: flex-start;
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out, ease), color 0.2s var(--ease-out, ease);
+}
+
+.wstudio__reset:hover {
+  color: var(--c-text);
+  border-color: var(--c-accent);
+}
+
+// ============================================================
+// Section « Ce que nous ne savons pas encore » (verdict)
+// ============================================================
+.scene__limits {
+  max-width: 56ch;
+  margin: var(--sp-5) auto var(--sp-2);
+  padding: var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md, 12px);
+  background: color-mix(in srgb, var(--c-text) 3%, transparent);
+  text-align: left;
+}
+
+.scene__limits-kicker {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.scene__limits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.scene__limits-list li {
+  position: relative;
+  padding-left: var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+.scene__limits-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--c-accent);
+}
+
+// ============================================================
+// AJOUT Act11 — à coller à la FIN de src/pages/Act11Synthese/Act11Synthese.scss
+// (ou dans le fichier de styles importé par Act11Synthese.jsx).
+//
+//  1) Correction de .vbar__fill : la largeur et la couleur passent désormais par
+//     des custom properties (--vbar-w / --vbar-bg) au lieu de valeurs CSS dures
+//     dans le style inline du JSX.
+//  2) Styles du Studio de pondérations interactif (curseurs).
+// Toutes les valeurs viennent des variables globales (index.scss).
+// ============================================================
+
+// 1) Barre comparative : on consomme les custom properties posées par le JSX.
+.vbar__fill {
+  width: var(--vbar-w, 0%);
+  background: var(--vbar-bg, var(--c-accent));
+}
+
+// 2) Studio de pondérations
+.wstudio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.wstudio__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wstudio__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wstudio__name {
+  font-size: var(--fs-sm);
+  color: var(--c-text-soft);
+  line-height: 1.2;
+}
+
+.wstudio__val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+// Curseur : piste remplie jusqu'à --w-pct, avec un dégradé sobre.
+.wstudio__range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--c-accent) 0%,
+    var(--c-accent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) var(--w-pct, 50%),
+    color-mix(in srgb, var(--c-text) 12%, transparent) 100%
+  );
+  cursor: pointer;
+  outline: none;
+}
+
+.wstudio__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  box-shadow: var(--shadow-glow, 0 0 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.15s var(--ease-out, ease);
+}
+
+.wstudio__range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.wstudio__range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  cursor: pointer;
+}
+
+.wstudio__reset {
+  align-self: flex-start;
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out, ease), color 0.2s var(--ease-out, ease);
+}
+
+.wstudio__reset:hover {
+  color: var(--c-text);
+  border-color: var(--c-accent);
+}
+
+// ============================================================
+// Section « Ce que nous ne savons pas encore » (verdict)
+// ============================================================
+.scene__limits {
+  max-width: 56ch;
+  margin: var(--sp-5) auto var(--sp-2);
+  padding: var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md, 12px);
+  background: color-mix(in srgb, var(--c-text) 3%, transparent);
+  text-align: left;
+}
+
+.scene__limits-kicker {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.scene__limits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.scene__limits-list li {
+  position: relative;
+  padding-left: var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+.scene__limits-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--c-accent);
+}
+
+// ============================================================
+// REFONTE DESIGN — exploiter la largeur (écrans desktop)
+// Ces règles surchargent le layout d'origine (fichier chargé après).
+// ============================================================
+
+// Conteneur global : plus large sur grands écrans.
+.story {
+  max-width: min(1640px, 94vw);
+}
+
+// ---- HERO : pleine largeur, titre ample, texte aéré ----
+.scene--hero {
+  text-align: center;
+}
+.scene__hero {
+  max-width: 78rem;       // au lieu de 60ch
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+}
+.scene__hero-title {
+  font-size: clamp(2.8rem, 6.2vw, 5.8rem);
+  max-width: 20ch;        // au lieu de 15ch : moins de retours à la ligne
+  margin: 0 auto var(--sp-6);
+}
+.scene__hero-text {
+  max-width: 60ch;        // texte distinct du titre
+  margin: 0 auto var(--sp-7);
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  line-height: 1.6;
+}
+.scene__start {
+  margin-top: var(--sp-2);
+}
+
+// ---- SPLIT : donner plus de place au visuel sur grand écran ----
+.scene__split {
+  grid-template-columns: minmax(320px, 0.62fr) minmax(520px, 1.05fr);
+  gap: clamp(var(--sp-6), 5vw, var(--sp-10, 6rem));
+  max-width: 100%;
+}
+.scene__narr {
+  max-width: 52ch;        // au lieu de 46ch
+}
+.scene__visual {
+  height: clamp(420px, 66vh, 720px);   // plus grand
+}
+
+// ---- VERDICT : grille large, KPI alignés (fini l'escalier) ----
+.scene--verdict {
+  text-align: center;
+}
+.scene__verdict {
+  max-width: 100%;        // au lieu de 70ch : le bloc respire
+  width: 100%;
+  padding: 0 var(--sp-5);
+}
+.scene__verdict-title {
+  font-size: clamp(2.4rem, 4.6vw, 3.8rem);
+  max-width: 22ch;
+  margin: 0 auto var(--sp-5);
+}
+.scene__verdict .scene__hero-text {
+  max-width: 64ch;
+  margin: 0 auto var(--sp-6);
+}
+
+// KPI : 4 colonnes nettes sur grand écran, centrées, jamais en escalier.
+.scene__kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+  max-width: 1100px;      // au lieu de 880px
+  margin: var(--sp-6) auto var(--sp-7);
+}
+@media (max-width: 1100px) {
+  .scene__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .scene__kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+// La section limites s'aligne sous les KPI, large et lisible.
+.scene__limits {
+  max-width: 1100px;      // aligné avec les KPI (au lieu de 56ch)
+  margin: 0 auto var(--sp-4);
+  columns: 2;             // 2 colonnes de limites sur grand écran
+  column-gap: var(--sp-6);
+}
+.scene__limits-kicker {
+  column-span: all;
+}
+.scene__limits-list {
+  display: block;         // laisser le multi-colonnes gérer
+}
+.scene__limits-list li {
+  break-inside: avoid;
+  margin-bottom: var(--sp-3);
+}
+@media (max-width: 760px) {
+  .scene__limits {
+    columns: 1;
+  }
+}

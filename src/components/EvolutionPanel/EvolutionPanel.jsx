@@ -174,9 +174,16 @@ export default function EvolutionPanel({
     const byMetric = [...rows].sort((a, b) => a.metric - b.metric);
     const fy = rows.length ? Math.min(...rows.map((r) => r.first.year)) : 0;
     const ly = rows.length ? Math.max(...rows.map((r) => r.last.year)) : 0;
+    // Colonne "recul/stagnation" : les plus faibles (souvent négatifs).
+    // Colonne "progression" : les plus forts (souvent positifs).
+    // On répartit l'ensemble sans jamais placer un territoire dans les deux
+    // colonnes : on coupe au milieu quand la population est petite.
+    const half = Math.ceil(byMetric.length / 2);
+    const downCount = Math.min(topN, half);
+    const upCount = Math.min(topN, byMetric.length - downCount);
     return {
-      improved: byMetric.slice(0, topN),
-      worsened: byMetric.slice(-topN).reverse(),
+      improved: byMetric.slice(0, downCount),
+      worsened: byMetric.slice(byMetric.length - upCount).reverse(),
       span: rows.length ? `${fy} – ${ly}` : "",
     };
   }, [series, topN, mode]);
@@ -219,11 +226,13 @@ export default function EvolutionPanel({
           rx="2"
         />
       </svg>
-      <span className="evo__vals">
-        {fmt2(r.first.value)} → {fmt2(r.last.value)}
-      </span>
-      <span className={`evo__pct evo__pct--${kind}`}>
-        {kind === "down" ? "▼" : "▲"} {show(r)}
+      <span className="evo__meta">
+        <span className="evo__vals">
+          {fmt2(r.first.value)} → {fmt2(r.last.value)}
+        </span>
+        <span className={`evo__pct evo__pct--${kind}`}>
+          {kind === "down" ? "▼" : "▲"} {show(r)}
+        </span>
       </span>
     </li>
   );

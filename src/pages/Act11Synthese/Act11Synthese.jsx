@@ -25,6 +25,10 @@ import ParadoxScatterLive from "../../components/charts/PardoxScatterLive";
 import VulnMatrix from "../../components/charts/VulnMatrix";
 import ProfileRadar from "../../components/charts/ProfileRadar";
 import TrendChart from "../../components/charts/TrendChart";
+import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
+import RadialBarsChart from "../../components/charts/RadialBarsChart";
+import SlopeChart from "../../components/charts/SlopeChart";
+import RankBars from "../../components/RankBars/RankBars";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
 
@@ -70,16 +74,26 @@ function vulnContribution(value, dir) {
   if (dir === "abs") return Math.abs(value);
   return value;
 }
+// Normalisation ROBUSTE par rang percentile (0-100) au sein du Pacifique.
+// Contrairement au min-max, un seul territoire extreme n'ecrase pas l'echelle :
+// chaque territoire est positionne par sa POSITION relative aux autres. Les ex
+// aequo partagent le rang moyen.
 function normalizeMap(rawByArea) {
-  const vals = Object.values(rawByArea).filter((v) => Number.isFinite(v));
-  if (!vals.length) return {};
-  const lo = Math.min(...vals);
-  const hi = Math.max(...vals);
+  const entries = Object.entries(rawByArea).filter(([, v]) => Number.isFinite(v));
+  const n = entries.length;
+  if (!n) return {};
+  if (n === 1) return { [entries[0][0]]: 50 };
+  const sorted = [...entries].sort((x, y) => x[1] - y[1]);
   const out = {};
-  Object.entries(rawByArea).forEach(([a, v]) => {
-    if (Number.isFinite(v))
-      out[a] = hi === lo ? 50 : ((v - lo) / (hi - lo)) * 100;
-  });
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1][1] === sorted[i][1]) j += 1;
+    const rank = (i + j) / 2;
+    const score = (rank / (sorted.length - 1)) * 100;
+    for (let k = i; k <= j; k += 1) out[sorted[k][0]] = score;
+    i = j + 1;
+  }
   return out;
 }
 function medianLinesBySub(ind, t) {
@@ -120,8 +134,8 @@ function VersusBar({ rows = [], unit = "" }) {
             <span
               className="vbar__fill"
               style={{
-                width: `${Math.max((r.value / max) * 100, 2)}%`,
-                background: r.color,
+                "--vbar-w": `${Math.max((r.value / max) * 100, 2)}%`,
+                "--vbar-bg": r.color,
               }}
             />
           </div>
@@ -130,6 +144,40 @@ function VersusBar({ rows = [], unit = "" }) {
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ---------- Studio de pondérations (curseurs interactifs) ---------- */
+function WeightStudio({ inds = [], weights = {}, onChange, onReset, labels = {} }) {
+  return (
+    <div className="wstudio">
+      <ul className="wstudio__list">
+        {inds.map((it) => {
+          const w = Number.isFinite(weights[it.k]) ? weights[it.k] : 1;
+          const pct = (w / 2) * 100;
+          return (
+            <li className="wstudio__row" key={it.k}>
+              <span className="wstudio__name">{it.label}</span>
+              <input
+                className="wstudio__range"
+                type="range"
+                min="0"
+                max="2"
+                step="0.1"
+                value={w}
+                onChange={(e) => onChange(it.k, parseFloat(e.target.value))}
+                style={{ "--w-pct": `${pct}%` }}
+                aria-label={it.label}
+              />
+              <span className="wstudio__val">{w.toFixed(1)}×</span>
+            </li>
+          );
+        })}
+      </ul>
+      <button type="button" className="wstudio__reset" onClick={onReset}>
+        {labels.reset}
+      </button>
     </div>
   );
 }
@@ -174,6 +222,19 @@ export default function Act11Synthese() {
   const [state, setState] = useState({ status: "loading", data: null });
   const [idx, setIdx] = useState(0);
   const [focus, setFocus] = useState(null);
+  // Pondérations interactives : un poids 0..2 par indicateur de vulnérabilité.
+  // 1 = poids normal ; 0 = on retire l'indicateur ; 2 = on le double.
+  const [weights, setWeights] = useState(() =>
+    VULN.reduce((o, k) => ({ ...o, [k]: 1 }), {}),
+  );
+  const setWeight = useCallback(
+    (k, v) => setWeights((w) => ({ ...w, [k]: v })),
+    [],
+  );
+  const resetWeights = useCallback(
+    () => setWeights(VULN.reduce((o, k) => ({ ...o, [k]: 1 }), {})),
+    [],
+  );
 
   useEffect(() => {
     let alive = true;
@@ -219,17 +280,37 @@ export default function Act11Synthese() {
     return out;
   }, [data, latest]);
 
+  // Couverture minimale : un territoire n'est noté que s'il dispose d'au moins
+  // MIN_COVER indicateurs de vulnérabilité — sinon on compare 3 indicateurs à 6.
+  const MIN_COVER = 2;
   const composite = useMemo(() => {
-    const acc = {};
+    const acc = {}; // area -> { wsum, wtot, count }
     VULN.forEach((k) => {
+      const w = Number.isFinite(weights[k]) ? weights[k] : 1;
+      if (w <= 0) return; // indicateur désactivé par l'utilisateur
       Object.entries(normByInd[k] || {}).forEach(([a, v]) => {
-        if (!isPict(a)) return;
-        (acc[a] = acc[a] || []).push(v);
+        if (!isPict(a) || !Number.isFinite(v)) return;
+        const cell = (acc[a] = acc[a] || { wsum: 0, wtot: 0, count: 0 });
+        cell.wsum += v * w;
+        cell.wtot += w;
+        cell.count += 1;
       });
     });
     const out = {};
-    Object.entries(acc).forEach(([a, arr]) => {
-      if (arr.length) out[a] = arr.reduce((s, v) => s + v, 0) / arr.length;
+    Object.entries(acc).forEach(([a, c]) => {
+      if (c.count >= MIN_COVER && c.wtot > 0) out[a] = c.wsum / c.wtot;
+    });
+    return out;
+  }, [normByInd, weights]);
+
+  // Couverture par territoire (nb d'indicateurs réellement notés) — pour l'honnêteté.
+  const coverByArea = useMemo(() => {
+    const out = {};
+    VULN.forEach((k) => {
+      Object.keys(normByInd[k] || {}).forEach((a) => {
+        if (!isPict(a)) return;
+        out[a] = (out[a] || 0) + 1;
+      });
     });
     return out;
   }, [normByInd]);
@@ -340,6 +421,81 @@ export default function Act11Synthese() {
     [areas, lang, composite],
   );
 
+  // --- Bouquet final : 3 vues de synthèse ---
+  // 1) Essaim : tous les territoires sur l'axe de vulnérabilité composite.
+  const beeData = useMemo(
+    () =>
+      areas
+        .map((a) => ({
+          area: a,
+          code: a,
+          name: pictName(a, lang),
+          value: composite[a],
+        }))
+        .filter((d) => Number.isFinite(d.value)),
+    [areas, composite, lang],
+  );
+
+  // 2) Top des plus exposés (indice composite), barres radiales.
+  const topExposed = useMemo(
+    () =>
+      areas
+        .map((a) => ({ name: pictName(a, lang), value: Math.round(composite[a] ?? 0) }))
+        .filter((r) => Number.isFinite(r.value))
+        .sort((x, y) => y.value - x.value)
+        .slice(0, 10),
+    [areas, composite, lang],
+  );
+
+  // 3) Le renversement : rang d'émissions (responsabilité) -> rang de vulnérabilité.
+  // On normalise les émissions en rang (0-100) pour comparer deux échelles
+  // différentes sur le même axe, et on relie chaque territoire d'un trait.
+  const slopeRows = useMemo(() => {
+    const emi = latest.emissions || {};
+    const emiPts = areas.filter((a) => Number.isFinite(emi[a]));
+    if (emiPts.length < 3) return [];
+    const emiRank = normalizeMap(
+      emiPts.reduce((o, a) => ({ ...o, [a]: emi[a] }), {}),
+    );
+    return emiPts
+      .filter((a) => Number.isFinite(composite[a]))
+      .map((a) => ({
+        name: pictName(a, lang),
+        left: Math.round(emiRank[a] ?? 0),
+        right: Math.round(composite[a] ?? 0),
+      }))
+      .sort((x, y) => y.right - x.right)
+      .slice(0, 12);
+  }, [areas, latest, composite, lang]);
+
+  // Récap des autres actes (énergie / fiscalité / tourisme) — indicateurs de
+  // contexte chargés par syntheseApi (role:"context"). On retient le premier
+  // réellement disponible et on en fait un classement lisible.
+  const contextRecap = useMemo(() => {
+    const candidates = [
+      { key: "renew", labelKey: "act11.ctx_renew", unit: "%", better: "high" },
+      { key: "envtax", labelKey: "act11.ctx_envtax", unit: "% PIB", better: "high" },
+      { key: "tourism", labelKey: "act11.ctx_tourism", unit: "", better: "high" },
+    ];
+    for (const c of candidates) {
+      const ind = data && data[c.key];
+      if (!ind || ind.status !== "live") continue;
+      const last = latestOf(ind);
+      const rows = Object.entries(last)
+        .filter(([area, v]) => isPict(area) && Number.isFinite(v) && v > 0)
+        .map(([area, v]) => ({
+          area,
+          name: pictName(area, lang),
+          value: Math.round(v * 10) / 10,
+        }))
+        .sort((x, y) => y.value - x.value)
+        .slice(0, 12);
+      if (rows.length >= 3)
+        return { key: c.key, labelKey: c.labelKey, unit: c.unit, better: c.better, rows };
+    }
+    return null;
+  }, [data, lang]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -389,6 +545,21 @@ export default function Act11Synthese() {
       title: t("act11.story.voyage_title"),
       text: t("act11.story.voyage_text"),
     });
+    if (contextRecap) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.context_k"),
+        title: t("act11.story.context_title"),
+        text: t("act11.story.context_text"),
+        visual: (
+          <RankBars
+            data={contextRecap.rows}
+            unit={contextRecap.unit}
+            betterWhen={contextRecap.better}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.resp_k"),
@@ -494,7 +665,64 @@ export default function Act11Synthese() {
           onSelect={(c) => setFocus((s) => (s === c ? null : c))}
           xName={t("act11.scatter_x_unit")}
           yName={t("act11.scatter_y")}
-          labels={{ world: t("act11.world_ref_label") }}
+        />
+      ),
+    });
+    list.push({
+      kind: "split",
+      eyebrow: t("act11.story.reversal_k"),
+      title: t("act11.story.reversal_title"),
+      text: t("act11.story.reversal_text"),
+      visual: (
+        <SlopeChart
+          rows={slopeRows}
+          leftLabel={t("act11.story.reversal_left")}
+          rightLabel={t("act11.story.reversal_right")}
+          unit={t("act11.index_unit")}
+          min={0}
+          max={100}
+        />
+      ),
+    });
+    list.push({
+      kind: "split",
+      eyebrow: t("act11.story.swarm_k"),
+      title: t("act11.story.swarm_title"),
+      text: t("act11.story.swarm_text"),
+      hint: t("act11.story.focus_hint"),
+      visual: (
+        <BeeswarmChart
+          data={beeData}
+          unit={t("act11.index_unit")}
+          worldAvg={null}
+          defaultLog={false}
+          scaleLabels={{
+            log: t("act11.story.swarm_log"),
+            lin: t("act11.story.swarm_lin"),
+          }}
+        />
+      ),
+    });
+    list.push({
+      kind: "split",
+      eyebrow: t("act11.story.top_k"),
+      title: t("act11.story.top_title"),
+      text: t("act11.story.top_text"),
+      visual: <RadialBarsChart rows={topExposed} unit={t("act11.index_unit")} />,
+    });
+    list.push({
+      kind: "split",
+      eyebrow: t("act11.story.studio_k"),
+      title: t("act11.story.studio_title"),
+      text: t("act11.story.studio_text"),
+      hint: t("act11.story.studio_hint"),
+      visual: (
+        <WeightStudio
+          inds={activeVuln.map((k) => ({ k, label: t(`act11.ind_${k}`) }))}
+          weights={weights}
+          onChange={setWeight}
+          onReset={resetWeights}
+          labels={{ reset: t("act11.story.studio_reset") }}
         />
       ),
     });
@@ -521,6 +749,14 @@ export default function Act11Synthese() {
     scatterGroups,
     medianX,
     medianY,
+    activeVuln,
+    weights,
+    setWeight,
+    resetWeights,
+    slopeRows,
+    beeData,
+    topExposed,
+    contextRecap,
   ]);
 
   const total = scenes.length;
@@ -694,6 +930,15 @@ export default function Act11Synthese() {
                 />
               </div>
             ) : null}
+            <div className="scene__limits scene__anim">
+              <p className="scene__limits-kicker">{t("act11.story.limits_k")}</p>
+              <ul className="scene__limits-list">
+                <li>{t("act11.story.limits_1")}</li>
+                <li>{t("act11.story.limits_2")}</li>
+                <li>{t("act11.story.limits_3")}</li>
+                <li>{t("act11.story.limits_4")}</li>
+              </ul>
+            </div>
             <div className="scene__links scene__anim">
               <Link to="/" className="scene__cta scene__cta--primary">
                 {t("act11.outro.next")}
