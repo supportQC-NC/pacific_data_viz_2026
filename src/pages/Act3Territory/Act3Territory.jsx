@@ -1,18 +1,17 @@
 // src/pages/Act3Territory/Act3Territory.jsx
 // ============================================================
-// Acte 06 (parcours) — « La côte, ligne de front ».
-// CROISE deux jeux PDH/SPC joints par GEO_PICT :
-//   • niveau de la mer  : DF_CLIMATE_CHANGE · SEA_LVL  (anomalie, m ; réf. 1993–2012 ; Copernicus C3S/DUACS)
-//   • population        : DF_NMDI_POP                  (taux de croissance annuel, %)
+// Acte « Territoire » — la mer rencontre les hommes.
+// Croise DEUX jeux officiels (anomalie du niveau de la mer par ZEE,
+// réf. 1993–2012 · taux de croissance démographique) complétés par un
+// agrégat statique du trait de côte (Digital Earth Pacific, CC BY-NC).
+// Règle éditoriale de l'acte : croiser pour LOCALISER, jamais pour conclure.
 //
-// Le niveau de la mer monte de façon QUASI UNIFORME (faible variance entre
-// territoires) ; ce qui DIFFÉRENCIE les territoires, c'est la démographie.
-// On raconte donc : (1) la mer monte pour tous (bande) ; (2) profil
-// d'exposition territoire par territoire — rang mer ↔ rang pression
-// démographique (barres miroir) ; (3) qui se densifie / se vide (barres
-// divergentes) ; (4) la carte ; (5) la trajectoire démographique (haltère).
-// Un nuage de points serait dégénéré ici (axe « mer » plat) — remplacé.
-// Format DASHBOARD (ActBoard). 100 % ApexCharts (hors carte Mapbox).
+// Vues « maîtrise de la donnée » (jury) :
+//   • Les données : carte d'identité DOUBLE (mer + population) + note
+//     trait de côte — sources, références, formule du taux, années
+//     incomplètes signalées, recensements 5–10 ans + modèles entre deux.
+//   • Couverture  : matrice binaire territoires × années du niveau de la
+//     mer — les vides montrés, jamais comblés.
 // ============================================================
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
@@ -23,6 +22,7 @@ import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import MirrorBars from "../../components/charts/MirrorBars";
 import ChangeChart from "../../components/charts/ChangeChart";
@@ -32,6 +32,7 @@ import COASTLINE_BY_TERRITORY from "../../data/coastlineByTerritory";
 import BubbleChart from "../../components/charts/BubbleChart";
 import SlopeChart from "../../components/charts/SlopeChart";
 import CoastSpreadChart from "../../components/charts/CoastSpreadChart";
+import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { median, fmt } from "../../components/charts/echartsBase";
 import "./Act3Territory.scss";
@@ -386,6 +387,21 @@ export default function Act3Territory() {
     </>
   );
 
+  // Carte d'identité DOUBLE (mer + population) — contenu 100 % i18n / fiches officielles.
+  const spotlightRows = [
+    { k: t("act3.spotlight.r_sea_src_k"), v: t("act3.spotlight.r_sea_src_v") },
+    { k: t("act3.spotlight.r_sea_ref_k"), v: t("act3.spotlight.r_sea_ref_v") },
+    { k: t("act3.spotlight.r_pop_src_k"), v: t("act3.spotlight.r_pop_src_v") },
+    { k: t("act3.spotlight.r_pop_def_k"), v: t("act3.spotlight.r_pop_def_v") },
+  ];
+  const spotlightNotes = [
+    t("act3.spotlight.n1"),
+    t("act3.spotlight.n2"),
+    t("act3.spotlight.n3"),
+    t("act3.spotlight.n4"),
+    t("act3.spotlight.n5"),
+  ];
+
   const charts =
     status === "ready" && currentSeaYear != null
       ? [
@@ -398,6 +414,22 @@ export default function Act3Territory() {
             finding: t("act3.board.band_find"),
             takeaway: t("act3.board.band_take"),
             node: <AnomalyBandChart series={seaSeries} years={seaYears} unit={seaUnit} />,
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act3.board.tab_read"),
+            title: t("act3.viz.read_title"),
+            finding: t("act3.board.read_find"),
+            takeaway: t("act3.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act3.spotlight.ex_kicker"), text: t("act3.spotlight.ex_text") }}
+                link={{ href: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global?tab=overview", label: t("act3.spotlight.link_label") }}
+              />
+            ),
           },
           {
             id: "slope",
@@ -588,6 +620,21 @@ export default function Act3Territory() {
             takeaway: t("act3.board.path_take"),
             node: (
               <DumbbellChart rows={pathRows} unit={popUnit} startLabel={t("act3.path_start")} endLabel={t("act3.path_end")} />
+            ),
+          },
+          {
+            id: "coverage",
+            empty: noSeaSeries,
+            tab: t("act3.board.tab_coverage"),
+            title: t("act3.viz.coverage_title"),
+            finding: t("act3.board.coverage_find"),
+            takeaway: t("act3.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={seaSeries}
+                years={seaYears}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
             ),
           },
         ]

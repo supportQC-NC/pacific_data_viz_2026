@@ -25,8 +25,8 @@
       "a2_title": "Un océan suivi de près",
       "a2_text": "L'anomalie de température de surface de la mer, territoire par territoire : l'écart à la normale, année après année. Savoir lire l'océan, c'est pouvoir anticiper — pour le vivant, le ciel et les saisons cycloniques des actes suivants.",
       "a3_tag": "Acte 03",
-      "a3_title": "La côte, ligne de front",
-      "a3_text": "La mer monte par ZEE (anomalie, m) pendant que la population croît ou recule (%). On croise les deux : où l'exposition se concentre-t-elle ?",
+      "a3_title": "Là où la mer rencontre les hommes",
+      "a3_text": "Deux jeux officiels croisés : l'anomalie du niveau de la mer par ZEE (réf. 1993–2012) et le taux de croissance démographique. Savoir précisément où l'eau monte et où vivent les gens : le premier outil de la planification de l'adaptation — la raison d'être d'un suivi territoire par territoire.",
       "a4_tag": "Acte 04",
       "a4_title": "L'humain au cœur",
       "a4_text": "Derrière les chiffres, des personnes — et une solidarité régionale qui se structure face aux catastrophes.",
@@ -691,7 +691,7 @@
     }
   },
   "act3": {
-    "lead": "Pendant que la mer avance, la carte humaine se redessine. La croissance démographique ralentit presque partout — et plusieurs îles perdent déjà leurs habitants, tandis que d'autres concentrent une population croissante sur un littoral menacé.",
+    "lead": "Pendant que la mer s'écarte de sa référence, la carte humaine se redessine. Lire les deux ensemble — où l'eau monte, où les habitants vivent et arrivent — c'est transformer deux séries officielles en outil d'anticipation.",
     "value_label": "Croissance annuelle",
     "unit": "%",
     "baseline": "référence 0",
@@ -700,26 +700,30 @@
     "pop_sub": "taux annuel",
     "guide": {
       "title": "Guide de lecture",
-      "intro": "L'indicateur est un TAUX de croissance annuel de la population (en %), pas un effectif. 0 = population stable ; au-dessus de 0 : l'île gagne des habitants ; en dessous : elle en perd.",
+      "intro": "Cet acte croise deux jeux officiels du Challenge — l'anomalie du niveau de la mer (Copernicus, moyenne par ZEE) et le taux de croissance démographique (CPS) — complétés par un agrégat statique du trait de côte (Digital Earth Pacific). Trois sources, trois fiches, et une règle : croiser pour localiser, jamais pour conclure.",
       "steps": [
         {
-          "k": "Taux, pas effectif",
-          "v": "Chaque valeur est la variation de population sur un an, en %. Négatif = déclin (émigration), positif = croissance."
+          "k": "Mer : une anomalie",
+          "v": "L'écart, en mètres, entre la hauteur de mer observée et la référence long terme 1993–2012, moyenné dans chaque ZEE. 0 = la référence ; au-dessus = plus haut. Les années comptant moins de 12 mois de données sont signalées incomplètes."
         },
         {
-          "k": "Moyenne + dispersion",
-          "v": "La ligne épaisse est la moyenne des 22 territoires ; la bande montre où se situent 8 territoires sur 10 (10ᵉ–90ᵉ centile), pour ne pas être écrasée par les micro-îles aux variations extrêmes."
+          "k": "Population : un taux, pas un effectif",
+          "v": "[naissances − décès + solde migratoire] / population × 100, en %. 0 = population stable ; négatif = déclin (émigration comprise). Le taux annuel s'appuie sur des recensements menés tous les 5 à 10 ans, complétés par modèles et projections entre deux collectes."
         },
         {
-          "k": "Le temps",
-          "v": "Le curseur (ou ▶) déplace l'année sur la courbe ET sur la carte 3D en même temps."
+          "k": "Le croisement",
+          "v": "Le nuage place chaque territoire selon sa mer (X) et sa démographie (Y). Il localise des situations — il ne démontre aucun mécanisme. C'est un outil de priorisation, pas une preuve."
         },
         {
-          "k": "La carte",
-          "v": "Hauteur ∝ amplitude du taux ; rouge = l'île grandit (pression côtière), bleu = elle se vide (départs)."
+          "k": "Le trait de côte",
+          "v": "Volet complémentaire (Landsat, Digital Earth Pacific, CC BY-NC) : recul et avancée se mesurent tous les deux. Agrégat statique, lecture approchée au niveau territoire — sa fiche source détaille la méthode et les seuils."
+        },
+        {
+          "k": "Précision & périmètre",
+          "v": "Les tendances de la mer varient d'une ZEE à l'autre (température, salinité, circulations locales) : c'est précisément ce qui rend le suivi territoire par territoire indispensable à la planification. Et nous : reformatage uniquement — aucun lissage, aucun comblement."
         }
       ],
-      "takeaway": "La croissance s'essouffle : beaucoup d'îles plafonnent ou se vident, pendant qu'une poignée entasse toujours plus d'habitants sur des côtes de plus en plus exposées."
+      "takeaway": "À retenir : croiser, c'est localiser — pas conclure. Ces vues désignent où regarder de près, et c'est exactement ce que demande la planification de l'adaptation."
     },
     "map_title": "Croissance par territoire",
     "map_sub": "taux annuel",
@@ -759,8 +763,8 @@
     },
     "outro": {
       "kicker": "Fin de l'acte 06",
-      "title": "Des côtes sous tension",
-      "text": "Des habitants toujours plus nombreux sur des côtes qui montent. Au plus près d'eux maintenant : l'eau qu'ils boivent et la maladie qui les guette.",
+      "title": "Des côtes qu'on sait nommer",
+      "text": "Mer, habitants, littoral : trois mesures réunies, et les lieux à surveiller ont désormais un nom. Au plus près des habitants maintenant : l'eau qu'ils boivent et leur santé.",
       "next": "Acte suivant : l'eau et la santé",
       "home": "Retour à l'accueil"
     },
@@ -771,7 +775,7 @@
     "balance_sub": "nombre de territoires en croissance vs en déclin, par année",
     "balance_up": "En croissance",
     "balance_down": "En déclin",
-    "thesis": "Niveau de la mer par ZEE (anomalie en m, réf. 1993–2012) croisé au taux de croissance de la population (%) : l'exposition se concentre là où la mer monte et où les habitants restent.",
+    "thesis": "Deux jeux officiels en regard : l'anomalie du niveau de la mer (m, réf. 1993–2012) et le taux de croissance de la population (%). Le croisement ne prouve pas une cause — il localise les lieux où l'adaptation se planifie.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -795,9 +799,9 @@
       "lines_find": "Chaque ligne un territoire : on lit qui accélère, qui ralentit, qui décline.",
       "lines_take": "Les trajectoires divergent — croissance soutenue ici, dépeuplement ailleurs.",
       "rank_find": "Anomalie du niveau de la mer, territoire par territoire, à l'année choisie.",
-      "rank_take": "Presque tous les territoires sont au-dessus de la référence : l'exposition est générale.",
+      "rank_take": "Une photographie à l'année choisie — fais défiler : c'est la persistance qui informe, pas l'instantané.",
       "map_find": "La géographie de l'anomalie du niveau de la mer pour l'année choisie.",
-      "map_take": "Presque toutes les ZEE passent au-dessus de la référence ; les atolls bas sont les plus vulnérables.",
+      "map_take": "La géographie de l'écart à la référence, à lire en mouvement : certaines ZEE oscillent, d'autres se tiennent durablement au-dessus.",
       "evo_find": "Qui a le plus accéléré et qui a le plus ralenti sur l'ensemble de la période.",
       "evo_take": "Les renversements de tendance dessinent les territoires sous tension.",
       "kpi_sea_median": "Niveau médian (anomalie)",
@@ -809,17 +813,17 @@
       "tab_band": "Montée des eaux",
       "tab_pop": "Peuplement",
       "cross_find": "Chaque point un territoire : anomalie de mer la plus récente (X) face au taux de croissance de la population (Y).",
-      "cross_take": "En haut à droite, la mer monte et la population croît encore : c'est là que l'exposition s'accumule.",
+      "cross_take": "En haut à droite, la mer s'élève et la population croît encore : c'est là que la planification regarde en premier.",
       "band_find": "Anomalie moyenne du niveau de la mer et dispersion entre territoires, année après année.",
-      "band_take": "La courbe franchit la référence et ne redescend plus : la mer s'installe au-dessus de sa normale.",
+      "band_take": "La lecture juste : la position de la courbe face à la référence 1993–2012, sur la durée — l'oscillation d'une année n'est pas l'installation d'une décennie.",
       "pop_find": "Taux de croissance de la population le plus récent, territoire par territoire.",
-      "pop_take": "Plusieurs îles gagnent encore des habitants quand d'autres se vident : deux pressions opposées sur le littoral.",
+      "pop_take": "Des dynamiques contrastées — et connues : là où la population croît encore, l'information arrive à temps pour planifier.",
       "tab_profile": "Exposition",
       "profile_find": "Rang relatif (0–100) de chaque territoire : niveau de la mer (gauche) face au taux de croissance de la population (droite).",
       "profile_take": "Les barres longues des deux côtés marquent les plus exposés : mer haute ET population qui croît encore.",
       "tab_path": "Trajectoire",
       "path_find": "Pour chaque territoire, le taux de croissance de la première année observée (point sourd) à la plus récente (point chaud).",
-      "path_take": "La plupart des trajectoires glissent vers le bas : la croissance ralentit, mais reste positive sur des côtes qui montent.",
+      "path_take": "La plupart des trajectoires glissent vers le bas : une transition démographique documentée, territoire par territoire.",
       "tab_coast": "Trait de côte",
       "coast_find": "Chaque point est un segment de littoral suivi par satellite (Landsat, 1999–2023) : en rouge le recul, en bleu l’avancée, exprimés en mètres par an.",
       "coast_take": "Le recul ne touche pas la côte de façon uniforme : il se concentre sur des secteurs précis, souvent parmi les plus habités.",
@@ -831,7 +835,7 @@
       "coastmap_take": "Les foyers de recul se concentrent sur quelques territoires ; ailleurs, le littoral reste stable ou progresse.",
       "tab_slope": "Montée de la mer",
       "slope_find": "Pour chaque territoire, le niveau de la mer à la première puis à la dernière année observée (anomalie en mm). Une pente montante = mer qui s'élève.",
-      "slope_take": "La hausse est quasi générale et d'ampleur voisine d'un territoire à l'autre : la mer monte pour (presque) tous.",
+      "slope_take": "Chaque pente est l'écart entre deux années réelles, en millimètres : la direction d'ensemble se lit, et chaque exception mérite son propre regard.",
       "tab_spread": "Dispersion",
       "spread_find": "Chaque boîte résume la distribution des vitesses de trait de côte d'un territoire (médiane, quartiles, extrêmes), en m/an.",
       "spread_take": "Une même côte mêle souvent recul et avancée : la dispersion révèle l'hétérogénéité que les moyennes masquent.",
@@ -839,7 +843,13 @@
       "bubble_find": "Croisement : en abscisse la croissance démographique, en ordonnée la part de littoral en recul, taille des bulles = nombre de segments suivis.",
       "bubble_take": "Là où la population croît vite et où le littoral recule, les pressions se cumulent — ce sont les territoires à surveiller en priorité.",
       "kpi_coast_retreat": "Territoires en recul net",
-      "kpi_coast_unit": "sur le total"
+      "kpi_coast_unit": "sur le total",
+      "tab_read": "Les données",
+      "read_find": "Les fiches des deux jeux officiels croisés — mer et population — plus la note du trait de côte : sources, références, formules, et ce que croiser veut dire.",
+      "read_take": "Un acte qui croise commence par montrer ses deux cartes d'identité : c'est la condition d'un croisement honnête.",
+      "tab_coverage": "Couverture",
+      "coverage_find": "Chaque case dit si une valeur du niveau de la mer existe pour ce territoire cette année-là — y compris les années signalées incomplètes par le producteur.",
+      "coverage_take": "Savoir exactement où la série s'arrête : la signature de cet acte, comme de tous les autres."
     },
     "sea_unit": "m",
     "viz": {
@@ -863,7 +873,9 @@
       "bubble_title": "Pression humaine et recul du littoral",
       "bubble_x": "Croissance démographique (%/an)",
       "bubble_y": "% littoral en recul",
-      "bubble_z": "Segments suivis"
+      "bubble_z": "Segments suivis",
+      "read_title": "Deux jeux officiels, deux cartes d'identité",
+      "coverage_title": "La couverture du niveau de la mer : ce que la série contient — et ce qu'elle ne contient pas"
     },
     "path_start": "1re année",
     "path_end": "récent",
@@ -880,7 +892,25 @@
     },
     "coastmap_low": "Stable",
     "coastmap_mid": "Recul modéré",
-    "coastmap_high": "Fort recul"
+    "coastmap_high": "Fort recul",
+    "spotlight": {
+      "r_sea_src_k": "Mer — source",
+      "r_sea_src_v": "Copernicus C3S · DUACS DT2024 (altimétrie satellitaire) · via Pacific Data Hub, jeu officiel",
+      "r_sea_ref_k": "Mer — unité · référence",
+      "r_sea_ref_v": "m · écart à la référence 1993–2012 · moyenne par ZEE, annuelle · CC-BY · maj 2026-07-04",
+      "r_pop_src_k": "Population — source",
+      "r_pop_src_v": "CPS — Division statistique pour le développement · via Pacific Data Hub, jeu officiel",
+      "r_pop_def_k": "Population — définition",
+      "r_pop_def_v": "[naissances − décès + solde migratoire] / population × 100 · % · tous âges · annuel",
+      "n1": "Mer : moyennes annuelles agrégées des mois disponibles ; les années comptant moins de 12 mois sont signalées incomplètes.",
+      "n2": "Mer : les tendances varient d'une ZEE à l'autre (température, salinité, circulations) — c'est ce qui rend le suivi par territoire indispensable à la planification de l'adaptation.",
+      "n3": "Population : le taux annuel s'appuie sur des recensements (tous les 5 à 10 ans), complétés par modèles et projections entre deux collectes — à garder en tête pour les variations fines.",
+      "n4": "Croiser deux jeux ne prouve pas une cause : le nuage localise des situations, il ne démontre pas un mécanisme.",
+      "n5": "Trait de côte : agrégat statique Digital Earth Pacific (Landsat, CC BY-NC), lecture approchée au niveau territoire — méthode et seuils détaillés dans sa fiche source.",
+      "ex_kicker": "Lire une valeur",
+      "ex_text": "ZEE des Mariannes du Nord, 1993 : −0,02 m — deux centimètres sous la référence 1993–2012. 2013 : +0,06 m — six centimètres au-dessus. Une même ZEE, vingt ans, huit centimètres d'écart parcouru.",
+      "link_label": "Voir le jeu niveau de la mer (Copernicus CDS)"
+    }
   },
   "act4": {
     "kpi_affected": "personnes affectées (cumul)",

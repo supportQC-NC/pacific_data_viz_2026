@@ -35,6 +35,31 @@ const SOURCES = {
     },
   },
 
+  population: {
+    fr: {
+      provider: "CPS — Division statistique pour le développement · diffusion Pacific Data Hub (.Stat)",
+      dataset: "Croissance démographique — jeu officiel du Challenge",
+      frequency: "Annuelle (recensements tous les 5 à 10 ans, complétés par modèles et projections)",
+      updated: "",
+      license: "",
+      method:
+        "Taux de croissance démographique total : rythme auquel une population augmente (ou diminue) durant une année, accroissement naturel et solde migratoire compris. Formule : [naissances − décès + solde migratoire] / population totale × 100, en %, tous âges confondus. Sources privilégiées : recensements (deux collectes) ; entre deux recensements, les valeurs annuelles s'appuient sur des modèles et projections démographiques — une précision à garder en tête en lisant les variations fines. Sert notamment de base au calcul du temps de doublement de la population et aux plans nationaux de développement.",
+      example: "Un taux de 0 % = population stable ; −1 % = un territoire qui perd 1 % de ses habitants dans l'année, émigration comprise.",
+      link: "https://stats.pacificdata.org",
+    },
+    en: {
+      provider: "SPC — Statistics for Development Division · disseminated by the Pacific Data Hub (.Stat)",
+      dataset: "Population growth — official Challenge dataset",
+      frequency: "Annual (censuses every 5 to 10 years, completed by models and projections)",
+      updated: "",
+      license: "",
+      method:
+        "Total population growth rate: the pace at which a population grows (or declines) over a year, natural increase and net migration included. Formula: [births − deaths + net migration] / total population × 100, in %, all ages. Preferred sources: censuses (two collections); between censuses, annual values rest on demographic models and projections — worth keeping in mind when reading fine variations. Serves notably as the basis for population doubling-time calculations and national development plans.",
+      example: "A rate of 0% = stable population; −1% = a territory losing 1% of its inhabitants within the year, emigration included.",
+      link: "https://stats.pacificdata.org",
+    },
+  },
+
   seaLevel: {
     fr: {
       provider: "Service Copernicus sur le changement climatique (C3S)",

@@ -25,8 +25,8 @@
       "a2_title": "An ocean watched closely",
       "a2_text": "Sea-surface temperature anomaly, territory by territory: the gap to the normal, year after year. Knowing how to read the ocean means being able to anticipate — for the living world, the sky and the cyclone seasons of the acts ahead.",
       "a3_tag": "Act 03",
-      "a3_title": "The coast, a front line",
-      "a3_text": "Sea level rises by EEZ (anomaly, m) while population grows or declines (%). We cross the two: where does exposure concentrate?",
+      "a3_title": "Where the sea meets the people",
+      "a3_text": "Two official datasets crossed: the sea-level anomaly per EEZ (1993–2012 reference) and the population growth rate. Knowing precisely where the water rises and where people live: the first tool of adaptation planning — the very reason this data exists territory by territory.",
       "a4_tag": "Act 04",
       "a4_title": "People at the heart",
       "a4_text": "Behind the numbers, people — and a regional solidarity taking shape in the face of disasters.",
@@ -691,7 +691,7 @@
     }
   },
   "act3": {
-    "lead": "As the sea advances, the human map is redrawn. Population growth is slowing almost everywhere — and several islands are already losing inhabitants, while others crowd a growing population onto a threatened shore.",
+    "lead": "While the sea departs from its reference, the human map is being redrawn. Reading both together — where the water rises, where people live and arrive — turns two official series into a tool for anticipation.",
     "value_label": "Annual growth",
     "unit": "%",
     "baseline": "reference 0",
@@ -700,26 +700,30 @@
     "pop_sub": "annual rate",
     "guide": {
       "title": "Reading guide",
-      "intro": "The indicator is an annual population GROWTH RATE (in %), not a headcount. 0 = stable population; above 0: the island is gaining inhabitants; below: it is losing them.",
+      "intro": "This act crosses two official Challenge datasets — the sea-level anomaly (Copernicus, EEZ mean) and the population growth rate (SPC) — completed by a static coastline aggregate (Digital Earth Pacific). Three sources, three records, one rule: cross to locate, never to conclude.",
       "steps": [
         {
-          "k": "Rate, not headcount",
-          "v": "Each value is the one-year population change, in %. Negative = decline (emigration), positive = growth."
+          "k": "Sea: an anomaly",
+          "v": "The gap, in metres, between observed sea-surface height and the 1993–2012 long-term reference, averaged within each EEZ. 0 = the reference; above = higher. Years with fewer than 12 months of data are flagged incomplete."
         },
         {
-          "k": "Mean + spread",
-          "v": "The thick line is the average of the 22 territories; the band shows where 8 in 10 territories sit (10th–90th percentile), so it isn't crushed by tiny islands with extreme swings."
+          "k": "Population: a rate, not a headcount",
+          "v": "[births − deaths + net migration] / population × 100, in %. 0 = stable population; negative = decline (emigration included). The annual rate rests on censuses run every 5 to 10 years, completed by models and projections between two collections."
         },
         {
-          "k": "Time",
-          "v": "The slider (or ▶) moves the year on the curve AND the 3D map at once."
+          "k": "The crossing",
+          "v": "The scatter places each territory by its sea (x) and its demography (y). It locates situations — it demonstrates no mechanism. A prioritisation tool, not a proof."
         },
         {
-          "k": "The map",
-          "v": "Height ∝ rate magnitude; red = the island is growing (coastal pressure), blue = it is emptying (departures)."
+          "k": "The coastline",
+          "v": "A complementary layer (Landsat, Digital Earth Pacific, CC BY-NC): retreat and advance are both measured. A static aggregate, an approximate read at territory level — its source record details method and thresholds."
+        },
+        {
+          "k": "Precision & scope",
+          "v": "Sea trends vary from one EEZ to another (temperature, salinity, local circulations): precisely what makes territory-by-territory monitoring indispensable for planning. And on our side: reformatting only — no smoothing, no filling."
         }
       ],
-      "takeaway": "Growth is running out of steam: many islands plateau or empty out, while a handful pack ever more people onto increasingly exposed coasts."
+      "takeaway": "Takeaway: crossing locates — it does not conclude. These views point to where to look closely, which is exactly what adaptation planning requires."
     },
     "map_title": "Growth by territory",
     "map_sub": "annual rate",
@@ -759,8 +763,8 @@
     },
     "outro": {
       "kicker": "End of act 06",
-      "title": "Coasts under pressure",
-      "text": "Ever more people on rising coasts. Closest to them now: the water they drink and the disease that threatens them.",
+      "title": "Coasts we can now name",
+      "text": "Sea, people, shoreline: three measures brought together, and the places to watch now have a name. Closer to the inhabitants next: the water they drink and their health.",
       "next": "Next act: water and health",
       "home": "Back to home"
     },
@@ -771,7 +775,7 @@
     "balance_sub": "number of territories growing vs declining, per year",
     "balance_up": "Growing",
     "balance_down": "Declining",
-    "thesis": "Sea level by EEZ (anomaly in m, ref. 1993–2012) crossed with the population growth rate (%): exposure concentrates where the sea rises and people stay.",
+    "thesis": "Two official datasets side by side: the sea-level anomaly (m, 1993–2012 ref.) and the population growth rate (%). Crossing them proves no cause — it locates the places where adaptation gets planned.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -795,9 +799,9 @@
       "lines_find": "Each line a territory: read who accelerates, who slows, who declines.",
       "lines_take": "Trajectories diverge — sustained growth here, depopulation there.",
       "rank_find": "Sea-level anomaly, territory by territory, for the selected year.",
-      "rank_take": "Almost all territories sit above the reference: exposure is widespread.",
+      "rank_take": "A snapshot at the chosen year — scrub through: persistence informs, not the instant.",
       "map_find": "The geography of the sea-level anomaly for the selected year.",
-      "map_take": "Almost every EEZ sits above the reference; low atolls are the most vulnerable.",
+      "map_take": "The geography of the gap to the reference, to be read in motion: some EEZs oscillate, others sit durably above.",
       "evo_find": "Who accelerated most and who slowed most over the whole period.",
       "evo_take": "Reversals reveal the territories under pressure.",
       "kpi_sea_median": "Median level (anomaly)",
@@ -809,17 +813,17 @@
       "tab_band": "Rising sea",
       "tab_pop": "Population",
       "cross_find": "Each dot is a territory: latest sea anomaly (X) against the population growth rate (Y).",
-      "cross_take": "Top-right: the sea rises and population still grows — that is where exposure builds up.",
+      "cross_take": "Top right, the sea rises and the population still grows: that is where planning looks first.",
       "band_find": "Mean sea-level anomaly and the spread across territories, year by year.",
-      "band_take": "The curve crosses the reference and stays above: the sea settles above its normal.",
+      "band_take": "The fair read: the curve's position against the 1993–2012 reference, over time — one year's swing is not a decade's settling-in.",
       "pop_find": "Latest population growth rate, territory by territory.",
-      "pop_take": "Several islands still gain people while others empty out: two opposing pressures on the coast.",
+      "pop_take": "Contrasting dynamics — and known ones: where population still grows, the information arrives in time to plan.",
       "tab_profile": "Exposure",
       "profile_find": "Relative rank (0–100) for each territory: sea level (left) against the population growth rate (right).",
       "profile_take": "Long bars on both sides flag the most exposed: high sea AND a still-growing population.",
       "tab_path": "Path",
       "path_find": "For each territory, the growth rate from the first observed year (dull dot) to the most recent (warm dot).",
-      "path_take": "Most paths drift downward: growth slows but stays positive on rising coasts.",
+      "path_take": "Most trajectories slide downward: a demographic transition, documented territory by territory.",
       "tab_coast": "Coastline",
       "coast_find": "Each dot is a satellite-tracked coastline segment (Landsat, 1999–2023): red is retreat, blue is growth, expressed in metres per year.",
       "coast_take": "Retreat is not uniform along the coast: it concentrates on specific stretches, often among the most inhabited.",
@@ -831,7 +835,7 @@
       "coastmap_take": "Retreat hotspots concentrate on a few territories; elsewhere the coast stays stable or advances.",
       "tab_slope": "Sea-level rise",
       "slope_find": "For each territory, sea level at the first and last observed year (mm anomaly). A rising slope = rising sea.",
-      "slope_take": "The rise is near-universal and of similar magnitude across territories: the sea is rising for (almost) everyone.",
+      "slope_take": "Each slope is the gap between two real years, in millimetres: the overall direction reads itself, and every exception deserves its own look.",
       "tab_spread": "Spread",
       "spread_find": "Each box summarises a territory's distribution of coastline-change rates (median, quartiles, extremes), in m/year.",
       "spread_take": "A single coast often mixes retreat and growth: the spread reveals the heterogeneity that averages hide.",
@@ -839,7 +843,13 @@
       "bubble_find": "Cross-view: x = population growth, y = share of coastline retreating, bubble size = number of tracked segments.",
       "bubble_take": "Where population grows fast and the coast retreats, pressures compound — those are the territories to watch first.",
       "kpi_coast_retreat": "Territories in net retreat",
-      "kpi_coast_unit": "of total"
+      "kpi_coast_unit": "of total",
+      "tab_read": "The data",
+      "read_find": "The ID cards of the two crossed official datasets — sea and population — plus the coastline note: sources, references, formulas, and what crossing means.",
+      "read_take": "An act that crosses datasets starts by showing both ID cards: the condition of an honest crossing.",
+      "tab_coverage": "Coverage",
+      "coverage_find": "Each cell says whether a sea-level value exists for that territory in that year — including years the producer flags as incomplete.",
+      "coverage_take": "Knowing exactly where the series ends: this act's signature, like every other."
     },
     "sea_unit": "m",
     "viz": {
@@ -863,7 +873,9 @@
       "bubble_title": "Human pressure and coastal retreat",
       "bubble_x": "Population growth (%/yr)",
       "bubble_y": "% coastline retreating",
-      "bubble_z": "Tracked segments"
+      "bubble_z": "Tracked segments",
+      "read_title": "Two official datasets, two ID cards",
+      "coverage_title": "Sea-level coverage: what the series contains — and what it doesn't"
     },
     "path_start": "first year",
     "path_end": "recent",
@@ -880,7 +892,25 @@
     },
     "coastmap_low": "Stable",
     "coastmap_mid": "Moderate retreat",
-    "coastmap_high": "Strong retreat"
+    "coastmap_high": "Strong retreat",
+    "spotlight": {
+      "r_sea_src_k": "Sea — source",
+      "r_sea_src_v": "Copernicus C3S · DUACS DT2024 (satellite altimetry) · via the Pacific Data Hub, official dataset",
+      "r_sea_ref_k": "Sea — unit · reference",
+      "r_sea_ref_v": "m · gap to the 1993–2012 reference · EEZ mean, annual · CC-BY · upd. 2026-07-04",
+      "r_pop_src_k": "Population — source",
+      "r_pop_src_v": "SPC — Statistics for Development Division · via the Pacific Data Hub, official dataset",
+      "r_pop_def_k": "Population — definition",
+      "r_pop_def_v": "[births − deaths + net migration] / population × 100 · % · all ages · annual",
+      "n1": "Sea: annual means aggregate the available months; years with fewer than 12 months are flagged incomplete.",
+      "n2": "Sea: trends vary from one EEZ to another (temperature, salinity, circulations) — which is what makes territory-level monitoring indispensable for adaptation planning.",
+      "n3": "Population: the annual rate rests on censuses (every 5 to 10 years), completed by models and projections between collections — worth keeping in mind for fine variations.",
+      "n4": "Crossing two datasets proves no cause: the scatter locates situations, it demonstrates no mechanism.",
+      "n5": "Coastline: a static Digital Earth Pacific aggregate (Landsat, CC BY-NC), an approximate territory-level read — method and thresholds detailed in its source record.",
+      "ex_kicker": "Reading a value",
+      "ex_text": "Northern Mariana Islands EEZ, 1993: −0.02 m — two centimetres below the 1993–2012 reference. 2013: +0.06 m — six centimetres above. One EEZ, twenty years, eight centimetres travelled.",
+      "link_label": "See the sea-level dataset (Copernicus CDS)"
+    }
   },
   "act4": {
     "kpi_affected": "people affected (total)",
