@@ -9,6 +9,7 @@
 // ============================================================
 
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import PICT_NAMES, { pictName } from "../../i18n/pictNames";
 import { flagUrl } from "../../i18n/flagUrl";
@@ -26,22 +27,24 @@ function FlagTile({ code, name }) {
 
   return (
     <li className="territories__item">
-      <span className="territories__flag">
-        {src ? (
-          <img
-            src={src}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            onError={() => setStep((s) => s + 1)}
-          />
-        ) : (
-          <span className="territories__fallback" aria-hidden="true">
-            {code}
-          </span>
-        )}
-      </span>
-      <span className="territories__name">{name}</span>
+      <Link className="territories__link" to={`/territoire/${code}`} aria-label={name}>
+        <span className="territories__flag">
+          {src ? (
+            <img
+              src={src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={() => setStep((s) => s + 1)}
+            />
+          ) : (
+            <span className="territories__fallback" aria-hidden="true">
+              {code}
+            </span>
+          )}
+        </span>
+        <span className="territories__name">{name}</span>
+      </Link>
     </li>
   );
 }

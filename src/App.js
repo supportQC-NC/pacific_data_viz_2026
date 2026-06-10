@@ -32,6 +32,7 @@ import Act9Eco from './pages/Act9Eco/Act9Eco';
 import Act10Sante from './pages/Act10Sante/Act10Sante';
 import Act11Synthese from './pages/Act11Synthese/Act11Synthese';
 import DatasetPage from './pages/DatasetPage/DatasetPage';
+import CountryPage from './pages/CountryPage/CountryPage';
 
 function AppContent() {
   return (
@@ -55,6 +56,7 @@ function AppContent() {
         <Route path="/sante" element={<ActFlow actId="a10"><Act10Sante /></ActFlow>} />
         <Route path="/synthese" element={<ActFlow actId="a11"><Act11Synthese /></ActFlow>} />
         <Route path="/data/:id" element={<DatasetPage />} />
+        <Route path="/territoire/:code" element={<CountryPage />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

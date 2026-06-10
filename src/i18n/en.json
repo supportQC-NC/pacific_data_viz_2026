@@ -2233,5 +2233,105 @@
     "export": "Export CSV",
     "prev": "Previous page",
     "next": "Next page"
+  },
+  "country": {
+    "back": "Home",
+    "eyebrow": "Territory profile",
+    "lead": "All of Datamoana's open indicators, for this single territory (excluding cyclones, specific to New Caledonia).",
+    "loading": "Loading indicators…",
+    "no_data": "No data available for this territory.",
+    "unknown": "Territory not found.",
+    "ind": {
+      "emissions": "GHG emissions",
+      "seaLevel": "Sea level",
+      "sst": "Sea temperature",
+      "rain": "Rainfall",
+      "tourism": "Tourism",
+      "electricity": "Electricity",
+      "renewables": "Renewable share",
+      "water": "Safe drinking water",
+      "tuberculosis": "Tuberculosis",
+      "redList": "Red List Index",
+      "disastersAffected": "People affected",
+      "disastersLoss": "Disaster losses",
+      "population": "Population",
+      "cropYield": "Crop yield",
+      "livestockYield": "Livestock yield",
+      "landCover": "Land cover"
+    },
+    "unit": {
+      "emissions": "t CO₂/cap.",
+      "seaLevel": "m",
+      "sst": "°C",
+      "rain": "mm",
+      "tourism": "arrivals",
+      "electricity": "GWh",
+      "renewables": "%",
+      "water": "%",
+      "tuberculosis": "/100k",
+      "redList": "",
+      "disastersAffected": "people",
+      "disastersLoss": "",
+      "population": "people",
+      "cropYield": "",
+      "livestockYield": "",
+      "landCover": "%"
+    },
+    "map_title": "Location",
+    "no_token": "Map unavailable (Mapbox token missing).",
+    "indicators": "Indicators",
+    "exp": {
+      "up": "Up by",
+      "down": "Down by",
+      "flat": "Roughly stable",
+      "over": "over"
+    },
+    "story": {
+      "warming": {
+        "kicker": "Warming",
+        "title": "The sea is warming"
+      },
+      "sea": {
+        "kicker": "Sea level",
+        "title": "The ocean is rising"
+      },
+      "rain": {
+        "kicker": "Rainfall",
+        "title": "Rainfall grows erratic"
+      },
+      "carbon": {
+        "kicker": "Carbon",
+        "title": "The carbon footprint"
+      },
+      "energy": {
+        "kicker": "Energy",
+        "title": "Producing electricity"
+      },
+      "people": {
+        "kicker": "People",
+        "title": "Residents & visitors"
+      },
+      "health": {
+        "kicker": "Health",
+        "title": "Water & public health"
+      },
+      "nature": {
+        "kicker": "Nature",
+        "title": "Life under pressure"
+      },
+      "food": {
+        "kicker": "Agriculture",
+        "title": "Feeding the territory"
+      },
+      "shocks": {
+        "kicker": "Disasters",
+        "title": "Climate shocks"
+      }
+    },
+    "narr": {
+      "from": "From",
+      "to": "to",
+      "peak": "Peak:"
+    }
   }
 }

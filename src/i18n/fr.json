@@ -2233,5 +2233,105 @@
     "export": "Exporter CSV",
     "prev": "Page précédente",
     "next": "Page suivante"
+  },
+  "country": {
+    "back": "Accueil",
+    "eyebrow": "Profil territoire",
+    "lead": "Tous les indicateurs ouverts de Datamoana, pour ce seul territoire (hors cyclones, propres à la Nouvelle-Calédonie).",
+    "loading": "Chargement des indicateurs…",
+    "no_data": "Aucune donnée disponible pour ce territoire.",
+    "unknown": "Territoire introuvable.",
+    "ind": {
+      "emissions": "Émissions de GES",
+      "seaLevel": "Niveau de la mer",
+      "sst": "Température de la mer",
+      "rain": "Précipitations",
+      "tourism": "Tourisme",
+      "electricity": "Électricité",
+      "renewables": "Part renouvelable",
+      "water": "Eau potable sûre",
+      "tuberculosis": "Tuberculose",
+      "redList": "Indice Liste Rouge",
+      "disastersAffected": "Personnes affectées",
+      "disastersLoss": "Pertes (catastrophes)",
+      "population": "Population",
+      "cropYield": "Rendement des cultures",
+      "livestockYield": "Rendement de l'élevage",
+      "landCover": "Occupation des sols"
+    },
+    "unit": {
+      "emissions": "t CO₂/hab.",
+      "seaLevel": "m",
+      "sst": "°C",
+      "rain": "mm",
+      "tourism": "arrivées",
+      "electricity": "GWh",
+      "renewables": "%",
+      "water": "%",
+      "tuberculosis": "/100 000",
+      "redList": "",
+      "disastersAffected": "pers.",
+      "disastersLoss": "",
+      "population": "hab.",
+      "cropYield": "",
+      "livestockYield": "",
+      "landCover": "%"
+    },
+    "map_title": "Localisation",
+    "no_token": "Carte indisponible (jeton Mapbox manquant).",
+    "indicators": "Indicateurs",
+    "exp": {
+      "up": "En hausse de",
+      "down": "En baisse de",
+      "flat": "Quasi stable",
+      "over": "sur"
+    },
+    "story": {
+      "warming": {
+        "kicker": "Réchauffement",
+        "title": "La mer se réchauffe"
+      },
+      "sea": {
+        "kicker": "Niveau marin",
+        "title": "L'océan monte"
+      },
+      "rain": {
+        "kicker": "Précipitations",
+        "title": "Des pluies plus erratiques"
+      },
+      "carbon": {
+        "kicker": "Carbone",
+        "title": "L'empreinte carbone"
+      },
+      "energy": {
+        "kicker": "Énergie",
+        "title": "Produire l'électricité"
+      },
+      "people": {
+        "kicker": "Population",
+        "title": "Habitants & visiteurs"
+      },
+      "health": {
+        "kicker": "Santé",
+        "title": "Eau & santé publique"
+      },
+      "nature": {
+        "kicker": "Nature",
+        "title": "Le vivant sous pression"
+      },
+      "food": {
+        "kicker": "Agriculture",
+        "title": "Nourrir le territoire"
+      },
+      "shocks": {
+        "kicker": "Catastrophes",
+        "title": "Les chocs climatiques"
+      }
+    },
+    "narr": {
+      "from": "De",
+      "to": "à",
+      "peak": "Pic :"
+    }
   }
 }

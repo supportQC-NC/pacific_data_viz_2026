@@ -1,0 +1,275 @@
+// src/pages/CountryPage/CountryPage.scss
+// ============================================================
+// Page profil d'un territoire en RÉCIT. Tokens uniquement.
+// Carte 3D -> en-tête -> chapitres (texte + grand graphique).
+// ============================================================
+
+.country {
+  position: relative;
+  min-height: 100vh;
+  padding-top: calc(var(--nav-h) + var(--sp-16));
+  padding-bottom: var(--sp-24);
+  overflow: hidden;
+
+  &__glow {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 460px;
+    background: var(--grad-abyss);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &__inner {
+    position: relative;
+    z-index: 1;
+    max-width: var(--maxw);
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+    transition: color var(--t-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--c-accent);
+    }
+  }
+
+  // 1. Localisation
+  &__map-sec {
+    margin-top: var(--sp-8);
+  }
+  &__map-eyebrow {
+    margin-bottom: var(--sp-3);
+  }
+
+  // 2. En-tête
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-6);
+    margin-top: var(--sp-10);
+    flex-wrap: wrap;
+  }
+
+  &__flag {
+    flex: 0 0 auto;
+    width: 104px;
+    aspect-ratio: 3 / 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-bg-2);
+    box-shadow: inset 0 0 0 var(--border-hair) var(--c-line);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &__eyebrow {
+    margin-bottom: var(--sp-1);
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    line-height: 1.05;
+    color: var(--c-text);
+  }
+
+  &__lead {
+    max-width: var(--maxw-text);
+    margin-top: var(--sp-2);
+    color: var(--c-text-soft);
+    font-size: var(--fs-md);
+  }
+
+  // 3. Récit
+  &__story {
+    margin-top: var(--sp-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-20);
+  }
+
+  &__chapter {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.25fr);
+    gap: var(--sp-10);
+    align-items: center;
+  }
+
+  &__ch-text {
+    min-width: 0;
+  }
+
+  &__ch-kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+  }
+
+  &__ch-num {
+    font-family: var(--font-mono);
+    color: var(--c-accent);
+  }
+
+  &__ch-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    line-height: 1.1;
+    color: var(--c-text);
+  }
+
+  &__ch-metric {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-3);
+    margin: var(--sp-4) 0 var(--sp-1);
+  }
+
+  &__val {
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-tight);
+    color: var(--c-text);
+    line-height: 1;
+  }
+
+  &__unit {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-mute);
+  }
+
+  &__trend {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    padding: 2px var(--sp-2);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    white-space: nowrap;
+
+    &.is-up {
+      color: var(--c-accent);
+    }
+    &.is-down {
+      color: var(--c-warm);
+    }
+  }
+
+  &__ch-lead {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+    margin-bottom: var(--sp-3);
+  }
+
+  &__ch-narr {
+    color: var(--c-text-soft);
+    font-size: var(--fs-md);
+    line-height: 1.6;
+    max-width: 46ch;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-5);
+  }
+
+  &__chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sp-2) var(--sp-3);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-sm);
+    background: var(--c-surface);
+  }
+
+  &__chip-k {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+  }
+
+  &__chip-v {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+  }
+
+  &__ch-chart {
+    width: 100%;
+    height: 340px;
+    padding: var(--sp-4) var(--sp-4) var(--sp-2);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+  }
+
+  &__single {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-mute);
+  }
+
+  &__hint {
+    margin-top: var(--sp-10);
+    color: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+
+    &--soft {
+      margin-top: var(--sp-4);
+      opacity: 0.7;
+    }
+  }
+}
+
+// Rythme : un chapitre sur deux a son graphe à gauche (desktop seulement).
+@media (min-width: 921px) {
+  .country__chapter:nth-child(even) .country__ch-chart {
+    order: -1;
+  }
+}
+
+@media (max-width: 920px) {
+  .country__chapter {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .country__ch-chart {
+    height: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .country__flag {
+    width: 84px;
+  }
+}

@@ -38,22 +38,33 @@
   }
 
   &__item {
+    list-style: none;
+  }
+
+  &__link {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--sp-3);
+    height: 100%;
     padding: var(--sp-4) var(--sp-3);
     border: var(--border-hair) solid var(--c-line);
     border-radius: var(--r-md);
     background: var(--c-surface);
+    color: inherit;
     text-align: center;
     transition:
       border-color var(--t-fast) var(--ease-out),
       transform var(--t-fast) var(--ease-out);
 
     &:hover {
-      border-color: var(--c-line-strong);
+      border-color: var(--c-accent);
       transform: translateY(-3px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 2px;
     }
   }
 
