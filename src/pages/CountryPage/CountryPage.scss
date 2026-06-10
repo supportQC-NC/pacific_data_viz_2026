@@ -1,7 +1,8 @@
 // src/pages/CountryPage/CountryPage.scss
 // ============================================================
 // Page profil d'un territoire en RÉCIT. Tokens uniquement.
-// Carte 3D -> en-tête -> chapitres (texte + grand graphique).
+// Carte 3D -> en-tête -> chapitres pleine largeur (texte + grand graphique
+// rendu par les composants du projet : TrendChart / AnnualBarsChart).
 // ============================================================
 
 .country {
@@ -97,23 +98,22 @@
     font-size: var(--fs-md);
   }
 
-  // 3. Récit
+  // 3. Récit — chapitres pleine largeur empilés
   &__story {
     margin-top: var(--sp-16);
     display: flex;
     flex-direction: column;
-    gap: var(--sp-20);
+    gap: var(--sp-16);
   }
 
   &__chapter {
-    display: grid;
-    grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.25fr);
-    gap: var(--sp-10);
-    align-items: center;
-  }
+    padding-top: var(--sp-10);
+    border-top: var(--border-hair) solid var(--c-line);
 
-  &__ch-text {
-    min-width: 0;
+    &:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
   }
 
   &__ch-kicker {
@@ -133,6 +133,15 @@
     font-size: var(--fs-xl);
     line-height: 1.1;
     color: var(--c-text);
+    margin-bottom: var(--sp-4);
+  }
+
+  // Ligne : grand chiffre à gauche, récit à droite (aligné, sans débordement)
+  &__ch-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--sp-6) var(--sp-10);
+    align-items: start;
   }
 
   &__ch-metric {
@@ -140,7 +149,7 @@
     align-items: baseline;
     flex-wrap: wrap;
     gap: var(--sp-1) var(--sp-3);
-    margin: var(--sp-4) 0 var(--sp-1);
+    min-width: 0;
   }
 
   &__val {
@@ -174,20 +183,21 @@
     }
   }
 
-  &__ch-lead {
+  &__ch-of {
+    flex-basis: 100%;
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     color: var(--c-text-mute);
-    margin-bottom: var(--sp-3);
+    margin-top: var(--sp-1);
   }
 
   &__ch-narr {
     color: var(--c-text-soft);
     font-size: var(--fs-md);
     line-height: 1.6;
-    max-width: 46ch;
+    max-width: 60ch;
   }
 
   &__chips {
@@ -219,17 +229,26 @@
     color: var(--c-text);
   }
 
-  &__ch-chart {
-    width: 100%;
-    height: 340px;
-    padding: var(--sp-4) var(--sp-4) var(--sp-2);
+  // Conteneur du graphe : hauteur FIXE (le graphe ne s'étire jamais, quelle
+  // que soit l'amplitude des valeurs).
+  &__ch-viz {
+    margin-top: var(--sp-6);
+    height: 380px;
+    padding: var(--sp-4);
     border: var(--border-hair) solid var(--c-line);
     border-radius: var(--r-md);
     background: var(--c-surface);
+    overflow: hidden;
+
+    .echart,
+    .apexchart {
+      height: 100% !important;
+      min-height: 0 !important;
+    }
   }
 
   &__single {
-    height: 100%;
+    min-height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -251,24 +270,13 @@
   }
 }
 
-// Rythme : un chapitre sur deux a son graphe à gauche (desktop seulement).
-@media (min-width: 921px) {
-  .country__chapter:nth-child(even) .country__ch-chart {
-    order: -1;
-  }
-}
-
-@media (max-width: 920px) {
-  .country__chapter {
+@media (max-width: 760px) {
+  .country__ch-row {
     grid-template-columns: 1fr;
-    gap: var(--sp-6);
   }
-  .country__ch-chart {
+  .country__ch-viz {
     height: 300px;
   }
-}
-
-@media (max-width: 640px) {
   .country__flag {
     width: 84px;
   }

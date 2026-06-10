@@ -2326,12 +2326,33 @@
       "shocks": {
         "kicker": "Catastrophes",
         "title": "Les chocs climatiques"
+      },
+      "crops": {
+        "kicker": "Cultures",
+        "title": "Que cultive le territoire"
+      },
+      "livestock": {
+        "kicker": "Élevage",
+        "title": "Le cheptel du territoire"
       }
     },
     "narr": {
       "from": "De",
       "to": "à",
-      "peak": "Pic :"
+      "peak": "Pic :",
+      "latest": "Dernier relevé :",
+      "over": "sur",
+      "rise": "Hausse",
+      "rise_slight": "Légère hausse",
+      "rise_strong": "Forte hausse",
+      "fall": "Baisse",
+      "fall_slight": "Légère baisse",
+      "fall_strong": "Forte baisse",
+      "stable": "Quasi stable"
+    },
+    "energy": {
+      "fossil": "Fossile",
+      "renew": "Renouvelable"
     }
   }
 }

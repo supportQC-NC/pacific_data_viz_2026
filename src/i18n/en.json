@@ -2326,12 +2326,33 @@
       "shocks": {
         "kicker": "Disasters",
         "title": "Climate shocks"
+      },
+      "crops": {
+        "kicker": "Crops",
+        "title": "What the territory grows"
+      },
+      "livestock": {
+        "kicker": "Livestock",
+        "title": "The territory's herds"
       }
     },
     "narr": {
       "from": "From",
       "to": "to",
-      "peak": "Peak:"
+      "peak": "Peak:",
+      "latest": "Latest:",
+      "over": "over",
+      "rise": "Up",
+      "rise_slight": "Slightly up",
+      "rise_strong": "Sharply up",
+      "fall": "Down",
+      "fall_slight": "Slightly down",
+      "fall_strong": "Sharply down",
+      "stable": "Roughly stable"
+    },
+    "energy": {
+      "fossil": "Fossil",
+      "renew": "Renewable"
     }
   }
 }
