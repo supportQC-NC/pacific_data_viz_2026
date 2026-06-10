@@ -22,8 +22,8 @@
       "a1_title": "La sobriété en héritage",
       "a1_text": "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cet acte la mesure territoire par territoire — le socle du récit.",
       "a2_tag": "Acte 02",
-      "a2_title": "L'océan se réchauffe",
-      "a2_text": "Anomalie de température de surface de la mer, par territoire et par an (°C, écart à la référence). Un seul signal physique, mesuré avec précision.",
+      "a2_title": "Un océan suivi de près",
+      "a2_text": "L'anomalie de température de surface de la mer, territoire par territoire : l'écart à la normale, année après année. Savoir lire l'océan, c'est pouvoir anticiper — pour le vivant, le ciel et les saisons cycloniques des actes suivants.",
       "a3_tag": "Acte 03",
       "a3_title": "La côte, ligne de front",
       "a3_text": "La mer monte par ZEE (anomalie, m) pendant que la population croît ou recule (%). On croise les deux : où l'exposition se concentre-t-elle ?",
@@ -489,7 +489,7 @@
     "sheet_series": "Séries temporelles"
   },
   "act2": {
-    "lead": "Deux signaux silencieux redessinent l'horizon du Pacifique : le niveau de la mer qui monte et la température de surface qui grimpe. Voici les données récupérées, territoire par territoire.",
+    "lead": "Un seul signal physique dans cet acte : l'anomalie de température de surface de la mer (°C). 0 = la normale de référence ; au-dessus = plus chaud, en dessous = plus frais. Suivre cet écart année après année, c'est lire l'océan avant d'en lire les conséquences (actes 7, 8 et 12).",
     "sea_title": "Niveau de la mer",
     "sea_sub": "variation observée",
     "sea_unit": "m",
@@ -502,26 +502,30 @@
     "coming": "Données récupérées ✓ — visualisations en préparation. La page complète arrive à l'étape suivante.",
     "guide": {
       "title": "Guide de lecture",
-      "intro": "Deux indicateurs, une même histoire : l'océan du Pacifique monte et se réchauffe. Les deux courbes montrent des ANOMALIES — l'écart à une période de référence, pas une valeur absolue.",
+      "intro": "Cet acte lit un seul jeu officiel du Challenge : l'anomalie de température de surface de la mer, par territoire et par an. Une anomalie compare l'océan à lui-même — l'écart à une période de référence — et non une température absolue. Les valeurs sont reformatées, jamais transformées.",
       "steps": [
         {
           "k": "Anomalie, pas valeur brute",
-          "v": "0 = la normale de référence. Au-dessus de 0 : plus chaud / plus haut que d'habitude ; en dessous : plus frais / plus bas."
+          "v": "0 = la normale de référence. +0,4 ne signifie pas « l'eau était à 0,4 °C » : elle était 0,4 °C au-dessus de sa normale locale. Chaque territoire est comparé à lui-même."
         },
         {
-          "k": "Moyenne + dispersion",
-          "v": "La ligne épaisse est la moyenne des 21 territoires ; la bande claire montre l'écart entre le territoire le plus bas et le plus haut cette année-là."
+          "k": "La référence",
+          "v": "0 = la normale climatologique 1971–2000 (NOAAGlobalTemp v6.0.0). L'anomalie mensuelle est moyennée dans chaque ZEE puis agrégée en moyenne annuelle — nous ne recalculons rien : la ligne 0 du graphique est la normale du producteur."
         },
         {
-          "k": "Le temps",
-          "v": "Le curseur (ou ▶) déplace l'année sur les deux courbes ET sur la carte en même temps."
+          "k": "L'oscillation",
+          "v": "Le Pacifique respire naturellement (El Niño / La Niña) : une année isolée ne fait pas une tendance. La lecture juste porte sur la position des dernières années face au 0, pas sur un pic."
         },
         {
-          "k": "La carte",
-          "v": "Bleu = sous la référence, rouge = au-dessus ; la taille du cercle traduit l'amplitude. Choisissez la métrique avec le sélecteur."
+          "k": "Le repère",
+          "v": "Dans le classement et sur la carte, la ligne et la teinte médiane marquent le 0 : tout se lit comme un écart, au-dessus ou en dessous de la normale."
+        },
+        {
+          "k": "Précision & périmètre",
+          "v": "La grille native est grossière (5° × 5°) : son alignement aux ZEE est affiné géométriquement, sans gagner en résolution réelle — l'homogénéité thermique est supposée dans chaque cellule d'origine. Le masquage des terres peut exclure certaines zones littorales autour des côtes complexes. Et nous : aucun lissage, aucune correction, aucun comblement (voir Couverture)."
         }
       ],
-      "takeaway": "Lentes mais nettes, les deux courbes franchissent la référence et ne redescendent plus : le Pacifique chauffe et la mer s'élève."
+      "takeaway": "À retenir : on lit une position par rapport à la normale, pas une température — et on juge sur la durée, jamais sur une seule année."
     },
     "baseline": "référence 0",
     "mean_label": "moy.",
@@ -557,7 +561,7 @@
     "change_sub": "écart entre la première et la dernière année disponibles",
     "change_up": "hausse",
     "change_down": "baisse",
-    "caption": "Sources : Pacific Data Hub / SPC — anomalies du niveau de la mer (réf. 1993–2012) et de la température de surface.",
+    "caption": "Source : Pacific Data Hub (.Stat) — SPC · jeu officiel « Anomalies de la température de surface de la mer » · NOAAGlobalTemp v6.0.0 (NOAA/NCEI) · °C, écart à la normale 1971–2000 · annuel · CC0.",
     "ref": "référence 0",
     "heatmap_low": "plus frais / plus bas",
     "heatmap_high": "plus chaud / plus haut",
@@ -596,28 +600,30 @@
       "change_sub": "Écart entre la première et la dernière année observée",
       "dual_title": "Deux signaux, une histoire",
       "dual_sub": "Niveau de la mer (axe gauche) et température de surface (axe droit)",
-      "share_title": "L'exposition se généralise",
+      "share_title": "La bascule : part des territoires au-dessus de leur normale",
       "share_sub": "Part des territoires au-dessus de la référence, année après année",
       "dumb_title": "De combien chacun a bougé",
-      "dumb_sub": "Première année observée → dernière, par territoire"
+      "dumb_sub": "Première année observée → dernière, par territoire",
+      "read_title": "Lire la donnée avant de lire l'océan",
+      "coverage_title": "La couverture : ce que la série contient — et ce qu'elle ne contient pas"
     },
     "story": {
-      "band": "La ligne suit la moyenne des territoires ; la bande montre l'écart entre le plus bas et le plus haut. Au-dessus de 0, l'océan dépasse sa référence.",
-      "rank": "La plupart des territoires sont désormais au-dessus de la référence — l'exposition n'est pas uniforme.",
-      "map": "D'un bout à l'autre du Pacifique, l'anomalie se lit d'un coup d'œil : presque partout au-dessus de la normale.",
-      "heat": "Les bandes se réchauffent de gauche à droite : la tendance est nette sur la durée.",
+      "band": "La ligne suit la moyenne des territoires ; la bande, l'écart min–max. La bonne question : où la courbe se tient-elle face au 0 sur les dernières années — et la bande se resserre-t-elle ou s'ouvre-t-elle ?",
+      "rank": "Le classement de l'année choisie : une photographie. Change d'année avec la carte ou la matrice avant de conclure — c'est le film qui informe.",
+      "map": "La géographie de l'écart, année par année. Fais défiler : certaines zones oscillent, d'autres se tiennent durablement d'un côté du 0.",
+      "heat": "Chaque ligne un territoire, chaque colonne une année : la matrice distingue d'un coup d'œil ce qui oscille de ce qui s'installe.",
       "corr": "Les territoires qui montent le plus sont souvent ceux qui chauffent le plus — deux signaux d'un même dérèglement.",
       "box": "Année après année, la distribution glisse vers le haut : la médiane et les extrêmes augmentent.",
       "river": "Les trois sous-régions suivent la même pente ascendante, à des rythmes proches.",
-      "change": "Entre la première et la dernière année, presque tous les territoires affichent une hausse.",
+      "change": "Première année reliée à la dernière, territoire par territoire : le signe dit le sens, l'ampleur dit le chemin — à lire avec la prudence des séries d'anomalies.",
       "dual": "Les deux courbes montent ensemble : le Pacifique se réchauffe en même temps qu'il monte. Deux mesures, un même dérèglement.",
-      "share": "La part de territoires au-dessus de la normale grimpe avec le temps — l'anomalie ne touche plus seulement quelques îles.",
+      "share": "Chaque année : la part des territoires au-dessus de leur normale. Tant qu'elle oscille, l'océan respire ; quand elle se tient haut durablement, l'écart n'est plus local.",
       "dumb": "Le point sourd marque la première année, le point chaud la dernière : l'écart, c'est le chemin parcouru."
     },
     "outro": {
       "kicker": "Fin de l'acte 02",
-      "title": "L'océan a parlé",
-      "text": "Une mer plus chaude alimente un air plus instable. Cap sur le ciel : anomalies de pluies et de températures au-dessus des terres.",
+      "title": "Un océan qu'on sait lire",
+      "text": "Oscillation d'un côté, tendance de l'autre : l'écart à la normale n'a plus de secret. Le ciel raconte la suite — pluies et températures face à leurs normales, à l'acte 8.",
       "next": "Acte suivant : le ciel",
       "home": "Retour à l'accueil"
     },
@@ -625,7 +631,7 @@
       "start": "1re année",
       "end": "dernière"
     },
-    "thesis": "Anomalie de température de surface de la mer (°C, écart à la référence), territoire par territoire : la tendance est positive sur la quasi-totalité des ZEE du Pacifique.",
+    "thesis": "L'écart à la normale, territoire par territoire : une donnée simple à lire — et qui apprend à distinguer l'oscillation d'une année de la tendance d'une décennie.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -640,22 +646,48 @@
       "tab_corr": "Trajectoire",
       "tab_heat": "Chaleur",
       "tab_dual": "Double axe",
-      "band_find": "Anomalie SST moyenne et dispersion entre territoires, année après année.",
-      "band_take": "La courbe franchit la référence et ne redescend plus : un réchauffement net et durable.",
-      "rank_find": "Écart à la référence, territoire par territoire, à l'année choisie.",
-      "rank_take": "Presque tous les territoires sont au-dessus de la référence — l'exposition est générale.",
-      "map_find": "La géographie de l'anomalie sur l'archipel, année après année.",
-      "map_take": "Aucun territoire n'est épargné ; les atolls les plus bas sont les plus vulnérables.",
+      "band_find": "Anomalie moyenne des territoires et dispersion min–max, année après année, face à la ligne 0.",
+      "band_take": "La lecture juste se fait sur la durée : la position de la courbe face à la normale, décennie par décennie — jamais sur le pic d'une seule année.",
+      "rank_find": "L'écart à la normale, territoire par territoire, pour l'année choisie.",
+      "rank_take": "Une photographie utile — à confronter au film : change d'année, et regarde qui oscille et qui se maintient.",
+      "map_find": "La géographie de l'écart à la normale, à faire défiler année par année.",
+      "map_take": "C'est le défilement qui informe : distinguer une année El Niño d'une position durable, c'est déjà lire l'océan correctement.",
       "corr_find": "La trajectoire du Pacifique année après année : réchauffement (X) et niveau de la mer (Y) montent de concert.",
       "corr_take": "Du coin frais et bas vers le chaud et haut : une seule ascension, deux symptômes liés.",
-      "heat_find": "Chaque ligne un territoire, chaque colonne une année : l'intensité dans le temps.",
-      "heat_take": "Les bandes s'assombrissent vers le présent — l'anomalie s'installe partout.",
+      "heat_find": "Chaque ligne un territoire, chaque colonne une année : toute la série en un seul regard.",
+      "heat_take": "La matrice sépare l'oscillation de l'installation — la nuance qui fait une lecture honnête.",
       "dual_find": "Les deux mesures sur un même graphique, chacune son axe.",
       "dual_take": "Niveau de la mer et température montent ensemble, décennie après décennie.",
       "tab_change": "Évolution",
-      "change_title": "Qui s'améliore, qui empire",
-      "change_find": "Variation nette entre la première et la dernière année de données.",
-      "change_take": "En vert l'anomalie qui se résorbe ; en rouge celle qui s'aggrave."
+      "change_title": "Le chemin parcouru, territoire par territoire",
+      "change_find": "Variation nette de l'anomalie entre la première et la dernière année de données.",
+      "change_take": "En vert, l'écart qui se résorbe ; en rouge, celui qui se creuse — le point de départ de chaque territoire compte autant que l'arrivée.",
+      "tab_read": "La donnée",
+      "read_find": "La fiche du jeu officiel — ce qu'est une anomalie, d'où vient la normale, ce que nous ne faisons pas — et comment lire une valeur.",
+      "read_take": "Comprendre la référence avant de lire l'écart : c'est toute la différence entre regarder une courbe et la comprendre.",
+      "tab_share": "La bascule",
+      "share_find": "Année après année : la part des territoires dont l'anomalie est au-dessus de leur normale (0).",
+      "share_take": "Un seul chiffre par année, et la distinction clé apparaît : l'oscillation fait monter et descendre la part — l'installation la maintient en haut.",
+      "tab_coverage": "Couverture",
+      "coverage_find": "Chaque case dit si une valeur existe pour ce territoire cette année-là. Les vides sont montrés tels quels, jamais comblés.",
+      "coverage_take": "Savoir exactement où la série s'arrête : la signature de cet acte, comme de tous les autres."
+    },
+    "spotlight": {
+      "r_src_k": "Source",
+      "r_src_v": "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · via Pacific Data Hub (.Stat), jeu officiel du Challenge",
+      "r_meas_k": "Mesure",
+      "r_meas_v": "Anomalie de température de surface de la mer, moyenne par ZEE",
+      "r_unit_k": "Unité · référence",
+      "r_unit_v": "°C · écart à la normale 1971–2000 · annuel",
+      "r_lic_k": "Licence · mise à jour",
+      "r_lic_v": "Creative Commons CC0 · 2026-01-12",
+      "n1": "Une anomalie compare l'océan à lui-même : l'écart à la normale climatologique 1971–2000, pas une température absolue.",
+      "n2": "Grille native 5° × 5°, affinée géométriquement pour s'aligner aux ZEE — sans gain de résolution réelle ; l'erreur type accompagne chaque valeur comme métrique d'incertitude.",
+      "n3": "Le Pacifique oscille naturellement (El Niño / La Niña) : une année isolée ne fait pas une tendance.",
+      "n4": "Ce que nous ne faisons pas : aucun lissage, aucune correction, aucun comblement des années manquantes.",
+      "ex_kicker": "Lire une valeur",
+      "ex_text": "ZEE de Palau, 1991 : −0,35 °C — une surface plus fraîche que sa normale 1971–2000. 2025 : +0,92 °C — plus chaude que la normale. Deux valeurs, et l'écart parcouru se lit de lui-même.",
+      "link_label": "Voir NOAAGlobalTemp (NOAA / NCEI)"
     }
   },
   "act3": {

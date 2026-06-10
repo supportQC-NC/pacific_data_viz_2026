@@ -5,8 +5,18 @@
 // Le niveau de la mer a été DÉPLACÉ vers l'acte « littoral » (croisé à la
 // population) pour éviter tout doublon : ici, un seul signal physique, la
 // chaleur de l'océan. Format DASHBOARD (ActBoard) : filtre GLOBAL sous-région,
-// « le réchauffement, année après année » en SIGNATURE. 5 graphes.
-// 100 % ApexCharts (hors carte Mapbox).
+// « le réchauffement, année après année » en SIGNATURE.
+// 100 % ApexCharts (hors carte Mapbox et matrices ECharts).
+//
+// Vues « maîtrise de la donnée » (jury) :
+//   • La donnée   : carte d'identité du jeu officiel — ce qu'est une
+//     anomalie, d'où vient la normale (fiche PDH .Stat), ce que nous ne
+//     faisons pas (aucun lissage / correction / comblement).
+//   • La bascule  : part des territoires au-dessus de leur normale (0),
+//     année après année — distingue l'oscillation (El Niño / La Niña)
+//     de l'installation durable.
+//   • Couverture  : matrice binaire territoires × années (donnée
+//     présente / absente) — les vides montrés, jamais comblés.
 // ============================================================
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
@@ -18,9 +28,12 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import AnomalyBandChart from "../../components/charts/AnomalyBandChart";
 import RankChart from "../../components/charts/RankChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
+import CoverageChart from "../../components/charts/CoverageChart";
+import ShareAboveChart from "../../components/charts/ShareAboveChart";
 import ChangeChart from "../../components/charts/ChangeChart";
 import { median, fmt, valAt } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
@@ -198,6 +211,20 @@ export default function Act2Ocean() {
     <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
   );
 
+  // Carte d'identité du jeu officiel (contenu 100 % i18n / métadonnées).
+  const spotlightRows = [
+    { k: t("act2.spotlight.r_src_k"), v: t("act2.spotlight.r_src_v") },
+    { k: t("act2.spotlight.r_meas_k"), v: t("act2.spotlight.r_meas_v") },
+    { k: t("act2.spotlight.r_unit_k"), v: t("act2.spotlight.r_unit_v") },
+    { k: t("act2.spotlight.r_lic_k"), v: t("act2.spotlight.r_lic_v") },
+  ];
+  const spotlightNotes = [
+    t("act2.spotlight.n1"),
+    t("act2.spotlight.n2"),
+    t("act2.spotlight.n3"),
+    t("act2.spotlight.n4"),
+  ];
+
   const charts =
     status === "ready" && currentYear != null
       ? [
@@ -210,6 +237,22 @@ export default function Act2Ocean() {
             finding: t("act2.board.band_find"),
             takeaway: t("act2.board.band_take"),
             node: <AnomalyBandChart series={regionSeries} years={years} unit={t("act2.sst_unit")} />,
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act2.board.tab_read"),
+            title: t("act2.viz.read_title"),
+            finding: t("act2.board.read_find"),
+            takeaway: t("act2.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act2.spotlight.ex_kicker"), text: t("act2.spotlight.ex_text") }}
+                link={{ href: "https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp", label: t("act2.spotlight.link_label") }}
+              />
+            ),
           },
           {
             id: "rank",
@@ -228,6 +271,15 @@ export default function Act2Ocean() {
             finding: t("act2.board.change_find"),
             takeaway: t("act2.board.change_take"),
             node: <ChangeChart rows={changeRows} unit={t("act2.sst_unit")} direction="all" />,
+          },
+          {
+            id: "share",
+            empty: noSeries,
+            tab: t("act2.board.tab_share"),
+            title: t("act2.viz.share_title"),
+            finding: t("act2.board.share_find"),
+            takeaway: t("act2.board.share_take"),
+            node: <ShareAboveChart series={regionSeries} years={years} />,
           },
           {
             id: "map",
@@ -267,6 +319,21 @@ export default function Act2Ocean() {
             finding: t("act2.board.heat_find"),
             takeaway: t("act2.board.heat_take"),
             node: <HeatmapChart series={regionSeries} years={years} unit={t("act2.sst_unit")} mode="rank" ramp={[tk.positive, tk.warm, tk.negative]} labels={{ low: t("act2.heatmap_low"), high: t("act2.heatmap_high") }} />,
+          },
+          {
+            id: "coverage",
+            empty: noSeries,
+            tab: t("act2.board.tab_coverage"),
+            title: t("act2.viz.coverage_title"),
+            finding: t("act2.board.coverage_find"),
+            takeaway: t("act2.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={regionSeries}
+                years={years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
           },
         ]
       : [];

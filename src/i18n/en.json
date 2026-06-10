@@ -22,8 +22,8 @@
       "a1_title": "Sobriety as a legacy",
       "a1_text": "Fifty years of data, one constant: the Pacific's per-capita carbon footprint stays light, and stays light over time. This act measures it territory by territory — the bedrock of the story.",
       "a2_tag": "Act 02",
-      "a2_title": "The ocean warms",
-      "a2_text": "Sea-surface temperature anomaly, by territory and year (°C, departure from the reference). A single physical signal, precisely measured.",
+      "a2_title": "An ocean watched closely",
+      "a2_text": "Sea-surface temperature anomaly, territory by territory: the gap to the normal, year after year. Knowing how to read the ocean means being able to anticipate — for the living world, the sky and the cyclone seasons of the acts ahead.",
       "a3_tag": "Act 03",
       "a3_title": "The coast, a front line",
       "a3_text": "Sea level rises by EEZ (anomaly, m) while population grows or declines (%). We cross the two: where does exposure concentrate?",
@@ -489,7 +489,7 @@
     "sheet_series": "Time series"
   },
   "act2": {
-    "lead": "Two silent signals are redrawing the Pacific's horizon: rising sea level and warming surface temperature. Here is the retrieved data, territory by territory.",
+    "lead": "One physical signal in this act: the sea-surface temperature anomaly (°C). 0 = the reference normal; above = warmer, below = cooler. Following that gap year after year means reading the ocean before reading its consequences (Acts 7, 8 and 12).",
     "sea_title": "Sea level",
     "sea_sub": "observed change",
     "sea_unit": "m",
@@ -502,26 +502,30 @@
     "coming": "Data retrieved ✓ — visualisations in preparation. The full page comes next.",
     "guide": {
       "title": "Reading guide",
-      "intro": "Two indicators, one story: the Pacific ocean is rising and warming. Both curves show ANOMALIES — the gap from a reference period, not an absolute value.",
+      "intro": "This act reads a single official Challenge dataset: the sea-surface temperature anomaly, by territory and year. An anomaly compares the ocean to itself — the gap to a reference period — not an absolute temperature. Values are reformatted, never transformed.",
       "steps": [
         {
           "k": "Anomaly, not raw value",
-          "v": "0 = the reference normal. Above 0: warmer / higher than usual; below: cooler / lower."
+          "v": "0 = the reference normal. +0.4 does not mean “the water was 0.4 °C”: it was 0.4 °C above its local normal. Each territory is compared to itself."
         },
         {
-          "k": "Mean + spread",
-          "v": "The thick line is the average of the 21 territories; the light band shows the gap between the lowest and highest territory that year."
+          "k": "The reference",
+          "v": "0 = the 1971–2000 climatological normal (NOAAGlobalTemp v6.0.0). The monthly anomaly is averaged within each EEZ then aggregated to an annual mean — we recompute nothing: the chart's 0 line is the producer's normal."
         },
         {
-          "k": "Time",
-          "v": "The slider (or ▶) moves the year on both curves AND the map at once."
+          "k": "The oscillation",
+          "v": "The Pacific breathes naturally (El Niño / La Niña): one isolated year does not make a trend. The fair read is where the last few years sit against 0 — not a single peak."
         },
         {
-          "k": "The map",
-          "v": "Blue = below reference, red = above; circle size reflects magnitude. Pick the metric with the toggle."
+          "k": "The reference line",
+          "v": "In the ranking and on the map, the line and the mid tint mark 0: everything reads as a gap, above or below the normal."
+        },
+        {
+          "k": "Precision & scope",
+          "v": "The native grid is coarse (5° × 5°): its alignment to EEZs is refined geometrically, without gaining real resolution — thermal homogeneity is assumed within each original cell. Land masking may exclude some littoral zones around complex coasts. And on our side: no smoothing, no correction, no filling (see Coverage)."
         }
       ],
-      "takeaway": "Slow but unmistakable, both curves cross the reference and never come back: the Pacific is warming and the sea is rising."
+      "takeaway": "Takeaway: you read a position against the normal, not a temperature — and you judge over time, never on a single year."
     },
     "baseline": "reference 0",
     "mean_label": "avg",
@@ -557,7 +561,7 @@
     "change_sub": "difference between the first and last available years",
     "change_up": "rise",
     "change_down": "fall",
-    "caption": "Sources: Pacific Data Hub / SPC — sea-level anomaly (ref. 1993–2012) and sea-surface temperature anomaly.",
+    "caption": "Source: Pacific Data Hub (.Stat) — SPC · official dataset “Sea-surface temperature anomalies” · NOAAGlobalTemp v6.0.0 (NOAA/NCEI) · °C, gap to the 1971–2000 normal · annual · CC0.",
     "ref": "reference 0",
     "heatmap_low": "cooler / lower",
     "heatmap_high": "warmer / higher",
@@ -596,28 +600,30 @@
       "change_sub": "Gap between the first and last observed year",
       "dual_title": "Two signals, one story",
       "dual_sub": "Sea level (left axis) and surface temperature (right axis)",
-      "share_title": "Exposure spreads",
+      "share_title": "The tipping share: territories above their normal",
       "share_sub": "Share of territories above reference, year by year",
       "dumb_title": "How much each moved",
-      "dumb_sub": "First observed year → last, per territory"
+      "dumb_sub": "First observed year → last, per territory",
+      "read_title": "Read the data before reading the ocean",
+      "coverage_title": "Coverage: what the series contains — and what it doesn't"
     },
     "story": {
-      "band": "The line follows the territories' mean; the band shows the gap between lowest and highest. Above 0, the ocean exceeds its reference.",
-      "rank": "Most territories now sit above reference — exposure is uneven.",
-      "map": "Across the Pacific the anomaly reads at a glance: almost everywhere above normal.",
-      "heat": "Bands warm from left to right: the trend is clear over time.",
+      "band": "The line tracks the territories' mean; the band, the min–max spread. The right question: where does the curve sit against 0 over the last few years — and is the band tightening or widening?",
+      "rank": "The chosen year's ranking is a snapshot. Switch years with the map or the matrix before concluding — the film informs, not the photo.",
+      "map": "The geography of the gap, year by year. Scrub through: some zones oscillate, others sit durably on one side of 0.",
+      "heat": "Each row a territory, each column a year: the matrix tells at a glance what oscillates from what settles in.",
       "corr": "Territories rising most are often those warming most — two signals of one disruption.",
       "box": "Year after year the distribution shifts upward: median and extremes rise.",
       "river": "The three sub-regions follow the same upward slope, at similar rates.",
-      "change": "Between the first and last year, nearly every territory shows an increase.",
+      "change": "First year joined to the last, territory by territory: the sign gives the direction, the size gives the distance — to be read with the caution anomaly series deserve.",
       "dual": "Both lines rise together: the Pacific warms as it rises. Two measures, one disruption.",
-      "share": "The share of territories above normal climbs over time — the anomaly no longer touches only a few islands.",
+      "share": "Each year: the share of territories above their normal. While it oscillates, the ocean breathes; when it sits high durably, the gap is no longer local.",
       "dumb": "The muted dot marks the first year, the warm dot the last: the gap is the distance travelled."
     },
     "outro": {
       "kicker": "End of act 02",
-      "title": "The ocean has spoken",
-      "text": "A warmer sea feeds a more unstable atmosphere. On to the sky: rainfall and temperature anomalies over land.",
+      "title": "An ocean we know how to read",
+      "text": "Oscillation on one side, trend on the other: the gap to the normal holds no more secrets. The sky tells what follows — rainfall and temperatures against their normals, in Act 8.",
       "next": "Next act: the sky",
       "home": "Back to home"
     },
@@ -625,7 +631,7 @@
       "start": "first year",
       "end": "last"
     },
-    "thesis": "Sea-surface temperature anomaly (°C, departure from the reference), territory by territory: the trend is positive across nearly every Pacific EEZ.",
+    "thesis": "The gap to the normal, territory by territory: a simple read — one that teaches you to tell a single year's swing from a decade's trend.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -640,22 +646,48 @@
       "tab_corr": "Trajectory",
       "tab_heat": "Heat",
       "tab_dual": "Dual axis",
-      "band_find": "Mean SST anomaly and the spread across territories, year by year.",
-      "band_take": "The curve crosses the reference and stays above: a clear, lasting warming.",
-      "rank_find": "Departure from the reference, territory by territory, at the chosen year.",
-      "rank_take": "Almost every territory sits above the reference — exposure is widespread.",
-      "map_find": "The geography of the anomaly across the archipelago, year by year.",
-      "map_take": "No territory is spared; the lowest atolls are the most vulnerable.",
+      "band_find": "Mean anomaly across territories and min–max spread, year after year, against the 0 line.",
+      "band_take": "The fair read happens over time: the curve's position against the normal, decade by decade — never a single year's peak.",
+      "rank_find": "The gap to the normal, territory by territory, for the chosen year.",
+      "rank_take": "A useful snapshot — to be checked against the film: switch years and watch who oscillates and who holds.",
+      "map_find": "The geography of the gap to the normal, to scrub year by year.",
+      "map_take": "Scrubbing is what informs: telling an El Niño year from a durable position is already reading the ocean right.",
       "corr_find": "The Pacific's path year by year: warming (X) and sea level (Y) climb together.",
       "corr_take": "From cool-and-low toward warm-and-high: one single ascent, two linked symptoms.",
-      "heat_find": "Each row a territory, each column a year: intensity over time.",
-      "heat_take": "Bands darken toward the present — the anomaly settles in everywhere.",
+      "heat_find": "Each row a territory, each column a year: the whole series in one glance.",
+      "heat_take": "The matrix separates oscillation from settling-in — the nuance an honest read requires.",
       "dual_find": "Both measures on one chart, each with its own axis.",
       "dual_take": "Sea level and temperature climb together, decade after decade.",
       "tab_change": "Evolution",
-      "change_title": "Who improves, who worsens",
-      "change_find": "Net change between the first and the last year of data.",
-      "change_take": "In green the anomaly easing; in red the one getting worse."
+      "change_title": "The distance travelled, territory by territory",
+      "change_find": "Net change in the anomaly between the first and last year of data.",
+      "change_take": "In green, a gap closing; in red, one widening — each territory's starting point matters as much as its arrival.",
+      "tab_read": "The data",
+      "read_find": "The official dataset's ID card — what an anomaly is, where the normal comes from, what we do not do — and how to read one value.",
+      "read_take": "Understanding the reference before reading the gap: the whole difference between looking at a curve and understanding it.",
+      "tab_share": "The tipping share",
+      "share_find": "Year after year: the share of territories whose anomaly sits above their normal (0).",
+      "share_take": "One number per year, and the key distinction appears: oscillation moves the share up and down — settling-in keeps it high.",
+      "tab_coverage": "Coverage",
+      "coverage_find": "Each cell says whether a value exists for that territory in that year. Gaps are shown as they are, never filled in.",
+      "coverage_take": "Knowing exactly where the series ends: this act's signature, like every other."
+    },
+    "spotlight": {
+      "r_src_k": "Source",
+      "r_src_v": "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · via Pacific Data Hub (.Stat), official Challenge dataset",
+      "r_meas_k": "Measure",
+      "r_meas_v": "Sea-surface temperature anomaly, EEZ spatial mean",
+      "r_unit_k": "Unit · reference",
+      "r_unit_v": "°C · gap to the 1971–2000 normal · annual",
+      "r_lic_k": "Licence · updated",
+      "r_lic_v": "Creative Commons CC0 · 2026-01-12",
+      "n1": "An anomaly compares the ocean to itself: the gap to the 1971–2000 climatological normal, not an absolute temperature.",
+      "n2": "Native 5° × 5° grid, geometrically refined to align with EEZs — with no gain in real resolution; a standard error accompanies each value as the uncertainty metric.",
+      "n3": "The Pacific oscillates naturally (El Niño / La Niña): one isolated year does not make a trend.",
+      "n4": "What we do not do: no smoothing, no correction, no filling of missing years.",
+      "ex_kicker": "Reading a value",
+      "ex_text": "Palau EEZ, 1991: −0.35 °C — a surface cooler than its 1971–2000 normal. 2025: +0.92 °C — warmer than the normal. Two values, and the distance travelled reads by itself.",
+      "link_label": "See NOAAGlobalTemp (NOAA / NCEI)"
     }
   },
   "act3": {

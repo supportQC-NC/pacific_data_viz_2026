@@ -65,26 +65,30 @@ const SOURCES = {
 
   sst: {
     fr: {
-      provider: "",
-      dataset: "Anomalie de température de surface de la mer",
-      frequency: "Annuelle",
-      updated: "",
-      license: "",
+      provider: "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset:
+        "Anomalies de la température de surface de la mer (moyenne par ZEE) — jeu officiel du Challenge",
+      frequency: "Annuelle (agrégée du mensuel)",
+      updated: "2026-01-12",
+      license: "Creative Commons CC0",
       method:
-        "Écart de la température de surface de la mer par rapport à une période de référence (°C). 0 = la normale ; au-dessus = plus chaud que d'habitude.",
-      example: "",
-      link: "",
+        "Anomalies relatives à la normale climatologique 1971–2000 (NOAAGlobalTemp v6.0.0, résolution native 5° × 5°). Les géométries ZEE et terres sont converties en longitude 0–360° (convention NetCDF pour les régions traversant la ligne de changement de date) ; le raster grossier est désagrégé spatialement (clonage des valeurs vers une grille plus fine) pour mieux s'aligner aux ZEE et aux côtes — sans augmenter la résolution intrinsèque : l'homogénéité thermique est supposée dans chaque cellule d'origine. Terres masquées (rastérisation conservatrice, pouvant exclure certaines zones littorales aux côtes complexes), cellules océaniques restreintes aux ZEE. Anomalies mensuelles extraites en moyennes spatiales par ZEE puis agrégées en moyennes annuelles ; l'erreur type est calculée comme métrique d'incertitude. Les périodes anciennes (XIXᵉ siècle) reposent sur une reconstruction statistique à incertitude plus élevée. De notre côté : reformatage uniquement — aucun lissage, aucune correction, aucun comblement.",
+      example:
+        "ZEE de Palau : −0,35 °C en 1991 (surface plus fraîche que la normale 1971–2000) ; +0,92 °C en 2025 (plus chaude que la normale).",
+      link: "https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp",
     },
     en: {
-      provider: "",
-      dataset: "Sea-surface temperature anomaly",
-      frequency: "Annual",
-      updated: "",
-      license: "",
+      provider: "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset:
+        "Sea-surface temperature anomalies (EEZ spatial mean) — official Challenge dataset",
+      frequency: "Annual (aggregated from monthly)",
+      updated: "2026-01-12",
+      license: "Creative Commons CC0",
       method:
-        "Deviation of sea-surface temperature from a reference period (°C). 0 = normal; above = warmer than usual.",
-      example: "",
-      link: "",
+        "Anomalies relative to the 1971–2000 climatological normal (NOAAGlobalTemp v6.0.0, native 5° × 5° resolution). EEZ and land geometries are converted to 0–360° longitude (NetCDF convention for regions crossing the date line); the coarse raster is spatially disaggregated (cell values cloned to a finer grid) to better align with EEZ boundaries and coastlines — without increasing intrinsic resolution: thermal homogeneity is assumed within each original cell. Land is masked (conservative rasterisation, which may exclude some littoral zones around complex coasts), and ocean cells are restricted to EEZ limits. Monthly anomalies are extracted as EEZ spatial means then aggregated to annual means; a standard error is computed as the uncertainty metric. Early periods (19th century) rely on statistical reconstruction with higher uncertainty. On our side: reformatting only — no smoothing, no correction, no filling.",
+      example:
+        "Palau EEZ: −0.35 °C in 1991 (surface cooler than the 1971–2000 normal); +0.92 °C in 2025 (warmer than the normal).",
+      link: "https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp",
     },
   },
 
