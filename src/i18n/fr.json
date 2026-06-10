@@ -19,8 +19,8 @@
     "acts_intro": "Douze actes, une région qui agit.",
     "acts": {
       "a1_tag": "Acte 01",
-      "a1_title": "Le paradoxe fondateur",
-      "a1_text": "Le Pacifique émet une fraction infime des gaz mondiaux. Comprendre cet écart, c'est poser la première pierre d'une réponse juste.",
+      "a1_title": "La sobriété en héritage",
+      "a1_text": "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cet acte la mesure territoire par territoire — le socle du récit.",
       "a2_tag": "Acte 02",
       "a2_title": "L'océan se réchauffe",
       "a2_text": "Anomalie de température de surface de la mer, par territoire et par an (°C, écart à la référence). Un seul signal physique, mesuré avec précision.",
@@ -96,7 +96,7 @@
     "stat4_text": "pour lire une région qui s'adapte",
     "m1_kicker": "Mouvement I",
     "m1_title": "La responsabilité",
-    "m1_desc": "Émissions de gaz à effet de serre par habitant, territoire par territoire, situées face à la moyenne mondiale et aux grands émetteurs.",
+    "m1_desc": "Émissions de gaz à effet de serre par habitant, territoire par territoire : la médiane du Pacifique comme repère, les écarts expliqués un à un.",
     "m2_kicker": "Mouvement II",
     "m2_title": "Le climat physique",
     "m2_desc": "Les signaux mesurés du dérèglement : température de surface de l'océan, anomalies de précipitations et de température terrestre, réseau d'observation.",
@@ -191,16 +191,15 @@
     "error": "Données indisponibles pour le moment."
   },
   "act1": {
-    "lead": "Combien chaque territoire du Pacifique émet-il par habitant ? Une lecture claire, territoire par territoire et année après année, des émissions de la région — la base de toute action.",
+    "lead": "Combien chaque territoire du Pacifique émet-il par habitant ? Une série annuelle en tonnes de CO₂-équivalent par personne (Pacific Data Hub · .Stat), lue territoire par territoire et année après année. Connaître précisément son empreinte, c'est déjà piloter sa transition.",
     "chart_title": "Émissions de gaz à effet de serre par habitant",
     "chart_sub": "par territoire · survolez un point pour le détail",
-    "caption": "Source : Pacific Data Hub (.Stat) — SPC. Valeurs par habitant.",
+    "caption": "Source : Pacific Data Hub (.Stat) — SPC · Banque mondiale, indicateur EN.GHG.ALL.PC.CE.AR5 · t CO₂e/hab., série annuelle · CC BY 4.0.",
     "back": "Retour à l'accueil",
     "unit": "t CO₂e/hab.",
-    "world_avg": "Moyenne mondiale",
     "scale_linear": "Linéaire",
     "scale_log": "Log",
-    "paradox": "La plupart des territoires du Pacifique émettent peu par habitant, et leur part dans les émissions mondiales est minuscule. Ils figurent pourtant parmi les premiers exposés à la montée des eaux et au réchauffement.",
+    "paradox": "Les territoires du Pacifique affichent des empreintes par habitant parmi les plus légères de toute la série — et remarquablement stables sur un demi-siècle. Cette sobriété n'est pas un retard : c'est une avance, et le socle sur lequel la région bâtit sa transition énergétique (acte 5).",
     "year": "Année",
     "play": "▶ Lire",
     "pause": "❚❚ Pause",
@@ -218,7 +217,7 @@
     "viz_trend_sub": "évolution des plus gros émetteurs · le curseur suit l'année",
     "guide": {
       "title": "Guide de lecture",
-      "intro": "Cet acte compare les émissions de GES par habitant des territoires du Pacifique, et les met en regard de l'impact climatique subi.",
+      "intro": "Cet acte lit un seul jeu officiel du concours : les émissions de gaz à effet de serre par habitant (t CO₂e/hab., série annuelle du Pacific Data Hub). Les valeurs par habitant sont calculées à la source ; nous les reformatons sans jamais les transformer. Chaque vue ci-dessous est une autre façon de lire la même série.",
       "steps": [
         {
           "k": "Le filtre",
@@ -226,18 +225,22 @@
         },
         {
           "k": "Le classement",
-          "v": "Chaque barre est un territoire (code SPC). Plus elle est longue, plus il émet par habitant. L'échelle est compressée pour rester lisible malgré les extrêmes (Palau, Nouvelle-Calédonie)."
+          "v": "Chaque barre est un territoire (code SPC). Plus elle est longue, plus l'empreinte par habitant est élevée. Un taux par habitant divise des émissions par une population : sur une île de quelques milliers d'habitants, une centrale au diesel suffit à faire bondir le ratio — c'est l'effet dénominateur derrière les extrêmes (Palau, Nouvelle-Calédonie)."
         },
         {
           "k": "Le repère",
-          "v": "La ligne marque la MÉDIANE du Pacifique — plus robuste qu'une moyenne, faussée par quelques outliers."
+          "v": "La ligne marque la médiane du Pacifique : la valeur qui partage les territoires en deux moitiés égales. On la préfère à la moyenne, qu'une poignée de valeurs extrêmes suffirait à fausser."
         },
         {
-          "k": "Le paradoxe",
-          "v": "Le nuage croise ce qu'un territoire émet (horizontal) et ce qu'il subit (vertical) : la plupart émettent peu mais sont fortement exposés."
+          "k": "Le croisement",
+          "v": "Le nuage croise notre série d'émissions (horizontal) avec la montée du niveau de la mer mesurée par ZEE à l'acte 2 (vertical) : deux jeux officiels qui se répondent — et qui donnent au mot « sobriété » tout son poids."
+        },
+        {
+          "k": "Précision & périmètre",
+          "v": "La donnée couvre le CO₂, converti en équivalent CO₂ via les potentiels de réchauffement du GIEC (AR5) — pas les six gaz de Kyoto. Précision estimée : 4–35 % au niveau national. Conséquence pratique : on lit les tendances et les ordres de grandeur, pas la deuxième décimale."
         }
       ],
-      "takeaway": "Le paradoxe : émettre peu, subir les premiers les effets du changement climatique."
+      "takeaway": "À retenir : une sobriété historique, tenue sur cinquante ans de données — le Pacifique aborde la transition avec une avance, pas une dette."
     },
     "evo": {
       "title": "Évolution dans le temps",
@@ -255,7 +258,7 @@
     "vs_ref": "vs médiane Pacifique",
     "src_live": "données en direct (PDH)",
     "src_snapshot": "instantané réel (PDH)",
-    "outlier_note": "sortent de l'échelle : population minuscule au dénominateur, électricité au diesel et industrie. Leur part cumulée dans les émissions mondiales reste pourtant infime.",
+    "outlier_note": "sortent de l'échelle : population minuscule au dénominateur, électricité au diesel et activités industrielles concentrées. L'extrême se lit, il ne s'extrapole pas.",
     "stats": {
       "title": "Repères",
       "count": "territoires",
@@ -282,8 +285,8 @@
       "empty": "Pas assez d'historique."
     },
     "scatter": {
-      "title": "Émettre peu, subir beaucoup",
-      "sub": "chaque bulle = un territoire · à gauche = faible émetteur · plus haut = plus exposé",
+      "title": "La sobriété face à l'océan",
+      "sub": "chaque bulle = un territoire · à gauche = empreinte légère · plus haut = pression de l'océan plus forte (données de l'acte 2)",
       "x": "Émissions par habitant",
       "y_sea": "Montée du niveau de la mer",
       "y_sst": "Réchauffement de surface",
@@ -331,22 +334,25 @@
       "radar_title": "Profil des sous-régions",
       "radar_sub": "Moyenne des émissions par habitant, par décennie",
       "scatter_title": "Niveau face à l'évolution",
-      "scatter_sub": "Émissions actuelles (axe horizontal) et variation depuis la première année (axe vertical)"
+      "scatter_sub": "Émissions actuelles (axe horizontal) et variation depuis la première année (axe vertical)",
+      "read_title": "Lire la donnée avant de lire les graphiques",
+      "coverage_title": "La couverture : ce que la série contient — et ce qu'elle ne contient pas",
+      "denom_title": "L'effet dénominateur, démontré par la volatilité"
     },
     "story": {
-      "rank": "La grande majorité des territoires se tient sous la médiane régionale : des empreintes parmi les plus légères de la planète.",
-      "trend": "Des trajectoires globalement contenues : la région se développe tout en gardant des émissions faibles.",
-      "map": "D'un archipel à l'autre, l'empreinte carbone par habitant reste modeste — un atout pour la transition régionale.",
-      "heat": "Lue d'un seul coup d'œil, la période confirme une intensité d'émission durablement basse.",
-      "sub": "Les trois sous-régions partagent un profil sobre, avec des écarts qui ouvrent la voie à l'apprentissage mutuel.",
-      "change": "Pour de nombreux territoires, les émissions par habitant restent stables ou diminuent — un signal encourageant.",
-      "box": "L'essentiel des territoires se regroupe dans une fourchette basse : quelques cas particuliers tirent seuls la moyenne vers le haut.",
-      "river": "Vu en flux, le profil régional reste stable et sobre d'une année à l'autre.",
-      "tree": "La hiérarchie révèle d'un coup d'œil où se concentrent les émissions — et combien de territoires restent très sobres.",
-      "race": "En accéléré sur un demi-siècle, on voit qui bouge et qui reste sobre — la plupart des territoires gardent une empreinte modeste.",
-      "bump": "Au-delà des valeurs, les places dans le classement bougent peu : les profils régionaux sont remarquablement stables.",
-      "radar": "D'une décennie à l'autre, les trois sous-régions gardent un profil sobre et resserré.",
-      "scatter": "En bas à gauche : faibles émissions et orientées à la baisse — c'est là que se regroupe la majorité des territoires."
+      "rank": "La grande majorité des territoires se tient sous la médiane régionale : la sobriété est la norme, l'exception se compte sur les doigts d'une main.",
+      "trend": "Des trajectoires contenues sur un demi-siècle : la région se développe sans envolée de son empreinte par habitant — un découplage discret mais réel.",
+      "map": "D'un archipel à l'autre, l'empreinte par habitant reste modeste ; les rares pics se lisent par leur dénominateur (petites populations, diesel).",
+      "heat": "Lue d'un coup d'œil, la matrice territoires × années confirme une intensité durablement basse — peu de bandes chaudes, beaucoup de constance.",
+      "sub": "Mélanésie, Polynésie et Micronésie partagent un profil sobre ; leurs écarts modérés ouvrent la voie à l'apprentissage mutuel entre archipels.",
+      "change": "Entre la première et la dernière année de données, la plupart des territoires sont stables ou en baisse : la sobriété se maintient dans la durée.",
+      "box": "Chaque boîte résume une année : médiane et 50 % central des territoires. La fourchette reste basse et resserrée ; chaque point isolé s'explique un à un.",
+      "river": "Vu en flux empilé, le profil régional reste régulier d'une année à l'autre : pas de dérive — une assise stable pour la suite du récit.",
+      "tree": "La surface dit l'empreinte de l'année choisie, le regroupement dit la sous-région : l'essentiel de la mosaïque reste dans les tons sobres.",
+      "race": "En accéléré sur un demi-siècle, le classement bouge peu : la sobriété n'est pas un instantané, c'est une trajectoire tenue.",
+      "bump": "Au-delà des valeurs, les rangs sont remarquablement stables : chaque territoire tient son profil d'émissions dans la durée.",
+      "radar": "Décennie après décennie, les trois sous-régions gardent un polygone resserré : un demi-siècle de constance, lisible en une seule forme.",
+      "scatter": "En bas à gauche du nuage : empreinte légère et orientée à la baisse — c'est là que se regroupe la majorité des territoires du Pacifique."
     },
     "f": {
       "sort": "Tri",
@@ -386,12 +392,12 @@
     },
     "outro": {
       "kicker": "Fin de l'acte 01",
-      "title": "La base est posée",
-      "text": "Le Pacifique émet peu par habitant — sauf rares exceptions. Reste à voir ce que ces émissions provoquent : l'océan, en première ligne.",
+      "title": "Une avance à défendre",
+      "text": "L'acte 1 pose un fait : l'empreinte par habitant du Pacifique est légère, et tenue dans la durée. La suite du voyage mesure ce que l'océan, lui, enregistre déjà — cap sur l'acte 2.",
       "next": "Acte suivant : l'océan",
       "home": "Retour à l'accueil"
     },
-    "thesis": "Dans le Pacifique, les émissions par habitant varient du simple au décuple — et rarement là où on l'imagine.",
+    "thesis": "Dans le Pacifique, l'empreinte carbone par habitant varie du simple au décuple entre territoires — et la donnée explique chaque écart, dénominateur compris.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -402,26 +408,61 @@
       "tab_scatter": "Niveau × évolution",
       "tab_map": "Carte",
       "tab_heat": "Chaleur",
-      "rank_find": "Par habitant, l'écart entre territoires va du simple au décuple — et l'ordre surprend.",
-      "rank_take": "Les plus gros émetteurs par tête ne sont pas toujours ceux qu'on imagine.",
-      "race_find": "Le classement rejoué année après année : qui grimpe, qui décroche.",
-      "race_take": "En quelques décennies, la hiérarchie des émetteurs s'est rebattue.",
-      "trend_find": "Trajectoires individuelles : certaines montent, d'autres se stabilisent ou refluent.",
-      "trend_take": "Aucune trajectoire unique : le Pacifique avance en ordre dispersé.",
-      "scatter_find": "Niveau actuel (X) contre évolution depuis le début (Y), par sous-région.",
-      "scatter_take": "Émettre peu aujourd'hui n'empêche pas d'augmenter vite — et inversement.",
-      "map_find": "La géographie des émissions par habitant, année après année.",
-      "map_take": "Les pics par habitant se logent souvent dans de petits territoires.",
-      "heat_find": "Chaque ligne un territoire, chaque colonne une année : l'intensité dans le temps.",
-      "heat_take": "Les bandes les plus chaudes révèlent les épisodes d'émissions soutenues.",
+      "rank_find": "Par habitant, l'écart entre territoires va du simple au décuple — et l'ordre se comprend en lisant le dénominateur de chacun.",
+      "rank_take": "La sobriété est la règle ; les pics s'expliquent (population minuscule, diesel, industrie) au lieu de s'extrapoler.",
+      "race_find": "Le classement rejoué année après année, de la première à la dernière donnée disponible.",
+      "race_take": "Cinquante ans plus tard, la hiérarchie a peu bougé : la sobriété régionale est structurelle, pas conjoncturelle.",
+      "trend_find": "Trajectoires individuelles en t CO₂e/hab. : certaines refluent, la plupart restent remarquablement à plat.",
+      "trend_take": "Pas d'envolée collective : le développement du Pacifique ne s'est pas payé en carbone par habitant.",
+      "scatter_find": "Niveau actuel (X) contre évolution depuis la première année (Y), par sous-région.",
+      "scatter_take": "Le quadrant bas-gauche — sobre et en baisse — est le plus peuplé : un point de départ favorable pour l'élan de l'acte 5.",
+      "map_find": "La géographie de l'empreinte par habitant, année après année, à travers les territoires du Pacifique.",
+      "map_take": "Les pics se logent dans de petits territoires : l'effet dénominateur, pas une région qui dérape.",
+      "heat_find": "Chaque ligne un territoire, chaque colonne une année : un demi-siècle d'intensité en un seul regard.",
+      "heat_take": "Beaucoup de constance, peu d'épisodes soutenus : la donnée raconte la stabilité.",
       "start": "Explorer les données",
       "conclusion": "Conclusion",
       "back_intro": "Intro",
       "revise_data": "Revoir les données",
       "tab_change": "Évolution",
-      "change_title": "Qui s'améliore, qui empire",
-      "change_find": "Variation nette des émissions par habitant entre la première et la dernière année de données.",
-      "change_take": "En vert ceux qui ont baissé leurs émissions par tête ; en rouge ceux qui les ont creusées."
+      "change_title": "Le mouvement, territoire par territoire",
+      "change_find": "Variation nette de l'empreinte par habitant entre la première et la dernière année de données.",
+      "change_take": "En vert, ceux qui ont allégé leur empreinte ; en rouge, ceux qui l'ont accrue — chacun lisible à l'aune de son histoire énergétique (acte 5).",
+      "tab_read": "La donnée",
+      "read_find": "La fiche complète du jeu officiel — source, code indicateur, licence, méthode — et comment lire une valeur.",
+      "read_take": "Annoncer soi-même le périmètre et la précision de sa donnée : c'est la condition de confiance pour tout le reste de l'acte.",
+      "tab_coverage": "Couverture",
+      "coverage_find": "Chaque case dit si une valeur existe pour ce territoire cette année-là. Les vides sont montrés tels quels, jamais comblés.",
+      "coverage_take": "Savoir exactement où sa série s'arrête, c'est la première preuve qu'on la maîtrise.",
+      "tab_denom": "Dénominateur",
+      "denom_find": "Pour chaque territoire : son niveau médian sur toute la série (X) face à la volatilité de cette série (Y = écart-type rapporté à la moyenne, en %).",
+      "denom_take": "Un ratio par habitant au petit dénominateur réagit au moindre événement : la nervosité d'une série est, le plus souvent, la signature d'une petite population."
+    },
+    "spotlight": {
+      "rows_title": "Carte d'identité",
+      "r_src_k": "Source",
+      "r_src_v": "Banque mondiale — via Pacific Data Hub (.Stat)",
+      "r_code_k": "Indicateur",
+      "r_code_v": "EN.GHG.ALL.PC.CE.AR5",
+      "r_unit_k": "Unité · fréquence",
+      "r_unit_v": "t CO₂e par habitant · annuelle",
+      "r_lic_k": "Licence · mise à jour",
+      "r_lic_v": "CC BY 4.0 · 2025-10-06",
+      "n1": "Valeurs par habitant calculées à la source ; reformatées, jamais transformées.",
+      "n2": "Les années sans donnée pour aucun territoire sont exclues de la structure du jeu.",
+      "n3": "Périmètre : CO₂ converti en équivalent CO₂ (PRG du GIEC, AR5) — pas les six gaz de Kyoto.",
+      "n4": "Précision estimée : ~10 % au niveau global, 4–35 % au niveau national — on lit les tendances, pas la deuxième décimale.",
+      "ex_kicker": "Lire une valeur",
+      "ex_text": "Papouasie-Nouvelle-Guinée, 1970 : 0,78 t CO₂e par habitant. 2023 : 0,93 t. En un demi-siècle, +0,15 t par personne — la stabilité, mesurée.",
+      "link_label": "Voir l'indicateur (Banque mondiale)"
+    },
+    "coverage": {
+      "present": "donnée présente",
+      "absent": "donnée absente"
+    },
+    "denom": {
+      "x": "niveau médian",
+      "y": "volatilité (%)"
     }
   },
   "export": {
@@ -432,7 +473,7 @@
     "col_code": "Code",
     "col_name": "Territoire",
     "col_value": "Valeur (t CO₂e/hab.)",
-    "col_vs_world": "Écart vs moyenne mondiale",
+    "col_vs_world": "Écart vs repère",
     "sheet_data": "Données",
     "sheet_summary": "Synthèse",
     "summary_title": "Synthèse statistique",
@@ -442,7 +483,7 @@
     "summary_min": "Minimum",
     "summary_median": "Médiane",
     "summary_mean": "Moyenne (Pacifique)",
-    "summary_world": "Moyenne mondiale",
+    "summary_world": "Repère",
     "summary_source": "Source",
     "summary_generated": "Généré le",
     "sheet_series": "Séries temporelles"

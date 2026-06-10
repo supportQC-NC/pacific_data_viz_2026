@@ -17,16 +17,18 @@
 .homeintro__kicker {
   color: var(--c-accent);
   margin: 0 0 var(--sp-4);
+  
 }
 
 .homeintro__lead {
   font-family: var(--font-display);
   font-weight: var(--fw-semi);
   font-size: clamp(1.7rem, 4.2vw, 3rem);
+ 
   line-height: 1.12;
   letter-spacing: -0.01em;
   color: var(--c-text);
-  max-width: 22ch;
+  max-width: 40ch;
   margin: 0 0 var(--sp-8);
 }
 

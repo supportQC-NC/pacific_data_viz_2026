@@ -8,28 +8,30 @@
 const SOURCES = {
   emissions: {
     fr: {
-      provider: "Banque mondiale",
-      dataset: "Émissions de gaz à effet de serre par habitant",
+      provider: "Banque mondiale — via Pacific Data Hub (.Stat)",
+      dataset:
+        "Émissions de gaz à effet de serre par habitant — indicateur EN.GHG.ALL.PC.CE.AR5",
       frequency: "Annuelle",
       updated: "2025-10-06",
       license: "CC BY 4.0",
       method:
-        "Valeurs par habitant déjà calculées par la Banque mondiale (simple reformatage). Limite : seul le CO₂ est mesuré (pas les six gaz de Kyoto), standardisé en équivalent CO₂ via les facteurs de réchauffement global du 5ᵉ rapport du GIEC (AR5). Précision estimée ~10 % au niveau mondial, 4–35 % au niveau national.",
+        "Valeurs annuelles par habitant déjà calculées par la Banque mondiale : l'indicateur ne nécessite aucun calcul supplémentaire au-delà du reformatage. Les années sans donnée pour aucun territoire sont exclues de la structure du jeu. Périmètre : seul le CO₂ est mesuré (pas les six gaz de Kyoto), standardisé en équivalent CO₂ via les potentiels de réchauffement global (PRG) du 5ᵉ rapport d'évaluation du GIEC (AR5). Précision estimée pour la combustion fossile et les procédés industriels : ~10 % au niveau mondial, 4–35 % au niveau national — on lit les tendances et les ordres de grandeur, pas la deuxième décimale.",
       example:
-        "En 1970, la Papouasie-Nouvelle-Guinée émettait 0,78 t CO₂e/hab. ; en 2023, environ 0,93 t.",
-      link: "",
+        "En 1970, la Papouasie-Nouvelle-Guinée affichait 0,7767 t CO₂e par habitant ; en 2023, 0,9279 t — soit environ 0,93 tonne d'équivalent CO₂ par personne.",
+      link: "https://data.worldbank.org/indicator/EN.GHG.ALL.PC.CE.AR5",
     },
     en: {
-      provider: "World Bank",
-      dataset: "Greenhouse gas emissions per capita",
+      provider: "World Bank — via Pacific Data Hub (.Stat)",
+      dataset:
+        "Greenhouse gas emissions per capita — indicator EN.GHG.ALL.PC.CE.AR5",
       frequency: "Annual",
       updated: "2025-10-06",
       license: "CC BY 4.0",
       method:
-        "Per-capita values already computed by the World Bank (reformatting only). Limit: only CO₂ is measured (not the six Kyoto gases), standardised to CO₂-equivalent using the IPCC AR5 global-warming potentials. Estimated accuracy ~10% globally, 4–35% nationally.",
+        "Annual per-capita values already computed by the World Bank: the indicator requires no calculation beyond reformatting. Years with no data for any territory are excluded from the dataset's structure. Scope: only CO₂ is measured (not the six Kyoto gases), standardised to CO₂-equivalent using the IPCC 5th Assessment Report (AR5) global-warming potentials. Estimated precision for fossil-fuel combustion and industrial processes: ~10% globally, 4–35% nationally — we read trends and orders of magnitude, not the second decimal.",
       example:
-        "In 1970 Papua New Guinea emitted 0.78 t CO₂e/capita; by 2023, about 0.93 t.",
-      link: "",
+        "In 1970, Papua New Guinea recorded 0.7767 t CO₂e per capita; by 2023, 0.9279 t — roughly 0.93 tonne of CO₂-equivalent per person.",
+      link: "https://data.worldbank.org/indicator/EN.GHG.ALL.PC.CE.AR5",
     },
   },
 

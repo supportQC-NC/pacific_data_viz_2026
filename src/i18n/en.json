@@ -19,8 +19,8 @@
     "acts_intro": "Twelve acts, a region in action.",
     "acts": {
       "a1_tag": "Act 01",
-      "a1_title": "The founding paradox",
-      "a1_text": "The Pacific emits a tiny fraction of global gases. Understanding that gap lays the first stone of a fair response.",
+      "a1_title": "Sobriety as a legacy",
+      "a1_text": "Fifty years of data, one constant: the Pacific's per-capita carbon footprint stays light, and stays light over time. This act measures it territory by territory — the bedrock of the story.",
       "a2_tag": "Act 02",
       "a2_title": "The ocean warms",
       "a2_text": "Sea-surface temperature anomaly, by territory and year (°C, departure from the reference). A single physical signal, precisely measured.",
@@ -96,7 +96,7 @@
     "stat4_text": "to read a region that adapts",
     "m1_kicker": "Movement I",
     "m1_title": "Responsibility",
-    "m1_desc": "Greenhouse-gas emissions per capita, territory by territory, set against the world average and the major emitters.",
+    "m1_desc": "Greenhouse-gas emissions per capita, territory by territory: the Pacific median as the reference, every gap explained one by one.",
     "m2_kicker": "Movement II",
     "m2_title": "The physical climate",
     "m2_desc": "The measured signals of disruption: sea-surface temperature, rainfall and land-temperature anomalies, and the observation network.",
@@ -191,16 +191,15 @@
     "error": "Data unavailable right now."
   },
   "act1": {
-    "lead": "How much does each Pacific territory emit per person? A clear read — territory by territory, year after year — of the region's emissions: the groundwork for action.",
+    "lead": "How much does each Pacific territory emit per person? An annual series in tonnes of CO₂-equivalent per capita (Pacific Data Hub · .Stat), read territory by territory and year after year. Knowing your footprint precisely is already steering your transition.",
     "chart_title": "Greenhouse-gas emissions per capita",
     "chart_sub": "by territory · hover a dot for details",
-    "caption": "Source: Pacific Data Hub (.Stat) — SPC. Per-capita values.",
+    "caption": "Source: Pacific Data Hub (.Stat) — SPC · World Bank, indicator EN.GHG.ALL.PC.CE.AR5 · t CO₂e/capita, annual series · CC BY 4.0.",
     "back": "Back to home",
     "unit": "t CO₂e/cap.",
-    "world_avg": "World average",
     "scale_linear": "Linear",
     "scale_log": "Log",
-    "paradox": "Most Pacific territories emit little per capita, and their share of global emissions is tiny. Yet they are among the first exposed to rising seas and warming.",
+    "paradox": "Pacific territories show some of the lightest per-capita footprints in the whole series — and remarkably stable ones across half a century. That sobriety is not a lag: it is a head start, and the foundation on which the region is building its energy transition (Act 5).",
     "year": "Year",
     "play": "▶ Play",
     "pause": "❚❚ Pause",
@@ -218,26 +217,30 @@
     "viz_trend_sub": "evolution of the biggest emitters · the cursor tracks the year",
     "guide": {
       "title": "How to read this",
-      "intro": "This act compares per-capita GHG emissions across Pacific territories, set against the climate impact they endure.",
+      "intro": "This act reads a single official Challenge dataset: greenhouse gas emissions per capita (t CO₂e/capita, annual series from the Pacific Data Hub). Per-capita values are computed at the source; we reformat them and never transform them. Every view below is another way of reading the same series.",
       "steps": [
         {
           "k": "The filter",
-          "v": "The subregion pills (Melanesia / Polynesia / Micronesia) refocus every per-territory view. \"All\" keeps the 17."
+          "v": "The subregion pills (Melanesia / Polynesia / Micronesia) refocus every per-territory view. “All” keeps the 17."
         },
         {
           "k": "The ranking",
-          "v": "Each bar is a territory (SPC code). Longer = more per capita. The scale is compressed to stay readable despite extremes (Palau, New Caledonia)."
+          "v": "Each bar is a territory (SPC code). Longer means a higher per-capita footprint. A per-capita rate divides emissions by a population: on an island of a few thousand people, one diesel power plant is enough to send the ratio jumping — the denominator effect behind the extremes (Palau, New Caledonia)."
         },
         {
           "k": "The reference",
-          "v": "The line marks the Pacific MEDIAN — more robust than a mean skewed by a few outliers."
+          "v": "The line marks the Pacific median: the value splitting territories into two equal halves. We prefer it to the mean, which a handful of extreme values would skew."
         },
         {
-          "k": "The paradox",
-          "v": "The scatter crosses what a territory emits (x) with what it endures (y): most emit little yet are highly exposed."
+          "k": "The crossing",
+          "v": "The scatter crosses our emissions series (x) with the sea-level rise measured per EEZ in Act 2 (y): two official datasets answering each other — and giving the word “sobriety” its full weight."
+        },
+        {
+          "k": "Precision & scope",
+          "v": "The data covers CO₂, converted to CO₂-equivalent using IPCC (AR5) global-warming potentials — not the six Kyoto gases. Estimated precision: 4–35% at national level. Practical consequence: we read trends and orders of magnitude, not the second decimal."
         }
       ],
-      "takeaway": "The paradox: emitting little, yet first to face climate change."
+      "takeaway": "Takeaway: a historic sobriety, held across fifty years of data — the Pacific enters the transition with a head start, not a debt."
     },
     "evo": {
       "title": "Evolution over time",
@@ -255,7 +258,7 @@
     "vs_ref": "vs Pacific median",
     "src_live": "live data (PDH)",
     "src_snapshot": "real snapshot (PDH)",
-    "outlier_note": "sit off the scale: tiny population denominators, diesel electricity and industry. Yet their combined share of global emissions stays negligible.",
+    "outlier_note": "sit off the scale: a tiny population in the denominator, diesel-fired electricity and concentrated industry. An extreme is something to read, not to extrapolate.",
     "stats": {
       "title": "Key figures",
       "count": "territories",
@@ -282,8 +285,8 @@
       "empty": "Not enough history."
     },
     "scatter": {
-      "title": "Emit little, suffer most",
-      "sub": "each bubble = a territory · left = low emitter · higher = more exposed",
+      "title": "Sobriety facing the ocean",
+      "sub": "each bubble = a territory · left = light footprint · higher = stronger ocean pressure (data from Act 2)",
       "x": "Emissions per capita",
       "y_sea": "Sea-level rise",
       "y_sst": "Surface warming",
@@ -331,22 +334,25 @@
       "radar_title": "Sub-region profile",
       "radar_sub": "Average per-capita emissions, by decade",
       "scatter_title": "Level vs change",
-      "scatter_sub": "Current emissions (horizontal) and change since the first year (vertical)"
+      "scatter_sub": "Current emissions (horizontal) and change since the first year (vertical)",
+      "read_title": "Read the data before reading the charts",
+      "coverage_title": "Coverage: what the series contains — and what it doesn't",
+      "denom_title": "The denominator effect, demonstrated through volatility"
     },
     "story": {
-      "rank": "The vast majority of territories sit below the regional median — among the lightest footprints on the planet.",
-      "trend": "Broadly contained trajectories: the region keeps emissions low even as it develops.",
-      "map": "From one archipelago to the next, the per-capita footprint stays modest — an asset for the regional transition.",
-      "heat": "Seen in one glance, the period confirms a durably low emission intensity.",
-      "sub": "The three sub-regions share a sober profile, with gaps that open the door to mutual learning.",
-      "change": "For many territories, per-capita emissions hold steady or fall — an encouraging signal.",
-      "box": "Most territories cluster in a low band — a handful of special cases alone pull the average upward.",
-      "river": "Seen as a flow, the regional profile stays steady and sober from year to year.",
-      "tree": "The hierarchy shows at a glance where emissions concentrate — and how many territories stay very sober.",
-      "race": "Fast-forwarded across half a century, you see who moves and who stays sober — most territories keep a modest footprint.",
-      "bump": "Beyond the values, ranking positions barely move: regional profiles are remarkably stable.",
-      "radar": "From one decade to the next, the three sub-regions keep a sober, tightly-grouped profile.",
-      "scatter": "Bottom-left: low emissions trending down — that's where most territories gather."
+      "rank": "The vast majority of territories sit below the regional median: sobriety is the norm, the exceptions can be counted on one hand.",
+      "trend": "Contained trajectories across half a century: the region develops without its per-capita footprint taking off — a quiet but real decoupling.",
+      "map": "From one archipelago to the next, the per-capita footprint stays modest; the rare peaks read through their denominator (tiny populations, diesel).",
+      "heat": "Read at a glance, the territories × years matrix confirms durably low intensity — few hot bands, plenty of steadiness.",
+      "sub": "Melanesia, Polynesia and Micronesia share a sober profile; their moderate gaps open the way to mutual learning between archipelagos.",
+      "change": "Between the first and last year of data, most territories are stable or declining: sobriety holds over time.",
+      "box": "Each box sums up a year: the median and the central 50% of territories. The band stays low and tight; every outlying point can be explained one by one.",
+      "river": "Seen as a stacked flow, the regional profile stays steady year after year: no drift — a stable footing for the rest of the story.",
+      "tree": "Tile area shows the footprint for the chosen year, grouping shows the subregion: most of the mosaic stays in sober tones.",
+      "race": "Fast-forwarded across half a century, the ranking barely moves: sobriety is not a snapshot, it is a sustained trajectory.",
+      "bump": "Beyond the values, the ranks are remarkably stable: each territory holds its emissions profile over time.",
+      "radar": "Decade after decade, the three subregions keep a tight polygon: half a century of steadiness, readable in a single shape.",
+      "scatter": "Bottom-left of the cloud: a light footprint, trending down — that is where most Pacific territories gather."
     },
     "f": {
       "sort": "Sort",
@@ -386,12 +392,12 @@
     },
     "outro": {
       "kicker": "End of act 01",
-      "title": "The groundwork is laid",
-      "text": "The Pacific emits little per capita — bar a few exceptions. Now to what those emissions trigger: the ocean, on the front line.",
+      "title": "A head start worth defending",
+      "text": "Act 1 establishes a fact: the Pacific's per-capita footprint is light, and has stayed light. The journey now turns to what the ocean is already recording — on to Act 2.",
       "next": "Next act: the ocean",
       "home": "Back to home"
     },
-    "thesis": "Across the Pacific, per-capita emissions vary tenfold — and rarely where you'd think.",
+    "thesis": "Across the Pacific, per-capita footprints vary tenfold between territories — and the data explains every gap, denominator included.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -402,26 +408,61 @@
       "tab_scatter": "Level × change",
       "tab_map": "Map",
       "tab_heat": "Heat",
-      "rank_find": "Per capita, the gap between territories runs tenfold — and the order surprises.",
-      "rank_take": "The biggest per-head emitters aren't always the ones you'd expect.",
-      "race_find": "The ranking replayed year by year: who climbs, who falls back.",
-      "race_take": "In a few decades, the emitters' hierarchy has been reshuffled.",
-      "trend_find": "Individual trajectories: some rise, others level off or fall.",
-      "trend_take": "No single path: the Pacific moves in scattered order.",
-      "scatter_find": "Current level (X) against change since the start (Y), by sub-region.",
-      "scatter_take": "Emitting little today doesn't prevent rising fast — and vice versa.",
-      "map_find": "The geography of per-capita emissions, year by year.",
-      "map_take": "Per-capita peaks often sit in small territories.",
-      "heat_find": "Each row a territory, each column a year: intensity over time.",
-      "heat_take": "The hottest bands reveal episodes of sustained emissions.",
+      "rank_find": "Per capita, the gap between territories spans tenfold — and the order makes sense once you read each denominator.",
+      "rank_take": "Sobriety is the rule; the peaks are explained (tiny populations, diesel, industry) rather than extrapolated.",
+      "race_find": "The ranking replayed year after year, from the first to the last available data point.",
+      "race_take": "Fifty years on, the hierarchy has barely moved: the region's sobriety is structural, not circumstantial.",
+      "trend_find": "Individual trajectories in t CO₂e/capita: some ebb, most stay remarkably flat.",
+      "trend_take": "No collective surge: the Pacific's development was not paid for in per-capita carbon.",
+      "scatter_find": "Current level (x) against change since the first year (y), by subregion.",
+      "scatter_take": "The bottom-left quadrant — sober and declining — is the most crowded: a favourable starting point for Act 5's momentum.",
+      "map_find": "The geography of the per-capita footprint, year after year, across the Pacific territories.",
+      "map_take": "The peaks sit in small territories: a denominator effect, not a region losing its grip.",
+      "heat_find": "Each row a territory, each column a year: half a century of intensity in a single glance.",
+      "heat_take": "Plenty of steadiness, few sustained episodes: the data tells a story of stability.",
       "start": "Explore the data",
       "conclusion": "Conclusion",
       "back_intro": "Intro",
       "revise_data": "Review the data",
       "tab_change": "Evolution",
-      "change_title": "Who improves, who worsens",
-      "change_find": "Net change in per-capita emissions between the first and the last year of data.",
-      "change_take": "In green, those who cut their per-head emissions; in red, those who raised them."
+      "change_title": "The movement, territory by territory",
+      "change_find": "Net change in per-capita footprint between the first and last year of data.",
+      "change_take": "In green, those who lightened their footprint; in red, those who grew it — each one readable against its energy history (Act 5).",
+      "tab_read": "The data",
+      "read_find": "The official dataset's full ID card — source, indicator code, licence, method — and how to read one value.",
+      "read_take": "Stating your data's scope and precision yourself: the condition of trust for everything else in this act.",
+      "tab_coverage": "Coverage",
+      "coverage_find": "Each cell says whether a value exists for that territory in that year. Gaps are shown as they are, never filled in.",
+      "coverage_take": "Knowing exactly where your series ends is the first proof that you master it.",
+      "tab_denom": "Denominator",
+      "denom_find": "For each territory: its median level over the whole series (x) against that series' volatility (y = standard deviation over mean, %).",
+      "denom_take": "A per-capita ratio with a small denominator reacts to the slightest event: a jumpy series is, most often, the signature of a small population."
+    },
+    "spotlight": {
+      "rows_title": "Data ID card",
+      "r_src_k": "Source",
+      "r_src_v": "World Bank — via Pacific Data Hub (.Stat)",
+      "r_code_k": "Indicator",
+      "r_code_v": "EN.GHG.ALL.PC.CE.AR5",
+      "r_unit_k": "Unit · frequency",
+      "r_unit_v": "t CO₂e per capita · annual",
+      "r_lic_k": "Licence · updated",
+      "r_lic_v": "CC BY 4.0 · 2025-10-06",
+      "n1": "Per-capita values computed at the source; reformatted, never transformed.",
+      "n2": "Years with no data for any territory are excluded from the dataset's structure.",
+      "n3": "Scope: CO₂ converted to CO₂-equivalent (IPCC AR5 global-warming potentials) — not the six Kyoto gases.",
+      "n4": "Estimated precision: ~10% globally, 4–35% nationally — we read trends, not the second decimal.",
+      "ex_kicker": "Reading a value",
+      "ex_text": "Papua New Guinea, 1970: 0.78 t CO₂e per capita. 2023: 0.93 t. Half a century later, +0.15 t per person — stability, measured.",
+      "link_label": "See the indicator (World Bank)"
+    },
+    "coverage": {
+      "present": "data present",
+      "absent": "no data"
+    },
+    "denom": {
+      "x": "median level",
+      "y": "volatility (%)"
     }
   },
   "export": {
@@ -432,7 +473,7 @@
     "col_code": "Code",
     "col_name": "Territory",
     "col_value": "Value (t CO₂e/cap.)",
-    "col_vs_world": "Gap vs world average",
+    "col_vs_world": "Gap vs reference",
     "sheet_data": "Data",
     "sheet_summary": "Summary",
     "summary_title": "Statistical summary",
@@ -442,7 +483,7 @@
     "summary_min": "Minimum",
     "summary_median": "Median",
     "summary_mean": "Average (Pacific)",
-    "summary_world": "World average",
+    "summary_world": "Reference",
     "summary_source": "Source",
     "summary_generated": "Generated on",
     "sheet_series": "Time series"

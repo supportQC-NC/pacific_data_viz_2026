@@ -2,11 +2,15 @@
 // ============================================================
 // Course de LIGNES animée (ApexCharts) — les trajectoires se tracent année
 // après année avec play/pause, dans l'esprit du BarRace.
+//   • DÉMARRE EN PAUSE : aucune animation ne se lance sans action de
+//     l'utilisateur (bouton ▶). Règle d'expérience du projet : c'est
+//     toujours la personne qui décide de lancer une animation.
 //   • Axe Y FIXE (min/max sur toute la série) -> pas de re-cadrage qui saute.
 //   • appendData() pour une croissance fluide ; boucle au bout.
 //   • HAUTEUR FORCÉE EN JS en mode diaporama (~74% de l'écran).
 //   • Tous les appels protégés ; frames/timer nettoyés au démontage.
-// Props : series [{name, values:[{year,value}]}], years [], unit, tk, labels.
+// Props : series [{name, values:[{year,value}]}], years [], unit, tk,
+//         labels { play, pause }, autoplay (false par défaut).
 // ============================================================
 
 import React, { useEffect, useRef, useState } from "react";
@@ -25,15 +29,15 @@ function targetHeight(el) {
 
 const finiteOr = (v) => (Number.isFinite(v) ? Number(v.toFixed(3)) : null);
 
-export default function LineRace({ series = [], years = [], unit = "", tk = {}, labels = {} }) {
+export default function LineRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = false }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
   const rafRef = useRef(0);
   const timerRef = useRef(0);
   const idxRef = useRef(0);
-  const playingRef = useRef(true);
+  const playingRef = useRef(autoplay);
   const [idx, setIdx] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(autoplay);
 
   useEffect(() => {
     playingRef.current = playing;

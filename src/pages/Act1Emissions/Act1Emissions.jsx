@@ -6,6 +6,17 @@
 // échelle) et un graphe à la fois via onglets, dont « Classement » en
 // SIGNATURE. Une ligne « à retenir » explicite sous chaque graphe.
 // 100 % PDH. Aucune option ECharts ici.
+//
+// Vues « maîtrise de la donnée » (jury) :
+//   • La donnée   : carte d'identité du jeu officiel (source, code
+//     indicateur EN.GHG.ALL.PC.CE.AR5, licence CC BY 4.0, méthode,
+//     précision 4–35 % national) + « lire une valeur » (exemple officiel PNG).
+//   • Dénominateur : niveau médian (X) × volatilité de la série (Y =
+//     écart-type / moyenne, %) — la nervosité d'un ratio par habitant
+//     comme signature des petites populations. Calcul transparent,
+//     entièrement dérivé de la série officielle.
+//   • Couverture  : matrice binaire territoires × années (donnée
+//     présente / absente) — les vides montrés, jamais comblés.
 // ============================================================
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
@@ -18,9 +29,11 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import BarRace from "../../components/BarRace/BarRace";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import RankChart from "../../components/charts/RankChart";
 import TrendChart from "../../components/charts/TrendChart";
 import HeatmapChart from "../../components/charts/HeatmapChart";
+import CoverageChart from "../../components/charts/CoverageChart";
 import ScatterChart from "../../components/charts/ScatterChart";
 import ChangeChart from "../../components/charts/ChangeChart";
 import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
@@ -195,6 +208,34 @@ export default function Act1Emissions() {
 
   const scatterMedianX = useMemo(() => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [scatterGroups]);
 
+  // « L'effet dénominateur, démontré » : niveau médian de la série (X) face
+  // à sa volatilité (Y = écart-type / moyenne, en %). Entièrement dérivé de
+  // la série officielle — calcul transparent, aucune donnée externe.
+  const volGroups = useMemo(() => {
+    const palette = paletteOf(tk);
+    const inReg = allSeries.filter((s) => inRegion(s.area));
+    return Object.keys(SUBREGIONS)
+      .map((reg, i) => ({
+        name: subNames[reg],
+        color: palette[i],
+        points: inReg
+          .filter((s) => REGION_OF[s.area] === reg && s.values.length >= 5)
+          .map((s) => {
+            const vals = s.values.map((p) => p.value);
+            const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+            if (!Number.isFinite(mean) || mean <= 0) return null;
+            const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length);
+            const lvl = median(vals);
+            if (!Number.isFinite(sd) || !Number.isFinite(lvl)) return null;
+            return { name: s.name, x: Number(lvl.toFixed(2)), y: Number(((sd / mean) * 100).toFixed(1)) };
+          })
+          .filter(Boolean),
+      }))
+      .filter((g) => g.points.length);
+  }, [allSeries, subNames, inRegion, tk]);
+
+  const volMedianX = useMemo(() => median(volGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [volGroups]);
+
   // Évolution nette depuis le début des données (dernière − première valeur).
   // delta < 0 = baisse (s'améliore) ; delta > 0 = hausse (empire).
   const changeRows = useMemo(
@@ -260,6 +301,7 @@ export default function Act1Emissions() {
   const noPts = currentYear != null && pointsFor(currentYear).length === 0;
   const noSeries = regionSeries.length === 0;
   const noScatter = scatterGroups.length === 0;
+  const noVol = volGroups.length === 0;
 
   const filtersEl = (
     <>
@@ -267,6 +309,20 @@ export default function Act1Emissions() {
       <Pills label={t("act1.f.scale")} options={scaleOpts} value={scale} onChange={setScale} help={t("act1.f.scale_help")} />
     </>
   );
+
+  // Carte d'identité du jeu officiel (contenu 100 % i18n / métadonnées).
+  const spotlightRows = [
+    { k: t("act1.spotlight.r_src_k"), v: t("act1.spotlight.r_src_v") },
+    { k: t("act1.spotlight.r_code_k"), v: t("act1.spotlight.r_code_v") },
+    { k: t("act1.spotlight.r_unit_k"), v: t("act1.spotlight.r_unit_v") },
+    { k: t("act1.spotlight.r_lic_k"), v: t("act1.spotlight.r_lic_v") },
+  ];
+  const spotlightNotes = [
+    t("act1.spotlight.n1"),
+    t("act1.spotlight.n2"),
+    t("act1.spotlight.n3"),
+    t("act1.spotlight.n4"),
+  ];
 
   const charts =
     status === "ready" && currentYear != null
@@ -280,6 +336,22 @@ export default function Act1Emissions() {
             finding: t("act1.board.race_find"),
             takeaway: t("act1.board.race_take"),
             node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act1.board.tab_read"),
+            title: t("act1.viz.read_title"),
+            finding: t("act1.board.read_find"),
+            takeaway: t("act1.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act1.spotlight.ex_kicker"), text: t("act1.spotlight.ex_text") }}
+                link={{ href: "https://data.worldbank.org/indicator/EN.GHG.ALL.PC.CE.AR5", label: t("act1.spotlight.link_label") }}
+              />
+            ),
           },
           {
             id: "rank",
@@ -327,6 +399,23 @@ export default function Act1Emissions() {
             node: <ScatterChart groups={scatterGroups} unit={t("act1.unit")} medianX={scatterMedianX} />,
           },
           {
+            id: "denom",
+            empty: noVol,
+            tab: t("act1.board.tab_denom"),
+            title: t("act1.viz.denom_title"),
+            finding: t("act1.board.denom_find"),
+            takeaway: t("act1.board.denom_take"),
+            node: (
+              <ScatterChart
+                groups={volGroups}
+                unit={t("act1.unit")}
+                medianX={volMedianX}
+                xName={`${t("act1.denom.x")} (${t("act1.unit")})`}
+                yName={t("act1.denom.y")}
+              />
+            ),
+          },
+          {
             id: "map",
             empty: noPts,
             tab: t("act1.board.tab_map"),
@@ -365,6 +454,21 @@ export default function Act1Emissions() {
             finding: t("act1.board.heat_find"),
             takeaway: t("act1.board.heat_take"),
             node: <HeatmapChart series={regionSeries} years={years} unit={t("act1.unit")} mode="rank" ramp={[tk.positive, tk.warm, tk.negative]} labels={{ low: t("act1.heatmap.low"), high: t("act1.heatmap.high") }} />,
+          },
+          {
+            id: "coverage",
+            empty: noSeries,
+            tab: t("act1.board.tab_coverage"),
+            title: t("act1.viz.coverage_title"),
+            finding: t("act1.board.coverage_find"),
+            takeaway: t("act1.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={regionSeries}
+                years={years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
           },
         ]
       : [];

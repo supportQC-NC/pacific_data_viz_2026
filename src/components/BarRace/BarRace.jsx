@@ -1,14 +1,17 @@
 // src/components/BarRace/BarRace.jsx
 // ============================================================
 // Course de barres animée (ECharts realtimeSort).
+//   • DÉMARRE EN PAUSE : aucune animation ne se lance sans action de
+//     l'utilisateur (bouton ▶). Règle d'expérience du projet : c'est
+//     toujours la personne qui décide de lancer une animation.
 //   • HAUTEUR FORCÉE EN JS en mode diaporama (~74% de l'écran).
 //   • Tous les appels protégés par isDisposed() + frames annulées au démontage
 //     pour éviter "layerStack" null quand le graphique est détruit pendant
 //     l'animation.
-//   • Options (défauts = comportement historique des actes 1/3/5) :
-//       autoplay (true) : démarre en lecture ; false = en pause ;
-//       loop (true)     : reboucle ; false = s'arrête à la dernière année ;
-//       tick (900 ms)   : durée d'un pas (plus grand = plus lent).
+//   • Options :
+//       autoplay (false) : false = en pause (défaut) ; true = lecture auto ;
+//       loop (true)      : reboucle ; false = s'arrête à la dernière année ;
+//       tick (900 ms)    : durée d'un pas (plus grand = plus lent).
 //   • Bouton « retour au début » (⟲) pour rejouer.
 // Props : series [{name, values:[{year,value}]}], years [], unit, tk,
 //         labels { play, pause, restart }, autoplay, loop, tick.
@@ -31,7 +34,7 @@ function alive(chart) {
   return chart && !chart.isDisposed();
 }
 
-export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = true, loop = true, tick = 900 }) {
+export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = false, loop = true, tick = 900 }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
   const rafRef = useRef(0);
