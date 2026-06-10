@@ -141,6 +141,60 @@ const SOURCES = {
     },
   },
 
+  agriProduction: {
+    fr: {
+      provider: "FAO — FAOSTAT, domaine « Cultures et produits de l'élevage » (QCL) · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset: "Production et rendements agricoles — jeu officiel du Challenge",
+      frequency: "Annuelle (séries depuis 1961)",
+      updated: "2026-01-12",
+      license: "CC BY 4.0",
+      method:
+        "Les codes d'articles agrégés sont supprimés avant l'analyse afin d'éviter les doubles comptages, car FAOSTAT inclut à la fois les cultures composantes et leurs totaux agrégés (par exemple « Céréales primaires » ou « Fruits primaires »). Conformément à la méthodologie de la FAO, le rendement total des cultures = somme de la production de l'ensemble des cultures ÷ superficie totale récoltée, en kg/ha ; le rendement total de l'élevage = somme de la production des produits d'élevage retenus ÷ nombre total d'animaux producteurs, en kg/animal. Dans l'application, la vue d'ensemble par territoire affiche la MÉDIANE des rendements par culture (même poids pour chaque culture) — un choix de lecture qui diffère du rendement total FAO pondéré par les surfaces, assumé et documenté ; les vues par culture montrent la donnée telle quelle. De notre côté : reformatage uniquement, aucun lissage ni comblement.",
+      example:
+        "Tonga : 6 114 kg/ha en 2002 → 7 325 kg/ha en 2022 (rendements en hausse sur la période). Kiribati, élevage : 1 460 kg/animal en 1962 → 2 508 kg/animal en 2024.",
+      link: "https://www.fao.org/faostat/en/#data/QCL/metadata",
+    },
+    en: {
+      provider: "FAO — FAOSTAT, “Crops and livestock products” domain (QCL) · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset: "Agricultural production and yields — official Challenge dataset",
+      frequency: "Annual (series since 1961)",
+      updated: "2026-01-12",
+      license: "CC BY 4.0",
+      method:
+        "Aggregate item codes are removed before analysis to avoid double counting, since FAOSTAT includes both component crops and their aggregate totals (e.g. “Cereals, primary” or “Fruit, primary”). Following FAO methodology, total crop yield = sum of production of all crops ÷ total harvested area, in kg/ha; total livestock yield = sum of production of retained livestock products ÷ total producing animals, in kg/animal. In the app, the per-territory overview shows the MEDIAN of per-crop yields (equal weight per crop) — a reading choice that differs from FAO's area-weighted total yield, owned and documented; per-crop views show the data as is. On our side: reformatting only, no smoothing or filling.",
+      example:
+        "Tonga: 6,114 kg/ha in 2002 → 7,325 kg/ha in 2022 (yields rising over the period). Kiribati, livestock: 1,460 kg/animal in 1962 → 2,508 kg/animal in 2024.",
+      link: "https://www.fao.org/faostat/en/#data/QCL/metadata",
+    },
+  },
+
+  landCover: {
+    fr: {
+      provider: "FMI — portail Climate Data, à partir des données de couverture terrestre de la FAO · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset: "Indice de couverture des sols modifiant le climat (CALCI) — jeu officiel du Challenge",
+      frequency: "Annuelle (séries depuis 1992)",
+      updated: "2026-01-11",
+      license: "Non précisée sur la fiche consultée — à confirmer auprès du Pacific Data Hub / FMI",
+      method:
+        "Le jeu brut contient plusieurs catégories de couverture terrestre ; seul l'indicateur agrégé « Climate Altering Land Cover Index » est conservé (les classifications individuelles sont exclues), puis les données sont passées du format large (années en colonnes) au format long (observations pays-année). L'indice utilise 2015 comme année de référence : il vaut 100 pour tous les pays en 2015 et se lit comme un écart à cette référence — pas comme une superficie. Tous les calculs sont effectués par le FMI ; certaines valeurs peuvent être estimées par le FMI. De notre côté : reformatage uniquement.",
+      example:
+        "Tonga : 91,88 en 2006 — la superficie concernée représentait 91,88 % de celle observée en 2015 (année de référence) ; 100 en 2022 — superficie identique à celle de 2015.",
+      link: "https://climatedata.imf.org/pages/climate-and-weather#cc4",
+    },
+    en: {
+      provider: "IMF — Climate Data portal, from FAO land-cover data · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset: "Climate Altering Land Cover Index (CALCI) — official Challenge dataset",
+      frequency: "Annual (series since 1992)",
+      updated: "2026-01-11",
+      license: "Not stated on the consulted record — to be confirmed with the Pacific Data Hub / IMF",
+      method:
+        "The raw dataset holds several land-cover categories; only the aggregate “Climate Altering Land Cover Index” is kept (individual classifications excluded), and the data is reshaped from wide (years as columns) to long (country-year observations). The index uses 2015 as its reference year: it equals 100 for every country in 2015 and reads as a gap to that reference — not as an area. All computations are made by the IMF; some values may be IMF-estimated. On our side: reformatting only.",
+      example:
+        "Tonga: 91.88 in 2006 — the area concerned was 91.88% of that observed in 2015 (reference year); 100 in 2022 — identical to the 2015 area.",
+      link: "https://climatedata.imf.org/pages/climate-and-weather#cc4",
+    },
+  },
+
   seaLevel: {
     fr: {
       provider: "Service Copernicus sur le changement climatique (C3S)",
@@ -227,30 +281,28 @@ const SOURCES = {
 
   cyclones: {
     fr: {
-      provider: "Météo-France · Gouvernement de la Nouvelle-Calédonie (plateforme Géorep)",
-      dataset:
-        "Base de données cycloniques pour la Nouvelle-Calédonie — couche « Historique des trajectoires » (depuis 1840 ; phénomènes documentés ici 1977/78 → 2023/24)",
-      frequency: "Par saison cyclonique (jeu figé)",
-      updated: "2026-05-04",
-      license: "CC BY-NC-ND 4.0",
+      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), archive cyclonique officielle de l'OMM (World Data Center for Meteorology)",
+      dataset: "Trajectoires et positions des phénomènes tropicaux — zone d'alerte de la Nouvelle-Calédonie (jeu additionnel ouvert)",
+      frequency: "Par phénomène (fixes tri-horaires à 6 h) · saisons 1977/1978 → aujourd'hui",
+      updated: "",
+      license: "Domaine public — données du gouvernement des États-Unis, sans restriction d'usage (conforme à la définition des données ouvertes de l'art. 2 du règlement)",
       method:
-        "FICHIER STATIQUE TÉLÉCHARGÉ (GeoJSON), intégré tel quel — aucun appel API en direct. Chaque trajectoire est une ligne (LineString ou MultiLineString lorsqu'elle franchit l'antiméridien ; les segments sont conservés séparés). Le stade affiché vient du libellé officiel `type_max` (dépression tropicale faible/modérée/forte → cyclone tropical/intense/très intense), et non d'un seuil recalculé. Vent max `vmax_traj` en nœuds (déduit de la cohérence interne) ; pression min `pmin_traj` en hPa. Limite : ce fichier ne contient pas le vent/la pression position par position — l'animation trace la trajectoire et séquence les cyclones par date de début. Source d'origine : base SPEArTC (Diamond et al., 2012).",
+        "Archive mondiale IBTrACS, qui intègre pour le Pacifique Sud la base SPEArTC (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32 : 2240–2250, DOI 10.1002/joc.2412) — la même généalogie que la base cyclonique de Météo-France Nouvelle-Calédonie. Notre périmètre reprend exactement celui de l'acte d'origine : phénomènes dont au moins un fix traverse la zone d'alerte [25°S ; 13°S] × [158°E ; 172°E] (trajectoire complète conservée), saisons ≥ 1977/1978 — seuil justifié par le satellite Himawari-1 (lancé le 14/07/1977), première couverture spatiale tri-horaire du Pacifique sud-ouest. Vent : WMO_WIND uniquement (vent moyen 10 min du RSMC responsable) ; valeur absente → absente, jamais estimée. Pression : WMO_PRES. Seuls les tracés « main » sont conservés (branches « spur » exclues). Transformation assumée par nous : IBTrACS ne fournit pas de libellés de stade — ils sont dérivés du vent 10 min selon le barème officiel de la zone (< 34 kt dépression tropicale faible · 34–47 modérée · 48–63 forte · 64–89 cyclone tropical · 90–115 intense · ≥ 116 très intense). Ce reclassement est la seule différence de méthode avec la base Météo-France NC (CC BY-NC-ND), écartée pour conformité à l'exigence de données ouvertes du concours.",
       example:
-        "Saison 1977/1978, cyclone TOM : du 5 au 17 novembre 1977, stade max « dépression tropicale modérée », vent max 44,7 nœuds, pression min 990 hPa.",
-      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+        "Un phénomène dont le vent maximal observé atteint 120 nœuds (≈ 222 km/h) est classé « Cyclone tropical très intense » ; un fix à 70 nœuds le long de la même trajectoire est, lui, au stade « Cyclone tropical » à cet instant.",
+      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
     },
     en: {
-      provider: "Météo-France · Government of New Caledonia (Géorep platform)",
-      dataset:
-        "Tropical-cyclone database for New Caledonia — “Track history” layer (since 1840; events documented here 1977/78 → 2023/24)",
-      frequency: "Per cyclone season (static dataset)",
-      updated: "2026-05-04",
-      license: "CC BY-NC-ND 4.0",
+      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), the WMO official tropical-cyclone archive (World Data Center for Meteorology)",
+      dataset: "Tracks and positions of tropical systems — New Caledonia alert zone (open additional dataset)",
+      frequency: "Per system (3-to-6-hourly fixes) · seasons 1977/1978 → present",
+      updated: "",
+      license: "Public domain — U.S. Government data, no usage restriction (meets the open-data definition of art. 2 of the contest rules)",
       method:
-        "STATIC DOWNLOADED FILE (GeoJSON), used as-is — no live API call. Each track is a line (LineString, or MultiLineString when it crosses the antimeridian; segments are kept separate). The stage shown comes from the official `type_max` label (weak/moderate/severe tropical depression → tropical cyclone/intense/very intense), not from a recomputed threshold. Max wind `vmax_traj` in knots (inferred from internal consistency); min pressure `pmin_traj` in hPa. Limit: this file has no per-position wind/pressure — the animation draws the track and sequences cyclones by start date. Original source: SPEArTC archive (Diamond et al., 2012).",
+        "The global IBTrACS archive, which for the South Pacific integrates the SPEArTC database (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32: 2240–2250, DOI 10.1002/joc.2412) — the same lineage as Météo-France New Caledonia's cyclone database. Our scope reproduces the original act exactly: systems with at least one fix crossing the alert zone [25°S; 13°S] × [158°E; 172°E] (full track kept), seasons ≥ 1977/1978 — a threshold justified by the Himawari-1 satellite (launched 14 July 1977), the first three-hourly space coverage of the southwest Pacific. Wind: WMO_WIND only (10-min mean wind from the responsible RSMC); missing value → missing, never estimated. Pressure: WMO_PRES. Only “main” tracks are kept (“spur” branches excluded). A transformation we own: IBTrACS provides no stage labels — they are derived from the 10-min wind using the official scale in force in the area (< 34 kt weak tropical depression · 34–47 moderate · 48–63 severe · 64–89 tropical cyclone · 90–115 intense · ≥ 116 very intense). This reclassification is the only methodological difference from the Météo-France NC base (CC BY-NC-ND), set aside to comply with the contest's open-data requirement.",
       example:
-        "Season 1977/1978, cyclone TOM: 5–17 November 1977, peak stage “moderate tropical depression”, max wind 44.7 knots, min pressure 990 hPa.",
-      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+        "A system whose maximum observed wind reaches 120 knots (≈ 222 km/h) is classed “Very intense tropical cyclone”; a 70-knot fix along the same track is, at that moment, at the “Tropical cyclone” stage.",
+      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
     },
   },
 };

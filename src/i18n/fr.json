@@ -34,8 +34,8 @@
       "a5_title": "L'élan renouvelable",
       "a5_text": "Le Pacifique ne subit pas : la montée des énergies propres dessine une trajectoire d'avenir.",
       "a6_tag": "Acte 06",
-      "a6_title": "Nourrir demain",
-      "a6_text": "Cultures et bétail : comment les îles adaptent leur agriculture pour garder leur sécurité alimentaire.",
+      "a6_title": "Nourrir, mesurer, progresser",
+      "a6_text": "Deux jeux officiels : les rendements agricoles et d'élevage (FAOSTAT, kg/ha et kg/animal) et l'indice de couverture des sols CALCI (FMI, base 100 en 2015). Les exemples officiels vont dans le bon sens — Tonga : 6 114 → 7 325 kg/ha en vingt ans — et chaque culture garde sa propre histoire.",
       "a7_tag": "Acte 07",
       "a7_title": "Protéger le vivant",
       "a7_text": "Liste Rouge et gestion des pêches : la biodiversité sous pression, et les efforts concrets pour la préserver.",
@@ -1170,30 +1170,34 @@
   },
   "act6": {
     "tag": "Acte 06 — L'assiette",
-    "title": "La terre nourricière sous pression",
-    "lead": "Quand l'océan monte et se réchauffe, c'est aussi l'assiette du Pacifique qui vacille. Rendements des cultures, territoire par territoire — ce que la région récolte, et comment ça évolue.",
+    "title": "La terre nourricière",
+    "lead": "Combien la terre rend-elle, culture par culture, bête par bête ? FAOSTAT le mesure depuis 1961 — et l'indice CALCI du FMI dit, en regard, comment la couverture des sols évolue depuis 2015. Deux jeux officiels, deux définitions précises, et beaucoup d'histoires singulières.",
     "guide": {
       "title": "Guide de lecture",
-      "intro": "On regarde le rendement agricole (kg récoltés par hectare), résumé par territoire comme la MÉDIANE de toutes les cultures suivies par le Pacific Data Hub — à lire avec prudence (voir l'avertissement en bas).",
+      "intro": "On regarde le rendement (kg récoltés par hectare pour les cultures, kg par animal producteur pour l'élevage), résumé par territoire comme la MÉDIANE de toutes les cultures — un choix de lecture qui donne le même poids à chaque culture, différent du rendement total FAO (somme des productions ÷ somme des surfaces), qui pondère par les surfaces. Les vues par culture, elles, montrent la donnée telle quelle.",
       "steps": [
         {
           "k": "Rendement, pas surface",
-          "v": "Tout est en kg par hectare : la productivité de la terre, pas la quantité totale produite."
+          "v": "Tout est en kg par hectare (ou kg par animal) : la productivité, pas la quantité totale produite ni la surface cultivée."
         },
         {
-          "k": "Filtre par sous-région",
-          "v": "Mélanésie, Polynésie, Micronésie — pour comparer des territoires proches."
+          "k": "Sans doubles comptages",
+          "v": "FAOSTAT contient à la fois les cultures et leurs totaux agrégés (« Céréales primaires », « Fruits primaires »…) : les agrégats sont supprimés avant l'analyse, conformément à la méthodologie du producteur."
         },
         {
-          "k": "Tendance + heatmap",
-          "v": "La courbe montre chaque territoire dans le temps ; la heatmap résume tout sur une grille couleur."
+          "k": "Notre agrégat, leur méthode",
+          "v": "Le résumé par territoire est ici la médiane des rendements par culture (même poids pour chaque culture). La méthode FAO du rendement total, elle, divise la production totale par la surface totale récoltée. Les deux sont légitimes — il faut juste savoir lequel on lit."
         },
         {
-          "k": "Par culture",
-          "v": "L'explorateur descend au niveau de chaque produit (banane, taro, coco…) via les icônes."
+          "k": "CALCI : un indice, pas une surface",
+          "v": "L'indice de couverture des sols modifiant le climat vaut 100 pour tous les pays en 2015 (année de référence). Calculé par le FMI à partir des données de couverture terrestre de la FAO ; certaines valeurs peuvent être estimées par le FMI."
+        },
+        {
+          "k": "Plusieurs causes, toujours",
+          "v": "Variétés, pratiques, intrants, marchés, météo : un rendement bouge rarement pour une seule raison. Aucun graphique de cet acte n'attribue une variation au climat — ils localisent, comparent, et c'est déjà beaucoup."
         }
       ],
-      "takeaway": "Les rendements bougent — parfois fortement — mais rarement pour une seule raison. Le climat est un facteur parmi d'autres."
+      "takeaway": "À retenir : médiane par culture d'un côté, méthode FAO de l'autre, indice CALCI base 2015 du troisième — trois définitions affichées, jamais confondues. Et les exemples officiels montrent des rendements qui progressent."
     },
     "unit": "kg/ha",
     "pac_ref": "médiane Pacifique",
@@ -1275,12 +1279,12 @@
     "radar_sub": "rendement relatif par culture (100 = meilleure sous-région)",
     "outro": {
       "kicker": "Fin de l'acte 06",
-      "title": "Une sécurité alimentaire sous tension",
-      "text": "Les rendements dépendent d'un climat de plus en plus instable. Et la nature elle-même, le vivant, est en première ligne.",
+      "title": "Une terre qui apprend",
+      "text": "Les exemples officiels montrent des rendements qui progressent — et des définitions qu'on sait maintenant lire. Cap sur ce qui pousse et vit sans qu'on le cultive : le vivant.",
       "next": "Acte suivant : le vivant",
       "home": "Retour à l'accueil"
     },
-    "thesis": "Sur des sols fragiles et un climat qui se dérègle, nourrir le Pacifique devient un défi : les rendements vacillent, inégaux d'une île à l'autre.",
+    "thesis": "Rendements (kg/ha, kg/animal) et couverture des sols (indice CALCI, 2015 = 100) : deux mesures officielles à lire chacune pour ce qu'elle est — la productivité d'un côté, un indice d'usage des sols de l'autre. Les rendements bougent rarement pour une seule raison : ici, on apprend d'abord à les lire.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -1300,19 +1304,19 @@
       "tab_map": "Carte 3D",
       "tab_explorer": "Explorateur",
       "small_find": "Chaque mini-graphe un territoire : la trajectoire de son rendement médian, point courant marqué.",
-      "small_take": "Les rendements ne convergent pas : certains progressent, d'autres stagnent ou décrochent.",
+      "small_take": "Les trajectoires ne convergent pas — et c'est l'intérêt des petits multiples : chaque territoire se lit chez lui, sans moyenne qui écrase.",
       "regional_find": "Le rendement médian de l'ensemble de la région, année après année.",
-      "regional_take": "La tendance d'ensemble masque de fortes disparités entre territoires.",
+      "regional_take": "Une médiane régionale donne le cap, jamais le détail : les disparités se lisent dans les petits multiples.",
       "crops_find": "Les cultures classées par rendement médian pour l'année sélectionnée.",
-      "crops_take": "Quelques cultures dominent largement ; la diversité reste un enjeu de résilience.",
+      "crops_take": "Quelques cultures dominent le classement ; le sélecteur d'année montre si cette hiérarchie tient dans le temps.",
       "change_find": "Pour chaque territoire, le rendement de la première année relié à celui de la dernière.",
-      "change_take": "Les gains et les reculs coexistent — le climat ne joue pas partout dans le même sens.",
+      "change_take": "Deux années réelles comparées : gains et reculs coexistent — l'haltère mesure un chemin, pas ses causes.",
       "heat_find": "Territoires × années : l'intensité dit le rendement, d'un coup d'œil.",
-      "heat_take": "Les bonnes et mauvaises années se lisent en bandes : la production est sensible au climat.",
+      "heat_take": "Les bonnes et mauvaises années se lisent en bandes ; la matrice distingue l'accident isolé de la tendance installée.",
       "map_find": "La géographie du rendement médian pour l'année choisie (échelle logarithmique).",
       "map_take": "Terres fertiles et sols pauvres se répartissent très inégalement dans le Pacifique.",
       "explorer_find": "Choisissez une culture pour explorer son rendement, territoire par territoire.",
-      "explorer_take": "Derrière l'agrégat, chaque culture raconte sa propre histoire de vulnérabilité.",
+      "explorer_take": "Derrière l'agrégat, chaque culture raconte sa propre histoire — c'est ici que la donnée se lit au plus près.",
       "kind_label": "Type",
       "kind_crop": "Cultures",
       "kind_livestock": "Élevage",
@@ -1320,21 +1324,27 @@
       "tab_stability": "Stabilité",
       "stability_title": "Stabilité des rendements",
       "stability_find": "Coefficient de variation du rendement dans le temps, par territoire (faible = régulier).",
-      "stability_take": "Les rendements les plus volatils signalent les productions les plus exposées aux aléas climatiques.",
+      "stability_take": "Un CV faible dit une production régulière dans la série — précieux à connaître, sans préjuger de la raison.",
       "tab_race": "Course",
       "race_title": "La course des territoires",
       "race_pick": "Produit",
       "race_find": "Choisissez un produit : la course classe les territoires par rendement, année après année.",
-      "race_take": "Le peloton de tête se réordonne avec le climat — aucun rendement n'est acquis.",
+      "race_take": "Le classement se réordonne selon les produits et les années : lance la course culture par culture, aucun rendement n'est figé.",
       "tab_land_change": "Sols : évolution",
       "land_change_find": "Variation de l'indice de couverture des sols modifiant le climat (CALCI) entre 2015 (référence = 100) et la dernière année, par territoire.",
-      "land_change_take": "Une hausse signale une couverture des sols davantage modifiée ; plusieurs territoires restent proches de leur niveau de 2015.",
+      "land_change_take": "Au-dessus de 100 : couverture davantage modifiée qu'en 2015 ; au-dessous : moins. Beaucoup de territoires restent proches de leur référence.",
       "tab_land_lines": "Sols : trajectoire",
       "land_lines_find": "Évolution annuelle de l'indice CALCI (base 2015 = 100) par territoire, depuis 1992.",
-      "land_lines_take": "Quelques territoires ont vu leur couverture des sols changer fortement avant de converger ; la plupart évoluent autour de la référence.",
+      "land_lines_take": "Chaque courbe converge vers 100 en 2015 par construction : la lecture porte sur le chemin parcouru avant et après la référence.",
       "tab_land_slope": "Sols : début → fin",
       "land_slope_find": "Indice CALCI à la première puis à la dernière année observée, par territoire (base 2015 = 100).",
-      "land_slope_take": "La pente résume trois décennies de changement d'usage des sols : forte pour quelques territoires, quasi plate pour les autres."
+      "land_slope_take": "La pente résume trois décennies d'usage des sols, territoire par territoire — forte ici, quasi plate ailleurs : la donnée distingue, à nous de ne pas surinterpréter.",
+      "tab_read": "Les données",
+      "read_find": "Les fiches des deux jeux officiels — rendements FAOSTAT et indice CALCI — avec la règle anti-doubles comptages, la formule des rendements, et notre choix de médiane assumé.",
+      "read_take": "Dire comment l'agrégat est construit — et en quoi il diffère de la méthode du producteur — c'est la condition pour le lire honnêtement.",
+      "tab_coverage": "Couverture",
+      "coverage_find": "Pour le type choisi (cultures ou élevage) : chaque case dit si un rendement médian existe pour ce territoire cette année-là. Les vides sont montrés, jamais comblés.",
+      "coverage_take": "Savoir exactement où chaque série s'arrête : la signature de cet acte, comme de tous les autres."
     },
     "explorer_race": "La course des territoires",
     "land": {
@@ -1343,6 +1353,26 @@
       "lines_title": "Trajectoire de l'occupation des sols",
       "index_unit": "indice (2015 = 100)",
       "slope_title": "Occupation des sols : début → aujourd'hui"
+    },
+    "read_title": "Deux jeux officiels, une règle de lecture",
+    "coverage_title": "La couverture des rendements : ce que la série contient — et ce qu'elle ne contient pas",
+    "spotlight": {
+      "r1k": "Rendements — source",
+      "r1v": "FAOSTAT · « Cultures et produits de l'élevage » (QCL) · via Pacific Data Hub, jeu officiel · CC BY 4.0 · maj 2026-01-12",
+      "r2k": "Rendements — formules",
+      "r2v": "Cultures : Σ production ÷ Σ surface récoltée, en kg/ha · Élevage : Σ production ÷ nb d'animaux producteurs, en kg/animal (méthodologie FAO)",
+      "r3k": "Couverture des sols — source",
+      "r3v": "FMI · Climate Altering Land Cover Index (CALCI), calculé à partir des données de couverture terrestre de la FAO · via Pacific Data Hub, jeu officiel · maj 2026-01-11 · licence : voir fiche",
+      "r4k": "Couverture des sols — définition",
+      "r4v": "Indice, base 100 = 2015 pour tous les pays · seul l'indicateur agrégé CALCI est conservé (classes individuelles exclues)",
+      "n1": "FAOSTAT inclut cultures ET totaux agrégés (« Céréales primaires »…) : les agrégats sont supprimés avant l'analyse pour éviter les doubles comptages — règle du producteur, appliquée telle quelle.",
+      "n2": "Notre vue d'ensemble affiche la MÉDIANE des rendements par culture (même poids par culture) — un choix de lecture différent du rendement total FAO (pondéré par les surfaces), assumé et affiché. Les vues par culture montrent la donnée brute.",
+      "n3": "CALCI : tous les calculs sont effectués par le FMI ; certaines valeurs peuvent être estimées par lui. 100 = la situation de 2015 ; l'indice se lit comme un écart à cette référence, pas comme une surface.",
+      "n4": "Deux jeux, deux natures : un rendement (kg/ha) ne se compare jamais à un indice (base 100). Chaque mesure se lit contre sa propre définition.",
+      "n5": "Ce que nous ne faisons pas : aucun lissage, aucune correction, aucun comblement des années manquantes (voir Couverture) — et aucune attribution causale au climat.",
+      "ex_kicker": "Lire une valeur",
+      "ex_text": "Tonga, 2002 : 6 114 kg/ha — 2022 : 7 325 kg/ha, des rendements en hausse sur vingt ans. Kiribati, élevage : 1 460 kg/animal en 1962 — 2 508 en 2024. Et côté sols : Tonga à 91,88 en 2006, soit 91,88 % de la situation de référence 2015, revenue à 100 en 2022.",
+      "link_label": "Voir FAOSTAT QCL (métadonnées FAO)"
     }
   },
   "act7": {

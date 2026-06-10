@@ -1,9 +1,22 @@
 // src/pages/Act6Agriculture/Act6Agriculture.jsx
 // ============================================================
-// Acte 06 — La terre nourricière : rendements agricoles (FAO via agriApi).
-// Format DASHBOARD (ActBoard) recentré sur les CULTURES (kg/ha) :
-// filtres GLOBAUX (sous-région + année), petits multiples en SIGNATURE.
-// Tableau retiré. 7 onglets, dont l'explorateur de cultures.
+// Acte « La terre nourricière » — 5ᵉ étape du parcours (JOURNEY).
+// Deux jeux officiels du Challenge :
+//   • Rendements agricoles & élevage (FAOSTAT QCL, CC BY 4.0) — kg/ha et
+//     kg/animal ; agrégats FAOSTAT supprimés (anti doubles comptages).
+//     ⚠ Vue d'ensemble = MÉDIANE des rendements par culture (même poids
+//     par culture) — choix de lecture ≠ rendement total FAO (pondéré par
+//     les surfaces) : assumé et affiché dans « Les données ».
+//   • Couverture des sols : indice CALCI (FMI, base 100 = 2015), via le
+//     store (DF_CLIMATE_CHANGE · ALT_LAND_COVER) — un INDICE, pas une
+//     surface ; certaines valeurs peuvent être estimées par le FMI.
+// Aucune attribution causale au climat : les vues localisent et comparent.
+//
+// Vues « maîtrise de la donnée » (jury) :
+//   • Les données : carte d'identité DOUBLE (formules FAO, règle
+//     anti-agrégats, notre médiane assumée, CALCI = indice).
+//   • Couverture  : matrice binaire territoires × années, suit le type
+//     choisi (cultures/élevage) ; les vides montrés, jamais comblés.
 // ============================================================
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
@@ -13,14 +26,16 @@ import { fetchAgriProduction } from "../../services/agriApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
-import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import RankChart from "../../components/charts/RankChart";
 import BarRace from "../../components/BarRace/BarRace";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
+import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { fmt } from "../../components/charts/echartsBase";
 import ChangeChart from "../../components/charts/ChangeChart";
@@ -372,14 +387,6 @@ export default function Act6Agriculture() {
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
   const status = agri.status === "ready" ? (years.length ? "ready" : "empty") : agri.status === "loading" ? "loading" : "empty";
 
-  const heatLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
-
   const filtersEl = (
     <>
       <Select label={t("act6.board.kind_label")} options={[{ v: "crop", label: t("act6.board.kind_crop") }, { v: "livestock", label: t("act6.board.kind_livestock") }]} value={kind} onChange={setKind} />
@@ -387,6 +394,21 @@ export default function Act6Agriculture() {
       <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={(i) => setYearIdx(i)} />
     </>
   );
+
+  // Carte d'identité DOUBLE (rendements FAOSTAT + indice CALCI) — 100 % i18n.
+  const spotlightRows = [
+    { k: t("act6.spotlight.r1k"), v: t("act6.spotlight.r1v") },
+    { k: t("act6.spotlight.r2k"), v: t("act6.spotlight.r2v") },
+    { k: t("act6.spotlight.r3k"), v: t("act6.spotlight.r3v") },
+    { k: t("act6.spotlight.r4k"), v: t("act6.spotlight.r4v") },
+  ];
+  const spotlightNotes = [
+    t("act6.spotlight.n1"),
+    t("act6.spotlight.n2"),
+    t("act6.spotlight.n3"),
+    t("act6.spotlight.n4"),
+    t("act6.spotlight.n5"),
+  ];
 
   const charts =
     status === "ready" && currentYear != null
@@ -403,6 +425,22 @@ export default function Act6Agriculture() {
               <div className="act6b__scroll">
                 <SmallMultiples series={vSeries} years={years} unit={unit} currentYear={currentYear} labels={{ last: t("act6.smallmult_last") }} />
               </div>
+            ),
+          },
+          {
+            id: "read",
+            empty: false,
+            tab: t("act6.board.tab_read"),
+            title: t("act6.read_title"),
+            finding: t("act6.board.read_find"),
+            takeaway: t("act6.board.read_take"),
+            node: (
+              <DataSpotlight
+                rows={spotlightRows}
+                notes={spotlightNotes}
+                example={{ kicker: t("act6.spotlight.ex_kicker"), text: t("act6.spotlight.ex_text") }}
+                link={{ href: "https://www.fao.org/faostat/en/#data/QCL/metadata", label: t("act6.spotlight.link_label") }}
+              />
             ),
           },
           {
@@ -438,7 +476,11 @@ export default function Act6Agriculture() {
             title: `${t("act6.compare_title")} · ${firstYear}–${lastYear}`,
             finding: t("act6.board.change_find"),
             takeaway: t("act6.board.change_take"),
-            node: <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />,
+            node: (
+              <div className="act6b__scroll">
+                <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} decimals={0} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
+              </div>
+            ),
           },
           {
             id: "stability",
@@ -461,7 +503,7 @@ export default function Act6Agriculture() {
                 <div className="act6b__racebar">
                   <Select label={t("act6.board.race_pick")} options={raceProducts.map((c) => ({ v: c.code, label: c.label }))} value={raceProduct ?? ""} onChange={setRaceProduct} />
                 </div>
-                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} autoplay={false} loop={false} tick={1800} />
+                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} decimals={0} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} autoplay={false} loop={false} tick={1800} />
               </div>
             ),
           },
@@ -473,8 +515,15 @@ export default function Act6Agriculture() {
             finding: t("act6.board.heat_find"),
             takeaway: t("act6.board.heat_take"),
             node: (
-              <div className="act6b__fit">
-                <EmissionsHeatmap series={vSeries} years={years} unit={unit} scale="sequential" labels={heatLabels} />
+              <div className="act6b__scroll">
+                <ApexYearHeatmap
+                  series={vSeries}
+                  years={years}
+                  unit={unit}
+                  scale="sequential"
+                  decimals={0}
+                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
+                />
               </div>
             ),
           },
@@ -542,6 +591,21 @@ export default function Act6Agriculture() {
               />
             ),
           },
+          {
+            id: "coverage",
+            empty: vSeries.length === 0,
+            tab: t("act6.board.tab_coverage"),
+            title: t("act6.coverage_title"),
+            finding: t("act6.board.coverage_find"),
+            takeaway: t("act6.board.coverage_take"),
+            node: (
+              <CoverageChart
+                series={vSeries}
+                years={years}
+                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+              />
+            ),
+          },
         ]
       : [];
 
@@ -557,7 +621,7 @@ export default function Act6Agriculture() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 6, total: 11 }}
+      progress={{ index: 5, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act6.unavailable"),

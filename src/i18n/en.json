@@ -34,8 +34,8 @@
       "a5_title": "The renewable momentum",
       "a5_text": "The Pacific does not merely endure: the rise of clean energy traces a path forward.",
       "a6_tag": "Act 06",
-      "a6_title": "Feeding tomorrow",
-      "a6_text": "Crops and livestock: how the islands adapt their farming to keep food security.",
+      "a6_title": "Feeding, measuring, improving",
+      "a6_text": "Two official datasets: crop and livestock yields (FAOSTAT, kg/ha and kg/animal) and the CALCI land-cover index (IMF, base 100 in 2015). The official examples point the right way — Tonga: 6,114 → 7,325 kg/ha in twenty years — and every crop keeps its own story.",
       "a7_tag": "Act 07",
       "a7_title": "Protecting the living world",
       "a7_text": "Red List and fisheries management: biodiversity under pressure, and the concrete efforts to preserve it.",
@@ -1170,30 +1170,34 @@
   },
   "act6": {
     "tag": "Act 06 — The plate",
-    "title": "The food-growing land under pressure",
-    "lead": "As the ocean rises and warms, the Pacific's plate wobbles too. Crop yields, territory by territory — what the region harvests, and how it shifts.",
+    "title": "The nourishing land",
+    "lead": "How much does the land give back, crop by crop, animal by animal? FAOSTAT has measured it since 1961 — and the IMF's CALCI index tells, alongside, how land cover has shifted around its 2015 baseline. Two official datasets, two precise definitions, and many singular stories.",
     "guide": {
       "title": "Reading guide",
-      "intro": "We look at agricultural yield (kg harvested per hectare), summarised per territory as the MEDIAN across every crop tracked by the Pacific Data Hub — read with care (see the caveat below).",
+      "intro": "We look at yield (kg harvested per hectare for crops, kg per producing animal for livestock), summarised per territory as the MEDIAN across all crops — a reading choice that gives each crop equal weight, different from the FAO total yield (sum of production ÷ sum of areas), which weights by area. The per-crop views show the data as is.",
       "steps": [
         {
           "k": "Yield, not area",
-          "v": "Everything is in kg per hectare: the land's productivity, not total output."
+          "v": "Everything is in kg per hectare (or kg per animal): productivity, not total output nor cultivated area."
         },
         {
-          "k": "Sub-region filter",
-          "v": "Melanesia, Polynesia, Micronesia — to compare neighbouring territories."
+          "k": "No double counting",
+          "v": "FAOSTAT holds both component crops and their aggregate totals (“Cereals, primary”, “Fruit, primary”…): aggregates are removed before analysis, following the producer's methodology."
         },
         {
-          "k": "Trend + heatmap",
-          "v": "The line shows each territory over time; the heatmap sums it all up on a colour grid."
+          "k": "Our aggregate, their method",
+          "v": "The per-territory summary here is the median of per-crop yields (equal weight per crop). FAO's total-yield method divides total production by total harvested area. Both are legitimate — you just need to know which one you are reading."
         },
         {
-          "k": "By crop",
-          "v": "The explorer drills down to each product (banana, taro, coconut…) via the icons."
+          "k": "CALCI: an index, not an area",
+          "v": "The climate-altering land-cover index equals 100 for every country in 2015 (reference year). Computed by the IMF from FAO land-cover data; some values may be IMF-estimated."
+        },
+        {
+          "k": "Many causes, always",
+          "v": "Varieties, practices, inputs, markets, weather: a yield rarely moves for a single reason. No chart in this act attributes a change to climate — they locate and compare, which is already a lot."
         }
       ],
-      "takeaway": "Yields move — sometimes sharply — but rarely for a single reason. Climate is one factor among many."
+      "takeaway": "Takeaway: per-crop median on one side, the FAO method on the other, the 2015-based CALCI index on the third — three definitions displayed, never conflated. And the official examples show yields improving."
     },
     "unit": "kg/ha",
     "pac_ref": "Pacific median",
@@ -1275,12 +1279,12 @@
     "radar_sub": "relative yield per crop (100 = best sub-region)",
     "outro": {
       "kicker": "End of act 06",
-      "title": "Food security under strain",
-      "text": "Yields hinge on an ever more unstable climate. And nature itself — the living world — is on the front line.",
+      "title": "A land that learns",
+      "text": "The official examples show yields improving — and definitions we now know how to read. Onward to what grows and lives uncultivated: the living world.",
       "next": "Next act: the living world",
       "home": "Back to home"
     },
-    "thesis": "On fragile soils and a destabilising climate, feeding the Pacific becomes a challenge: yields waver, uneven from one island to the next.",
+    "thesis": "Yields (kg/ha, kg/animal) and land cover (CALCI index, 2015 = 100): two official measures, each to be read for what it is — productivity on one side, a land-use index on the other. Yields rarely move for a single reason: here, we first learn to read them.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -1300,19 +1304,19 @@
       "tab_map": "3D map",
       "tab_explorer": "Explorer",
       "small_find": "Each mini-chart a territory: the path of its median yield, current point marked.",
-      "small_take": "Yields don't converge: some rise, others stall or fall behind.",
+      "small_take": "Trajectories don't converge — which is the point of small multiples: each territory reads at home, with no mean flattening it.",
       "regional_find": "The region's median yield, year after year.",
-      "regional_take": "The overall trend hides wide disparities between territories.",
+      "regional_take": "A regional median gives the heading, never the detail: disparities read in the small multiples.",
       "crops_find": "Crops ranked by median yield for the selected year.",
-      "crops_take": "A few crops dominate; diversity remains a resilience challenge.",
+      "crops_take": "A few crops dominate the ranking; the year selector shows whether that hierarchy holds over time.",
       "change_find": "For each territory, the first year's yield linked to the last year's.",
-      "change_take": "Gains and losses coexist — the climate doesn't pull the same way everywhere.",
+      "change_take": "Two real years compared: gains and setbacks coexist — the dumbbell measures a path, not its causes.",
       "heat_find": "Territories × years: intensity shows the yield at a glance.",
-      "heat_take": "Good and bad years read as bands: production is climate-sensitive.",
+      "heat_take": "Good and bad years read as bands; the matrix separates the isolated accident from the settled trend.",
       "map_find": "The geography of median yield for the chosen year (log scale).",
       "map_take": "Fertile lands and poor soils are very unevenly spread across the Pacific.",
       "explorer_find": "Pick a crop to explore its yield, territory by territory.",
-      "explorer_take": "Behind the aggregate, each crop tells its own story of vulnerability.",
+      "explorer_take": "Behind the aggregate, every crop tells its own story — this is where the data reads closest.",
       "kind_label": "Type",
       "kind_crop": "Crops",
       "kind_livestock": "Livestock",
@@ -1320,21 +1324,27 @@
       "tab_stability": "Stability",
       "stability_title": "Yield stability",
       "stability_find": "Coefficient of variation of yield over time, per territory (low = steady).",
-      "stability_take": "The most volatile yields flag the production most exposed to climate shocks.",
+      "stability_take": "A low CV means a steady series — precious to know, without prejudging the reason.",
       "tab_race": "Race",
       "race_title": "The territories' race",
       "race_pick": "Product",
       "race_find": "Pick a product: the race ranks territories by yield, year after year.",
-      "race_take": "The leading pack reshuffles with the climate — no yield is guaranteed.",
+      "race_take": "The ranking reshuffles across products and years: run the race crop by crop — no yield is set in stone.",
       "tab_land_change": "Land: change",
       "land_change_find": "Change in the climate-altering land-cover index (CALCI) between 2015 (reference = 100) and the latest year, by territory.",
-      "land_change_take": "A rise signals more altered land cover; several territories stay close to their 2015 level.",
+      "land_change_take": "Above 100: cover more altered than in 2015; below: less. Many territories stay close to their reference.",
       "tab_land_lines": "Land: trajectory",
       "land_lines_find": "Annual evolution of the CALCI index (2015 = 100) by territory, since 1992.",
-      "land_lines_take": "A few territories saw land cover change sharply before converging; most evolve around the reference.",
+      "land_lines_take": "Every curve meets 100 in 2015 by construction: the reading is about the path travelled before and after the reference.",
       "tab_land_slope": "Land: start → end",
       "land_slope_find": "CALCI index at the first and last observed year, by territory (2015 = 100).",
-      "land_slope_take": "The slope sums up three decades of land-use change: steep for a few territories, near-flat for the rest."
+      "land_slope_take": "The slope sums up three decades of land use, territory by territory — steep here, nearly flat there: the data distinguishes; ours is not to over-read.",
+      "tab_read": "The data",
+      "read_find": "The ID cards of the two official datasets — FAOSTAT yields and the CALCI index — with the anti-double-counting rule, the yield formulas, and our median choice owned.",
+      "read_take": "Saying how the aggregate is built — and how it differs from the producer's method — is the condition for reading it honestly.",
+      "tab_coverage": "Coverage",
+      "coverage_find": "For the chosen kind (crops or livestock): each cell says whether a median yield exists for that territory in that year. Gaps are shown, never filled.",
+      "coverage_take": "Knowing exactly where each series ends: this act's signature, like every other."
     },
     "explorer_race": "The territories' race",
     "land": {
@@ -1343,6 +1353,26 @@
       "lines_title": "Land-use trajectory",
       "index_unit": "index (2015 = 100)",
       "slope_title": "Land cover: start → today"
+    },
+    "read_title": "Two official datasets, one reading rule",
+    "coverage_title": "Yield coverage: what the series contains — and what it doesn't",
+    "spotlight": {
+      "r1k": "Yields — source",
+      "r1v": "FAOSTAT · “Crops and livestock products” (QCL) · via the Pacific Data Hub, official dataset · CC BY 4.0 · upd. 2026-01-12",
+      "r2k": "Yields — formulas",
+      "r2v": "Crops: Σ production ÷ Σ harvested area, in kg/ha · Livestock: Σ production ÷ producing animals, in kg/animal (FAO methodology)",
+      "r3k": "Land cover — source",
+      "r3v": "IMF · Climate Altering Land Cover Index (CALCI), computed from FAO land-cover data · via the Pacific Data Hub, official dataset · upd. 2026-01-11 · licence: see record",
+      "r4k": "Land cover — definition",
+      "r4v": "Index, base 100 = 2015 for every country · only the aggregate CALCI indicator is kept (individual classes excluded)",
+      "n1": "FAOSTAT holds crops AND aggregate totals (“Cereals, primary”…): aggregates are removed before analysis to avoid double counting — the producer's rule, applied as is.",
+      "n2": "Our overview shows the MEDIAN of per-crop yields (equal weight per crop) — a reading choice different from FAO's total yield (area-weighted), owned and displayed. Per-crop views show the raw data.",
+      "n3": "CALCI: all computations are made by the IMF; some values may be IMF-estimated. 100 = the 2015 situation; the index reads as a gap to that reference, not as an area.",
+      "n4": "Two datasets, two natures: a yield (kg/ha) never compares to an index (base 100). Each measure reads against its own definition.",
+      "n5": "What we do not do: no smoothing, no correction, no filling of missing years (see Coverage) — and no causal attribution to climate.",
+      "ex_kicker": "Reading a value",
+      "ex_text": "Tonga, 2002: 6,114 kg/ha — 2022: 7,325 kg/ha, yields rising over twenty years. Kiribati, livestock: 1,460 kg/animal in 1962 — 2,508 in 2024. And on land: Tonga at 91.88 in 2006, i.e. 91.88% of the 2015 reference situation, back to 100 by 2022.",
+      "link_label": "See FAOSTAT QCL (FAO metadata)"
     }
   },
   "act7": {
