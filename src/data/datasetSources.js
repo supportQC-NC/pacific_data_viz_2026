@@ -227,28 +227,30 @@ const SOURCES = {
 
   cyclones: {
     fr: {
-      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), archive cyclonique officielle de l'OMM (World Data Center for Meteorology)",
-      dataset: "Trajectoires et positions des phénomènes tropicaux — zone d'alerte de la Nouvelle-Calédonie (jeu additionnel ouvert)",
-      frequency: "Par phénomène (fixes tri-horaires à 6 h) · saisons 1977/1978 → aujourd'hui",
-      updated: "",
-      license: "Domaine public — données du gouvernement des États-Unis, sans restriction d'usage (conforme à la définition des données ouvertes de l'art. 2 du règlement)",
+      provider: "Météo-France · Gouvernement de la Nouvelle-Calédonie (plateforme Géorep)",
+      dataset:
+        "Base de données cycloniques pour la Nouvelle-Calédonie — couche « Historique des trajectoires » (depuis 1840 ; phénomènes documentés ici 1977/78 → 2023/24)",
+      frequency: "Par saison cyclonique (jeu figé)",
+      updated: "2026-05-04",
+      license: "CC BY-NC-ND 4.0",
       method:
-        "Archive mondiale IBTrACS, qui intègre pour le Pacifique Sud la base SPEArTC (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32 : 2240–2250, DOI 10.1002/joc.2412) — la même généalogie que la base cyclonique de Météo-France Nouvelle-Calédonie. Notre périmètre reprend exactement celui de l'acte d'origine : phénomènes dont au moins un fix traverse la zone d'alerte [25°S ; 13°S] × [158°E ; 172°E] (trajectoire complète conservée), saisons ≥ 1977/1978 — seuil justifié par le satellite Himawari-1 (lancé le 14/07/1977), première couverture spatiale tri-horaire du Pacifique sud-ouest. Vent : WMO_WIND uniquement (vent moyen 10 min du RSMC responsable) ; valeur absente → absente, jamais estimée. Pression : WMO_PRES. Seuls les tracés « main » sont conservés (branches « spur » exclues). Transformation assumée par nous : IBTrACS ne fournit pas de libellés de stade — ils sont dérivés du vent 10 min selon le barème officiel de la zone (< 34 kt dépression tropicale faible · 34–47 modérée · 48–63 forte · 64–89 cyclone tropical · 90–115 intense · ≥ 116 très intense). Ce reclassement est la seule différence de méthode avec la base Météo-France NC (CC BY-NC-ND), écartée pour conformité à l'exigence de données ouvertes du concours.",
+        "FICHIER STATIQUE TÉLÉCHARGÉ (GeoJSON), intégré tel quel — aucun appel API en direct. Chaque trajectoire est une ligne (LineString ou MultiLineString lorsqu'elle franchit l'antiméridien ; les segments sont conservés séparés). Le stade affiché vient du libellé officiel `type_max` (dépression tropicale faible/modérée/forte → cyclone tropical/intense/très intense), et non d'un seuil recalculé. Vent max `vmax_traj` en nœuds (déduit de la cohérence interne) ; pression min `pmin_traj` en hPa. Limite : ce fichier ne contient pas le vent/la pression position par position — l'animation trace la trajectoire et séquence les cyclones par date de début. Source d'origine : base SPEArTC (Diamond et al., 2012).",
       example:
-        "Un phénomène dont le vent maximal observé atteint 120 nœuds (≈ 222 km/h) est classé « Cyclone tropical très intense » ; un fix à 70 nœuds le long de la même trajectoire est, lui, au stade « Cyclone tropical » à cet instant.",
-      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
+        "Saison 1977/1978, cyclone TOM : du 5 au 17 novembre 1977, stade max « dépression tropicale modérée », vent max 44,7 nœuds, pression min 990 hPa.",
+      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
     },
     en: {
-      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), the WMO official tropical-cyclone archive (World Data Center for Meteorology)",
-      dataset: "Tracks and positions of tropical systems — New Caledonia alert zone (open additional dataset)",
-      frequency: "Per system (3-to-6-hourly fixes) · seasons 1977/1978 → present",
-      updated: "",
-      license: "Public domain — U.S. Government data, no usage restriction (meets the open-data definition of art. 2 of the contest rules)",
+      provider: "Météo-France · Government of New Caledonia (Géorep platform)",
+      dataset:
+        "Tropical-cyclone database for New Caledonia — “Track history” layer (since 1840; events documented here 1977/78 → 2023/24)",
+      frequency: "Per cyclone season (static dataset)",
+      updated: "2026-05-04",
+      license: "CC BY-NC-ND 4.0",
       method:
-        "The global IBTrACS archive, which for the South Pacific integrates the SPEArTC database (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32: 2240–2250, DOI 10.1002/joc.2412) — the same lineage as Météo-France New Caledonia's cyclone database. Our scope reproduces the original act exactly: systems with at least one fix crossing the alert zone [25°S; 13°S] × [158°E; 172°E] (full track kept), seasons ≥ 1977/1978 — a threshold justified by the Himawari-1 satellite (launched 14 July 1977), the first three-hourly space coverage of the southwest Pacific. Wind: WMO_WIND only (10-min mean wind from the responsible RSMC); missing value → missing, never estimated. Pressure: WMO_PRES. Only “main” tracks are kept (“spur” branches excluded). A transformation we own: IBTrACS provides no stage labels — they are derived from the 10-min wind using the official scale in force in the area (< 34 kt weak tropical depression · 34–47 moderate · 48–63 severe · 64–89 tropical cyclone · 90–115 intense · ≥ 116 very intense). This reclassification is the only methodological difference from the Météo-France NC base (CC BY-NC-ND), set aside to comply with the contest's open-data requirement.",
+        "STATIC DOWNLOADED FILE (GeoJSON), used as-is — no live API call. Each track is a line (LineString, or MultiLineString when it crosses the antimeridian; segments are kept separate). The stage shown comes from the official `type_max` label (weak/moderate/severe tropical depression → tropical cyclone/intense/very intense), not from a recomputed threshold. Max wind `vmax_traj` in knots (inferred from internal consistency); min pressure `pmin_traj` in hPa. Limit: this file has no per-position wind/pressure — the animation draws the track and sequences cyclones by start date. Original source: SPEArTC archive (Diamond et al., 2012).",
       example:
-        "A system whose maximum observed wind reaches 120 knots (≈ 222 km/h) is classed “Very intense tropical cyclone”; a 70-knot fix along the same track is, at that moment, at the “Tropical cyclone” stage.",
-      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
+        "Season 1977/1978, cyclone TOM: 5–17 November 1977, peak stage “moderate tropical depression”, max wind 44.7 knots, min pressure 990 hPa.",
+      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
     },
   },
 };
