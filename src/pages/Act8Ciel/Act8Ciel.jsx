@@ -1,19 +1,30 @@
 // src/pages/Act8Ciel/Act8Ciel.jsx
 // ============================================================
-// Acte 08 — Le ciel : pluie & température (anomalies) + réseau météo.
-// Format DASHBOARD (ActBoard) : filtres GLOBAUX (mesure + sous-région +
-// territoire). Onglets ADAPTÉS à la mesure (bande d'anomalie pour
-// pluie/temp, total réseau pour météo). Ajouts storytelling : carte 3D +
-// course animée (météo). Tableau/guides retirés.
+// Acte « Lire le ciel » — 3ᵉ étape du parcours (JOURNEY), trois jeux
+// officiels du Challenge servis par cielApi :
+//   • Pluie        : GPCP v2.3 (NOAA, CC0) — mm, anomalie vs normale
+//     1991–2020 (standard OMM) ; totaux annuels sommés du mensuel.
+//   • Température  : NOAAGlobalTemp v6.0.0 (NOAA/NCEI, CC0) — °C à 2 m,
+//     anomalie vs normale 1971–2000, moyenne spatiale par pays.
+//   • Réseau météo : OMM/OSCAR (CC BY-SA 4.0) — stations opérationnelles
+//     cumulées (statuts « Silent »/« Unknown » exclus par le producteur).
+// Un sélecteur de MESURE pilote tout le board ; chaque mesure se lit
+// contre SA PROPRE référence — jamais contre celle d'une autre.
+//
+// Vues « maîtrise de la donnée » (jury) :
+//   • Les données : carte d'identité TRIPLE (sources, normales, licences,
+//     définition du cumul OSCAR) + exemple officiel (Wallis-et-Futuna).
+//   • Couverture  : matrice binaire territoires × années, ADAPTATIVE —
+//     elle suit la mesure choisie ; les vides montrés, jamais comblés.
 // ============================================================
 
 import React, {
+  lazy,
+  Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useState,
-  useCallback,
-  lazy,
-  Suspense,
 } from "react";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
@@ -21,12 +32,14 @@ import { fetchCiel } from "../../services/cielApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
+import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import EmissionsHeatmap from "../../components/EmissionsHeatmap/EmissionsHeatmap";
+import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import BarRace from "../../components/BarRace/BarRace";
+import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act8Ciel.scss";
 
@@ -43,12 +56,14 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v) =>
+const fmtVal = (v, kind) =>
   !Number.isFinite(v)
     ? "—"
-    : Math.abs(v) < 10
-      ? String(Math.round(v * 100) / 100).replace(".", ",")
-      : String(Math.round(v));
+    : kind === "count"
+      ? String(Math.round(v))
+      : Math.abs(v) < 10
+        ? String(Math.round(v * 100) / 100).replace(".", ",")
+        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -378,6 +393,9 @@ export default function Act8Ciel() {
     t,
   ]);
 
+  // Décimales par mesure : mm en entiers, °C à 2 décimales, stations en entiers.
+  const metricDecimals = metric === "temp" ? 2 : 0;
+
   const mapRange = useMemo(() => {
     const xs = M.series
       .flatMap((s) => s.values.map((p) => p.value))
@@ -399,44 +417,28 @@ export default function Act8Ciel() {
     return [
       {
         key: "med",
-        value: fmtVal(med),
+        value: fmtVal(med, M.kind),
         unit: M.unit,
         label: t("act8.board.kpi_med"),
         tone: "accent",
       },
       {
         key: "high",
-        value: fmtVal(high.value),
+        value: fmtVal(high.value, M.kind),
         unit: high.name,
         label: t("act8.board.kpi_high"),
         tone: "warm",
       },
       {
         key: "low",
-        value: fmtVal(low.value),
+        value: fmtVal(low.value, M.kind),
         unit: low.name,
         label: t("act8.board.kpi_low"),
         tone: "positive",
       },
     ];
-  }, [M.rank, M.unit, t]);
+  }, [M.rank, M.unit, M.kind, t]);
 
-  const divLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    below: M.below,
-    above: M.above,
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
-  const seqLabels = {
-    low: t("act6.heatmap_low"),
-    high: t("act6.heatmap_high"),
-    empty: t("act1.change.empty"),
-    mode_row: t("act6.heatmap_mode_row"),
-    mode_abs: t("act6.heatmap_mode_abs"),
-  };
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
   const retry = useCallback(() => {
@@ -498,6 +500,65 @@ export default function Act8Ciel() {
     </>
   );
 
+  // Carte d'identité TRIPLE (pluie + température + réseau) — 100 % i18n / fiches officielles.
+  const spotlightRows = [
+    { k: t("act8.spotlight.r1k"), v: t("act8.spotlight.r1v") },
+    { k: t("act8.spotlight.r2k"), v: t("act8.spotlight.r2v") },
+    { k: t("act8.spotlight.r3k"), v: t("act8.spotlight.r3v") },
+    { k: t("act8.spotlight.r4k"), v: t("act8.spotlight.r4v") },
+    { k: t("act8.spotlight.r5k"), v: t("act8.spotlight.r5v") },
+    { k: t("act8.spotlight.r6k"), v: t("act8.spotlight.r6v") },
+  ];
+  const spotlightNotes = [
+    t("act8.spotlight.n1"),
+    t("act8.spotlight.n2"),
+    t("act8.spotlight.n3"),
+    t("act8.spotlight.n4"),
+    t("act8.spotlight.n5"),
+  ];
+
+  const readChart = {
+    id: "read",
+    empty: false,
+    tab: t("act8.board.tab_read"),
+    title: t("act8.read_title"),
+    finding: t("act8.board.read_find"),
+    takeaway: t("act8.board.read_take"),
+    node: (
+      <DataSpotlight
+        rows={spotlightRows}
+        notes={spotlightNotes}
+        example={{
+          kicker: t("act8.spotlight.ex_kicker"),
+          text: t("act8.spotlight.ex_text"),
+        }}
+        link={{
+          href: "https://www.ncei.noaa.gov/products/climate-data-records/precipitation-gpcp-monthly",
+          label: t("act8.spotlight.link_label"),
+        }}
+      />
+    ),
+  };
+
+  const coverageChart = {
+    id: "coverage",
+    empty: M.series.length === 0,
+    tab: t("act8.board.tab_coverage"),
+    title: t("act8.coverage_title"),
+    finding: t("act8.board.coverage_find"),
+    takeaway: t("act8.board.coverage_take"),
+    node: (
+      <CoverageChart
+        series={M.series}
+        years={M.years}
+        labels={{
+          present: t("act1.coverage.present"),
+          absent: t("act1.coverage.absent"),
+        }}
+      />
+    ),
+  };
+
   // Onglet « tendance » : bande d'anomalie (pluie/temp) ou total réseau (météo).
   const trendChart =
     M.kind === "anom"
@@ -553,13 +614,16 @@ export default function Act8Ciel() {
           finding: t("act8.board.change_find"),
           takeaway: t("act8.board.change_take"),
           node: (
-            <DumbbellChart
-              rows={M.dumb}
-              yearA={M.A}
-              yearB={M.B}
-              unit={M.unit}
-              labels={cmpLabels}
-            />
+            <div className="act8b__scroll">
+              <DumbbellChart
+                rows={M.dumb}
+                yearA={M.A}
+                yearB={M.B}
+                unit={M.unit}
+                decimals={metricDecimals}
+                labels={cmpLabels}
+              />
+            </div>
           ),
         }
       : {
@@ -574,6 +638,7 @@ export default function Act8Ciel() {
               series={M.race}
               years={M.years}
               unit={M.unit}
+              decimals={0}
               tk={tk}
               labels={{
                 play: t("act1.race.play"),
@@ -588,6 +653,7 @@ export default function Act8Ciel() {
     status === "ready"
       ? [
           trendChart,
+          readChart,
           {
             id: "multiples",
             empty: M.series.length === 0,
@@ -615,13 +681,20 @@ export default function Act8Ciel() {
             finding: t("act8.board.heat_find"),
             takeaway: t("act8.board.heat_take"),
             node: (
-              <div className="act8b__fit">
-                <EmissionsHeatmap
+              <div className="act8b__scroll">
+                <ApexYearHeatmap
                   series={M.series}
                   years={M.years}
                   unit={M.unit}
                   scale={M.kind === "anom" ? "diverging" : "sequential"}
-                  labels={M.kind === "anom" ? divLabels : seqLabels}
+                  decimals={metricDecimals}
+                  labels={{
+                    below: M.below,
+                    above: M.above,
+                    mid: t("act8.board.map_mid"),
+                    low: t("act6.heatmap_low"),
+                    high: t("act6.heatmap_high"),
+                  }}
                 />
               </div>
             ),
@@ -660,6 +733,7 @@ export default function Act8Ciel() {
               </ErrorBoundary>
             ),
           },
+          coverageChart,
         ]
       : [];
 
@@ -675,7 +749,7 @@ export default function Act8Ciel() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
-      progress={{ index: 8, total: 11 }}
+      progress={{ index: 3, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act8.unavailable"),
@@ -695,7 +769,7 @@ export default function Act8Ciel() {
         kicker: t("act8.outro.kicker"),
         title: t("act8.outro.title"),
         text: t("act8.outro.text"),
-        primary: { to: "/economie", label: t("act8.outro.next") },
+        primary: { to: "/cyclones", label: t("act8.outro.next") },
         secondary: { to: "/", label: t("act8.outro.home") },
       }}
     />

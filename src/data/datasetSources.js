@@ -60,6 +60,87 @@ const SOURCES = {
     },
   },
 
+  rain: {
+    fr: {
+      provider: "NOAA — Global Precipitation Climatology Project (GPCP) v2.3, Monthly CDR · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset: "Anomalies des précipitations — jeu officiel du Challenge",
+      frequency: "Annuelle (totaux sommés du mensuel)",
+      updated: "2026-02-03",
+      license: "Creative Commons CC0",
+      method:
+        "Précipitations mensuelles GPCP v2.3 (grille 2,5° × 2,5°, NetCDF) téléchargées depuis les serveurs NOAA. Géométries des pays traversant la ligne de changement de date converties en longitude 0–360° (terra::geom()). Valeurs mensuelles sommées en totaux annuels par pays ; la moyenne de la période de référence 1991–2020 (standard OMM en vigueur) est calculée pour chaque pays, et l'anomalie = total annuel − moyenne de référence, en mm. L'erreur standard des précipitations mensuelles au sein de chaque année sert de métrique d'incertitude. Les cellules sont désagrégées spatialement pour mieux épouser les côtes, en supposant l'homogénéité au sein des cellules d'origine. De notre côté : reformatage uniquement.",
+      example:
+        "Wallis-et-Futuna : −20,5 en 1998 (année plus sèche que la référence 1991–2020) ; +15 en 2017 (plus humide).",
+      link: "https://www.ncei.noaa.gov/products/climate-data-records/precipitation-gpcp-monthly",
+    },
+    en: {
+      provider: "NOAA — Global Precipitation Climatology Project (GPCP) v2.3, Monthly CDR · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset: "Rainfall anomalies — official Challenge dataset",
+      frequency: "Annual (totals summed from monthly)",
+      updated: "2026-02-03",
+      license: "Creative Commons CC0",
+      method:
+        "GPCP v2.3 monthly precipitation (2.5° × 2.5° grid, NetCDF) downloaded from NOAA servers. Country geometries crossing the date line converted to 0–360° longitude (terra::geom()). Monthly values summed to annual totals per country; the 1991–2020 reference-period mean (current WMO standard) is computed for each country, and the anomaly = annual total − reference mean, in mm. The standard error of monthly precipitation within each year serves as the uncertainty metric. Cells are spatially disaggregated to better fit coastlines, assuming homogeneity within original cells. On our side: reformatting only.",
+      example:
+        "Wallis and Futuna: −20.5 in 1998 (a drier year than the 1991–2020 reference); +15 in 2017 (wetter).",
+      link: "https://www.ncei.noaa.gov/products/climate-data-records/precipitation-gpcp-monthly",
+    },
+  },
+
+  landTemp: {
+    fr: {
+      provider: "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset: "Anomalies des températures de surface (terrestre, 2 m) — jeu officiel du Challenge",
+      frequency: "Annuelle (agrégée du mensuel)",
+      updated: "2026-01-12",
+      license: "Creative Commons CC0",
+      method:
+        "Anomalies relatives à la normale climatologique 1971–2000 (NOAAGlobalTemp v6.0.0, résolution native 5° × 5°). L'indicateur mesure la température de surface terrestre à 2 m au-dessus du sol. Géométries converties en longitude 0–360° (convention NetCDF, ligne de changement de date) ; raster grossier désagrégé spatialement pour s'aligner aux frontières des pays et aux côtes — sans augmenter la résolution intrinsèque (homogénéité thermique supposée dans chaque cellule d'origine). Seules les cellules terrestres intersectant les polygones de pays sont conservées. Anomalies mensuelles extraites en moyennes spatiales par pays puis agrégées en moyennes annuelles ; l'erreur type est la métrique d'incertitude. Les périodes anciennes (XIXᵉ siècle) reposent sur une reconstruction statistique à incertitude plus élevée. De notre côté : reformatage uniquement.",
+      example:
+        "Tokelau : −0,94 °C en 1890 (surface plus fraîche que la normale 1971–2000) ; +0,83 °C en 2024 (plus chaude que la normale).",
+      link: "https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp",
+    },
+    en: {
+      provider: "NOAA / NCEI — NOAAGlobalTemp v6.0.0 · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset: "Surface temperature anomalies (land, 2 m) — official Challenge dataset",
+      frequency: "Annual (aggregated from monthly)",
+      updated: "2026-01-12",
+      license: "Creative Commons CC0",
+      method:
+        "Anomalies relative to the 1971–2000 climatological normal (NOAAGlobalTemp v6.0.0, native 5° × 5° resolution). The indicator measures land surface temperature at 2 m above the surface. Geometries converted to 0–360° longitude (NetCDF convention, date line); the coarse raster is spatially disaggregated to align with country borders and coastlines — without increasing intrinsic resolution (thermal homogeneity assumed within original cells). Only land cells intersecting country polygons are kept. Monthly anomalies extracted as per-country spatial means then aggregated to annual means; a standard error is the uncertainty metric. Early periods (19th century) rest on statistical reconstruction with higher uncertainty. On our side: reformatting only.",
+      example:
+        "Tokelau: −0.94 °C in 1890 (land surface cooler than the 1971–2000 normal); +0.83 °C in 2024 (warmer than the normal).",
+      link: "https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp",
+    },
+  },
+
+  meteo: {
+    fr: {
+      provider: "OMM — base de données OSCAR · diffusion Pacific Data Hub (.Stat), SPC",
+      dataset: "Réseau de surveillance météorologique — jeu officiel du Challenge",
+      frequency: "Annuelle (cumul des stations opérationnelles)",
+      updated: "2025-09-09",
+      license: "CC BY-SA 4.0",
+      method:
+        "Seules les stations classées opérationnelles sont conservées ; les statuts « Silent » et « Unknown » sont exclus. Les années d'opération sont extraites des dates d'établissement et de fermeture ; lorsque la fermeture est manquante et la station évaluée opérationnelle, l'année courante sert de date de fin. Pour chaque station, l'indicateur augmente de 1 par année entre l'établissement et la fermeture (ou le présent). Calculé en décompte total et désagrégé par type de station, pour différencier les capacités de surveillance. Le filtrage conservateur peut sous-estimer le nombre total de stations mais assure la robustesse des données. De notre côté : reformatage uniquement.",
+      example:
+        "Samoa : 1 station météorologique en 1889 ; 4 stations en 2025.",
+      link: "https://oscar.wmo.int/surface/#/",
+    },
+    en: {
+      provider: "WMO — OSCAR database · disseminated by the Pacific Data Hub (.Stat), SPC",
+      dataset: "Weather monitoring network — official Challenge dataset",
+      frequency: "Annual (cumulative operational stations)",
+      updated: "2025-09-09",
+      license: "CC BY-SA 4.0",
+      method:
+        "Only stations classed as operational are kept; “Silent” and “Unknown” reporting statuses are excluded. Years of operation are extracted from establishment and closure dates; when closure is missing and the station is assessed operational, the current year serves as the end date. For each station, the indicator increases by 1 for each year between establishment and closure (or the present). Computed as a total count and disaggregated by station type, to differentiate monitoring capacities. The conservative filtering may understate the total number of stations but ensures data robustness. On our side: reformatting only.",
+      example:
+        "Samoa: 1 weather station in 1889; 4 stations in 2025.",
+      link: "https://oscar.wmo.int/surface/#/",
+    },
+  },
+
   seaLevel: {
     fr: {
       provider: "Service Copernicus sur le changement climatique (C3S)",
@@ -146,30 +227,28 @@ const SOURCES = {
 
   cyclones: {
     fr: {
-      provider: "Météo-France · Gouvernement de la Nouvelle-Calédonie (plateforme Géorep)",
-      dataset:
-        "Base de données cycloniques pour la Nouvelle-Calédonie — couche « Historique des trajectoires » (depuis 1840 ; phénomènes documentés ici 1977/78 → 2023/24)",
-      frequency: "Par saison cyclonique (jeu figé)",
-      updated: "2026-05-04",
-      license: "CC BY-NC-ND 4.0",
+      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), archive cyclonique officielle de l'OMM (World Data Center for Meteorology)",
+      dataset: "Trajectoires et positions des phénomènes tropicaux — zone d'alerte de la Nouvelle-Calédonie (jeu additionnel ouvert)",
+      frequency: "Par phénomène (fixes tri-horaires à 6 h) · saisons 1977/1978 → aujourd'hui",
+      updated: "",
+      license: "Domaine public — données du gouvernement des États-Unis, sans restriction d'usage (conforme à la définition des données ouvertes de l'art. 2 du règlement)",
       method:
-        "FICHIER STATIQUE TÉLÉCHARGÉ (GeoJSON), intégré tel quel — aucun appel API en direct. Chaque trajectoire est une ligne (LineString ou MultiLineString lorsqu'elle franchit l'antiméridien ; les segments sont conservés séparés). Le stade affiché vient du libellé officiel `type_max` (dépression tropicale faible/modérée/forte → cyclone tropical/intense/très intense), et non d'un seuil recalculé. Vent max `vmax_traj` en nœuds (déduit de la cohérence interne) ; pression min `pmin_traj` en hPa. Limite : ce fichier ne contient pas le vent/la pression position par position — l'animation trace la trajectoire et séquence les cyclones par date de début. Source d'origine : base SPEArTC (Diamond et al., 2012).",
+        "Archive mondiale IBTrACS, qui intègre pour le Pacifique Sud la base SPEArTC (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32 : 2240–2250, DOI 10.1002/joc.2412) — la même généalogie que la base cyclonique de Météo-France Nouvelle-Calédonie. Notre périmètre reprend exactement celui de l'acte d'origine : phénomènes dont au moins un fix traverse la zone d'alerte [25°S ; 13°S] × [158°E ; 172°E] (trajectoire complète conservée), saisons ≥ 1977/1978 — seuil justifié par le satellite Himawari-1 (lancé le 14/07/1977), première couverture spatiale tri-horaire du Pacifique sud-ouest. Vent : WMO_WIND uniquement (vent moyen 10 min du RSMC responsable) ; valeur absente → absente, jamais estimée. Pression : WMO_PRES. Seuls les tracés « main » sont conservés (branches « spur » exclues). Transformation assumée par nous : IBTrACS ne fournit pas de libellés de stade — ils sont dérivés du vent 10 min selon le barème officiel de la zone (< 34 kt dépression tropicale faible · 34–47 modérée · 48–63 forte · 64–89 cyclone tropical · 90–115 intense · ≥ 116 très intense). Ce reclassement est la seule différence de méthode avec la base Météo-France NC (CC BY-NC-ND), écartée pour conformité à l'exigence de données ouvertes du concours.",
       example:
-        "Saison 1977/1978, cyclone TOM : du 5 au 17 novembre 1977, stade max « dépression tropicale modérée », vent max 44,7 nœuds, pression min 990 hPa.",
-      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+        "Un phénomène dont le vent maximal observé atteint 120 nœuds (≈ 222 km/h) est classé « Cyclone tropical très intense » ; un fix à 70 nœuds le long de la même trajectoire est, lui, au stade « Cyclone tropical » à cet instant.",
+      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
     },
     en: {
-      provider: "Météo-France · Government of New Caledonia (Géorep platform)",
-      dataset:
-        "Tropical-cyclone database for New Caledonia — “Track history” layer (since 1840; events documented here 1977/78 → 2023/24)",
-      frequency: "Per cyclone season (static dataset)",
-      updated: "2026-05-04",
-      license: "CC BY-NC-ND 4.0",
+      provider: "NOAA / NCEI — IBTrACS v04r01 (International Best Track Archive for Climate Stewardship), the WMO official tropical-cyclone archive (World Data Center for Meteorology)",
+      dataset: "Tracks and positions of tropical systems — New Caledonia alert zone (open additional dataset)",
+      frequency: "Per system (3-to-6-hourly fixes) · seasons 1977/1978 → present",
+      updated: "",
+      license: "Public domain — U.S. Government data, no usage restriction (meets the open-data definition of art. 2 of the contest rules)",
       method:
-        "STATIC DOWNLOADED FILE (GeoJSON), used as-is — no live API call. Each track is a line (LineString, or MultiLineString when it crosses the antimeridian; segments are kept separate). The stage shown comes from the official `type_max` label (weak/moderate/severe tropical depression → tropical cyclone/intense/very intense), not from a recomputed threshold. Max wind `vmax_traj` in knots (inferred from internal consistency); min pressure `pmin_traj` in hPa. Limit: this file has no per-position wind/pressure — the animation draws the track and sequences cyclones by start date. Original source: SPEArTC archive (Diamond et al., 2012).",
+        "The global IBTrACS archive, which for the South Pacific integrates the SPEArTC database (Diamond, Lorrey, Knapp & Levinson, 2012, Int. J. Climatol. 32: 2240–2250, DOI 10.1002/joc.2412) — the same lineage as Météo-France New Caledonia's cyclone database. Our scope reproduces the original act exactly: systems with at least one fix crossing the alert zone [25°S; 13°S] × [158°E; 172°E] (full track kept), seasons ≥ 1977/1978 — a threshold justified by the Himawari-1 satellite (launched 14 July 1977), the first three-hourly space coverage of the southwest Pacific. Wind: WMO_WIND only (10-min mean wind from the responsible RSMC); missing value → missing, never estimated. Pressure: WMO_PRES. Only “main” tracks are kept (“spur” branches excluded). A transformation we own: IBTrACS provides no stage labels — they are derived from the 10-min wind using the official scale in force in the area (< 34 kt weak tropical depression · 34–47 moderate · 48–63 severe · 64–89 tropical cyclone · 90–115 intense · ≥ 116 very intense). This reclassification is the only methodological difference from the Météo-France NC base (CC BY-NC-ND), set aside to comply with the contest's open-data requirement.",
       example:
-        "Season 1977/1978, cyclone TOM: 5–17 November 1977, peak stage “moderate tropical depression”, max wind 44.7 knots, min pressure 990 hPa.",
-      link: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
+        "A system whose maximum observed wind reaches 120 knots (≈ 222 km/h) is classed “Very intense tropical cyclone”; a 70-knot fix along the same track is, at that moment, at the “Tropical cyclone” stage.",
+      link: "https://www.ncei.noaa.gov/products/international-best-track-archive",
     },
   },
 };

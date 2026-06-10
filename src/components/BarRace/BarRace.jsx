@@ -34,7 +34,7 @@ function alive(chart) {
   return chart && !chart.isDisposed();
 }
 
-export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = false, loop = true, tick = 900 }) {
+export default function BarRace({ series = [], years = [], unit = "", tk = {}, labels = {}, autoplay = false, loop = true, tick = 900, decimals = 1 }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
   const rafRef = useRef(0);
@@ -114,7 +114,7 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
             fontFamily: MONO,
             fontSize: 12,
             color: tk.textSoft || "#ccd5ee",
-            formatter: (p) => ` ${Number(p.value).toFixed(1)} ${unit}`,
+            formatter: (p) => ` ${Number(p.value).toFixed(decimals)} ${unit}`,
           },
         },
       ],
@@ -178,7 +178,7 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
       if (alive(chart)) chart.dispose();
       chartRef.current = null;
     };
-  }, [series, years, unit, tk, loop, tick]);
+  }, [series, years, unit, tk, loop, tick, decimals]);
 
   const atEnd = idx >= years.length - 1;
 
