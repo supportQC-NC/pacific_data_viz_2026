@@ -1,97 +1,166 @@
 // src/components/HomeIntro/HomeIntro.scss
 // ============================================================
-// Manifeste éditorial (avant les actes). Tout en tokens (light/dark).
+// Manifeste « LE PARTI PRIS » — composition magazine.
+// Colonne GAUCHE : kicker + grand titre + corps. Colonne DROITE : visuel
+// Pacifique PLEINE HAUTEUR, fondu dans le fond (bords gauche/bas dégradés,
+// plus de look « carte »), parallaxe via --py. Piliers pleine largeur dessous.
+// Tokens uniquement (light/dark auto), responsive, zéro inline.
 // ============================================================
 
 .homeintro {
-  position: relative;
-  padding: clamp(4rem, 9vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
-  border-bottom: var(--border-hair) solid var(--c-line);
-  animation: homeintro-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  padding-block: var(--sp-24) var(--sp-16);
 }
 
-.homeintro__inner {
-  max-width: 1100px;
+/* Rangée principale : texte (gauche) + visuel pleine hauteur (droite) */
+.homeintro__split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(var(--sp-8), 4vw, var(--sp-12));
+  margin-bottom: var(--sp-16);
+}
+
+.homeintro__col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .homeintro__kicker {
-  color: var(--c-accent);
-  margin: 0 0 var(--sp-4);
-  
+  margin-bottom: var(--sp-4);
 }
 
 .homeintro__lead {
-  font-family: var(--font-display);
-  font-weight: var(--fw-semi);
-  font-size: clamp(1.7rem, 4.2vw, 3rem);
- 
-  line-height: 1.12;
-  letter-spacing: -0.01em;
-  color: var(--c-text);
-  max-width: 40ch;
+  max-width: 22ch;
   margin: 0 0 var(--sp-8);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.6vw, 2.7rem);
+  font-weight: var(--fw-reg);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
 }
 
 .homeintro__body {
-  max-width: 62ch;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--sp-6);
+  max-width: 56ch;
 
   p {
     margin: 0;
-    font-size: var(--fs-md, 1.12rem);
-    line-height: 1.65;
+    font-size: var(--fs-md);
+    line-height: 1.6;
     color: var(--c-text-soft);
   }
 }
 
-// Triade Mesurer / Comprendre / Agir
+/* Visuel pleine hauteur, fondu dans le fond (pas de bordure « carte ») */
+.homeintro__media {
+  position: relative;
+  margin: 0;
+  min-height: 360px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--c-surface), var(--c-bg-2));
+  box-shadow: 0 30px 80px -50px rgba(0, 0, 0, 0.85);
+
+  // Dégradés de bord : l'image se fond dans le fond (gauche + bas).
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--c-bg) 55%, transparent),
+        transparent 28%
+      ),
+      linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--c-bg) 55%, transparent),
+        transparent 42%
+      );
+  }
+}
+
+.homeintro__media-inner {
+  position: absolute;
+  inset: -16% 0;
+  background-image: url("/pacificIntro.jpg");
+  background-size: cover;
+  background-position: center;
+  transform: translateY(var(--py, 0px));
+  will-change: transform;
+}
+
+@media (min-width: 900px) {
+  .homeintro__split {
+    grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr);
+    align-items: stretch;
+    gap: clamp(var(--sp-8), 5vw, var(--sp-16));
+  }
+  // Le visuel épouse la hauteur de la colonne texte.
+  .homeintro__media {
+    min-height: 100%;
+  }
+}
+
+/* Trois piliers : Mesurer · Comprendre · Agir */
 .homeintro__pillars {
   list-style: none;
-  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-8);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(var(--sp-6), 3vw, var(--sp-12));
 }
 
 .homeintro__pillar {
   padding-top: var(--sp-4);
-  border-top: 2px solid color-mix(in srgb, var(--c-accent) 55%, transparent);
+  border-top: var(--border-hair) solid var(--c-line-strong);
 }
 
 .homeintro__pillar-num {
+  display: block;
+  margin-bottom: var(--sp-3);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--ls-wide);
   color: var(--c-accent);
 }
 
 .homeintro__pillar-title {
+  margin: 0 0 var(--sp-2);
   font-family: var(--font-display);
+  font-size: var(--fs-md);
   font-weight: var(--fw-semi);
-  font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+  line-height: var(--lh-tight);
   color: var(--c-text);
-  margin: var(--sp-2) 0 var(--sp-2);
 }
 
 .homeintro__pillar-text {
-  margin: 0;
-  font-size: var(--fs-sm, 0.98rem);
-  line-height: 1.55;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
   color: var(--c-text-soft);
 }
 
-@keyframes homeintro-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: none; }
-}
-
+/* ---------- Responsive ---------- */
 @media (max-width: 760px) {
-  .homeintro__pillars { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .homeintro__pillars {
+    grid-template-columns: 1fr;
+    gap: var(--sp-8);
+  }
+  .homeintro__media {
+    min-height: 240px;
+  }
 }
 
+/* ---------- Accessibilité ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .homeintro { animation: none; }
+  .homeintro__media-inner {
+    transform: none;
+    will-change: auto;
+  }
 }
