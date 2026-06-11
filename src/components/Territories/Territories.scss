@@ -21,7 +21,8 @@
   }
 
   &__lead {
-    max-width: var(--maxw-text);
+   
+    max-width: 100%;
     margin-top: var(--sp-3);
     color: var(--c-text-soft);
     font-size: var(--fs-md);
