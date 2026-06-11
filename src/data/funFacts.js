@@ -4,8 +4,8 @@
 // uniforme { byArea[geo] = [{year,value}], years, firstYear, lastYear }),
 // on dérive des FAITS RÉELS — aucun chiffre inventé.
 //   • records live : plus haut / plus bas / plus forte évolution /
-//     × la médiane du Pacifique / sous-région la plus élevée ;
-//   • quelques cadrages « prédéfinis » remplis avec les vraies valeurs.
+//     plus forte baisse / × la médiane du Pacifique / médiane du Pacifique /
+//     sous-région la plus élevée / sous-région la plus basse ;
 // Chaque fait porte un `format` (map | spark | compare | kpi) choisi selon
 // la nature de la donnée, et des `tokens` que le composant injecte dans une
 // phrase-template i18n (t() ne fait pas d'interpolation).
@@ -23,11 +23,14 @@ const REGION_OF = {};
 Object.entries(REGIONS).forEach(([r, arr]) => arr.forEach((g) => { REGION_OF[g] = r; }));
 
 // Jeux exploités + métadonnées d'affichage (unité, polarité, accent, format).
+// Unités vérifiées ; on n'ajoute que des jeux dont l'unité/polarité est sûre.
 export const FF_DATASETS = {
   emissions: { decimals: 1, unit: "t CO₂e/hab.", polarity: "high_bad", accent: "warm" },
-  seaLevel: { decimals: 0, unit: "mm", polarity: "high_bad", accent: "accent" },
+  seaLevel: { decimals: 0, unit: "mm", polarity: "high_bad", accent: "accent", noMedian: true },
   sst: { decimals: 2, unit: "°C", polarity: "high_bad", accent: "negative" },
   renewables: { decimals: 0, unit: "%", polarity: "high_good", accent: "positive" },
+  water: { decimals: 0, unit: "%", polarity: "high_good", accent: "accent" },
+  cropYield: { decimals: 0, unit: "kg/ha", polarity: "high_good", accent: "positive" },
   population: { decimals: 0, unit: "", polarity: "neutral", accent: "accentDeep", compact: true },
   disastersAffected: { decimals: 0, unit: "", polarity: "high_bad", accent: "warm", compact: true },
   landCover: { decimals: 0, unit: "", polarity: "neutral", accent: "secondary" },
@@ -84,28 +87,48 @@ function factsForDataset(dsId, data) {
   facts.push({ id: `${dsId}-high`, dsId, kind: "record_high", format: "map", accent: cfg.accent, polarity: cfg.polarity, area: top.geo, value: top.last.value, year: top.last.year });
   facts.push({ id: `${dsId}-low`, dsId, kind: "record_low", format: "map", accent: cfg.accent, polarity: cfg.polarity, area: low.geo, value: low.last.value, year: low.last.year });
 
-  // Plus forte évolution (premier → dernier) → sparkline.
+  // Évolutions (premier → dernier).
   const withDelta = pts.filter((p) => p.first && p.first.year !== p.last.year);
+
+  // Plus forte HAUSSE → sparkline.
   if (withDelta.length) {
     const mover = withDelta.reduce((a, b) => (b.last.value - b.first.value > a.last.value - a.first.value ? b : a));
-    if (mover.last.value !== mover.first.value) {
+    if (mover.last.value > mover.first.value) {
       facts.push({
         id: `${dsId}-change`, dsId, kind: "biggest_change", format: "spark", accent: cfg.accent, polarity: cfg.polarity,
         area: mover.geo, v0: mover.first.value, v1: mover.last.value, year0: mover.first.year, year1: mover.last.year,
         series: mover.serie.filter((d) => Number.isFinite(d.value)),
       });
     }
+
+    // Plus forte BAISSE → sparkline (uniquement si une vraie baisse existe).
+    const dropper = withDelta.reduce((a, b) => (b.last.value - b.first.value < a.last.value - a.first.value ? b : a));
+    if (dropper.last.value < dropper.first.value) {
+      facts.push({
+        id: `${dsId}-drop`, dsId, kind: "biggest_drop", format: "spark", accent: cfg.accent, polarity: cfg.polarity,
+        area: dropper.geo, v0: dropper.first.value, v1: dropper.last.value, year0: dropper.first.year, year1: dropper.last.year,
+        series: dropper.serie.filter((d) => Number.isFinite(d.value)),
+      });
+    }
   }
 
   // × la médiane du Pacifique (sur le territoire de tête) → barre de comparaison.
-  if (med > 0 && top.last.value > med * 1.5) {
+  if (!cfg.noMedian && med > 0 && top.last.value > med * 1.5) {
     facts.push({
       id: `${dsId}-median`, dsId, kind: "median_multiple", format: "compare", accent: cfg.accent, polarity: cfg.polarity,
       area: top.geo, value: top.last.value, ref: med, mult: top.last.value / med, year: top.last.year,
     });
   }
 
-  // Sous-région la plus élevée (moyenne) → KPI.
+  // Médiane du Pacifique (repère global) → KPI.
+  if (!cfg.noMedian && Number.isFinite(med)) {
+    facts.push({
+      id: `${dsId}-pacmed`, dsId, kind: "pacific_median", format: "kpi", accent: cfg.accent, polarity: cfg.polarity,
+      region: "pacific", value: med, year: data.lastYear,
+    });
+  }
+
+  // Sous-régions : moyenne par sous-région.
   const byRegion = {};
   pts.forEach((p) => {
     const r = REGION_OF[p.geo];
@@ -113,9 +136,15 @@ function factsForDataset(dsId, data) {
     (byRegion[r] = byRegion[r] || []).push(p.last.value);
   });
   const regionAvgs = Object.entries(byRegion).map(([r, arr]) => ({ region: r, avg: arr.reduce((s, v) => s + v, 0) / arr.length }));
-  if (regionAvgs.length >= 2) {
+  if (!cfg.noMedian && regionAvgs.length >= 2) {
+    // La plus élevée → KPI.
     const topR = regionAvgs.reduce((a, b) => (b.avg > a.avg ? b : a));
     facts.push({ id: `${dsId}-region`, dsId, kind: "region_top", format: "kpi", accent: cfg.accent, polarity: cfg.polarity, region: topR.region, value: topR.avg, year: data.lastYear });
+    // La plus basse → KPI.
+    const lowR = regionAvgs.reduce((a, b) => (b.avg < a.avg ? b : a));
+    if (lowR.region !== topR.region) {
+      facts.push({ id: `${dsId}-region-low`, dsId, kind: "region_low", format: "kpi", accent: cfg.accent, polarity: cfg.polarity, region: lowR.region, value: lowR.avg, year: data.lastYear });
+    }
   }
 
   return facts;

@@ -141,7 +141,7 @@
       "loading": "Loading key figures…",
       "source": "Source: Pacific Data Hub · Pacific Community (SPC)",
       "territories_label": "Pacific territories tracked",
-      "sea_label": "average sea-level rise",
+      "sea_label": "of peak sea-level rise (most exposed territory)",
       "renew_label": "renewable energy on average",
       "sst_label": "sea-surface temperature anomaly"
     },
@@ -2489,7 +2489,8 @@
     "region": {
       "melanesia": "Melanesia",
       "polynesia": "Polynesia",
-      "micronesia": "Micronesia"
+      "micronesia": "Micronesia",
+      "pacific": "the Pacific"
     },
     "ds": {
       "emissions": "CO₂ emissions per capita",
@@ -2498,14 +2499,19 @@
       "renewables": "the renewable energy share",
       "population": "population",
       "disastersAffected": "people affected by disasters",
-      "landCover": "the land-cover index"
+      "landCover": "the land-cover index",
+      "water": "safe drinking-water access",
+      "cropYield": "crop yield"
     },
     "tpl": {
       "record_high": "{area} holds the Pacific record for {metric}: {value} ({year}).",
       "record_low": "{area} has the Pacific's lowest for {metric}: {value} ({year}).",
       "biggest_change": "For {metric}, {area} went from {v0} to {v1} between {year0} and {year1}.",
       "median_multiple": "For {metric}, {area} is {mult} the Pacific median.",
-      "region_top": "For {metric}, {area} is the highest sub-region ({value} on average)."
+      "region_top": "For {metric}, {area} is the highest sub-region ({value} on average).",
+      "biggest_drop": "For {metric}, {area} records the Pacific's steepest drop: from {v0} to {v1} between {year0} and {year1}.",
+      "pacific_median": "For {metric}, the Pacific median stands at {value} ({year}).",
+      "region_low": "For {metric}, {area} is the lowest sub-region ({value} on average)."
     }
   },
   "act12": {

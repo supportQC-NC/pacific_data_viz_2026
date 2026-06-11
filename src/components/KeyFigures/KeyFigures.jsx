@@ -4,6 +4,10 @@
 // le « chiffre-choc » qui ancre l'enjeu. Compteur animé au défilement, source
 // visible. Aucune valeur inventée : tout est calculé depuis les données live ;
 // une figure dont la donnée manque n'est pas affichée.
+//
+// MAJ : le niveau de la mer est une ANOMALIE (certains territoires montent,
+// d'autres descendent) → la moyenne s'annule (« +0 mm »). On affiche désormais
+// la HAUSSE MAXIMALE (territoire le plus exposé), un chiffre réel et parlant.
 // Tokens only, FR/EN, zéro inline.
 // ============================================================
 
@@ -30,14 +34,19 @@ const avgLast = (data) => {
   });
   return xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : null;
 };
-const avgRise = (data) => {
-  const xs = [];
+// Hausse MAXIMALE sur la période (territoire le plus exposé) — la moyenne
+// d'une anomalie s'annule, l'extrême reste signifiant.
+const maxRise = (data) => {
+  let m = null;
   Object.keys(data.byArea).forEach((g) => {
     if (!isPict(g)) return;
     const fl = firstLast(data.byArea[g]);
-    if (fl && fl.first.year !== fl.last.year) xs.push(fl.last.value - fl.first.value);
+    if (fl && fl.first.year !== fl.last.year) {
+      const r = fl.last.value - fl.first.value;
+      if (m == null || r > m) m = r;
+    }
   });
-  return xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : null;
+  return m;
 };
 const countAreas = (data) => Object.keys(data.byArea).filter(isPict).length;
 
@@ -64,7 +73,9 @@ function CountUp({ target, decimals, prefix, suffix, run, lang }) {
   }).format(val);
   return (
     <span className="keyfig__value">
-      {prefix}{txt}{suffix ? <span className="keyfig__unit"> {suffix}</span> : null}
+      {prefix}
+      {txt}
+      {suffix ? <span className="keyfig__unit"> {suffix}</span> : null}
     </span>
   );
 }
@@ -87,8 +98,16 @@ export default function KeyFigures() {
     if (sea.status === "succeeded" && sea.data) {
       const n = countAreas(sea.data);
       if (n) out.push({ key: "territories", target: n, decimals: 0 });
-      const rise = avgRise(sea.data);
-      if (rise != null) out.push({ key: "sea", target: Math.round(rise), decimals: 0, prefix: rise >= 0 ? "+" : "", suffix: "mm" });
+      const rise = maxRise(sea.data);
+      if (rise != null) {
+        out.push({
+          key: "sea",
+          target: Math.round(rise),
+          decimals: 0,
+          prefix: rise >= 0 ? "+" : "",
+          suffix: "mm",
+        });
+      }
     }
     if (renew.status === "succeeded" && renew.data) {
       const r = avgLast(renew.data);

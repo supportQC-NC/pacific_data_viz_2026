@@ -1,21 +1,17 @@
 // src/components/KeyFigures/KeyFigures.scss
 // ============================================================
-// Bandeau de chiffres-clés réels. Tokens (light/dark). Reveal via data-inview.
+// Bandeau de chiffres-clés sous le hero. Design « grand livre » éditorial :
+// chaque chiffre coiffé d'un filet + d'une amorce d'accent, grand nombre serif
+// coloré, unité mono, libellé sobre. Cohérent avec les piliers du manifeste.
+// Tokens uniquement (light/dark auto), responsive, zéro inline.
 // ============================================================
 
 .keyfigs {
-  position: relative;
-  padding: clamp(2.5rem, 5vw, 4rem) 0;
-  border-bottom: var(--border-hair) solid var(--c-line);
-}
-
-.keyfigs__inner {
-  max-width: 1100px;
+  padding-block: var(--sp-16);
 }
 
 .keyfigs__kicker {
-  color: var(--c-accent);
-  margin: 0 0 var(--sp-6);
+  margin-bottom: var(--sp-8);
 }
 
 .keyfigs__grid {
@@ -23,69 +19,99 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-8);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--sp-8) var(--sp-6);
 }
 
+/* Chaque chiffre : filet en tête + amorce d'accent (look « ledger »). */
 .keyfig {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  gap: var(--sp-3);
+  padding-top: var(--sp-4);
+  border-top: var(--border-hair) solid var(--c-line-strong);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 34px;
+    height: 2px;
+    background: var(--c-accent);
+  }
 }
 
+.keyfig--empty {
+  border-top: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+
+  &::before {
+    display: none;
+  }
+}
+
+.keyfig__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.4vw, 3.4rem);
+  font-weight: var(--fw-semi);
+  line-height: 1;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-accent);
+}
+
+.keyfig__unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-reg);
+  letter-spacing: 0.02em;
+  color: var(--c-text-mute);
+}
+
+.keyfig__label {
+  max-width: 26ch;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  color: var(--c-text-soft);
+}
+
+.keyfigs__source {
+  margin-top: var(--sp-12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.02em;
+  color: var(--c-text-mute);
+}
+
+/* Légère apparition au défilement (piloté par data-inview). */
+.keyfig {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s var(--ease-out),
+    transform 0.6s var(--ease-out);
+}
 .keyfigs[data-inview="true"] .keyfig {
   opacity: 1;
   transform: none;
 }
 
-.keyfig:nth-child(2) { transition-delay: 0.08s; }
-.keyfig:nth-child(3) { transition-delay: 0.16s; }
-.keyfig:nth-child(4) { transition-delay: 0.24s; }
-
-.keyfig__value {
-  font-family: var(--font-display);
-  font-weight: var(--fw-bold, 700);
-  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
-  line-height: 1;
-  color: var(--c-accent);
-  letter-spacing: -0.02em;
-}
-
-.keyfig__unit {
-  font-size: 0.5em;
-  font-weight: var(--fw-semi);
-  color: var(--c-text-soft);
-}
-
-.keyfig__label {
-  font-size: var(--fs-sm, 0.95rem);
-  line-height: 1.4;
-  color: var(--c-text-soft);
-  max-width: 22ch;
-}
-
-.keyfig--empty {
-  grid-column: 1 / -1;
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm, 0.95rem);
-  color: var(--c-text-mute);
-}
-
-.keyfigs__source {
-  margin: var(--sp-6) 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-  color: var(--c-text-mute);
-}
-
-@media (max-width: 860px) {
-  .keyfigs__grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-6); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .keyfig { opacity: 1; transform: none; transition: none; }
+  .keyfig {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .keyfigs__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

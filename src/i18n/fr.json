@@ -141,7 +141,7 @@
       "loading": "Chargement des chiffres-clés…",
       "source": "Source : Pacific Data Hub · Communauté du Pacifique (SPC)",
       "territories_label": "territoires du Pacifique suivis",
-      "sea_label": "de montée moyenne du niveau de la mer",
+      "sea_label": "de hausse maximale du niveau de la mer (territoire le plus exposé)",
       "renew_label": "d’énergie renouvelable en moyenne",
       "sst_label": "d’anomalie de température de surface"
     },
@@ -2489,7 +2489,8 @@
     "region": {
       "melanesia": "Mélanésie",
       "polynesia": "Polynésie",
-      "micronesia": "Micronésie"
+      "micronesia": "Micronésie",
+      "pacific": "le Pacifique"
     },
     "ds": {
       "emissions": "les émissions de CO₂ par habitant",
@@ -2498,14 +2499,19 @@
       "renewables": "la part d'énergie renouvelable",
       "population": "la population",
       "disastersAffected": "les personnes touchées par des catastrophes",
-      "landCover": "l'indice de couverture des sols"
+      "landCover": "l'indice de couverture des sols",
+      "water": "l'accès à l'eau potable",
+      "cropYield": "le rendement des cultures"
     },
     "tpl": {
       "record_high": "{area} détient le record du Pacifique pour {metric} : {value} ({year}).",
       "record_low": "{area} affiche le plus bas du Pacifique pour {metric} : {value} ({year}).",
       "biggest_change": "Pour {metric}, {area} est passé de {v0} à {v1} entre {year0} et {year1}.",
       "median_multiple": "Pour {metric}, {area} pèse {mult} la médiane du Pacifique.",
-      "region_top": "Pour {metric}, {area} est la sous-région la plus élevée ({value} en moyenne)."
+      "region_top": "Pour {metric}, {area} est la sous-région la plus élevée ({value} en moyenne).",
+      "biggest_drop": "Pour {metric}, {area} enregistre la plus forte baisse du Pacifique : de {v0} à {v1} entre {year0} et {year1}.",
+      "pacific_median": "Pour {metric}, la médiane du Pacifique s'établit à {value} ({year}).",
+      "region_low": "Pour {metric}, {area} est la sous-région la plus basse ({value} en moyenne)."
     }
   },
   "act12": {
