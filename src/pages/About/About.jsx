@@ -8,6 +8,11 @@
 // Données : datasetCatalog.js · liens concours/sources ci-dessous.
 // Photo auteur : src/me.jpg · visuel récit : src/popTare.jpg.
 // i18n via t() — aucun texte en dur. Zéro style inline (tokens SCSS).
+//
+// MAJ : les cartes de la section 03 lisent désormais l'attribut `official`
+// du catalogue. Un jeu `official:false` (ex. cyclones) reçoit la classe
+// `is-unofficial` (teinte distincte via About.scss) + un badge i18n.
+// Icônes ajoutées pour les jeux population, fisheries et cyclones.
 // ============================================================
 
 import React from "react";
@@ -38,6 +43,8 @@ import {
   FiTruck,
   FiBarChart2,
   FiGitMerge,
+  FiUsers,
+  FiAnchor,
 } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
@@ -91,13 +98,16 @@ const TOPIC_ICONS = {
   rain: <FiCloudRain />,
   agriculture: <FiSun />,
   biodiversity: <FiFeather />,
+  fisheries: <FiAnchor />,
   water: <FiDroplet />,
   health: <FiHeart />,
   disasters: <FiAlertTriangle />,
+  population: <FiUsers />,
   tourism: <FiCompass />,
   energy: <FiZap />,
   envtaxes: <FiPercent />,
   meteo: <FiWind />,
+  cyclones: <FiWind />,
 };
 
 // Sommaire ancré (numéro + clé d'intitulé + ancre de section).
@@ -328,20 +338,33 @@ export default function About() {
           </a>
 
           <div className="about__grid">
-            {DATASET_CATALOG.map((d) => (
-              <Link className="about__card" key={d.id} to={`/data/${d.id}`}>
-                <span className="about__card-icon" aria-hidden="true">
-                  {TOPIC_ICONS[d.id]}
-                </span>
-                <h3 className="about__card-title">
-                  {pick(d.labelFr, d.labelEn)}
-                </h3>
-                <p className="about__card-desc">{pick(d.descFr, d.descEn)}</p>
-                <span className="about__card-cta">
-                  {t("about.data.card_cta")} <FiArrowUpRight aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
+            {DATASET_CATALOG.map((d) => {
+              const unofficial = d.official === false;
+              return (
+                <Link
+                  className={`about__card${unofficial ? " is-unofficial" : ""}`}
+                  key={d.id}
+                  to={`/data/${d.id}`}
+                >
+                  <span className="about__card-icon" aria-hidden="true">
+                    {TOPIC_ICONS[d.id]}
+                  </span>
+                  {unofficial ? (
+                    <span className="about__card-badge">
+                      {t("about.data.unofficial")}
+                    </span>
+                  ) : null}
+                  <h3 className="about__card-title">
+                    {pick(d.labelFr, d.labelEn)}
+                  </h3>
+                  <p className="about__card-desc">{pick(d.descFr, d.descEn)}</p>
+                  <span className="about__card-cta">
+                    {t("about.data.card_cta")}{" "}
+                    <FiArrowUpRight aria-hidden="true" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
 
           <div className="about__method">

@@ -2393,7 +2393,7 @@
     "deck_done": "End of the act",
     "deck_finish": "Finish the experience"
   },
-  "about": {
+"about": {
     "eyebrow": "About",
     "title": "Datamoana, and the hand behind the data",
     "lead": "An independent data-visualisation project built for the Pacific Dataviz Challenge 2026: making the Pacific's climate data legible, at human scale.",
@@ -2402,7 +2402,7 @@
       "eyebrow": "The author",
       "name": "Stoyann Velten",
       "role": "Developer & IT support — Nouméa, New Caledonia",
-      "body": "I live and work in Nouméa, New Caledonia, as a developer and IT support in one of the territory's large hardware groups. I built Datamoana on my own time: the Pacific is home, and these numbers are about our daily life — the sea eating at the coast, cyclones, water, the reefs. My goal: make them clear and tangible, without cheating the scales, so anyone can grasp at a glance what our islands are going through.",
+      "body": "I live and work in Nouméa, New Caledonia, as a developer and IT support technician for one of the territory's largest hardware and building-supplies groups. Datamoana is a personal project — one I designed and built on my own, outside of working hours.\n\nI took it on because the Pacific is home. The data we work with here is anything but abstract: it's the texture of daily life — the sea eating into our coastlines, the cyclones, the water we rely on, the state of the reefs. Yet it often stays scattered and technical, hard to reach for the very people it concerns most.\n\nWhat I set out to do with Datamoana is simple: to make it clear and tangible, without ever bending the scales or overstating the case, so that anyone can grasp at a glance what our islands are truly living through.",
       "note": "Solo project · React, ECharts & Mapbox GL · Pacific Data Hub (SPC) data"
     },
     "data": {
@@ -2420,7 +2420,8 @@
       "integrity": "Data transparency — All visualisations rely on real data fetched live from the Pacific Data Hub and official sources. When data is unavailable, the app shows “data unavailable” rather than estimated values: nothing is fabricated or hard-coded. The only documented exception — the coastline (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), a large geospatial dataset provided as a precomputed extract; its per-territory figures (retreat, growth, spread) are an approximate aggregation, obtained by attaching each coastline segment to the nearest territory. Territory coordinates are used only to place points on the map.",
       "coastline_dl": "Download the coastline dataset (GeoJSON)",
       "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0",
-      "card_cta": "Explore dataset"
+      "card_cta": "Explore dataset",
+      "unofficial": "Additional dataset · outside contest"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",

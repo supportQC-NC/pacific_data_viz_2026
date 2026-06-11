@@ -2393,7 +2393,7 @@
     "deck_done": "Fin de l'acte",
     "deck_finish": "Terminer l'expérience"
   },
-  "about": {
+"about": {
     "eyebrow": "À propos",
     "title": "Datamoana, et la main derrière les données",
     "lead": "Un projet de datavisualisation indépendant réalisé pour le Pacific Dataviz Challenge 2026 : rendre lisible, à hauteur humaine, ce que les données climatiques du Pacifique racontent.",
@@ -2402,7 +2402,7 @@
       "eyebrow": "L'auteur",
       "name": "Stoyann Velten",
       "role": "Développeur & support informatique — Nouméa, Nouvelle-Calédonie",
-      "body": "Je vis et travaille à Nouméa, en Nouvelle-Calédonie, comme développeur et support informatique dans un grand groupe de quincaillerie du territoire. Datamoana, je l'ai construit seul, sur mon temps : le Pacifique, c'est chez moi, et ces chiffres parlent de notre quotidien — la mer qui grignote les côtes, les cyclones, l'eau, les récifs. Mon but : les rendre clairs et sensibles, sans tricher avec les échelles, pour qu'on saisisse d'un coup d'œil ce que vivent nos îles.",
+      "body": "Je vis et travaille à Nouméa, en Nouvelle-Calédonie, où j'occupe un poste de développeur et de support informatique au sein d'un grand groupe de quincaillerie du territoire. Datamoana est un projet personnel, que j'ai conçu et développé seul, en dehors de mon temps de travail.\n\nSi je m'y suis attelé, c'est que le Pacifique est chez moi. Les données que l'on manipule ici n'ont rien d'abstrait : elles racontent notre quotidien — la mer qui grignote les côtes, les cyclones, la ressource en eau, l'état des récifs. Mais elles restent souvent dispersées, techniques, difficiles d'accès, loin de celles et ceux qu'elles concernent en premier lieu.\n\nMon ambition avec Datamoana est simple : les rendre claires et sensibles, sans jamais tricher avec les échelles ni forcer le trait, pour que chacun saisisse d'un coup d'œil ce que vivent réellement nos îles.",
       "note": "Projet solo · React, ECharts & Mapbox GL · données Pacific Data Hub (SPC)"
     },
     "data": {
@@ -2420,7 +2420,8 @@
       "integrity": "Transparence des données — Toutes les visualisations reposent sur des données réelles récupérées en direct auprès du Pacific Data Hub et de sources officielles. En cas d'indisponibilité, l'application affiche « données indisponibles » plutôt que des valeurs estimées : aucune donnée n'est inventée ni codée en dur. Seule exception documentée — le trait de côte (Digital Earth Pacific — Landsat Coastlines, CC BY-NC 4.0), jeu géospatial volumineux fourni en extrait précalculé ; ses chiffres par territoire (recul, avancée, dispersion) sont une agrégation approchée, obtenue en rattachant chaque segment de côte au territoire le plus proche. Les coordonnées des territoires servent uniquement à placer les points sur la carte.",
       "coastline_dl": "Télécharger le jeu de données du trait de côte (GeoJSON)",
       "coastline_dl_meta": "Digital Earth Pacific — Landsat Coastlines · CC BY-NC 4.0",
-      "card_cta": "Explorer le jeu"
+      "card_cta": "Explorer le jeu",
+      "unofficial": "Jeu additionnel · hors concours"
     },
     "challenge": {
       "title": "Pacific Dataviz Challenge 2026",

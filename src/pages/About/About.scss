@@ -185,7 +185,8 @@
   font-size: clamp(1.9rem, 3.4vw, 2.8rem);
   line-height: 1.08;
   color: var(--c-text);
-  max-width: 20ch;
+  max-width: 60ch;
+  margin-bottom: 15px;
 }
 
 /* ============================================================
@@ -246,10 +247,11 @@
 }
 .about__author-body {
   margin-top: var(--sp-6);
-  max-width: 58ch;
+  max-width: 80ch;
   font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--c-text-soft);
+  white-space: pre-line;
 }
 .about__author-note {
   display: block;
@@ -265,7 +267,7 @@
    02 — CONVICTION (récit + concepts)
    ============================================================ */
 .about__story-lead {
-  max-width: 66ch;
+  max-width: 95ch;
   font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--c-text-soft);
@@ -422,7 +424,7 @@
 }
 .about__concepts-lead {
   margin-top: var(--sp-2);
-  max-width: 66ch;
+  max-width: 96ch;
   color: var(--c-text-soft);
 }
 .about__concept-grid {
@@ -473,7 +475,7 @@
 }
 .about__story-close {
   margin-top: var(--sp-6);
-  max-width: 70ch;
+  max-width: 96ch;
   font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--c-text);
@@ -483,7 +485,7 @@
    03 — DONNÉES
    ============================================================ */
 .about__data-lead {
-  max-width: 66ch;
+  max-width: 96ch;
   font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--c-text-soft);
@@ -781,4 +783,56 @@
   .about__portrait:hover .about__portrait-img {
     transform: none;
   }
+}
+
+/* ============================================================
+   À COLLER À LA FIN DE src/pages/About/About.scss
+   (juste après les règles .about__card existantes).
+   Carte d'un jeu de données NON OFFICIEL (official:false dans
+   datasetCatalog.js — ex. cyclones). Teinte corail (--c-warm) pour
+   la distinguer des jeux officiels cyan. Light/dark gérés via tokens.
+   ============================================================ */
+
+/* Carte non officielle — bordure + fond légèrement teintés corail */
+.about__card.is-unofficial {
+  border-color: color-mix(in srgb, var(--c-warm) 42%, var(--c-line));
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--c-warm) 9%, var(--surface)) 0%,
+      var(--surface) 62%
+    );
+}
+.about__card.is-unofficial:hover {
+  border-color: var(--c-warm);
+}
+
+/* Pastille d'icône en corail plutôt qu'en cyan */
+.about__card.is-unofficial .about__card-icon {
+  color: var(--c-warm);
+  background: color-mix(in srgb, var(--c-warm) 14%, transparent);
+}
+
+/* CTA « Explorer le jeu » repris en corail */
+.about__card.is-unofficial .about__card-cta {
+  color: var(--c-warm);
+}
+
+/* Badge « jeu additionnel · hors concours » */
+.about__card-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: calc(-1 * var(--sp-1));
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-warm);
+  background: color-mix(in srgb, var(--c-warm) 12%, transparent);
+  border: var(--border-hair) solid
+    color-mix(in srgb, var(--c-warm) 34%, transparent);
 }
