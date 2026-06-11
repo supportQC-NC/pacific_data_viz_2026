@@ -470,12 +470,36 @@ export default function Act11Synthese() {
 
   // Récap des autres actes (énergie / fiscalité / tourisme) — indicateurs de
   // contexte chargés par syntheseApi (role:"context"). On retient le premier
-  // réellement disponible et on en fait un classement lisible.
+  // réellement disponible. CHAQUE candidat porte ses propres clés i18n
+  // (eyebrow / titre / texte / unité), de sorte que le titre et le texte
+  // décrivent toujours l'indicateur RÉELLEMENT affiché — fini les chiffres
+  // sans explication sous un titre incohérent.
   const contextRecap = useMemo(() => {
     const candidates = [
-      { key: "renew", labelKey: "act11.ctx_renew", unit: "%", better: "high" },
-      { key: "envtax", labelKey: "act11.ctx_envtax", unit: "% PIB", better: "high" },
-      { key: "tourism", labelKey: "act11.ctx_tourism", unit: "", better: "high" },
+      {
+        key: "renew",
+        unitKey: "act11.ctx_unit_pct",
+        eyebrowKey: "act11.story.ctx_renew_k",
+        titleKey: "act11.story.ctx_renew_t",
+        textKey: "act11.story.ctx_renew_x",
+        better: "high",
+      },
+      {
+        key: "envtax",
+        unitKey: "act11.ctx_unit_gdp",
+        eyebrowKey: "act11.story.ctx_envtax_k",
+        titleKey: "act11.story.ctx_envtax_t",
+        textKey: "act11.story.ctx_envtax_x",
+        better: "high",
+      },
+      {
+        key: "tourism",
+        unitKey: "act11.ctx_unit_arr",
+        eyebrowKey: "act11.story.ctx_tour_k",
+        titleKey: "act11.story.ctx_tour_t",
+        textKey: "act11.story.ctx_tour_x",
+        better: "high",
+      },
     ];
     for (const c of candidates) {
       const ind = data && data[c.key];
@@ -490,8 +514,7 @@ export default function Act11Synthese() {
         }))
         .sort((x, y) => y.value - x.value)
         .slice(0, 12);
-      if (rows.length >= 3)
-        return { key: c.key, labelKey: c.labelKey, unit: c.unit, better: c.better, rows };
+      if (rows.length >= 3) return { ...c, rows };
     }
     return null;
   }, [data, lang]);
@@ -548,13 +571,13 @@ export default function Act11Synthese() {
     if (contextRecap) {
       list.push({
         kind: "split",
-        eyebrow: t("act11.story.context_k"),
-        title: t("act11.story.context_title"),
-        text: t("act11.story.context_text"),
+        eyebrow: t(contextRecap.eyebrowKey),
+        title: t(contextRecap.titleKey),
+        text: t(contextRecap.textKey),
         visual: (
           <RankBars
             data={contextRecap.rows}
-            unit={contextRecap.unit}
+            unit={t(contextRecap.unitKey)}
             betterWhen={contextRecap.better}
           />
         ),

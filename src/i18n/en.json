@@ -2197,12 +2197,21 @@
       "limits_4": "The index does not measure adaptive capacity, funding or current policies — it describes exposure, not fate.",
       "context_k": "The levers",
       "context_title": "What vulnerability alone doesn't capture",
-      "context_text": "Vulnerability is only one side of the story. The earlier acts also showed levers: electricity decarbonising, taxation starting to price carbon, an economy seeking its balance. This ranking is a reminder that behind exposure there is also room to act — uneven, but real."
+      "context_text": "Vulnerability is only one side of the story. The earlier acts also showed levers: electricity decarbonising, taxation starting to price carbon, an economy seeking its balance. This ranking is a reminder that behind exposure there is also room to act — uneven, but real.",
+      "ctx_renew_k": "The levers · energy",
+      "ctx_renew_t": "Electricity that decarbonises",
+      "ctx_renew_x": "Vulnerability is only one side of the story. Here is the renewable share of final energy consumption (in %), territory by territory, at its last known value. The longer the bar, the more of the energy consumed comes from renewable sources: a lever of adaptation already at work, to uneven degrees.",
+      "ctx_envtax_k": "The levers · taxation",
+      "ctx_envtax_t": "Taxation starting to price carbon",
+      "ctx_envtax_x": "Vulnerability is only one side of the story. Here is the weight of environmental taxes (as % of GDP), territory by territory, at its last known value. Coverage is limited: only a few territories report — but where the lever exists, it can be measured.",
+      "ctx_tour_k": "The levers · exposed resource",
+      "ctx_tour_t": "Tourism, a wealth to protect",
+      "ctx_tour_x": "Vulnerability is only one side of the story. These figures are visitor arrivals (in counts, not %), territory by territory, at their last known value — for example ~928,000 arrivals for Fiji. An economic backbone of the islands, tourism is also exposed to damaged reefs and cyclones: a resource to manage as much as to defend."
     },
     "outro": {
       "kicker": "End of the journey",
       "title": "A reading, not a verdict",
-      "text": "None of this is fate. This index invents no data: it gathers official measurements, puts them on one scale, and lets you adjust what matters most. It doesn't rule — it shows where several threats meet, to open the conversation, not close it.",
+      "text": "None of this is set in stone. This index invents no data: it gathers official measurements, puts them on one scale, and lets you adjust what matters most. It doesn't rule — it shows where to act first, and opens the conversation rather than closing it.",
       "home": "Replay the journey",
       "restart": "Relive from act 1",
       "next": "Back to home"
@@ -2238,7 +2247,7 @@
     "sloperank_sub": "responsibility rank (left) → vulnerability rank (right) · 1 = top",
     "sloperank_left": "responsibility rank",
     "sloperank_right": "vulnerability rank",
-    "thesis": "Eleven acts, one same tension: Pacific territories emit very little CO₂ per capita, yet bear the brunt of rising seas, heat and disrupted rainfall. This final act gathers the evidence into a single reading — relative to the Pacific, transparent, and one you can explore yourself.",
+    "thesis": "Eleven acts for one idea, with a note of hope: Pacific territories emit very little CO₂ per capita and absorb a great deal — yet keep real room to act. This final act gathers the evidence into one clear reading, relative to the Pacific, that you can explore and weight yourself.",
     "board": {
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
@@ -2309,7 +2318,10 @@
     },
     "ctx_renew": "Renewable share",
     "ctx_envtax": "Green taxation",
-    "ctx_tourism": "Tourist arrivals"
+    "ctx_tourism": "Tourist arrivals",
+    "ctx_unit_pct": "%",
+    "ctx_unit_gdp": "% of GDP",
+    "ctx_unit_arr": "arrivals"
   },
   "flow": {
     "act": "Act",

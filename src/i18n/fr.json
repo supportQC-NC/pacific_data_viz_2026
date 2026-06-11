@@ -2197,12 +2197,21 @@
       "limits_4": "L'indice ne mesure pas la capacité d'adaptation, les financements ni les politiques en cours — il décrit une exposition, pas une fatalité.",
       "context_k": "Les leviers",
       "context_title": "Ce qui ne se résume pas à la vulnérabilité",
-      "context_text": "La vulnérabilité n'est qu'une face de l'histoire. Les actes précédents ont aussi montré des leviers : l'électricité qui se décarbone, une fiscalité qui commence à peser sur le carbone, une économie qui cherche son équilibre. Ce classement rappelle que derrière l'exposition, il y a aussi des marges de manœuvre — inégales, mais réelles."
+      "context_text": "La vulnérabilité n'est qu'une face de l'histoire. Les actes précédents ont aussi montré des leviers : l'électricité qui se décarbone, une fiscalité qui commence à peser sur le carbone, une économie qui cherche son équilibre. Ce classement rappelle que derrière l'exposition, il y a aussi des marges de manœuvre — inégales, mais réelles.",
+      "ctx_renew_k": "Les leviers · énergie",
+      "ctx_renew_t": "Une électricité qui se décarbone",
+      "ctx_renew_x": "La vulnérabilité n'est qu'une face de l'histoire. Voici la part des énergies renouvelables dans la consommation finale (en %), territoire par territoire, à sa dernière valeur connue. Plus la barre est longue, plus l'énergie consommée vient de sources renouvelables : un levier d'adaptation déjà à l'œuvre, à des degrés inégaux.",
+      "ctx_envtax_k": "Les leviers · fiscalité",
+      "ctx_envtax_t": "Une fiscalité qui commence à peser sur le carbone",
+      "ctx_envtax_x": "La vulnérabilité n'est qu'une face de l'histoire. Voici le poids des taxes environnementales (en % du PIB), territoire par territoire, à sa dernière valeur connue. Couverture limitée : seuls quelques territoires déclarent — mais là où le levier existe, il se mesure.",
+      "ctx_tour_k": "Les leviers · ressource exposée",
+      "ctx_tour_t": "Le tourisme, une richesse à protéger",
+      "ctx_tour_x": "La vulnérabilité n'est qu'une face de l'histoire. Ces chiffres sont les arrivées de visiteurs (en effectifs, pas en %), territoire par territoire, à leur dernière valeur connue — par exemple ~928 000 arrivées pour Fidji. Pilier économique des îles, le tourisme est aussi exposé aux récifs abîmés et aux cyclones : une ressource à gérer autant qu'à défendre."
     },
     "outro": {
       "kicker": "Fin du voyage",
       "title": "Une lecture, pas un verdict",
-      "text": "Rien de tout cela n'est une fatalité. Cet indice n'invente aucune donnée : il rassemble des mesures officielles, les met sur une même échelle, et vous laisse ajuster ce qui compte le plus. Il ne tranche pas — il montre où plusieurs menaces se rejoignent, pour ouvrir la conversation, pas la fermer.",
+      "text": "Rien de tout cela n'est joué d'avance. Cet indice n'invente aucune donnée : il rassemble des mesures officielles, les met sur une même échelle, et vous laisse ajuster ce qui compte le plus. Il ne tranche pas — il montre où agir en premier, et ouvre la conversation plutôt que de la clore.",
       "home": "Revoir le voyage",
       "restart": "Revivre depuis l'acte 1",
       "next": "Retour à l'accueil"
@@ -2238,7 +2247,7 @@
     "sloperank_sub": "rang de responsabilité (gauche) → rang de vulnérabilité (droite) · 1 = en tête",
     "sloperank_left": "rang responsabilité",
     "sloperank_right": "rang vulnérabilité",
-    "thesis": "Onze actes, une même tension : les territoires du Pacifique émettent très peu de CO₂ par habitant, mais encaissent les premiers la montée des eaux, la chaleur et les pluies déréglées. Ce dernier acte rassemble les preuves en une seule lecture — relative au Pacifique, transparente, et que vous pouvez explorer vous-même.",
+    "thesis": "Onze actes pour une même idée, et une note d'espoir : les territoires du Pacifique émettent très peu de CO₂ par habitant, encaissent beaucoup — mais gardent des marges de manœuvre réelles. Ce dernier acte rassemble les preuves en une lecture claire, relative au Pacifique, que vous pouvez explorer et pondérer vous-même.",
     "board": {
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
@@ -2309,7 +2318,10 @@
     },
     "ctx_renew": "Part renouvelable",
     "ctx_envtax": "Fiscalité verte",
-    "ctx_tourism": "Arrivées touristiques"
+    "ctx_tourism": "Arrivées touristiques",
+    "ctx_unit_pct": "%",
+    "ctx_unit_gdp": "% du PIB",
+    "ctx_unit_arr": "arrivées"
   },
   "flow": {
     "act": "Acte",
