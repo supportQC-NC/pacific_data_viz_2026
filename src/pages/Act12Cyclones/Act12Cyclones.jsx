@@ -400,15 +400,26 @@ export default function Act12Cyclones() {
     [exposureRaw, lang],
   );
 
-  // ---- KPI ----
+// ---- KPI ----
   const kpiItems = useMemo(() => {
     if (status !== "ready") return [];
+
+    // Équivalent grand public de la vitesse du vent : les nœuds parlent peu.
+    // On ajoute la conversion en note de la carte vent — km/h en FR, mph en EN.
+    // 1 nœud = 1,852 km/h = 1,15078 mph.
+    const windNote = maxWind
+      ? lang === "en"
+        ? `≈ ${Math.round(maxWind * 1.15078)} mph`
+        : `≈ ${Math.round(maxWind * 1.852)} km/h`
+      : null;
+
     return [
       {
         key: "total",
         value: view.length,
         unit: t("act12.kpi.cyclones_unit"),
-        label: `${t("act12.kpi.total")} · ${res.firstSeason} → ${res.lastSeason}`,
+        label: `${t("act12.kpi.total")}`,
+        // label: `${t("act12.kpi.total")} · ${res.firstSeason} → ${res.lastSeason}`,
         tone: "accent",
       },
       {
@@ -430,10 +441,11 @@ export default function Act12Cyclones() {
         value: maxWind ? `${Math.round(maxWind)}` : "—",
         unit: t("act12.map.kt"),
         label: t("act12.kpi.wind"),
+        note: windNote, // ← ex. « ≈ 278 km/h »
         tone: "warm",
       },
     ];
-  }, [status, res, view, mostIntense, busiest, maxWind, stageLabels, t]);
+  }, [status, res, view, mostIntense, busiest, maxWind, stageLabels, t, lang]);
 
   // ---- Libellés carte (i18n) ----
   const mapLabels = useMemo(

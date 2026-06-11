@@ -4,6 +4,11 @@
 // dans l'écran (hauteur bornée), exploite la largeur : RAIL de filtres +
 // sélecteur de graphes à gauche, GRAPHE plein cadre à droite.
 // Tokens --c-*, --sp-*, --r-*, --font-* (light/dark gérés par variables).
+//
+// MAJ : étapes BOARD (s1) et OUTRO (s2) verrouillées en PLEIN ÉCRAN NON
+// SCROLLABLE (100dvh, overflow hidden, colonne flex). La barre d'acte
+// sticky est absorbée par le flux flex ; la liste des graphes du rail
+// défile en interne → les boutons d'étape restent toujours à l'écran.
 // ============================================================
 
 .board {
@@ -373,27 +378,83 @@
   color: var(--c-warm);
 }
 
-/* Bornage à l'écran sur grand écran : rail + graphe côte à côte. */
+/* ============================================================
+   VERROUILLAGE PLEIN ÉCRAN — étape board (desktop)
+   Le board occupe exactement 100dvh, barre d'acte comprise, sans débordement.
+   ============================================================ */
 @media (min-width: 901px) {
+  .board--s1 {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    padding-block: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  // La barre d'acte sticky garde sa hauteur (ne se comprime pas).
+  .board--s1 > .actbar {
+    flex: 0 0 auto;
+  }
+  // Le conteneur prend toute la hauteur restante SOUS la barre.
+  .board--s1 > .container {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--sp-3);
+  }
+  // Le panneau remplit le conteneur ; plus de calc(100vh) figé.
   .board__panel {
-    height: calc(100vh - 2 * var(--sp-6));
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: hidden;
   }
+
   .board__work {
     grid-template-columns: 280px minmax(0, 1fr);
   }
+
+  // Rail borné : il clippe, et c'est la LISTE des graphes qui défile.
   .board__rail {
     padding-right: var(--sp-4);
     border-right: 1px solid var(--c-line);
+    min-height: 0;
+    overflow: hidden;
   }
-  // Le panneau borne déjà tout à l'écran ; on ne rogne PAS le graphe lui-même
-  // (sinon les libellés du bas de l'axe sont coupés).
+  .board__rail-filters {
+    flex: 0 0 auto;
+  }
+  // La liste prend l'espace restant et défile seule → les boutons d'étape
+  // (en dessous) restent TOUJOURS visibles, même avec 14 vues.
+  .board__navlist {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-line-strong) transparent;
+  }
+  .board__navlist::-webkit-scrollbar {
+    width: 6px;
+  }
+  .board__navlist::-webkit-scrollbar-thumb {
+    background: var(--c-line-strong);
+    border-radius: var(--r-pill);
+  }
+  .board__rail-steps {
+    flex: 0 0 auto;
+  }
+
   // Respiration : le titre/numéro/sous-titre ne collent plus au rail.
   .board__main {
     padding-left: var(--sp-6);
   }
 }
 @media (max-width: 900px) {
+  // Sur mobile, rail et graphe sont empilés : on garde un scroll naturel
+  // (impossible de loger les deux dans une seule hauteur d'écran utilement).
   .board__chart {
     min-height: 56vh;
   }
@@ -489,6 +550,30 @@
   &:hover {
     color: var(--c-accent);
   }
+}
+
+/* Verrouillage plein écran de l'OUTRO (la barre d'acte est au-dessus). */
+.board--s2 {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.board--s2 > .actbar {
+  flex: 0 0 auto;
+}
+.board--s2 > .container {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+.board--s2 .board__outro {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  padding-block: var(--sp-8);
 }
 
 /* ============================================================

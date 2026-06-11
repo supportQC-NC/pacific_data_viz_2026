@@ -1,0 +1,180 @@
+// src/components/ActBar/ActBar.scss
+// ============================================================
+// Barre d'acte persistante : sticky, vitrée (backdrop-blur), thémée
+// exclusivement via les tokens (light/dark automatiques). Trois zones :
+// préc. | centre (TITRE display + jauge) | suiv. Responsive (mobile = titre
+// tronqué + chevrons seuls). Focus visible. Respecte prefers-reduced-motion.
+// ============================================================
+
+.actbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  width: 100%;
+  background: color-mix(in srgb, var(--c-bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  border-bottom: var(--border-hair) solid var(--c-line);
+  transition:
+    background var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out);
+}
+
+.actbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 66px;
+  padding-block: var(--sp-2);
+}
+
+/* ---------- Côtés (préc. / suiv.) ---------- */
+.actbar__side {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: 30%;
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.actbar__side--next {
+  justify-content: flex-end;
+}
+
+.actbar__side:hover {
+  color: var(--c-text);
+  border-color: var(--c-line-strong);
+  background: var(--c-surface);
+}
+
+.actbar__side--prev:hover {
+  transform: translateX(-2px);
+}
+.actbar__side--next:hover {
+  transform: translateX(2px);
+}
+
+.actbar__side:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  color: var(--c-text);
+}
+
+.actbar__side--disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  border-color: transparent;
+}
+
+.actbar__side-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actbar__chev {
+  flex: none;
+  font-size: 1.15em;
+}
+
+/* ---------- Centre : TITRE de l'acte + progression ---------- */
+.actbar__center {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.actbar__title {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-tight);
+  line-height: 1.1;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actbar__progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.actbar__progress-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--c-text-soft);
+}
+
+.actbar__progress-sep {
+  color: var(--c-text-mute);
+}
+
+.actbar__meter {
+  position: relative;
+  width: clamp(60px, 14vw, 160px);
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.actbar__meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--actbar-pct, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--c-accent-deep), var(--c-accent));
+  box-shadow: var(--shadow-glow);
+  transition: width var(--t-slow) var(--ease-out);
+}
+
+/* ---------- Responsive : mobile = titre tronqué + chevrons ---------- */
+@media (max-width: 720px) {
+  .actbar__inner {
+    gap: var(--sp-2);
+    min-height: 60px;
+  }
+  .actbar__side {
+    max-width: none;
+    padding: var(--sp-2);
+  }
+  // Sur mobile on masque les libellés des actes voisins (chevrons suffisent),
+  // mais on GARDE le titre central (tronqué) qui porte l'identité.
+  .actbar__side-text {
+    display: none;
+  }
+  .actbar__title {
+    font-size: var(--fs-base);
+  }
+  .actbar__meter {
+    width: clamp(48px, 28vw, 120px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actbar,
+  .actbar__side,
+  .actbar__meter-fill {
+    transition: none;
+  }
+}

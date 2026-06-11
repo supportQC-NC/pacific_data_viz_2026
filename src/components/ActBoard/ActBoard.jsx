@@ -1,18 +1,18 @@
 // src/components/ActBoard/ActBoard.jsx
 // ============================================================
 // Coquille « dashboard narratif » réutilisable. Un acte se parcourt en
-// TROIS temps, sans ancres ni scroll : une section à la fois.
-//   0) INTRO  — titre + thèse + chiffres-chocs, plein écran.
-//   1) BOARD  — RAIL de filtres + sélecteur de graphes à GAUCHE (vertical),
-//               GRAPHE plein cadre à droite, ligne « à retenir » dessous.
-//   2) OUTRO  — la conclusion / transition.
-// Dans le board, ←/→ changent de GRAPHE ; les boutons changent d'ÉTAPE.
+// TROIS temps : intro (plein écran) → board → outro.
 //
-// NUMÉROTATION & NAVIGATION : le NUMÉRO d'acte, la PROGRESSION et le lien
-// « suivant » sont dérivés du PARCOURS (journeyContext) à partir de la route
-// courante — l'acte n'a plus à les coder en dur. Les props `eyebrow`,
-// `progress` et `outro.primary` restent acceptées en repli (route inconnue).
-// 100 % présentational : l'acte calcule les données et passe les props.
+// La <ActBar> sticky (préc · TITRE de l'acte + progression · suiv) est montée
+// sur les étapes BOARD et OUTRO et porte désormais l'IDENTITÉ de l'acte :
+//   • plus de fil d'Ariane interne (titre + n/total) dans le board ;
+//   • plus de boutons d'étape dans le rail ;
+//   • plus de lien « retour à l'accueil » sous le panneau.
+// Résultat : le board gagne de la hauteur et tient en plein écran.
+//
+// NB : sans boutons d'étape, l'écran de conclusion (step 2) n'est plus
+// déclenché depuis le board ; il reste rendu (réactivable en un point).
+// NUMÉROTATION & NAVIGATION dérivées du PARCOURS (journeyContext).
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -21,6 +21,7 @@ import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import KpiRow from "../KpiRow/KpiRow";
 import Loader from "../Loader/Loader";
+import ActBar from "../ActBar/ActBar";
 import "./ActBoard.scss";
 
 export default function ActBoard({
@@ -42,12 +43,13 @@ export default function ActBoard({
   const { pathname } = useLocation();
   const { byPath, journey } = useJourney();
 
-  // Résolution de l'acte courant via la route → numéro, total, voisin suivant.
+  // Résolution de l'acte courant via la route → numéro, total, voisins.
   const here = byPath(pathname);
   const num = here ? String(here.number).padStart(2, "0") : null;
   const actName = here ? t(`home.acts.${here.id}_name`) : "";
 
   // Eyebrow « Acte 03 — Nom » dérivé du parcours ; repli sur la prop.
+  // (Utilisé uniquement par l'intro plein écran, étape 0.)
   const eyebrowTxt = here
     ? `${t("flow.act")} ${num}${actName ? ` — ${actName}` : ""}`
     : eyebrow;
@@ -55,16 +57,27 @@ export default function ActBoard({
   // Progression dérivée ; repli sur la prop.
   const effProgress = here ? { index: here.number, total: here.total } : progress;
 
-  // CTA « suivant » dérivé du parcours (cible + libellé). Repli sur outro.primary
-  // si la route n'est pas dans le parcours ou si l'acte est le dernier.
-  let nextPrimary = outro ? outro.primary : null;
+  // --- Voisins du parcours (pour la barre d'acte persistante) ---------------
+  let nextAct = null;
   if (here && journey && here.index + 1 < journey.length) {
-    const next = journey[here.index + 1];
-    nextPrimary = {
-      to: next.to,
-      label: `${t("flow.next")} · ${t(`home.acts.${next.id}_title`)}`,
+    const n = journey[here.index + 1];
+    nextAct = {
+      to: n.to,
+      label: `${t("flow.next")} · ${t(`home.acts.${n.id}_title`)}`,
     };
   }
+  let prevAct = null;
+  if (here && journey && here.index - 1 >= 0) {
+    const p = journey[here.index - 1];
+    prevAct = {
+      to: p.to,
+      label: `${t("flow.prev")} · ${t(`home.acts.${p.id}_title`)}`,
+    };
+  }
+
+  // CTA « suivant » de l'OUTRO (repli outro.primary si hors parcours/dernier).
+  let nextPrimary = outro ? outro.primary : null;
+  if (nextAct) nextPrimary = nextAct;
 
   const count = charts.length;
   const [tab, setTab] = useState(() => {
@@ -78,7 +91,10 @@ export default function ActBoard({
   }, [count]);
 
   const goTab = useCallback(
-    (i) => setTab((prev) => Math.max(0, Math.min(count - 1, typeof i === "function" ? i(prev) : i))),
+    (i) =>
+      setTab((prev) =>
+        Math.max(0, Math.min(count - 1, typeof i === "function" ? i(prev) : i)),
+      ),
     [count],
   );
   const goStep = useCallback((s) => setStep(Math.max(0, Math.min(2, s))), []);
@@ -106,10 +122,29 @@ export default function ActBoard({
 
   const idx = Math.min(tab, Math.max(0, count - 1));
   const active = count ? charts[idx] : null;
-  const progressTxt = effProgress ? `${effProgress.index} / ${effProgress.total}` : null;
+  const progressTxt = effProgress
+    ? `${effProgress.index} / ${effProgress.total}`
+    : null;
+
+  // La barre d'acte est présente sur le board (1) et l'outro (2), pas sur
+  // l'ouvre-chapitre (0) pour préserver la révélation cinématique.
+  const showActBar = step === 1 || step === 2;
 
   return (
     <main className={`board board--s${step}`}>
+      {/* ---------- Barre d'acte persistante (préc · titre+progression · suiv) ---------- */}
+      {showActBar && (
+        <ActBar
+          prev={prevAct}
+          next={nextAct}
+          title={title}
+          index={effProgress ? effProgress.index : undefined}
+          total={effProgress ? effProgress.total : undefined}
+          navAria={t("flow.nav_aria")}
+          progressAria={t("flow.progress_aria")}
+        />
+      )}
+
       <div className="container">
         {/* ---------- ÉTAPE 0 — INTRO plein écran ---------- */}
         {step === 0 && (
@@ -117,28 +152,46 @@ export default function ActBoard({
             <div className="board__intro-inner">
               <div className="board__hero-top">
                 <p className="eyebrow">{eyebrowTxt}</p>
-                {progressTxt ? <span className="board__progress">{progressTxt}</span> : null}
+                {progressTxt ? (
+                  <span className="board__progress">{progressTxt}</span>
+                ) : null}
               </div>
-              {title ? <h1 className="board__title board__title--xl">{title}</h1> : null}
-              {thesis ? <p className="board__thesis board__thesis--xl">{thesis}</p> : null}
+              {title ? (
+                <h1 className="board__title board__title--xl">{title}</h1>
+              ) : null}
+              {thesis ? (
+                <p className="board__thesis board__thesis--xl">{thesis}</p>
+              ) : null}
               {kpis.length > 0 ? <KpiRow items={kpis} title={kpiTitle} /> : null}
 
-              {status === "loading" && <Loader compact label={labels.loading} />}
+              {status === "loading" && (
+                <Loader compact label={labels.loading} />
+              )}
               {status === "error" && (
                 <div className="board__state board__state--err">
                   <span>{labels.error}</span>
                   {onRetry ? (
-                    <button type="button" className="board__retry" onClick={onRetry}>
+                    <button
+                      type="button"
+                      className="board__retry"
+                      onClick={onRetry}
+                    >
                       {labels.retry}
                     </button>
                   ) : null}
                 </div>
               )}
-              {status === "empty" && <p className="board__state">{labels.empty}</p>}
+              {status === "empty" && (
+                <p className="board__state">{labels.empty}</p>
+              )}
 
               {status === "ready" && count > 0 ? (
                 <div className="board__intro-actions">
-                  <button type="button" className="board__cta" onClick={() => goStep(1)}>
+                  <button
+                    type="button"
+                    className="board__cta"
+                    onClick={() => goStep(1)}
+                  >
                     {labels.start} <span aria-hidden="true">→</span>
                   </button>
                 </div>
@@ -151,16 +204,15 @@ export default function ActBoard({
         {step === 1 &&
           (status === "ready" && active ? (
             <section className="board__panel">
-              <div className="board__crumb">
-                <span className="board__crumb-title">{title}</span>
-                {progressTxt ? <span className="board__progress">{progressTxt}</span> : null}
-              </div>
-
               <div className="board__work">
                 <aside className="board__rail">
                   <div className="board__rail-filters">{filters}</div>
 
-                  <nav className="board__navlist" role="tablist" aria-label={labels.signature}>
+                  <nav
+                    className="board__navlist"
+                    role="tablist"
+                    aria-label={labels.signature}
+                  >
                     {charts.map((c, i) => (
                       <button
                         key={c.id}
@@ -171,7 +223,10 @@ export default function ActBoard({
                         onClick={() => goTab(i)}
                       >
                         {c.signature ? (
-                          <span className="board__navitem-star" aria-hidden="true">
+                          <span
+                            className="board__navitem-star"
+                            aria-hidden="true"
+                          >
                             ★
                           </span>
                         ) : null}
@@ -179,27 +234,23 @@ export default function ActBoard({
                       </button>
                     ))}
                   </nav>
-
-                  <div className="board__rail-steps">
-                    <button type="button" className="board__btn board__btn--ghost" onClick={() => goStep(0)}>
-                      <span aria-hidden="true">←</span> {labels.backIntro}
-                    </button>
-                    {outro ? (
-                      <button type="button" className="board__btn board__btn--primary" onClick={() => goStep(2)}>
-                        {labels.conclusion} <span aria-hidden="true">→</span>
-                      </button>
-                    ) : null}
-                  </div>
                 </aside>
 
                 <div className="board__main">
                   <div className="board__head">
                     <span className="board__num">
-                      {String(idx + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
-                      {active.signature && labels.signature ? ` · ${labels.signature}` : ""}
+                      {String(idx + 1).padStart(2, "0")} /{" "}
+                      {String(count).padStart(2, "0")}
+                      {active.signature && labels.signature
+                        ? ` · ${labels.signature}`
+                        : ""}
                     </span>
-                    {active.title ? <h2 className="board__chart-title">{active.title}</h2> : null}
-                    {active.finding ? <p className="board__finding">{active.finding}</p> : null}
+                    {active.title ? (
+                      <h2 className="board__chart-title">{active.title}</h2>
+                    ) : null}
+                    {active.finding ? (
+                      <p className="board__finding">{active.finding}</p>
+                    ) : null}
                   </div>
 
                   {active.empty ? (
@@ -214,7 +265,7 @@ export default function ActBoard({
             <Loader fullscreen label={labels.loading} />
           ))}
 
-        {/* ---------- ÉTAPE 2 — OUTRO plein écran ---------- */}
+        {/* ---------- ÉTAPE 2 — OUTRO plein écran (conservé, réactivable) ---------- */}
         {step === 2 && outro && (
           <section className="board__outro">
             <div className="board__outro-inner">
@@ -223,7 +274,10 @@ export default function ActBoard({
               <p className="board__outro-text">{outro.text}</p>
               <div className="board__actions">
                 {nextPrimary ? (
-                  <Link to={nextPrimary.to} className="board__btn board__btn--primary">
+                  <Link
+                    to={nextPrimary.to}
+                    className="board__btn board__btn--primary"
+                  >
                     {nextPrimary.label} <span aria-hidden="true">→</span>
                   </Link>
                 ) : null}
@@ -233,18 +287,16 @@ export default function ActBoard({
                   </Link>
                 ) : null}
               </div>
-              <button type="button" className="board__revise" onClick={() => goStep(1)}>
+              <button
+                type="button"
+                className="board__revise"
+                onClick={() => goStep(1)}
+              >
                 <span aria-hidden="true">←</span> {labels.reviseData}
               </button>
             </div>
           </section>
         )}
-
-        {back ? (
-          <Link to={back.to} className="board__back">
-            ← {back.label}
-          </Link>
-        ) : null}
       </div>
     </main>
   );

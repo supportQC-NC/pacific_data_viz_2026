@@ -3,6 +3,9 @@
 // Rangée de cartes KPI — moderne, aérée, fluide.
 // Grille auto-fit (remplit toute la largeur), cartes généreusement
 // rembourrées, gros chiffre serif coloré par "ton", barre d'accent en tête.
+//
+// MAJ : prise en charge des valeurs TEXTUELLES (ex. « WINSTON »), qui étaient
+// coupées car rendues dans la typo XL des chiffres. Variantes --text / --long.
 // ============================================================
 
 .kpi {
@@ -54,11 +57,28 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--sp-2);
+  max-width: 100%; // garde-fou : ne déborde jamais de la carte
+  min-width: 0;
   font-family: var(--font-display);
   font-size: clamp(2rem, 2.6vw, 2.8rem);
   font-weight: var(--fw-semi);
   line-height: 1;
   color: var(--c-text);
+}
+
+/* Valeurs TEXTUELLES (ex. « WINSTON ») : la grande typo des chiffres les
+   coupait. On réduit, on autorise le retour à la ligne et la coupure de mot. */
+.kpi__value--text {
+  font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+  letter-spacing: var(--ls-tight);
+  line-height: 1.05;
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+}
+/* Chaînes très longues : un cran plus petit encore. */
+.kpi__value--long {
+  font-size: clamp(1.3rem, 1.9vw, 1.75rem);
 }
 
 .kpi__unit {
