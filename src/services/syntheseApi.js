@@ -30,6 +30,9 @@ if (ENV_BASE) BASES.unshift({ base: ENV_BASE, tag: "env" });
 const FULL_START = 1970;
 const PROBE_START = 2005;
 const TIMEOUT_MS = 45000;
+// L'agri (cultures/bétail) est volumineux et optionnel : timeout court et
+// isolé pour ne jamais retarder ni faire échouer la synthèse principale.
+const AGRI_TIMEOUT_MS = 15000;
 
 const CC = "SPC,DF_CLIMATE_CHANGE,1.0";
 
@@ -67,8 +70,13 @@ const INDICATORS = {
   // stress comparables, mais des éclairages (énergie, fiscalité, tourisme).
   // role:"context" => affichés dans des slides récap, jamais dans le composite.
   renew: {
-    flows: ["SPC,DF_SDG_07,1.0", "SPC,DF_SDG_07,2.0", "SPC,DF_SDG_07,3.0"],
-    keys: ["A.EG_FEC_RNEW", "A.EG_FEC_RNEW.", "A.EG_FEC_RNEW..", "A.EG_FEC_RNEW.....", "A.EG_FEC_RNEW........"],
+    flows: ["SPC,DF_SDG,3.0", "SPC,DF_SDG,2.0", "SPC,DF_SDG,1.0"],
+    keys: [
+      "A.EG_FEC_RNEW.._T._T._T._T._T._T._Z._T",
+      "A.EG_FEC_RNEW.._T._T._T._T._T._T._Z",
+      "A.EG_FEC_RNEW..",
+      "A.EG_FEC_RNEW.",
+    ],
     role: "context",
     dir: "up",
   },
@@ -81,6 +89,14 @@ const INDICATORS = {
   tourism: {
     flows: ["SPC,DF_CLIMATE_CHANGE,1.0"],
     keys: ["A.TRSM_ARR.", "A.TRSM_ARR..", "A.TRSM_ARR..."],
+    role: "context",
+    dir: "up",
+  },
+  // Production d'électricité (GWh) — même flux DF_CLIMATE_CHANGE que le
+  // tourisme (structure simple, déjà éprouvée). Source FMI/IRENA via PDH.
+  power: {
+    flows: ["SPC,DF_CLIMATE_CHANGE,1.0"],
+    keys: ["A.POWER_GEN.", "A.POWER_GEN..", "A.POWER_GEN..."],
     role: "context",
     dir: "up",
   },
@@ -228,6 +244,139 @@ async function fetchIndicator(name, ind, lang, signal) {
   return { status: "unavailable", role: ind.role, dir: ind.dir || null, byArea: {}, years: [], areas: [], unit: "" };
 }
 
+// ============================================================
+// AGRICULTURE — rendement médian par territoire (cultures / bétail).
+// Flux DF_AGRICULTURAL_PRODUCTION (multi-produits). On agrège en MÉDIANE
+// des rendements par territoire, à la dernière année, en séparant les
+// cultures (kg/ha) du bétail (kg/animal) via l'unité. Renvoie deux
+// pseudo-indicateurs au même format que les autres (status/areas/byArea).
+// ============================================================
+const AGRI_FLOW = "SPC,DF_AGRICULTURAL_PRODUCTION,1.0";
+const AGRI_KEYS = ["A...", "A....", "A.....", "A......", "A......."];
+const CROP_UNIT_RE = /hectare|kg\/ha|\bha\b/i;
+const ANIMAL_UNIT_RE = /animal|head|carcass|t[eê]te|abattu/i;
+
+// Médiane d'une liste de nombres (les valeurs non finies sont déjà filtrées).
+function median(nums) {
+  const a = nums.filter((n) => Number.isFinite(n)).sort((x, y) => x - y);
+  if (!a.length) return null;
+  const m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
+function emptyAgri() {
+  return { status: "unavailable", role: "context", dir: "up", byArea: {}, years: [], areas: [], unit: "" };
+}
+
+// Construit un pseudo-indicateur { byArea, areas, lastYear } à partir d'une
+// table area -> année -> [valeurs de rendement] : on prend la MÉDIANE.
+function agriIndicator(perArea, unit) {
+  const byArea = {};
+  let lastYear = null;
+  Object.entries(perArea).forEach(([area, byYear]) => {
+    const series = Object.entries(byYear)
+      .map(([y, arr]) => ({ year: Number(y), value: median(arr.filter(Number.isFinite)) }))
+      .filter((p) => Number.isFinite(p.value))
+      .sort((a, b) => a.year - b.year);
+    if (series.length) {
+      byArea[area] = series;
+      const y = series[series.length - 1].year;
+      if (lastYear == null || y > lastYear) lastYear = y;
+    }
+  });
+  const areas = Object.keys(byArea);
+  return areas.length
+    ? { status: "live", role: "context", dir: "up", byArea, areas, years: [], unit, lastYear }
+    : emptyAgri();
+}
+
+async function fetchAgri(lang, signal) {
+  // parseur agri : colonnes GEO_PICT / TIME / OBS_VALUE / UNIT_MEASURE.
+  const parseAgri = (text) => {
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    const head = lines[0];
+    const delim = head.split(";").length > head.split(",").length ? ";" : ",";
+    const clean = (s) => (s == null ? "" : s).replace(/^"|"$/g, "").trim();
+    const H = head.split(delim).map((h) => clean(h).toUpperCase());
+    const ix = (...n) => {
+      for (const k of n) {
+        const i = H.indexOf(k);
+        if (i >= 0) return i;
+      }
+      return -1;
+    };
+    const iGeo = ix("GEO_PICT", "REF_AREA", "AREA");
+    const iTime = ix("TIME_PERIOD", "TIME");
+    const iVal = ix("OBS_VALUE", "VALUE");
+    const iUnit = ix("UNIT_MEASURE", "UNIT");
+    if (iGeo < 0 || iTime < 0 || iVal < 0) return [];
+    const out = [];
+    for (let i = 1; i < lines.length; i += 1) {
+      const c = lines[i].split(delim);
+      const value = num(clean(c[iVal]));
+      const year = parseInt(clean(c[iTime]), 10);
+      if (!Number.isFinite(value) || Number.isNaN(year)) continue;
+      const geo = (clean(c[iGeo]) || "").split(":")[0].trim();
+      if (!geo) continue;
+      const uCode = iUnit >= 0 ? clean(c[iUnit]) : "";
+      const uLabel = iUnit >= 0 && iUnit + 1 < c.length ? clean(c[iUnit + 1]) : "";
+      out.push({ geo, year, value, unit: `${uLabel} ${uCode}` });
+    }
+    return out;
+  };
+
+  for (const base of BASES) {
+    for (const key of AGRI_KEYS) {
+      try {
+        const url = `${base.base}/${AGRI_FLOW}/${key}?${new URLSearchParams({
+          dimensionAtObservation: "AllDimensions",
+          format: "csvfilewithlabels",
+          startPeriod: "2000",
+        })}`;
+        const res = await fetch(url, { signal, headers: headersFor(lang) });
+        if (!res.ok) continue;
+        const rows = parseAgri(await res.text());
+        if (!rows.length) continue;
+        // Sépare cultures / bétail par l'unité, agrège en médiane par territoire.
+        const crops = {};
+        const stock = {};
+        rows.forEach(({ geo, year, value, unit }) => {
+          if (!(value > 0)) return;
+          const isAnimal = ANIMAL_UNIT_RE.test(unit);
+          const isCrop = CROP_UNIT_RE.test(unit);
+          const bucket = isAnimal ? stock : isCrop ? crops : null;
+          if (!bucket) return;
+          ((bucket[geo] = bucket[geo] || {})[year] =
+            (bucket[geo][year] || [])).push(value);
+        });
+        const cropsInd = agriIndicator(crops, "kg/ha");
+        const stockInd = agriIndicator(stock, "kg/animal");
+        if (cropsInd.status === "live" || stockInd.status === "live") {
+          // eslint-disable-next-line no-console
+          console.info(
+            "[syntheseApi] agri OK —",
+            `cultures:${cropsInd.areas.length}`,
+            `bétail:${stockInd.areas.length} · via`,
+            base.tag,
+            key,
+          );
+          return { crops: cropsInd, livestock: stockInd };
+        }
+      } catch (e) {
+        // Abort (timeout agri ou annulation globale) : on abandonne l'agri
+        // proprement, sans propager — la synthèse continue sans cultures/bétail.
+        if (e && e.name === "AbortError") {
+          return { crops: emptyAgri(), livestock: emptyAgri() };
+        }
+      }
+    }
+  }
+  // eslint-disable-next-line no-console
+  console.warn("[syntheseApi] agri indisponible.");
+  return { crops: emptyAgri(), livestock: emptyAgri() };
+}
+
 export async function fetchSynthese({ lang, signal } = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -235,16 +384,46 @@ export async function fetchSynthese({ lang, signal } = {}) {
   if (signal) signal.addEventListener("abort", onAbort);
   try {
     const names = Object.keys(INDICATORS);
-    const results = await Promise.all(names.map((n) => fetchIndicator(n, INDICATORS[n], lang, ctrl.signal)));
+    // Indicateurs principaux (incluant renew/envtax/tourism/power) : robustes.
+    const results = await Promise.all(
+      names.map((n) => fetchIndicator(n, INDICATORS[n], lang, ctrl.signal)),
+    );
     const out = {};
     names.forEach((n, i) => {
       out[n] = results[i];
     });
+
+    // AGRI ISOLÉ : le flux agricole est volumineux. On lui donne son PROPRE
+    // AbortController + timeout court, et on l'enveloppe dans un try/catch :
+    // son échec ou son délai ne doit JAMAIS faire échouer la synthèse.
+    let agri = { crops: emptyAgri(), livestock: emptyAgri() };
+    try {
+      const agriCtrl = new AbortController();
+      const agriTimer = setTimeout(() => agriCtrl.abort(), AGRI_TIMEOUT_MS);
+      // si la synthèse globale est annulée, on annule aussi l'agri
+      const relay = () => agriCtrl.abort();
+      ctrl.signal.addEventListener("abort", relay);
+      try {
+        agri = await fetchAgri(lang, agriCtrl.signal);
+      } finally {
+        clearTimeout(agriTimer);
+        ctrl.signal.removeEventListener("abort", relay);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("[syntheseApi] agri ignoré (échec/délai):", String(e));
+      agri = { crops: emptyAgri(), livestock: emptyAgri() };
+    }
+    out.crops = agri.crops;
+    out.livestock = agri.livestock;
+
     const live = names.some((n) => out[n].status === "live");
     // eslint-disable-next-line no-console
     console.info(
       "[syntheseApi] terminé —",
-      names.map((n) => `${n}:${out[n].status}`).join(" · "),
+      [...names.map((n) => `${n}:${out[n].status}`),
+        `crops:${out.crops.status}`,
+        `livestock:${out.livestock.status}`].join(" · "),
     );
     return { source: live ? "live" : "unavailable", ...out };
   } catch (err) {

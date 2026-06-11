@@ -26,7 +26,6 @@ import VulnMatrix from "../../components/charts/VulnMatrix";
 import ProfileRadar from "../../components/charts/ProfileRadar";
 import TrendChart from "../../components/charts/TrendChart";
 import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
-import RadialBarsChart from "../../components/charts/RadialBarsChart";
 import SlopeChart from "../../components/charts/SlopeChart";
 import RankBars from "../../components/RankBars/RankBars";
 import useThemeTokens from "../../hooks/UseThemeTokens";
@@ -303,18 +302,6 @@ export default function Act11Synthese() {
     return out;
   }, [normByInd, weights]);
 
-  // Couverture par territoire (nb d'indicateurs réellement notés) — pour l'honnêteté.
-  const coverByArea = useMemo(() => {
-    const out = {};
-    VULN.forEach((k) => {
-      Object.keys(normByInd[k] || {}).forEach((a) => {
-        if (!isPict(a)) return;
-        out[a] = (out[a] || 0) + 1;
-      });
-    });
-    return out;
-  }, [normByInd]);
-
   const activeVuln = useMemo(
     () => VULN.filter((k) => data && data[k] && data[k].status === "live"),
     [data],
@@ -442,8 +429,7 @@ export default function Act11Synthese() {
       areas
         .map((a) => ({ name: pictName(a, lang), value: Math.round(composite[a] ?? 0) }))
         .filter((r) => Number.isFinite(r.value))
-        .sort((x, y) => y.value - x.value)
-        .slice(0, 10),
+        .sort((x, y) => y.value - x.value),
     [areas, composite, lang],
   );
 
@@ -482,6 +468,7 @@ export default function Act11Synthese() {
         eyebrowKey: "act11.story.ctx_renew_k",
         titleKey: "act11.story.ctx_renew_t",
         textKey: "act11.story.ctx_renew_x",
+        methodKey: "act11.story.ctx_renew_m",
         better: "high",
       },
       {
@@ -490,6 +477,7 @@ export default function Act11Synthese() {
         eyebrowKey: "act11.story.ctx_envtax_k",
         titleKey: "act11.story.ctx_envtax_t",
         textKey: "act11.story.ctx_envtax_x",
+        methodKey: "act11.story.ctx_envtax_m",
         better: "high",
       },
       {
@@ -498,6 +486,7 @@ export default function Act11Synthese() {
         eyebrowKey: "act11.story.ctx_tour_k",
         titleKey: "act11.story.ctx_tour_t",
         textKey: "act11.story.ctx_tour_x",
+        methodKey: "act11.story.ctx_tour_m",
         better: "high",
       },
     ];
@@ -518,6 +507,32 @@ export default function Act11Synthese() {
     }
     return null;
   }, [data, lang]);
+
+  // Construit un classement (top 12) à partir d'un indicateur de contexte
+  // chargé par syntheseApi : dernière valeur connue par territoire.
+  const ctxRows = useCallback(
+    (key) => {
+      const ind = data && data[key];
+      if (!ind || ind.status !== "live") return [];
+      const last = latestOf(ind);
+      return Object.entries(last)
+        .filter(([area, v]) => isPict(area) && Number.isFinite(v) && v > 0)
+        .map(([area, v]) => ({
+          area,
+          name: pictName(area, lang),
+          value: Math.round(v * 10) / 10,
+        }))
+        .sort((x, y) => y.value - x.value)
+        .slice(0, 12);
+    },
+    [data, lang],
+  );
+
+  // Les quatre éclairages « synthèse » : cultures, bétail, fiscalité, élec.
+  const cropsRows = useMemo(() => ctxRows("crops"), [ctxRows]);
+  const livestockRows = useMemo(() => ctxRows("livestock"), [ctxRows]);
+  const envtaxRows = useMemo(() => ctxRows("envtax"), [ctxRows]);
+  const powerRows = useMemo(() => ctxRows("power"), [ctxRows]);
 
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
@@ -574,6 +589,8 @@ export default function Act11Synthese() {
         eyebrow: t(contextRecap.eyebrowKey),
         title: t(contextRecap.titleKey),
         text: t(contextRecap.textKey),
+        method: t("act11.calc.context"),
+        method: t(contextRecap.methodKey),
         visual: (
           <RankBars
             data={contextRecap.rows}
@@ -583,11 +600,66 @@ export default function Act11Synthese() {
         ),
       });
     }
+    // --- Éclairages de synthèse : cultures, bétail, fiscalité, électricité ---
+    if (cropsRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.crops_k"),
+        method: t("act11.calc.crops"),
+        title: t("act11.story.crops_t"),
+        text: t("act11.story.crops_x"),
+        method: t("act11.story.crops_m"),
+        visual: (
+          <RankBars data={cropsRows} unit={t("act11.ctx_unit_kgha")} betterWhen="high" />
+        ),
+      });
+    }
+    if (livestockRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.stock_k"),
+        method: t("act11.calc.stock"),
+        title: t("act11.story.stock_t"),
+        text: t("act11.story.stock_x"),
+        method: t("act11.story.stock_m"),
+        visual: (
+          <RankBars data={livestockRows} unit={t("act11.ctx_unit_kganim")} betterWhen="high" />
+        ),
+      });
+    }
+    if (envtaxRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.envtax2_k"),
+        method: t("act11.calc.envtax"),
+        title: t("act11.story.envtax2_t"),
+        text: t("act11.story.envtax2_x"),
+        method: t("act11.story.envtax2_m"),
+        visual: (
+          <RankBars data={envtaxRows} unit={t("act11.ctx_unit_gdp")} betterWhen="high" />
+        ),
+      });
+    }
+    if (powerRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.power_k"),
+        method: t("act11.calc.power"),
+        title: t("act11.story.power_t"),
+        text: t("act11.story.power_x"),
+        method: t("act11.story.power_m"),
+        visual: (
+          <RankBars data={powerRows} unit={t("act11.ctx_unit_gwh")} betterWhen="high" />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.resp_k"),
+        method: t("act11.calc.resp"),
       title: t("act11.story.resp_title"),
       text: t("act11.story.resp_text"),
+      method: t("act11.story.resp_m"),
       stat: stats
         ? {
             value: stats.pacMed,
@@ -617,8 +689,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.ocean_k"),
+        method: t("act11.calc.ocean"),
       title: t("act11.story.ocean_title"),
       text: t("act11.story.ocean_text"),
+      method: t("act11.story.ocean_m"),
       visual: (
         <TrendChart
           series={seaTrend.series}
@@ -631,12 +705,15 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.atlas_k"),
+        method: t("act11.calc.atlas"),
       title: t("act11.story.atlas_title"),
       text: t("act11.story.atlas_text"),
+      method: t("act11.story.atlas_m"),
       hint: t("act11.story.focus_hint"),
       visual: (
         <AtlasMap
           points={atlasPoints}
+          satellite3d
           range={{ min: 0, max: 100 }}
           ramp={[tk.positive, tk.warm, tk.negative]}
           selected={focus}
@@ -651,8 +728,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.radar_k"),
+        method: t("act11.calc.radar"),
       title: t("act11.story.radar_title"),
       text: t("act11.story.radar_text"),
+      method: t("act11.story.radar_m"),
       visual: (
         <ProfileRadar indicators={radarIndicators} series={radarSeries} />
       ),
@@ -660,8 +739,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.matrix_k"),
+        method: t("act11.calc.matrix"),
       title: t("act11.story.matrix_title"),
       text: t("act11.story.matrix_text"),
+      method: t("act11.story.matrix_m"),
       hint: t("act11.story.focus_hint"),
       visual: (
         <VulnMatrix
@@ -676,8 +757,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.paradox_k"),
+        method: t("act11.calc.paradox"),
       title: t("act11.story.paradox_title"),
       text: t("act11.story.paradox_text"),
+      method: t("act11.story.paradox_m"),
       hint: t("act11.story.focus_hint"),
       visual: (
         <ParadoxScatterLive
@@ -694,8 +777,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.reversal_k"),
+        method: t("act11.calc.reversal"),
       title: t("act11.story.reversal_title"),
       text: t("act11.story.reversal_text"),
+      method: t("act11.story.reversal_m"),
       visual: (
         <SlopeChart
           rows={slopeRows}
@@ -710,8 +795,10 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.swarm_k"),
+        method: t("act11.calc.swarm"),
       title: t("act11.story.swarm_title"),
       text: t("act11.story.swarm_text"),
+      method: t("act11.story.swarm_m"),
       hint: t("act11.story.focus_hint"),
       visual: (
         <BeeswarmChart
@@ -729,15 +816,19 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.top_k"),
+        method: t("act11.calc.top"),
       title: t("act11.story.top_title"),
       text: t("act11.story.top_text"),
-      visual: <RadialBarsChart rows={topExposed} unit={t("act11.index_unit")} />,
+      method: t("act11.story.top_m"),
+      visual: <RankBars data={topExposed} unit={t("act11.index_unit")} betterWhen="low" />,
     });
     list.push({
       kind: "split",
       eyebrow: t("act11.story.studio_k"),
+        method: t("act11.calc.studio"),
       title: t("act11.story.studio_title"),
       text: t("act11.story.studio_text"),
+      method: t("act11.story.studio_m"),
       hint: t("act11.story.studio_hint"),
       visual: (
         <WeightStudio
@@ -780,6 +871,10 @@ export default function Act11Synthese() {
     beeData,
     topExposed,
     contextRecap,
+    cropsRows,
+    livestockRows,
+    envtaxRows,
+    powerRows,
   ]);
 
   const total = scenes.length;
@@ -916,6 +1011,9 @@ export default function Act11Synthese() {
                 <p className="scene__hint scene__anim">
                   {focusLine || sc.hint}
                 </p>
+              ) : null}
+              {sc.method ? (
+                <p className="scene__method scene__anim">{sc.method}</p>
               ) : null}
             </div>
             <div className="scene__visual scene__anim">{sc.visual}</div>

@@ -26,6 +26,7 @@ export default function AtlasMap({
   lowLabel = "",
   highLabel = "",
   noTokenMsg = "",
+  satellite3d = false,
 }) {
   const elRef = useRef(null);
   const mapRef = useRef(null);
@@ -61,18 +62,24 @@ export default function AtlasMap({
     mapboxgl.accessToken = TOKEN;
     const root = typeof document !== "undefined" ? document.body : null;
     const isDark = !!(root && root.getAttribute("data-theme") === "dark");
-    const styleUrl = isDark
-      ? "mapbox://styles/mapbox/dark-v11"
-      : "mapbox://styles/mapbox/light-v11";
-    const ink = isDark ? "#e8eef5" : "#1c2530";
-    const paper = isDark ? "#0b1118" : "#ffffff";
+    const styleUrl = satellite3d
+      ? "mapbox://styles/mapbox/satellite-streets-v12"
+      : isDark
+        ? "mapbox://styles/mapbox/dark-v11"
+        : "mapbox://styles/mapbox/light-v11";
+    // En satellite (fond sombre) on force des libellés clairs et un halo foncé.
+    const ink = satellite3d ? "#f5f8fc" : isDark ? "#e8eef5" : "#1c2530";
+    const paper = satellite3d ? "#0a1016" : isDark ? "#0b1118" : "#ffffff";
     const map = new mapboxgl.Map({
       container: elRef.current,
       style: styleUrl,
       center: [188, -8],
-      zoom: 1.7,
+      zoom: satellite3d ? 2.1 : 1.7,
+      pitch: satellite3d ? 55 : 0,
+      bearing: satellite3d ? -12 : 0,
+      antialias: true,
       attributionControl: false,
-      projection: "mercator",
+      projection: satellite3d ? "globe" : "mercator",
     });
     mapRef.current = map;
     map.addControl(
@@ -81,6 +88,27 @@ export default function AtlasMap({
     );
 
     map.on("load", () => {
+      // Relief 3D + atmosphère pour un rendu « satellite futuriste ».
+      if (satellite3d) {
+        try {
+          map.addSource("mapbox-dem", {
+            type: "raster-dem",
+            url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+            tileSize: 512,
+            maxzoom: 14,
+          });
+          map.setTerrain({ source: "mapbox-dem", exaggeration: 1.4 });
+          map.setFog({
+            color: "rgb(12, 18, 28)",
+            "high-color": "rgb(30, 60, 110)",
+            "horizon-blend": 0.18,
+            "space-color": "rgb(6, 10, 18)",
+            "star-intensity": 0.5,
+          });
+        } catch (err) {
+          /* relief indisponible : on garde la carte plate */
+        }
+      }
       map.addSource("pts", { type: "geojson", data: fc });
 
       map.addLayer({
