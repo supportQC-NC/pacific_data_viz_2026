@@ -1,16 +1,13 @@
 // src/pages/About/About.jsx
 // ============================================================
-// Page « À propos » — projet, auteur (avec photo), conviction (le pouvoir
-// de la data via le cas Walmart / Pop-Tarts), puis catalogue des jeux de
-// données alimenté par datasetCatalog.js. i18n via t() — aucun texte en dur.
-//
-// Layout : 01 Auteur (photo + texte) → 02 Conviction (récit Walmart EN
-// PLEINE LARGEUR, sous la présentation, avec sources cliquables) → 03
-// Données → 04 Concours. Sections numérotées (rythme éditorial).
-//
-// Pour CORRIGER les liens des datasets : éditer src/data/datasetCatalog.js.
-// Le lien du concours est CHALLENGE_URL ci-dessous. La photo de l'auteur est
-// src/me.jpg (importée ci-dessous). Les sources du récit sont WALMART_SOURCES.
+// Page « À propos » — refonte éditoriale premium. Contenu et clés i18n
+// inchangés ; seul l'habillage évolue.
+// Structure : HERO + sommaire ancré → 01 Auteur (portrait duotone) →
+// 02 Conviction (étude de cas Walmart/Pop-Tarts ILLUSTRÉE + concepts) →
+// 03 Données (plateforme + catalogue) → 04 Concours (bandeau CTA).
+// Données : datasetCatalog.js · liens concours/sources ci-dessous.
+// Photo auteur : src/me.jpg · visuel récit : src/popTare.jpg.
+// i18n via t() — aucun texte en dur. Zéro style inline (tokens SCSS).
 // ============================================================
 
 import React from "react";
@@ -45,12 +42,12 @@ import {
 import { useLang } from "../../store/context/langContext";
 import DATASET_CATALOG, { PDH } from "../../data/datasetCatalog";
 import mePhoto from "../../me.jpg";
+import popTartImg from "../../popTare.jpg";
 import "./About.scss";
 
 const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
 
 // Sources du récit Walmart (liens réels, paramètres de tracking retirés).
-// `kind` -> libellé traduit (about.story.src_*).
 const WALMART_SOURCES = [
   {
     url: "https://www.countryliving.com/food-drinks/a44550/walmart-strawberry-pop-tarts-before-hurricane/",
@@ -103,6 +100,14 @@ const TOPIC_ICONS = {
   meteo: <FiWind />,
 };
 
+// Sommaire ancré (numéro + clé d'intitulé + ancre de section).
+const SECTIONS = [
+  { id: "auteur", n: "01", key: "about.author.eyebrow", icon: <FiUser /> },
+  { id: "conviction", n: "02", key: "about.story.eyebrow", icon: <FiZap /> },
+  { id: "donnees", n: "03", key: "about.data.eyebrow", icon: <FiDatabase /> },
+  { id: "concours", n: "04", key: "about.challenge.title", icon: <FiAward /> },
+];
+
 // En-tête de section : numéro éditorial (décoratif) + eyebrow + icône.
 function SecHead({ num, icon, children }) {
   return (
@@ -111,7 +116,10 @@ function SecHead({ num, icon, children }) {
         {num}
       </span>
       <p className="eyebrow about__sec-eyebrow">
-        {icon} {children}
+        <span className="about__sec-ico" aria-hidden="true">
+          {icon}
+        </span>
+        {children}
       </p>
     </div>
   );
@@ -124,99 +132,152 @@ export default function About() {
 
   return (
     <main className="about">
-      <div className="about__glow" aria-hidden="true" />
+      {/* Décor de fond (aurora + trame), purement visuel */}
+      <div className="about__bg" aria-hidden="true">
+        <span className="about__bg-aurora" />
+        <span className="about__bg-grid" />
+      </div>
+
       <div className="about__inner container">
-        {/* En-tête */}
-        <header className="about__head">
+        {/* ============ HERO ============ */}
+        <header className="about__hero">
           <Link to="/" className="about__back">
             <FiArrowLeft aria-hidden="true" /> {t("about.back")}
           </Link>
-          <p className="eyebrow about__eyebrow">{t("about.eyebrow")}</p>
+
+          <p className="eyebrow about__hero-eyebrow">{t("about.eyebrow")}</p>
           <h1 className="about__title">{t("about.title")}</h1>
           <p className="about__lead">{t("about.lead")}</p>
+
+          {/* Sommaire ancré */}
+          <nav className="about__index" aria-label={t("about.eyebrow")}>
+            {SECTIONS.map((s) => (
+              <a key={s.id} href={`#${s.id}`} className="about__index-item">
+                <span className="about__index-num" aria-hidden="true">
+                  {s.n}
+                </span>
+                <span className="about__index-ico" aria-hidden="true">
+                  {s.icon}
+                </span>
+                <span className="about__index-label">{t(s.key)}</span>
+              </a>
+            ))}
+          </nav>
         </header>
 
-        {/* 01 — Auteur (photo + texte) */}
-        <section className="about__author">
-          <SecHead num="01" icon={<FiUser aria-hidden="true" />}>
+        {/* ============ 01 — AUTEUR ============ */}
+        <section className="about__author" id="auteur">
+          <SecHead num="01" icon={<FiUser />}>
             {t("about.author.eyebrow")}
           </SecHead>
-          <div className="about__author-card">
-            <img
-              className="about__author-photo"
-              src={mePhoto}
-              alt={authorName}
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="about__author-text">
+
+          <div className="about__author-grid">
+            <figure className="about__portrait">
+              <img
+                className="about__portrait-img"
+                src={mePhoto}
+                alt={authorName}
+                loading="lazy"
+                decoding="async"
+              />
+              <span className="about__portrait-frame" aria-hidden="true" />
+            </figure>
+
+            <div className="about__author-meta">
               <h2 className="about__author-name">{authorName}</h2>
-              <span className="about__author-role">{t("about.author.role")}</span>
+              <span className="about__author-role">
+                {t("about.author.role")}
+              </span>
               <p className="about__author-body">{t("about.author.body")}</p>
-              <span className="about__author-note">{t("about.author.note")}</span>
+              <span className="about__author-note">
+                {t("about.author.note")}
+              </span>
             </div>
           </div>
         </section>
 
-        {/* 02 — Conviction : le récit Walmart, en pleine largeur */}
-        <section className="about__story">
-          <SecHead num="02" icon={<FiZap aria-hidden="true" />}>
+        {/* ============ 02 — CONVICTION (récit Walmart) ============ */}
+        <section className="about__story" id="conviction">
+          <SecHead num="02" icon={<FiZap />}>
             {t("about.story.eyebrow")}
           </SecHead>
           <h2 className="about__h2">{t("about.story.title")}</h2>
           <p className="about__story-lead">{t("about.story.lead")}</p>
 
           <article className="about__case">
-            <p className="about__case-kicker">{t("about.story.case_kicker")}</p>
-            <h3 className="about__case-title">{t("about.story.case_title")}</h3>
-            <p className="about__story-p">{t("about.story.context")}</p>
+            {/* Visuel illustratif (Pop-Tarts) */}
+            <figure className="about__case-figure">
+              <img
+                className="about__case-img"
+                src={popTartImg}
+                alt={t("about.story.case_title")}
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
 
-            <div className="about__case-cols">
-              <div className="about__case-block">
-                <h4 className="about__case-h">{t("about.story.found_title")}</h4>
-                <ul className="about__case-list">
-                  <li>{t("about.story.found_1")}</li>
-                  <li>{t("about.story.found_2")}</li>
-                  <li>{t("about.story.found_3")}</li>
-                </ul>
+            <div className="about__case-body">
+              <p className="about__case-kicker">
+                {t("about.story.case_kicker")}
+              </p>
+              <h3 className="about__case-title">
+                {t("about.story.case_title")}
+              </h3>
+              <p className="about__case-context">{t("about.story.context")}</p>
+
+              <div className="about__case-cols">
+                <div className="about__case-block">
+                  <h4 className="about__case-h">
+                    {t("about.story.found_title")}
+                  </h4>
+                  <ul className="about__case-list">
+                    <li>{t("about.story.found_1")}</li>
+                    <li>{t("about.story.found_2")}</li>
+                    <li>{t("about.story.found_3")}</li>
+                  </ul>
+                </div>
+                <div className="about__case-block">
+                  <h4 className="about__case-h">{t("about.story.why_title")}</h4>
+                  <ul className="about__case-list">
+                    <li>{t("about.story.why_1")}</li>
+                    <li>{t("about.story.why_2")}</li>
+                    <li>{t("about.story.why_3")}</li>
+                    <li>{t("about.story.why_4")}</li>
+                  </ul>
+                </div>
               </div>
-              <div className="about__case-block">
-                <h4 className="about__case-h">{t("about.story.why_title")}</h4>
-                <ul className="about__case-list">
-                  <li>{t("about.story.why_1")}</li>
-                  <li>{t("about.story.why_2")}</li>
-                  <li>{t("about.story.why_3")}</li>
-                  <li>{t("about.story.why_4")}</li>
-                </ul>
-              </div>
-            </div>
 
-            <p className="about__case-outcome">{t("about.story.outcome")}</p>
+              <p className="about__case-outcome">{t("about.story.outcome")}</p>
 
-            <div className="about__case-sources">
-              <span className="about__case-sources-label">
-                {t("about.story.sources_label")}
-              </span>
-              <div className="about__case-sources-list">
-                {WALMART_SOURCES.map((s) => (
-                  <a
-                    key={s.url}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="about__src-pill is-origin"
-                  >
-                    {s.label} {"\u00b7"} {t(`about.story.src_${s.kind}`)}{" "}
-                    <FiArrowUpRight aria-hidden="true" />
-                  </a>
-                ))}
+              <div className="about__sources">
+                <span className="about__sources-label">
+                  {t("about.story.sources_label")}
+                </span>
+                <div className="about__sources-list">
+                  {WALMART_SOURCES.map((s) => (
+                    <a
+                      key={s.url}
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="about__src-pill"
+                    >
+                      {s.label} {"\u00b7"} {t(`about.story.src_${s.kind}`)}{" "}
+                      <FiArrowUpRight aria-hidden="true" />
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </article>
 
           <div className="about__concepts">
-            <h3 className="about__case-title">{t("about.story.legend_title")}</h3>
-            <p className="about__story-p">{t("about.story.legend_lead")}</p>
+            <h3 className="about__concepts-title">
+              {t("about.story.legend_title")}
+            </h3>
+            <p className="about__concepts-lead">
+              {t("about.story.legend_lead")}
+            </p>
             <div className="about__concept-grid">
               {CONCEPTS.map((c) => (
                 <div className="about__concept" key={c.n}>
@@ -236,9 +297,9 @@ export default function About() {
           </div>
         </section>
 
-        {/* 03 — Données */}
-        <section className="about__data">
-          <SecHead num="03" icon={<FiDatabase aria-hidden="true" />}>
+        {/* ============ 03 — DONNÉES ============ */}
+        <section className="about__data" id="donnees">
+          <SecHead num="03" icon={<FiDatabase />}>
             {t("about.data.eyebrow")}
           </SecHead>
           <h2 className="about__h2">{t("about.data.title")}</h2>
@@ -262,12 +323,10 @@ export default function About() {
               </span>
             </span>
             <span className="about__platform-cta">
-              {t("about.data.platform_cta")}{" "}
-              <FiArrowUpRight aria-hidden="true" />
+              {t("about.data.platform_cta")} <FiArrowUpRight aria-hidden="true" />
             </span>
           </a>
 
-          {/* Catalogue (grille de cartes, alimentée par datasetCatalog.js) */}
           <div className="about__grid">
             {DATASET_CATALOG.map((d) => (
               <Link className="about__card" key={d.id} to={`/data/${d.id}`}>
@@ -278,35 +337,42 @@ export default function About() {
                   {pick(d.labelFr, d.labelEn)}
                 </h3>
                 <p className="about__card-desc">{pick(d.descFr, d.descEn)}</p>
-                <span className="about__src-pill is-origin about__card-cta">
+                <span className="about__card-cta">
                   {t("about.data.card_cta")} <FiArrowUpRight aria-hidden="true" />
                 </span>
               </Link>
             ))}
           </div>
 
-          <p className="about__note">{t("about.data.note")}</p>
-          <p className="about__note about__note--method">
-            {t("about.data.integrity")}
-          </p>
+          <div className="about__method">
+            <span className="about__method-label">{t("about.data.note")}</span>
+            <p className="about__method-text">{t("about.data.integrity")}</p>
+          </div>
         </section>
 
-        {/* 04 — Concours */}
-        <section className="about__challenge">
-          <div className="about__challenge-text">
-            <SecHead num="04" icon={<FiAward aria-hidden="true" />}>
-              {t("about.challenge.title")}
-            </SecHead>
-            <p>{t("about.challenge.body")}</p>
+        {/* ============ 04 — CONCOURS ============ */}
+        <section className="about__challenge" id="concours">
+          <div className="about__challenge-inner">
+            <span className="about__challenge-icon" aria-hidden="true">
+              <FiAward />
+            </span>
+            <div className="about__challenge-text">
+              <p className="eyebrow about__challenge-eyebrow">
+                {t("about.challenge.title")}
+              </p>
+              <p className="about__challenge-body">
+                {t("about.challenge.body")}
+              </p>
+            </div>
+            <a
+              className="about__challenge-cta"
+              href={CHALLENGE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("about.challenge.cta")} <FiArrowUpRight aria-hidden="true" />
+            </a>
           </div>
-          <a
-            className="about__challenge-cta"
-            href={CHALLENGE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t("about.challenge.cta")} <FiArrowUpRight aria-hidden="true" />
-          </a>
         </section>
       </div>
     </main>
