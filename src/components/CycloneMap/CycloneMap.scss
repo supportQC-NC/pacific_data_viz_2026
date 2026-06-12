@@ -414,3 +414,495 @@
     opacity: 0.12;
   }
 }
+
+/* ============================================================
+   À AJOUTER à la fin de src/components/CycloneMap/CycloneMap.scss
+   ------------------------------------------------------------
+   1) Barre de recherche de cyclone (autocomplétion), toujours visible.
+   2) Plein écran : bulletin saison + nom déplacé EN HAUT À DROITE.
+   Tokens uniquement, light/dark, focus clavier. Aucune couleur en dur.
+   ============================================================ */
+
+/* ---- Recherche de cyclone (haut-gauche, fenêtré + plein écran) ---- */
+.cmap__search {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: min(320px, calc(100% - 92px));
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-bg) 62%, transparent);
+  backdrop-filter: blur(10px);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search:focus-within {
+  border-color: var(--c-accent);
+}
+.cmap__search-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--c-text-mute);
+}
+.cmap__search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.cmap__search-input::placeholder {
+  color: var(--c-text-mute);
+}
+.cmap__search-input:focus-visible {
+  outline: none;
+}
+.cmap__search-clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line-strong);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search-clear:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.cmap__search-clear:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Liste d'autocomplétion */
+.cmap__search-list {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  right: 0;
+  max-height: 264px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-glow);
+}
+.cmap__search-list li {
+  list-style: none;
+}
+.cmap__search-opt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: transparent;
+  text-align: left;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.cmap__search-opt:hover,
+.cmap__search-opt:focus-visible {
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+  outline: none;
+}
+.cmap__search-opt-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-text);
+}
+.cmap__search-opt-season {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+/* ---- Plein écran : bulletin (saison + nom) EN HAUT À DROITE ---- */
+/* Plus spécifique que `.cmap__readout` de base → surcharge sans !important.
+   Placé sous le bouton ✕ (haut-droite) pour ne pas le recouvrir. */
+.cmap--full .cmap__readout {
+  left: auto;
+  right: var(--sp-3);
+  top: calc(var(--sp-3) + 38px + var(--sp-2));
+  transform: none;
+  justify-content: flex-end;
+  max-width: min(440px, calc(100% - 2 * var(--sp-3)));
+}
+
+/* Petits écrans : on rétrécit la recherche pour ne pas chevaucher le bouton. */
+@media (max-width: 720px) {
+  .cmap__search {
+    width: min(220px, calc(100% - 92px));
+  }
+}
+
+/* ============================================================
+   À AJOUTER à la fin de src/components/CycloneMap/CycloneMap.scss
+   ------------------------------------------------------------
+   1) Barre de recherche de cyclone (autocomplétion), toujours visible.
+   2) Plein écran : bulletin saison + nom déplacé EN HAUT À DROITE.
+   Tokens uniquement, light/dark, focus clavier. Aucune couleur en dur.
+   ============================================================ */
+
+/* ---- Recherche de cyclone (haut-gauche, fenêtré + plein écran) ---- */
+.cmap__search {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: min(320px, calc(100% - 92px));
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-bg) 62%, transparent);
+  backdrop-filter: blur(10px);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search:focus-within {
+  border-color: var(--c-accent);
+}
+.cmap__search-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--c-text-mute);
+}
+.cmap__search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.cmap__search-input::placeholder {
+  color: var(--c-text-mute);
+}
+.cmap__search-input:focus-visible {
+  outline: none;
+}
+.cmap__search-clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line-strong);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search-clear:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.cmap__search-clear:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Liste d'autocomplétion */
+.cmap__search-list {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  right: 0;
+  max-height: 264px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-glow);
+}
+.cmap__search-list li {
+  list-style: none;
+}
+.cmap__search-opt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: transparent;
+  text-align: left;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.cmap__search-opt:hover,
+.cmap__search-opt:focus-visible {
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+  outline: none;
+}
+.cmap__search-opt-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-text);
+}
+.cmap__search-opt-season {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+/* ---- Libellé du bouton plein écran : masqué en fenêtré, visible en plein écran ---- */
+.cmap__expand-label {
+  display: none;
+}
+
+/* ---- Plein écran : sortie CLAIRE (icône + « Fermer ») en haut à droite ---- */
+.cmap--full .cmap__expand {
+  z-index: 4; /* au-dessus du bulletin */
+  width: auto;
+  height: auto;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-pill);
+  grid-auto-flow: column;
+  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+  border-color: var(--c-line-strong);
+}
+.cmap--full .cmap__expand:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.cmap--full .cmap__expand-label {
+  display: inline;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+/* ---- Plein écran : bulletin (saison + nom) EN HAUT À DROITE, SOUS le bouton ---- */
+/* Plus spécifique que `.cmap__readout` de base → surcharge sans !important. */
+.cmap--full .cmap__readout {
+  left: auto;
+  right: var(--sp-3);
+  top: calc(var(--sp-3) + 44px + var(--sp-2)); /* sous le bouton « Fermer » */
+  transform: none;
+  justify-content: flex-end;
+  max-width: min(440px, calc(100% - 2 * var(--sp-3)));
+}
+
+/* Petits écrans : on rétrécit la recherche pour ne pas chevaucher le bouton. */
+@media (max-width: 720px) {
+  .cmap__search {
+    width: min(220px, calc(100% - 92px));
+  }
+}
+
+/* ============================================================
+   À AJOUTER à la fin de src/components/CycloneMap/CycloneMap.scss
+   ------------------------------------------------------------
+   1) Barre de recherche de cyclone (autocomplétion), toujours visible.
+   2) Plein écran : bulletin saison + nom déplacé EN HAUT À DROITE.
+   Tokens uniquement, light/dark, focus clavier. Aucune couleur en dur.
+   ============================================================ */
+
+/* ---- Recherche de cyclone (haut-gauche, fenêtré + plein écran) ---- */
+.cmap__search {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: min(320px, calc(100% - 92px));
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-bg) 62%, transparent);
+  backdrop-filter: blur(10px);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search:focus-within {
+  border-color: var(--c-accent);
+}
+.cmap__search-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--c-text-mute);
+}
+.cmap__search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.cmap__search-input::placeholder {
+  color: var(--c-text-mute);
+}
+.cmap__search-input:focus-visible {
+  outline: none;
+}
+.cmap__search-clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--c-text-soft);
+  background: transparent;
+  border: var(--border-hair) solid var(--c-line-strong);
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.cmap__search-clear:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.cmap__search-clear:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Liste d'autocomplétion */
+.cmap__search-list {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  right: 0;
+  max-height: 264px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-glow);
+}
+.cmap__search-list li {
+  list-style: none;
+}
+.cmap__search-opt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: transparent;
+  text-align: left;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.cmap__search-opt:hover,
+.cmap__search-opt:focus-visible {
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+  outline: none;
+}
+.cmap__search-opt-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-text);
+}
+.cmap__search-opt-season {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+/* ---- Libellé du bouton plein écran : masqué en fenêtré, visible en plein écran ---- */
+.cmap__expand-label {
+  display: none;
+}
+
+/* ---- Plein écran : sortie CLAIRE (icône + « Fermer ») en haut à droite ---- */
+.cmap--full .cmap__expand {
+  z-index: 4; /* au-dessus du bulletin */
+  width: auto;
+  height: auto;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-pill);
+  grid-auto-flow: column;
+  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+  border-color: var(--c-line-strong);
+}
+.cmap--full .cmap__expand:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.cmap--full .cmap__expand-label {
+  display: inline;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+/* ---- Plein écran : bulletin (saison + nom) EN HAUT À DROITE, SOUS le bouton ---- */
+/* Plus spécifique que `.cmap__readout` de base → surcharge sans !important. */
+.cmap--full .cmap__readout {
+  left: auto;
+  right: var(--sp-3);
+  top: calc(var(--sp-3) + 44px + var(--sp-2)); /* sous le bouton « Fermer » */
+  transform: none;
+  justify-content: flex-end;
+  max-width: min(440px, calc(100% - 2 * var(--sp-3)));
+}
+
+/* Petits écrans : on rétrécit la recherche pour ne pas chevaucher le bouton. */
+@media (max-width: 720px) {
+  .cmap__search {
+    width: min(220px, calc(100% - 92px));
+  }
+}
+
+/* ============================================================
+   Hauteur de la carte en mode FENÊTRÉ (un peu plus haute).
+   - N'affecte PAS le plein écran : `.cmap--full .cmap__map { height:100% }`
+     a une spécificité plus forte.
+   - La légende (.cmap__legend) est un frère SOUS la carte → jamais perdue.
+   - La media-query mobile est replacée APRÈS pour rester prioritaire.
+   ============================================================ */
+.cmap__map {
+  height: 640px;
+}
+@media (max-width: 720px) {
+  .cmap__map {
+    height: 460px;
+  }
+}

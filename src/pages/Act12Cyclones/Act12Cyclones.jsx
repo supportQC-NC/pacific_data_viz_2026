@@ -84,6 +84,22 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return 2 * R_EARTH_KM * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 
+/* ---------- Helpers couleur (heatmap calendrier) ----------
+   Teintes/ombres calculées depuis les tokens (aucune couleur de marque en
+   dur ; seuls le blanc/noir servent à éclaircir/assombrir). ---------- */
+function hexToRgb(h) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "").trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgbToHex(rgb) {
+  return `#${rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("")}`;
+}
+function mixRgb(a, b, t) {
+  return a.map((v, i) => v + (b[i] - v) * t);
+}
+
 /* ---------- Panneau « Source & portée » (onglet provenance) ---------- */
 function ProvenancePanel({ t }) {
   const links = [
@@ -215,9 +231,10 @@ export default function Act12Cyclones() {
 
   const focus = REGION_FOCUS[region] || null;
 
-  // Timeline : par défaut, dernière saison (toute l'accumulation visible).
+  // Timeline : par défaut, PREMIÈRE saison (le récit démarre au début de
+  // l'archive ; on déroule ensuite l'accumulation au fil de la lecture).
   useEffect(() => {
-    if (seasons.length && seasonIdx === null) setSeasonIdx(seasons.length - 1);
+    if (seasons.length && seasonIdx === null) setSeasonIdx(0);
   }, [seasons, seasonIdx]);
 
   // Nombre de cyclones de la saison courante (pour caler la durée de lecture).
@@ -462,6 +479,8 @@ export default function Act12Cyclones() {
       kt: t("act12.map.kt"),
       kmh: t("act12.map.kmh"),
       hpa: t("act12.map.hpa"),
+      searchPlaceholder: t("act12.map.search_placeholder"),
+      searchClear: t("act12.map.search_clear"),
     }),
     [t],
   );
@@ -472,41 +491,127 @@ export default function Act12Cyclones() {
     const cats = ordered.map((s) => stageLabels[s.id]);
     const vals = ordered.map((s) => view.filter((c) => c.stage === s.id).length);
     const colors = ordered.map((s) => stageColors[s.id] || tk.accent);
+    const maxV = Math.max(1, ...vals);
     return {
       chart: baseChart(tk, { type: "bar" }),
       series: [{ name: t("act12.viz.bystage_series"), data: vals }],
       colors,
-      plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 3, barHeight: "62%" } },
-      dataLabels: { enabled: true, style: { fontFamily: MONO, fontSize: "11px", colors: [tk.text] }, offsetX: 14 },
+      plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: "66%" } },
+      // Effectif en bout de barre, SUR LE FOND (pas de boîte blanche illisible).
+      dataLabels: {
+        enabled: true,
+        textAnchor: "start",
+        offsetX: 10,
+        style: { fontFamily: MONO, fontSize: "13px", fontWeight: 700, colors: [tk.text] },
+        background: { enabled: false },
+        formatter: (v) => `${v}`,
+      },
       legend: { show: false },
-      grid: baseGrid(tk),
-      xaxis: baseXaxis(tk, { categories: cats }),
-      yaxis: baseYaxis(tk),
+      grid: baseGrid(tk, { xaxis: { lines: { show: false } } }),
+      // Axe catégoriel EXPLICITE (anti-fuite) ; l'axe des effectifs est masqué,
+      // les barres + l'étiquette en bout suffisent à le lire.
+      xaxis: baseXaxis(tk, {
+        type: "category",
+        categories: cats,
+        max: maxV + Math.max(2, Math.ceil(maxV * 0.16)),
+        title: { text: "" },
+        labels: { show: false },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        tooltip: { enabled: false },
+      }),
+      // Noms de stades à gauche (assez de largeur pour les libellés longs).
+      yaxis: baseYaxis(tk, {
+        labels: {
+          show: true,
+          maxWidth: 230,
+          style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "11px" },
+        },
+      }),
       tooltip: baseTooltip(),
     };
   }, [stages, stageLabels, view, stageColors, tk, t]);
 
   const seasonBarOptions = useMemo(() => {
-    const cats = bySeason.map((r) => r.season);
-    const vals = bySeason.map((r) => r.count);
-    const colors = bySeason.map((r) => stageColors[r.peakStage] || tk.accent);
+    const counts = bySeason.map((r) => r.count);
+    // Moyenne mobile centrée sur 5 saisons → la tendance de fond à travers le
+    // bruit (la fréquence ne grimpe pas nettement : c'est le message de l'acte).
+    const half = 2;
+    const rolling = counts.map((_, i) => {
+      let sum = 0;
+      let n = 0;
+      for (let k = i - half; k <= i + half; k += 1) {
+        if (k >= 0 && k < counts.length) {
+          sum += counts[k];
+          n += 1;
+        }
+      }
+      return n ? Math.round((sum / n) * 10) / 10 : null;
+    });
+    const barData = bySeason.map((r) => ({
+      x: r.season,
+      y: r.count,
+      fillColor: stageColors[r.peakStage] || tk.accent,
+    }));
+    const avgData = bySeason.map((r, i) => ({ x: r.season, y: rolling[i] }));
+
     return {
-      chart: baseChart(tk, { type: "bar" }),
-      series: [{ name: t("act12.viz.season_series"), data: vals }],
-      colors,
-      plotOptions: { bar: { distributed: true, borderRadius: 2, columnWidth: "72%" } },
+      chart: baseChart(tk, {
+        type: "line",
+        // Halo sombre sous la ligne de tendance (série 1) → reste lisible même
+        // par-dessus les barres claires/blanches (saisons à pointe CTTI).
+        dropShadow: { enabled: true, enabledOnSeries: [1], top: 0, left: 0, blur: 3, color: tk.bg, opacity: 0.7 },
+      }),
+      series: [
+        { name: t("act12.viz.season_series"), type: "column", data: barData },
+        { name: t("act12.viz.season_avg"), type: "line", data: avgData },
+      ],
+      colors: [tk.accent, tk.text],
+      stroke: { width: [0, 3.5], curve: "smooth" },
+      fill: { opacity: [1, 1] },
+      markers: { size: 0 },
+      plotOptions: { bar: { borderRadius: 2, columnWidth: "72%" } },
       dataLabels: { enabled: false },
-      legend: { show: false },
+      legend: {
+        show: true,
+        position: "top",
+        horizontalAlign: "left",
+        fontFamily: MONO,
+        fontSize: "11px",
+        labels: { colors: tk.textSoft },
+        markers: { width: 9, height: 9, radius: 2 },
+        itemMargin: { horizontal: 10, vertical: 2 },
+      },
       grid: baseGrid(tk),
       xaxis: baseXaxis(tk, {
-        categories: cats,
-        tickAmount: Math.min(12, Math.max(2, cats.length - 1)),
+        type: "category",
+        tickAmount: Math.min(12, Math.max(2, bySeason.length - 1)),
         labels: { rotate: -45, rotateAlways: false, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
       }),
-      yaxis: baseYaxis(tk),
-      tooltip: baseTooltip(),
+      yaxis: baseYaxis(tk, {
+        min: 0,
+        forceNiceScale: true,
+        labels: { formatter: (v) => `${Math.round(v)}`, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+      }),
+      tooltip: baseTooltip({
+        shared: true,
+        intersect: false,
+        custom: ({ dataPointIndex }) => {
+          const r = bySeason[dataPointIndex];
+          if (!r) return "";
+          const peak = stageLabels[r.peakStage] || "";
+          const avg = rolling[dataPointIndex];
+          return (
+            `<div class="cmap-pop"><span class="cmap-pop__name">${r.season}</span>` +
+            `<span class="cmap-pop__row">${r.count} ${t("act12.viz.season_series")}</span>` +
+            (peak ? `<span class="cmap-pop__row">${peak}</span>` : "") +
+            (avg != null ? `<span class="cmap-pop__row">${t("act12.viz.season_avg")} : ${avg}</span>` : "") +
+            `</div>`
+          );
+        },
+      }),
     };
-  }, [bySeason, stageColors, tk, t]);
+  }, [bySeason, stageColors, stageLabels, tk, t]);
 
   const exposureBarOptions = useMemo(() => {
     const cats = exposure.map((r) => r.name);
@@ -575,15 +680,21 @@ export default function Act12Cyclones() {
   }, [exposure, stages, stageLabels, stageColors, tk]);
 
   const intensifyLineOptions = useMemo(() => {
+    const sea = intensify.seasons;
     return {
       chart: baseChart(tk, { type: "line" }),
       series: [
-        { name: t("act12.viz.intensify_raw"), data: intensify.share },
-        { name: t("act12.viz.intensify_trend"), data: intensify.roll },
+        { name: t("act12.viz.intensify_raw"), type: "scatter", data: sea.map((s, i) => ({ x: s, y: intensify.share[i] })) },
+        { name: t("act12.viz.intensify_trend"), type: "area", data: sea.map((s, i) => ({ x: s, y: intensify.roll[i] })) },
       ],
       colors: [tk.textMute, tk.warm],
-      stroke: { width: [1.5, 3.5], curve: "smooth", dashArray: [4, 0] },
-      markers: { size: 0 },
+      stroke: { width: [0, 3.5], curve: "smooth" },
+      fill: {
+        type: ["solid", "gradient"],
+        opacity: [0.5, 0.25],
+        gradient: { shadeIntensity: 0.5, opacityFrom: 0.34, opacityTo: 0.02, stops: [0, 100] },
+      },
+      markers: { size: [3.5, 0], strokeWidth: 0, hover: { size: 5 } },
       dataLabels: { enabled: false },
       legend: {
         show: true,
@@ -596,8 +707,8 @@ export default function Act12Cyclones() {
       },
       grid: baseGrid(tk),
       xaxis: baseXaxis(tk, {
-        categories: intensify.seasons,
-        tickAmount: Math.min(10, Math.max(2, intensify.seasons.length - 1)),
+        type: "category",
+        tickAmount: Math.min(10, Math.max(2, sea.length - 1)),
         labels: { rotate: -45, rotateAlways: false, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
       }),
       yaxis: baseYaxis(tk, {
@@ -606,22 +717,52 @@ export default function Act12Cyclones() {
         tickAmount: 5,
         labels: { formatter: (v) => `${Math.round(v)} %`, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
       }),
+      // Repère « 50 % » : seuil où la majorité des cyclones atteignent CT+.
+      annotations: {
+        yaxis: [
+          {
+            y: 50,
+            strokeDashArray: 3,
+            borderColor: tk.lineStrong,
+            label: {
+              text: "50 %",
+              position: "left",
+              borderWidth: 0,
+              style: { background: "transparent", color: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+            },
+          },
+        ],
+      },
       tooltip: { shared: true, intersect: false, y: { formatter: (v) => (v == null ? "—" : `${Math.round(v)} %`) } },
     };
   }, [intensify, tk, t]);
 
-  const calendarHeatOptions = useMemo(
-    () => ({
+  const calendarHeatOptions = useMemo(() => {
+    // Domaine des valeurs (cyclones formés dans une case mois × décennie).
+    const allVals = calendar.series.flatMap((s) => s.data.map((d) => d.y));
+    const maxV = Math.max(1, ...allVals);
+    // 0 = vert SOMBRE/calme (hors-saison) — s'efface dans le fond.
+    const calm = rgbToHex(mixRgb(hexToRgb(tk.positive) || [37, 224, 154], hexToRgb(tk.bg) || [2, 9, 18], 0.74));
+    // Activité : rampe MONOCHROME ROUGE (sans orange). 1 cyclone = rouge pâle,
+    // de plus en plus saturé/profond à mesure que la saison est active.
+    const neg = hexToRgb(tk.negative) || [255, 77, 109];
+    const pale = mixRgb(neg, [255, 255, 255], 0.52); // rouge pâle (peu de cyclones)
+    const deep = mixRgb(neg, [0, 0, 0], 0.3); // rouge profond (saison très active)
+    const ranges = [{ from: 0, to: 0, color: calm }];
+    for (let v = 1; v <= maxV; v += 1) {
+      const t = maxV > 1 ? (v - 1) / (maxV - 1) : 0;
+      ranges.push({ from: v, to: v, color: rgbToHex(mixRgb(pale, deep, t)) });
+    }
+    return {
       chart: baseChart(tk, { type: "heatmap" }),
       series: calendar.series,
-      colors: [tk.accent],
+      colors: [tk.positive],
       dataLabels: { enabled: false },
       plotOptions: {
         heatmap: {
           radius: 2,
-          enableShades: true,
-          shadeIntensity: 0.55,
-          colorScale: { ranges: [{ from: 0, to: 0, color: tk.line, name: "0" }] },
+          enableShades: false, // on contrôle entièrement les couleurs via ranges
+          colorScale: { ranges },
         },
       },
       legend: { show: false },
@@ -633,17 +774,65 @@ export default function Act12Cyclones() {
         axisTicks: { show: false },
       },
       yaxis: { labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } } },
-      tooltip: { y: { formatter: (v) => `${v}` } },
-    }),
-    [calendar, tk],
-  );
+      tooltip: {
+        custom: ({ seriesIndex, dataPointIndex, w }) => {
+          const s = w.config.series[seriesIndex];
+          if (!s) return "";
+          const cell = s.data && s.data[dataPointIndex];
+          const month = s.name || "";
+          const decade = cell ? cell.x : "";
+          const val = cell ? cell.y : 0;
+          return (
+            `<div class="cmap-pop"><span class="cmap-pop__name">${month} · ${decade}</span>` +
+            `<span class="cmap-pop__row">${val} ${t("act12.viz.season_series")}</span></div>`
+          );
+        },
+      },
+    };
+  }, [calendar, tk, t]);
 
-  const windPressOptions = useMemo(
-    () => ({
-      chart: baseChart(tk, { type: "scatter" }),
-      series: windPress,
-      colors: stages.map((s) => stageColors[s.id] || tk.accent),
-      markers: { size: 6, strokeWidth: 0, hover: { size: 8 } },
+  const windPressOptions = useMemo(() => {
+    // Droite de régression linéaire vent = a + b·pression, ajustée sur TOUS les
+    // points → matérialise la relation physique (pression basse ⇒ vent fort).
+    const wpSeries = windPress.map((s) => ({ ...s, type: "scatter" }));
+    const pts = windPress.flatMap((s) => s.data);
+    let trend = [];
+    if (pts.length >= 2) {
+      const n = pts.length;
+      const sx = pts.reduce((a, p) => a + p.x, 0);
+      const sy = pts.reduce((a, p) => a + p.y, 0);
+      const sxx = pts.reduce((a, p) => a + p.x * p.x, 0);
+      const sxy = pts.reduce((a, p) => a + p.x * p.y, 0);
+      const denom = n * sxx - sx * sx;
+      if (denom !== 0) {
+        const b = (n * sxy - sx * sy) / denom;
+        const a = (sy - b * sx) / n;
+        const xs = pts.map((p) => p.x);
+        const xMin = Math.min(...xs);
+        const xMax = Math.max(...xs);
+        trend = [
+          { x: xMin, y: a + b * xMin },
+          { x: xMax, y: a + b * xMax },
+        ];
+      }
+    }
+    const hasTrend = trend.length > 0;
+    const series = hasTrend
+      ? [...wpSeries, { name: t("act12.viz.wp_relation"), type: "line", data: trend }]
+      : wpSeries;
+    const stageCols = stages.map((s) => stageColors[s.id] || tk.accent);
+    const colors = hasTrend ? [...stageCols, tk.text] : stageCols;
+    // Réglages PAR SÉRIE : marqueurs pour les stades (points), trait pour la
+    // seule droite de tendance (pas de marqueurs dessus).
+    const mkSize = hasTrend ? [...stages.map(() => 6), 0] : stages.map(() => 6);
+    const stWidth = hasTrend ? [...stages.map(() => 0), 2.5] : stages.map(() => 0);
+    const stDash = hasTrend ? [...stages.map(() => 0), 6] : 0;
+    return {
+      chart: baseChart(tk, { type: "line" }),
+      series,
+      colors,
+      stroke: { width: stWidth, dashArray: stDash, curve: "straight" },
+      markers: { size: mkSize, strokeWidth: 0, hover: { size: 8 } },
       dataLabels: { enabled: false },
       legend: {
         show: true,
@@ -670,7 +859,8 @@ export default function Act12Cyclones() {
       tooltip: {
         custom: ({ seriesIndex, dataPointIndex, w }) => {
           const d = w.config.series[seriesIndex] && w.config.series[seriesIndex].data[dataPointIndex];
-          if (!d) return "";
+          // Pas d'info-bulle sur la droite de tendance (points sans nom).
+          if (!d || d.name == null) return "";
           return (
             `<div class="cmap-pop"><span class="cmap-pop__name">${d.name}</span>` +
             `<span class="cmap-pop__row">${Math.round(d.y)} ${t("act12.map.kt")}</span>` +
@@ -678,9 +868,8 @@ export default function Act12Cyclones() {
           );
         },
       },
-    }),
-    [windPress, stages, stageColors, tk, t],
-  );
+    };
+  }, [windPress, stages, stageColors, tk, t]);
 
   const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
   const intensityOpts = [
@@ -738,7 +927,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.intensify_title"),
             finding: t("act12.viz.intensify_find"),
             empty: !intensify.seasons.length,
-            node: <ApexChart options={intensifyLineOptions} />,
+            node: <ApexChart key="intensify" options={intensifyLineOptions} />,
           },
           {
             id: "windpress",
@@ -746,7 +935,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.wp_title"),
             finding: t("act12.viz.wp_find"),
             empty: !windPress.some((s) => s.data.length),
-            node: <ApexChart options={windPressOptions} />,
+            node: <ApexChart key="windpress" options={windPressOptions} />,
           },
           {
             id: "exposure",
@@ -754,7 +943,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.exposure_title"),
             finding: t("act12.viz.exposure_find"),
             empty: !exposure.length,
-            node: <ApexChart options={exposureBarOptions} />,
+            node: <ApexChart key="exposure" options={exposureBarOptions} />,
           },
           {
             id: "stage",
@@ -762,7 +951,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.bystage_title"),
             finding: t("act12.viz.bystage_find"),
             empty: !res.count,
-            node: <ApexChart options={stageBarOptions} />,
+            node: <ApexChart key="stage" options={stageBarOptions} />,
           },
           {
             id: "season",
@@ -770,7 +959,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.season_title"),
             finding: t("act12.viz.season_find"),
             empty: !bySeason.length,
-            node: <ApexChart options={seasonBarOptions} />,
+            node: <ApexChart key="season" options={seasonBarOptions} />,
           },
           {
             id: "month",
@@ -778,7 +967,7 @@ export default function Act12Cyclones() {
             title: t("act12.viz.month_title"),
             finding: t("act12.viz.month_find"),
             empty: !calendar.hasData,
-            node: <ApexChart options={calendarHeatOptions} />,
+            node: <ApexChart key="month" options={calendarHeatOptions} />,
           },
           {
             id: "source",

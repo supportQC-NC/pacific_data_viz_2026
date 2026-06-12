@@ -15,7 +15,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
-import { isPict } from "../../i18n/pictNames";
+import { isPict, pictName } from "../../i18n/pictNames";
 import useInView from "../../hooks/UseInView";
 import "./KeyFigures.scss";
 
@@ -35,18 +35,19 @@ const avgLast = (data) => {
   return xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : null;
 };
 // Hausse MAXIMALE sur la période (territoire le plus exposé) — la moyenne
-// d'une anomalie s'annule, l'extrême reste signifiant.
+// d'une anomalie s'annule, l'extrême reste signifiant. Renvoie aussi le
+// code du territoire concerné, pour pouvoir le nommer.
 const maxRise = (data) => {
-  let m = null;
+  let best = null; // { rise, code }
   Object.keys(data.byArea).forEach((g) => {
     if (!isPict(g)) return;
     const fl = firstLast(data.byArea[g]);
     if (fl && fl.first.year !== fl.last.year) {
       const r = fl.last.value - fl.first.value;
-      if (m == null || r > m) m = r;
+      if (best == null || r > best.rise) best = { rise: r, code: g };
     }
   });
-  return m;
+  return best;
 };
 const countAreas = (data) => Object.keys(data.byArea).filter(isPict).length;
 
@@ -98,14 +99,20 @@ export default function KeyFigures() {
     if (sea.status === "succeeded" && sea.data) {
       const n = countAreas(sea.data);
       if (n) out.push({ key: "territories", target: n, decimals: 0 });
-      const rise = maxRise(sea.data);
-      if (rise != null) {
+      const top = maxRise(sea.data);
+      // Les valeurs SLA sont en MÈTRES (anomalie vs réf. 1993–2012) → on
+      // convertit en mm pour un chiffre lisible, comme l'acte Territoire
+      // (Math.round(rise) seul donnait « +0 mm » : ~0,08 m arrondi à 0).
+      // On joint le nom du territoire le plus exposé (area).
+      if (top != null) {
+        const riseMm = top.rise * 1000;
         out.push({
           key: "sea",
-          target: Math.round(rise),
+          target: Math.round(riseMm),
           decimals: 0,
-          prefix: rise >= 0 ? "+" : "",
+          prefix: riseMm >= 0 ? "+" : "",
           suffix: "mm",
+          area: pictName(top.code, lang),
         });
       }
     }
@@ -118,7 +125,7 @@ export default function KeyFigures() {
       if (s != null) out.push({ key: "sst", target: s, decimals: 1, prefix: s >= 0 ? "+" : "", suffix: "°C" });
     }
     return out;
-  }, [sea, renew, sst]);
+  }, [sea, renew, sst, lang]);
 
   return (
     <section className="keyfigs" ref={ref} data-inview={inView ? "true" : "false"}>
@@ -128,19 +135,30 @@ export default function KeyFigures() {
           {figures.length === 0 && (
             <li className="keyfig keyfig--empty">{t("home.keyfigures.loading")}</li>
           )}
-          {figures.map((f) => (
-            <li className="keyfig" key={f.key}>
-              <CountUp
-                target={f.target}
-                decimals={f.decimals}
-                prefix={f.prefix || ""}
-                suffix={f.suffix || ""}
-                run={inView}
-                lang={lang}
-              />
-              <span className="keyfig__label">{t(`home.keyfigures.${f.key}_label`)}</span>
-            </li>
-          ))}
+          {figures.map((f) => {
+            // Label i18n + nom du territoire le plus exposé (figure « mer ») :
+            // si la chaîne contient {area} on le remplace, sinon on l'ajoute —
+            // robuste, que le JSON ait été mis à jour ou non.
+            const rawLabel = t(`home.keyfigures.${f.key}_label`);
+            const label = f.area
+              ? rawLabel.includes("{area}")
+                ? rawLabel.replace("{area}", f.area)
+                : `${rawLabel} · ${f.area}`
+              : rawLabel;
+            return (
+              <li className="keyfig" key={f.key}>
+                <CountUp
+                  target={f.target}
+                  decimals={f.decimals}
+                  prefix={f.prefix || ""}
+                  suffix={f.suffix || ""}
+                  run={inView}
+                  lang={lang}
+                />
+                <span className="keyfig__label">{label}</span>
+              </li>
+            );
+          })}
         </ul>
         <p className="keyfigs__source">{t("home.keyfigures.source")}</p>
       </div>

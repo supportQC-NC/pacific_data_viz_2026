@@ -141,7 +141,7 @@
       "loading": "Loading key figures…",
       "source": "Source: Pacific Data Hub · Pacific Community (SPC)",
       "territories_label": "Pacific territories tracked",
-      "sea_label": "of peak sea-level rise (most exposed territory)",
+      "sea_label": "of peak sea-level rise · {area}, most exposed",
       "renew_label": "renewable energy on average",
       "sst_label": "sea-surface temperature anomaly"
     },
@@ -2393,7 +2393,7 @@
     "deck_done": "End of the act",
     "deck_finish": "Finish the experience"
   },
-"about": {
+  "about": {
     "eyebrow": "About",
     "title": "Datamoana, and the hand behind the data",
     "lead": "An independent data-visualisation project built for the Pacific Dataviz Challenge 2026: making the Pacific's climate data legible, at human scale.",
@@ -2545,11 +2545,13 @@
       "season": "Season",
       "kt": "knots",
       "kmh": "km/h",
-      "hpa": "hPa"
+      "hpa": "hPa",
+      "search_placeholder": "Search a cyclone…",
+      "search_clear": "Clear selection"
     },
     "viz": {
-      "map_title": "47 seasons of tracks",
-      "map_find": "Scrub through the seasons: past tracks linger as faint scars on the ocean while the active season draws itself in.",
+      "map_title": "Half a century of cyclones over the Pacific",
+      "map_find": "Scrub through the seasons — or search a cyclone by name to isolate its track. Past seasons stay as a watermark; the active season draws itself.",
       "bystage_title": "Distribution by intensity stage",
       "bystage_find": "How many tracks reached each stage, from weak depression to very intense cyclone.",
       "bystage_series": "Tracks",
@@ -2569,18 +2571,21 @@
       "intensify_raw": "Per season",
       "intensify_trend": "5-season average",
       "month_title": "Activity calendar",
-      "month_find": "Cyclone genesis by month (austral season, July → June, rows) and by decade (columns). The brighter a cell, the more cyclones formed that month. The core of the season runs December to April.",
+      "month_find": "Cyclone genesis by month (austral season, July → June, rows) and by decade (columns). The redder a cell, the more cyclones formed that month; green marks the lull. The season peaks from December to April.",
       "month_series": "Cyclones",
       "wp_title": "The wind–pressure signature",
       "wp_find": "Each dot is a cyclone: its minimum pressure (horizontal, hPa) against its maximum wind (vertical, knots), coloured by peak stage. The lower the pressure, the higher the wind — the physical relationship that defines a cyclone's intensity.",
       "wp_x": "Minimum pressure (hPa)",
-      "wp_y": "Maximum wind (kt)"
+      "wp_y": "Maximum wind (kt)",
+      "season_avg": "5-season moving average",
+      "wp_relation": "Average relationship",
+"season_mean": "Average"
     },
     "board": {
       "tab_map": "Map",
       "tab_stage": "Stages",
       "tab_season": "Per season",
-      "signature": "Signature",
+      "signature": "Map",
       "switch_hint": "← → to switch view",
       "takeaway_kicker": "Takeaway",
       "start": "Explore the tracks",

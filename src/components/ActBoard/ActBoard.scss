@@ -303,6 +303,7 @@
 }
 .board__head {
   flex: 0 0 auto;
+  max-width: 98ch;
 }
 .board__num {
   font-family: var(--font-mono);
@@ -323,7 +324,7 @@
   font-size: var(--fs-sm);
   line-height: 1.45;
   color: var(--c-text-soft);
-  max-width: 90ch;
+  max-width: 100ch;
 }
 .board__chart {
   flex: 1 1 auto;

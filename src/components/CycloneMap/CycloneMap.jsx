@@ -134,6 +134,84 @@ function lastCoordOf(segments) {
   }
   return null;
 }
+// Toutes les coordonnées [lng, lat] d'un cyclone (pour recadrer dessus en
+// mode isolé). On lit d'abord les segments, sinon les fixes.
+function collectCoords(cy) {
+  if (!cy) return [];
+  const out = [];
+  if (Array.isArray(cy.segments)) {
+    cy.segments.forEach((line) => {
+      if (Array.isArray(line)) line.forEach((pt) => out.push([pt[0], pt[1]]));
+    });
+  }
+  if (!out.length && Array.isArray(cy.fixes)) {
+    cy.fixes.forEach((f) => {
+      if (Number.isFinite(f.lng) && Number.isFinite(f.lat)) out.push([f.lng, f.lat]);
+    });
+  }
+  return out;
+}
+// Trace COMPLÈTE d'un cyclone, colorée par INTENSITÉ au fix près (même logique
+// que le dessin animé, mais figé) → on conserve le dégradé faible→intense
+// que la légende décrit. Renvoie { lines, points }.
+function fullCycloneFeatures(cy) {
+  const lines = [];
+  const points = [];
+  if (!cy) return { lines, points };
+  if (cy.hasFixes && Array.isArray(cy.fixes) && cy.fixes.length > 1) {
+    const fs = cy.fixes;
+    for (let j = 0; j < fs.length - 1; j += 1) {
+      const a = fs[j];
+      const b = fs[j + 1];
+      const useB = (b.stageRank ?? -1) >= (a.stageRank ?? -1);
+      lines.push({
+        type: "Feature",
+        properties: {
+          name: cy.name || "",
+          season: cy.season || "",
+          stage: (useB ? b.stage : a.stage) || cy.stage || "DTFA",
+          rank: Math.max(a.stageRank ?? 0, b.stageRank ?? 0),
+        },
+        geometry: { type: "LineString", coordinates: [[a.lng, a.lat], [b.lng, b.lat]] },
+      });
+    }
+    fs.forEach((fx) => {
+      points.push({
+        type: "Feature",
+        properties: {
+          name: cy.name || "",
+          season: cy.season || "",
+          stage: fx.stage || cy.stage || "DTFA",
+          rank: fx.stageRank ?? cy.stageRank ?? 0,
+          wind: fx.wind == null ? null : fx.wind,
+          windKmh: fx.windKmh == null ? null : fx.windKmh,
+          pressure: fx.pressure == null ? null : fx.pressure,
+          t: fx.t == null ? null : fx.t,
+        },
+        geometry: { type: "Point", coordinates: [fx.lng, fx.lat] },
+      });
+    });
+  } else {
+    // Pas de fixes détaillés → on colore par le stade global du cyclone.
+    (cy.segments || []).forEach((line) => {
+      if (line && line.length >= 2) {
+        lines.push({
+          type: "Feature",
+          properties: { name: cy.name || "", season: cy.season || "", stage: cy.stage || "DTFA", rank: cy.stageRank ?? 0 },
+          geometry: { type: "LineString", coordinates: line },
+        });
+      }
+      (line || []).forEach(([lng, lat]) => {
+        points.push({
+          type: "Feature",
+          properties: { name: cy.name || "", season: cy.season || "", stage: cy.stage || "DTFA", wind: null },
+          geometry: { type: "Point", coordinates: [lng, lat] },
+        });
+      });
+    });
+  }
+  return { lines, points };
+}
 function wholeLineFeatures(cy, sOrder, segments) {
   return segments
     .filter((line) => line && line.length >= 2)
@@ -171,6 +249,11 @@ export default function CycloneMap({
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(false);
   const [drawingId, setDrawingId] = useState(null);
+  // Recherche / mode isolé (un seul cyclone affiché, toutes saisons confondues).
+  const [selectedId, setSelectedId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     labelsRef.current = labels;
@@ -215,6 +298,30 @@ export default function CycloneMap({
       (a, b) => (b.stageRank ?? -1) - (a.stageRank ?? -1) || (b.maxWind ?? 0) - (a.maxWind ?? 0),
     )[0];
   }, [activeCyclones]);
+
+  // Index de recherche : TOUS les cyclones, toutes saisons (indépendant du
+  // scrubber). Tri saison décroissante puis nom.
+  const searchIndex = useMemo(
+    () =>
+      [...cyclones]
+        .filter((cy) => (cy.name || "").trim())
+        .map((cy) => ({ id: cy.id, name: cy.name, season: cy.season || "" }))
+        .sort((a, b) =>
+          a.season < b.season ? 1 : a.season > b.season ? -1 : a.name.localeCompare(b.name),
+        ),
+    [cyclones],
+  );
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!searchOpen || !q) return [];
+    return searchIndex.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 8);
+  }, [searchIndex, query, searchOpen]);
+
+  const selected = useMemo(
+    () => (selectedId != null ? cyclones.find((c) => c.id === selectedId) || null : null),
+    [selectedId, cyclones],
+  );
 
   const pictFC = useMemo(
     () => ({
@@ -280,7 +387,7 @@ export default function CycloneMap({
       antialias: true,
     });
     mapRef.current = map;
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-left");
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "bottom-left");
 
     map.on("load", () => {
       map.addLayer({
@@ -512,6 +619,7 @@ export default function CycloneMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !map.getLayer("tracks-line")) return;
+    if (selectedId != null) return; // mode isolé géré par l'effet dédié
     if (allMode) {
       ["tracks-line", "tracks-glow", "tracks-hit"].forEach((id) => map.setFilter(id, null));
       map.setPaintProperty("tracks-line", "line-opacity", 0.34);
@@ -526,7 +634,7 @@ export default function CycloneMap({
     const opa = ["interpolate", ["linear"], ["-", currentOrder, ["get", "sOrder"]], 0, 0.3, 3, 0.14, 10, 0.06];
     map.setPaintProperty("tracks-line", "line-opacity", opa);
     map.setPaintProperty("tracks-glow", "line-opacity", ["*", opa, 0.18]);
-  }, [allMode, currentOrder, loaded]);
+  }, [allMode, currentOrder, loaded, selectedId]);
 
   // ---- Dessin SÉQUENTIEL (au fix près si dispo) + tête comète ----
   useEffect(() => {
@@ -536,6 +644,16 @@ export default function CycloneMap({
     const srcPts = map.getSource("active-pts");
     const srcHead = map.getSource("active-head");
     const setHead = (features) => srcHead && srcHead.setData({ type: "FeatureCollection", features });
+
+    if (selectedId != null) {
+      // Mode isolé : la trace est dessinée dans la couche active par l'effet
+      // dédié (couleur par intensité). On NE vide PAS active ici, sinon une
+      // avance de saison effacerait la trace isolée — on coupe juste la tête.
+      setHead([]);
+      drawIdxRef.current = -1;
+      setDrawingId(null);
+      return undefined;
+    }
 
     if (allMode || !activeCyclones.length) {
       srcLine.setData({ type: "FeatureCollection", features: [] });
@@ -662,12 +780,58 @@ export default function CycloneMap({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [allMode, activeCyclones, currentOrder, orderOf, loaded, reduceMotion, speed]);
+  }, [allMode, activeCyclones, currentOrder, orderOf, loaded, reduceMotion, speed, selectedId]);
+
+  // ---- Mode isolé : n'afficher QUE le cyclone recherché (toutes saisons) ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !map.getLayer("tracks-line")) return;
+    if (selectedId == null) return; // mode normal géré par les effets ci-dessus
+    const cy = cyclones.find((c) => c.id === selectedId);
+    if (!cy) return;
+    // 1) Masquer l'historique mono-couleur ; ne garder que la zone de survol
+    //    sur la trace isolée.
+    map.setFilter("tracks-hit", ["==", ["get", "id"], selectedId]);
+    map.setPaintProperty("tracks-line", "line-opacity", 0);
+    map.setPaintProperty("tracks-glow", "line-opacity", 0);
+    // 2) Dessiner la trace COLORÉE PAR INTENSITÉ dans la couche active.
+    const { lines, points } = fullCycloneFeatures(cy);
+    const srcLine = map.getSource("active");
+    const srcPts = map.getSource("active-pts");
+    const srcHead = map.getSource("active-head");
+    if (srcLine) srcLine.setData({ type: "FeatureCollection", features: lines });
+    if (srcPts) srcPts.setData({ type: "FeatureCollection", features: points });
+    if (srcHead) srcHead.setData({ type: "FeatureCollection", features: [] });
+    // 3) Recadrer sur la trajectoire.
+    const coords = collectCoords(cy);
+    if (coords.length && mapboxgl && mapboxgl.LngLatBounds) {
+      const b = new mapboxgl.LngLatBounds(coords[0], coords[0]);
+      coords.forEach((c) => b.extend(c));
+      map.fitBounds(b, {
+        padding: { top: 96, right: 90, bottom: 130, left: 90 },
+        maxZoom: 6,
+        duration: 900,
+        pitch: 0,
+        bearing: 0,
+        essential: true,
+      });
+    }
+  }, [selectedId, loaded, cyclones]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return undefined;
-    const id = setTimeout(() => map.resize(), 260);
+    const id = setTimeout(() => {
+      map.resize();
+      // En entrant en plein écran (hors mode isolé), on recadre sur la région
+      // pour un globe bien centré — sinon la caméra fenêtrée donne un cadrage
+      // de travers.
+      if (full && selectedId == null) {
+        const center = focus && Array.isArray(focus.center) ? focus.center : HOME_VIEW.center;
+        const zoom = focus && focus.zoom ? focus.zoom : HOME_VIEW.zoom;
+        map.easeTo({ center, zoom, pitch: HOME_VIEW.pitch, bearing: HOME_VIEW.bearing, duration: 700, essential: true });
+      }
+    }, 260);
     const onKey = (e) => {
       if (e.key === "Escape") setFull(false);
     };
@@ -676,23 +840,105 @@ export default function CycloneMap({
       clearTimeout(id);
       window.removeEventListener("keydown", onKey);
     };
-  }, [full]);
+  }, [full, focus, selectedId]);
+
+  // Fermeture de la liste d'autocomplétion au clic à l'extérieur.
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onDown = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [searchOpen]);
 
   if (!TOKEN) return <div className="cmap cmap--notoken">{noTokenMsg}</div>;
 
   const hasTimeline = seasons.length > 0 && typeof onTogglePlay === "function";
-  const curSeason = allMode ? labels.allSeasons || "" : seasons[currentOrder] || "";
-  const display = (drawingId != null ? activeCyclones.find((c) => c.id === drawingId) : null) || headline;
+  const curSeason = selected
+    ? selected.season || ""
+    : allMode
+      ? labels.allSeasons || ""
+      : seasons[currentOrder] || "";
+  const display =
+    selected ||
+    (drawingId != null ? activeCyclones.find((c) => c.id === drawingId) : null) ||
+    headline;
   const cycleSpeed = () => {
     if (!onSpeedChange) return;
     const i = SPEEDS.indexOf(speed);
     onSpeedChange(SPEEDS[(i + 1) % SPEEDS.length] || 1);
   };
 
+  const selectCyclone = (s) => {
+    setSelectedId(s.id);
+    setQuery(s.name);
+    setSearchOpen(false);
+  };
+  const clearSelection = () => {
+    setSelectedId(null);
+    setQuery("");
+    setSearchOpen(false);
+    const map = mapRef.current;
+    if (!map) return;
+    if (focus && Array.isArray(focus.center)) {
+      map.flyTo({ center: focus.center, zoom: focus.zoom ?? HOME_VIEW.zoom, pitch: HOME_VIEW.pitch, speed: 0.8, essential: true });
+    } else {
+      map.flyTo({ ...HOME_VIEW, speed: 0.8, essential: true });
+    }
+  };
+
   return (
     <div className={`cmap ${full ? "cmap--full" : ""}`}>
       <div className="cmap__stage">
         <div ref={containerRef} className="cmap__map" />
+
+        <div className="cmap__search" ref={searchRef}>
+          <span className="cmap__search-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="15" height="15" focusable="false">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+          <input
+            className="cmap__search-input"
+            type="text"
+            value={query}
+            placeholder={labels.searchPlaceholder || ""}
+            aria-label={labels.searchPlaceholder || ""}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchOpen(true);
+              if (selectedId != null) setSelectedId(null);
+            }}
+            onFocus={() => setSearchOpen(true)}
+          />
+          {selectedId != null && (
+            <button
+              type="button"
+              className="cmap__search-clear"
+              onClick={clearSelection}
+              aria-label={labels.searchClear || ""}
+              title={labels.searchClear || ""}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+                <path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
+          {suggestions.length > 0 && (
+            <ul className="cmap__search-list" role="listbox">
+              {suggestions.map((s) => (
+                <li key={s.id} role="option" aria-selected={s.id === selectedId}>
+                  <button type="button" className="cmap__search-opt" onClick={() => selectCyclone(s)}>
+                    <span className="cmap__search-opt-name">{s.name}</span>
+                    <span className="cmap__search-opt-season">{s.season}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {!allMode && curSeason ? (
           <span className="cmap__bigseason" aria-hidden="true">
@@ -702,7 +948,7 @@ export default function CycloneMap({
 
         <div className="cmap__readout" aria-hidden={!hasTimeline}>
           <span className="cmap__season">{curSeason}</span>
-          {!allMode && (
+          {!allMode && !selected && (
             <span className="cmap__count">
               {activeCyclones.length} {labels.cyclones || ""}
             </span>
@@ -732,6 +978,7 @@ export default function CycloneMap({
               <path d="M9 4 H4 V9 M15 4 H20 V9 M9 20 H4 V15 M15 20 H20 V15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
+          <span className="cmap__expand-label">{full ? labels.close : labels.expand}</span>
         </button>
 
         {hasTimeline && (

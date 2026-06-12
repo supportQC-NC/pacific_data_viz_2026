@@ -141,7 +141,7 @@
       "loading": "Chargement des chiffres-clés…",
       "source": "Source : Pacific Data Hub · Communauté du Pacifique (SPC)",
       "territories_label": "territoires du Pacifique suivis",
-      "sea_label": "de hausse maximale du niveau de la mer (territoire le plus exposé)",
+      "sea_label": "de hausse maximale du niveau de la mer · {area}, le plus exposé",
       "renew_label": "d’énergie renouvelable en moyenne",
       "sst_label": "d’anomalie de température de surface"
     },
@@ -2393,7 +2393,7 @@
     "deck_done": "Fin de l'acte",
     "deck_finish": "Terminer l'expérience"
   },
-"about": {
+  "about": {
     "eyebrow": "À propos",
     "title": "Datamoana, et la main derrière les données",
     "lead": "Un projet de datavisualisation indépendant réalisé pour le Pacific Dataviz Challenge 2026 : rendre lisible, à hauteur humaine, ce que les données climatiques du Pacifique racontent.",
@@ -2545,11 +2545,13 @@
       "season": "Saison",
       "kt": "nœuds",
       "kmh": "km/h",
-      "hpa": "hPa"
+      "hpa": "hPa",
+      "search_placeholder": "Rechercher un cyclone…",
+      "search_clear": "Effacer la sélection"
     },
     "viz": {
-      "map_title": "47 saisons de trajectoires",
-      "map_find": "Faites défiler les saisons : les trajectoires passées restent en filigrane sur l'océan, la saison active se dessine.",
+      "map_title": "Un demi-siècle de cyclones sur le Pacifique",
+      "map_find": "Faites défiler les saisons — ou cherchez un cyclone par son nom pour isoler sa trajectoire. Les saisons passées restent en filigrane, la saison active se dessine.",
       "bystage_title": "Répartition par stade d'intensité",
       "bystage_find": "Combien de trajectoires ont atteint chaque stade, de la dépression faible au cyclone très intense.",
       "bystage_series": "Trajectoires",
@@ -2569,18 +2571,21 @@
       "intensify_raw": "Part par saison",
       "intensify_trend": "Moyenne 5 saisons",
       "month_title": "Calendrier d'activité",
-      "month_find": "Genèse des cyclones par mois (saison australe, juillet → juin, en lignes) et par décennie (en colonnes). Plus une case est vive, plus de cyclones se sont formés ce mois-là. Le cœur de saison se concentre de décembre à avril.",
+      "month_find": "Genèse des cyclones par mois (saison australe, juillet → juin, en lignes) et par décennie (en colonnes). Plus une case tire vers le rouge, plus de cyclones se sont formés ce mois-là ; le vert marque le calme. Le cœur de saison se concentre de décembre à avril.",
       "month_series": "Cyclones",
       "wp_title": "La signature vent–pression",
       "wp_find": "Un point = un cyclone : sa pression minimale (axe horizontal, en hPa) face à son vent maximal (axe vertical, en nœuds), coloré par stade de pointe. Plus la pression chute, plus le vent grimpe — la relation physique qui définit l'intensité d'un cyclone.",
       "wp_x": "Pression minimale (hPa)",
-      "wp_y": "Vent maximal (kt)"
+      "wp_y": "Vent maximal (kt)",
+      "season_avg": "Moyenne mobile (5 saisons)",
+      "wp_relation": "Relation moyenne",
+      "season_mean": "Moyenne"
     },
     "board": {
       "tab_map": "Carte",
       "tab_stage": "Stades",
       "tab_season": "Par saison",
-      "signature": "Signature",
+      "signature": "Carte",
       "switch_hint": "← → pour changer de vue",
       "takeaway_kicker": "À retenir",
       "start": "Explorer les trajectoires",
