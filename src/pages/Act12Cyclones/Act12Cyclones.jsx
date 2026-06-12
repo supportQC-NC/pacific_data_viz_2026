@@ -521,6 +521,7 @@ export default function Act12Cyclones() {
       colors,
       plotOptions: { bar: { horizontal: true, borderRadius: 2, barHeight: "70%" } },
       dataLabels: { enabled: false },
+      stroke: { width: 1, colors: [tk.bg] },
       legend: {
         show: true,
         position: "bottom",
@@ -531,25 +532,45 @@ export default function Act12Cyclones() {
         itemMargin: { horizontal: 5, vertical: 2 },
       },
       grid: baseGrid(tk),
-      // Axe catégoriel EXPLICITE : sinon ApexCharts bascule l'axe en numérique
-      // sur un empilé horizontal et masque les noms de territoires.
-      xaxis: {
-        type: "category",
+      // Barres horizontales : les `categories` passées à l'axe X servent de
+      // libellés de l'axe vertical (noms de territoires). On NE force PAS
+      // `type: "category"` ici — sur un empilé horizontal, cet override
+      // désynchronise la résolution d'axe d'ApexCharts et faisait planter le
+      // tooltip partagé par défaut (« reading '0' »). Modèle : MirrorBars.
+      xaxis: baseXaxis(tk, {
         categories: cats,
         labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
-        axisBorder: { show: true, color: tk.line },
-        axisTicks: { show: true, color: tk.line },
-      },
-      yaxis: {
+      }),
+      yaxis: baseYaxis(tk, {
         labels: {
           show: true,
           maxWidth: 170,
           style: { colors: tk.text, fontFamily: MONO, fontSize: "11px" },
         },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      tooltip: baseTooltip({ shared: true, intersect: false }),
+      }),
+      // Tooltip partagé CUSTOM (comme MirrorBars) : on n'utilise pas le rendu
+      // partagé natif d'ApexCharts, qui plante sur un empilé horizontal.
+      tooltip: baseTooltip({
+        shared: true,
+        intersect: false,
+        custom: ({ dataPointIndex }) => {
+          const r = exposure[dataPointIndex];
+          if (!r) return "";
+          const rows = stages
+            .map((s) => {
+              const v = r.byStage[s.id] || 0;
+              if (!v) return "";
+              const c = stageColors[s.id] || tk.accent;
+              return `<div class="apexchart__tt-row"><span style="color:${c}">●</span> ${stageLabels[s.id]}: <strong>${v}</strong></div>`;
+            })
+            .join("");
+          return `<div class="apexchart__tt">
+            <div class="apexchart__tt-title">${r.name}</div>
+            ${rows}
+            <div class="apexchart__tt-row">Total: <strong>${r.total}</strong></div>
+          </div>`;
+        },
+      }),
     };
   }, [exposure, stages, stageLabels, stageColors, tk]);
 

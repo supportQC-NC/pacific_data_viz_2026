@@ -17,3 +17,234 @@
   width: 100%;
   min-height: 420px;
 }
+
+/* ============================================================
+   Acte 12 — Panneau « Source & portée » (provenance des cyclones)
+   ------------------------------------------------------------
+   À AJOUTER à la fin de src/pages/Act12Cyclones/Act12Cyclones.scss.
+   Bloc autonome, entièrement scopé sous .act12-src → aucune collision.
+
+   Parti pris : la carte d'identité du jeu de données est traitée comme
+   une FICHE DE STATION DE VEILLE. Les domaines de couverture sont des
+   « tuiles de coordonnées » en monospace, encadrées de repères d'angle
+   (crop marks) cyan — le motif signature, évoquant une sélection de
+   zone satellite. Couleurs / typo / espacements : tokens globaux only.
+   ============================================================ */
+
+.act12-src {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  max-width: 62rem;
+  padding-block: var(--sp-2) var(--sp-8);
+  color: var(--c-text-soft);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+}
+
+/* ---- Avertissement « hors concours » : bandeau corail ------ */
+.act12-src__disclaimer {
+  position: relative;
+  margin: 0;
+  padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-8);
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-warm) 32%, transparent);
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--c-warm) 10%, transparent), transparent 62%),
+    var(--c-surface);
+  color: var(--c-text);
+  font-size: var(--fs-base);
+}
+.act12-src__disclaimer::before {
+  content: "";
+  position: absolute;
+  inset: var(--sp-3) auto var(--sp-3) var(--sp-4);
+  width: 3px;
+  border-radius: var(--r-pill);
+  background: var(--c-warm);
+  box-shadow: 0 0 12px -2px var(--c-warm);
+}
+
+/* ---- Producteur / Licence : cartes clé–valeur -------------- */
+.act12-src__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+}
+.act12-src__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-bg-2);
+}
+.act12-src__row dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.act12-src__row dd {
+  margin: 0;
+  color: var(--c-text);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+/* ---- Généalogie : note de bas de fiche -------------------- */
+.act12-src__genealogy {
+  margin: 0;
+  padding-left: var(--sp-4);
+  border-left: var(--border-hair) solid var(--c-line-strong);
+  color: var(--c-text-mute);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+}
+
+/* ---- Portée géographique : la pièce maîtresse ------------- */
+.act12-src__scope {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--c-accent) 8%, transparent), transparent 55%),
+    var(--c-surface);
+}
+.act12-src__scope-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-med);
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+
+.act12-src__scope-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.act12-src__scope-list li {
+  position: relative;
+  padding: var(--sp-6) var(--sp-4) var(--sp-4) var(--sp-6);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-sm);
+  background: var(--c-bg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--c-text-soft);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+/* Repère d'angle haut-gauche (crop mark) : motif station / satellite */
+.act12-src__scope-list li::before {
+  content: "";
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  width: 11px;
+  height: 11px;
+  border-top: 2px solid var(--c-accent);
+  border-left: 2px solid var(--c-accent);
+  opacity: 0.85;
+}
+/* Repère d'angle bas-droite, plus discret (encadre la « sélection ») */
+.act12-src__scope-list li::after {
+  content: "";
+  position: absolute;
+  right: var(--sp-2);
+  bottom: var(--sp-2);
+  width: 11px;
+  height: 11px;
+  border-bottom: 2px solid var(--c-line-strong);
+  border-right: 2px solid var(--c-line-strong);
+}
+.act12-src__scope-list li:hover {
+  border-color: color-mix(in srgb, var(--c-accent) 45%, var(--c-line));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -16px var(--c-accent-glow);
+}
+
+.act12-src__note {
+  margin: 0;
+  color: var(--c-text-mute);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+}
+
+/* ---- Accès aux données : pastilles ------------------------ */
+.act12-src__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.act12-src__links-lbl {
+  margin-right: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.act12-src__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  color: var(--c-accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-decoration: none;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+.act12-src__link::after {
+  content: "\2197"; /* ↗ — glyphe décoratif (icône), pas du texte traduisible */
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+.act12-src__link:hover,
+.act12-src__link:focus-visible {
+  border-color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-accent) 12%, transparent);
+  box-shadow: var(--shadow-glow);
+}
+.act12-src__link:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Responsive & accessibilité --------------------------- */
+@media (max-width: 640px) {
+  .act12-src__scope { padding: var(--sp-4); }
+  .act12-src__disclaimer { font-size: var(--fs-sm); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .act12-src__scope-list li,
+  .act12-src__link {
+    transition: none;
+  }
+  .act12-src__scope-list li:hover { transform: none; }
+}

@@ -53,7 +53,7 @@ function AppContent() {
         <Route path="/agriculture" element={<ActFlow actId="a6"><Act6Agriculture /></ActFlow>} />
         <Route path="/vivant" element={<ActFlow actId="a7"><Act7Vivant /></ActFlow>} />
         <Route path="/ciel" element={<ActFlow actId="a8"><Act8Ciel /></ActFlow>} />
-        <Route path="/cyclones" element={<ActFlow  actId="A12"> <Act12Cyclones/></ActFlow>}/>
+        <Route path="/cyclones" element={<ActFlow  actId="a12"> <Act12Cyclones/></ActFlow>}/>
         <Route path="/economie" element={<ActFlow actId="a9" hasDeck><Act9Eco /></ActFlow>} />
         <Route path="/sante" element={<ActFlow actId="a10"><Act10Sante /></ActFlow>} />
         <Route path="/synthese" element={<ActFlow actId="a11"><Act11Synthese /></ActFlow>} />

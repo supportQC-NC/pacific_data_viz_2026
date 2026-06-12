@@ -21,10 +21,10 @@
 .readmodes__lead {
   font-family: var(--font-display);
   font-weight: var(--fw-semi);
-  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  font-size: clamp(1.2rem, 2vw, 2.1rem);
   line-height: 1.2;
   color: var(--c-text);
-  max-width: 30ch;
+  max-width: 96ch;
   margin: 0 0 clamp(2rem, 4vw, 3rem);
 }
 

@@ -60,6 +60,7 @@
   font-family: var(--font-body);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
+ 
 }
 
 /* ============================================================
@@ -83,8 +84,9 @@
   margin: var(--sp-3) 0 var(--sp-5);
 }
 .board__thesis--xl {
-  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
-  max-width: 60ch;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  max-width: 96ch;
+  margin: 15px 0;
 }
 .board__intro-actions {
   margin-top: clamp(var(--sp-6), 4vh, 2.5rem);
