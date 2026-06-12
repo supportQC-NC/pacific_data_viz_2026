@@ -687,6 +687,7 @@ export default function Act8Ciel() {
                   years={M.years}
                   unit={M.unit}
                   scale={M.kind === "anom" ? "diverging" : "sequential"}
+                  scheme="greenRed"
                   decimals={metricDecimals}
                   labels={{
                     below: M.below,

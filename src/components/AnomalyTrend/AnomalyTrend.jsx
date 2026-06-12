@@ -15,8 +15,8 @@ import * as d3 from "d3";
 import "./AnomalyTrend.scss";
 
 const W = 1000;
-const H = 320;
-const M = { top: 40, right: 132, bottom: 38, left: 56 };
+const H = 372;
+const M = { top: 52, right: 124, bottom: 46, left: 62 };
 
 export default function AnomalyTrend({
   data = [],
@@ -43,7 +43,7 @@ export default function AnomalyTrend({
     if (!valid) return null;
     const lo = Math.min(0, d3.min(data, (d) => d.min));
     const hi = Math.max(0, d3.max(data, (d) => d.max));
-    const pad = (hi - lo) * 0.12 || 0.1;
+    const pad = (hi - lo) * 0.16 || 0.1;
     return d3.scaleLinear().domain([lo - pad, hi + pad]).range([H - M.bottom, M.top]).nice();
   }, [data, valid]);
 
@@ -152,7 +152,7 @@ export default function AnomalyTrend({
             {unit}
           </text>
         )}
-        {meanLabel && (
+        {meanLabel && Math.abs(y(data[data.length - 1].mean) - y(0)) > 18 && (
           <text
             className="atrend__meanlabel"
             x={x(yearsExtent[1]) + 8}
