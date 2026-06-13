@@ -25,7 +25,8 @@ function areaHasData(d, geo) {
   return !!d && (d.byArea[geo] || []).some((p) => Number.isFinite(p.value));
 }
 function stateFrom(res) {
-  const ok = res && res.source === "live" && res.commodities && res.commodities.length;
+  const ok =
+    res && res.source === "live" && res.commodities && res.commodities.length;
   return { status: ok ? "ready" : "empty", data: ok ? res : null };
 }
 
@@ -34,7 +35,12 @@ function Drop({ label, value, onChange, options }) {
     <div className="act1f act1f--select cropx__drop">
       <span className="act1f__lbl">{label}</span>
       <div className="act1f__selwrap">
-        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+        <select
+          className="act1f__select"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
           {options.map((o) => (
             <option key={String(o.v)} value={o.v}>
               {o.label}
@@ -49,9 +55,15 @@ function Drop({ label, value, onChange, options }) {
   );
 }
 
-export default function CropExplorer({ data: dataProp = null, kind = "crop", labels = {} }) {
+export default function CropExplorer({
+  data: dataProp = null,
+  kind = "crop",
+  labels = {},
+}) {
   const { t, lang } = useLang();
-  const [state, setState] = useState(() => (dataProp ? stateFrom(dataProp) : { status: "loading", data: null }));
+  const [state, setState] = useState(() =>
+    dataProp ? stateFrom(dataProp) : { status: "loading", data: null },
+  );
   const [selected, setSelected] = useState(null);
   const [country, setCountry] = useState("all");
 
@@ -80,7 +92,10 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
   }, [state.data, kind]);
 
   useEffect(() => {
-    if (allCrops.length && (selected == null || !allCrops.some((c) => c.code === selected))) {
+    if (
+      allCrops.length &&
+      (selected == null || !allCrops.some((c) => c.code === selected))
+    ) {
       setSelected(allCrops[0].code);
     }
   }, [allCrops, selected]);
@@ -90,9 +105,15 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
   const unit = curMeta?.unit || "";
 
   // Territoires qui PRODUISENT le produit choisi (liste dynamique).
-  const prodAreas = useMemo(() => (cur ? pictAreas(cur).filter((a) => areaHasData(cur, a)) : []), [cur]);
+  const prodAreas = useMemo(
+    () => (cur ? pictAreas(cur).filter((a) => areaHasData(cur, a)) : []),
+    [cur],
+  );
   const territories = useMemo(
-    () => prodAreas.map((a) => ({ code: a, name: pictName(a, lang) })).sort((x, y) => x.name.localeCompare(y.name)),
+    () =>
+      prodAreas
+        .map((a) => ({ code: a, name: pictName(a, lang) }))
+        .sort((x, y) => x.name.localeCompare(y.name)),
     [prodAreas, lang],
   );
 
@@ -101,23 +122,57 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
   }, [prodAreas, country]);
 
   const allSeries = useMemo(
-    () => (cur ? prodAreas.map((a) => ({ area: a, name: pictName(a, lang), values: (cur.byArea[a] || []).filter((p) => Number.isFinite(p.value)) })) : []),
+    () =>
+      cur
+        ? prodAreas.map((a) => ({
+            area: a,
+            name: pictName(a, lang),
+            values: (cur.byArea[a] || []).filter((p) =>
+              Number.isFinite(p.value),
+            ),
+          }))
+        : [],
     [cur, prodAreas, lang],
   );
 
-  const trendSeries = useMemo(() => (country === "all" ? allSeries : allSeries.filter((s) => s.area === country)), [allSeries, country]);
+  const trendSeries = useMemo(
+    () =>
+      country === "all"
+        ? allSeries
+        : allSeries.filter((s) => s.area === country),
+    [allSeries, country],
+  );
 
-  if (state.status === "loading") return <p className="cropx__state">{t("scene.loading")}</p>;
-  if (state.status === "empty" || !allCrops.length) return <p className="cropx__state cropx__state--empty">{t("act6.explorer_empty")}</p>;
+  if (state.status === "loading")
+    return <p className="cropx__state">{t("scene.loading")}</p>;
+  if (state.status === "empty" || !allCrops.length)
+    return (
+      <p className="cropx__state cropx__state--empty">
+        {t("act6.explorer_empty")}
+      </p>
+    );
 
   const cropOpts = allCrops.map((c) => ({ v: c.code, label: c.label }));
-  const countryOpts = [{ v: "all", label: t("act6.explorer_all") }, ...territories.map((c) => ({ v: c.code, label: c.name }))];
+  const countryOpts = [
+    { v: "all", label: t("act6.explorer_all") },
+    ...territories.map((c) => ({ v: c.code, label: c.name })),
+  ];
 
   return (
     <div className="cropx">
       <div className="cropx__drops">
-        <Drop label={`${labels.pick || t("act6.explorer_pick")} · ${allCrops.length}`} value={selected ?? ""} onChange={setSelected} options={cropOpts} />
-        <Drop label={t("act6.explorer_country")} value={country} onChange={setCountry} options={countryOpts} />
+        <Drop
+          label={`${labels.pick || t("act6.explorer_pick")} · ${allCrops.length}`}
+          value={selected ?? ""}
+          onChange={setSelected}
+          options={cropOpts}
+        />
+        <Drop
+          label={t("act6.explorer_country")}
+          value={country}
+          onChange={setCountry}
+          options={countryOpts}
+        />
       </div>
 
       {cur && (
@@ -127,14 +182,19 @@ export default function CropExplorer({ data: dataProp = null, kind = "crop", lab
             <div>
               <h3 className="cropx__panel-title">{curMeta?.label}</h3>
               <span className="cropx__panel-sub">
-                {unit} · {cur.firstYear}–{cur.lastYear} · {prodAreas.length} {t("act2.coverage")}
+                {unit} · {cur.firstYear}–{cur.lastYear} · {prodAreas.length}{" "}
+                {t("act2.coverage")}
               </span>
             </div>
           </div>
 
           <div className="cropx__chart">
-            <h4 className="cropx__chart-title">{t("act6.explorer_trend")}</h4>
-            <TrendLines series={trendSeries} years={cur.years} currentYear={cur.lastYear} unit={unit} />
+            <TrendLines
+              series={trendSeries}
+              years={cur.years}
+              currentYear={cur.lastYear}
+              unit={unit}
+            />
           </div>
         </div>
       )}

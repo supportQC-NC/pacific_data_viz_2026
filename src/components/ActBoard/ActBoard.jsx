@@ -55,7 +55,9 @@ export default function ActBoard({
     : eyebrow;
 
   // Progression dérivée ; repli sur la prop.
-  const effProgress = here ? { index: here.number, total: here.total } : progress;
+  const effProgress = here
+    ? { index: here.number, total: here.total }
+    : progress;
 
   // --- Voisins du parcours (pour la barre d'acte persistante) ---------------
   let nextAct = null;
@@ -162,7 +164,9 @@ export default function ActBoard({
               {thesis ? (
                 <p className="board__thesis board__thesis--xl">{thesis}</p>
               ) : null}
-              {kpis.length > 0 ? <KpiRow items={kpis} title={kpiTitle} /> : null}
+              {kpis.length > 0 ? (
+                <KpiRow items={kpis} title={kpiTitle} />
+              ) : null}
 
               {status === "loading" && (
                 <Loader compact label={labels.loading} />
@@ -237,21 +241,23 @@ export default function ActBoard({
                 </aside>
 
                 <div className="board__main">
-                  <div className="board__head">
-                    <span className="board__num">
-                      {String(idx + 1).padStart(2, "0")} /{" "}
-                      {String(count).padStart(2, "0")}
-                      {active.signature && labels.signature
-                        ? ` · ${labels.signature}`
-                        : ""}
-                    </span>
-                    {active.title ? (
-                      <h2 className="board__chart-title">{active.title}</h2>
-                    ) : null}
-                    {active.finding ? (
-                      <p className="board__finding">{active.finding}</p>
-                    ) : null}
-                  </div>
+                  {!active.bare && (
+                    <div className="board__head">
+                      <span className="board__num">
+                        {String(idx + 1).padStart(2, "0")} /{" "}
+                        {String(count).padStart(2, "0")}
+                        {active.signature && labels.signature
+                          ? ` · ${labels.signature}`
+                          : ""}
+                      </span>
+                      {active.title ? (
+                        <h2 className="board__chart-title">{active.title}</h2>
+                      ) : null}
+                      {active.finding ? (
+                        <p className="board__finding">{active.finding}</p>
+                      ) : null}
+                    </div>
+                  )}
 
                   {active.empty ? (
                     <div className="board__chart-empty">{labels.empty}</div>

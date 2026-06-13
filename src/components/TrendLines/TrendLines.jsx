@@ -4,9 +4,14 @@
 // • Échelle Y ADAPTATIVE : linéaire pour les plages serrées (%, indices),
 //   logarithmique seulement quand l'amplitude couvre plusieurs ordres de
 //   grandeur. Graduations chiffrées TOUJOURS générées depuis l'échelle.
-// • Libellés de fin DÉ-CHEVAUCHÉS (algo glouton) + connecteurs
-// • Survol d'une courbe → elle ressort, les autres s'atténuent
-// • Curseur d'année vertical qui glisse + points qui suivent
+// • Libellés de fin DÉ-CHEVAUCHÉS (algo glouton) + connecteurs ; marge droite
+//   assez large pour les noms longs (territoires).
+// • FOCUS d'une courbe :
+//     – survol → elle ressort, les autres s'atténuent (transitoire) ;
+//     – CLIC → on l'ÉPINGLE (focus persistant) pour l'étudier sur toute la
+//       période ; reclic ou clic dans le vide → on relâche.
+//     La courbe focalisée passe AU PREMIER PLAN (plus de masquage).
+// • Curseur d'année vertical qui glisse + points qui suivent.
 // Props : series [{area,name,values:[{year,value}]}], years[], currentYear, unit
 // ============================================================
 
@@ -16,7 +21,7 @@ import "./TrendLines.scss";
 
 const W = 1000;
 const H = 380;
-const M = { top: 26, right: 150, bottom: 40, left: 64 };
+const M = { top: 26, right: 198, bottom: 40, left: 64 };
 const PALETTE = [
   "#ff5a36",
   "#1f9bc9",
@@ -27,7 +32,9 @@ const PALETTE = [
   "#5ad1ff",
   "#c0e060",
 ];
-const NICE_LOG = [0.5, 1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 500, 1000, 2000, 5000];
+const NICE_LOG = [
+  0.5, 1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 500, 1000, 2000, 5000,
+];
 
 export default function TrendLines({
   series = [],
@@ -36,6 +43,20 @@ export default function TrendLines({
   unit,
 }) {
   const [hoverArea, setHoverArea] = useState(null);
+  const [pinnedArea, setPinnedArea] = useState(null);
+
+  // Si la série épinglée disparaît (changement de culture/filtre), on relâche.
+  const pinned = useMemo(
+    () =>
+      pinnedArea && series.some((s) => s.area === pinnedArea)
+        ? pinnedArea
+        : null,
+    [pinnedArea, series],
+  );
+  // Focus effectif : l'épingle prime sur le survol.
+  const focusArea = pinned || hoverArea;
+
+  const togglePin = (area) => setPinnedArea((p) => (p === area ? null : area));
 
   const x = useMemo(
     () =>
@@ -104,9 +125,10 @@ export default function TrendLines({
       })
       .filter(Boolean)
       .sort((a, b) => a.yTrue - b.yTrue);
-    const MIN = 16;
+    const MIN = 18;
     items.forEach((it, k) => {
-      it.yLab = k === 0 ? it.yTrue : Math.max(it.yTrue, items[k - 1].yLab + MIN);
+      it.yLab =
+        k === 0 ? it.yTrue : Math.max(it.yTrue, items[k - 1].yLab + MIN);
     });
     const overflow = (items[items.length - 1]?.yLab ?? 0) - (H - M.bottom);
     if (overflow > 0)
@@ -133,9 +155,22 @@ export default function TrendLines({
   };
   const cx = currentYear != null ? x(currentYear) : null;
 
+  // Ordre de tracé : la courbe focalisée est dessinée EN DERNIER (au-dessus).
+  const drawOrder = series
+    .map((s, i) => ({ s, i }))
+    .sort(
+      (a, b) =>
+        (focusArea === a.s.area ? 1 : 0) - (focusArea === b.s.area ? 1 : 0),
+    );
+
   return (
-    <div className="trend">
-      <svg className="trend__svg" viewBox={`0 0 ${W} ${H}`} role="img">
+    <div className={`trend ${pinned ? "trend--pinned" : ""}`}>
+      <svg
+        className="trend__svg"
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        onClick={() => setPinnedArea(null)}
+      >
         {yTicks.map((tk) => (
           <g key={tk} transform={`translate(0,${y(tk)})`}>
             <line className="trend__grid" x1={M.left} x2={W - M.right} />
@@ -174,27 +209,40 @@ export default function TrendLines({
           </text>
         )}
 
-        {series.map((s, i) => {
-          const dim = hoverArea && hoverArea !== s.area;
+        {drawOrder.map(({ s, i }) => {
+          const dim = focusArea && focusArea !== s.area;
+          const on = focusArea === s.area;
           return (
             <path
               key={s.area}
-              className={`trend__line ${dim ? "is-dim" : ""} ${hoverArea === s.area ? "is-on" : ""}`}
+              className={`trend__line ${dim ? "is-dim" : ""} ${on ? "is-on" : ""} ${
+                pinned === s.area ? "is-pinned" : ""
+              }`}
               d={line(s.values) || ""}
               stroke={PALETTE[i % PALETTE.length]}
               onMouseEnter={() => setHoverArea(s.area)}
               onMouseLeave={() => setHoverArea(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePin(s.area);
+              }}
             />
           );
         })}
 
-        {/* Libellés + connecteurs */}
+        {/* Libellés + connecteurs (cliquables eux aussi → épinglent). */}
         {labels.map((it) => (
           <g
             key={it.area}
-            className={`trend__label-g ${hoverArea && hoverArea !== it.area ? "is-dim" : ""}`}
+            className={`trend__label-g ${focusArea && focusArea !== it.area ? "is-dim" : ""} ${
+              pinned === it.area ? "is-pinned" : ""
+            }`}
             onMouseEnter={() => setHoverArea(it.area)}
             onMouseLeave={() => setHoverArea(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePin(it.area);
+            }}
           >
             <line
               className="trend__connector"
@@ -226,7 +274,7 @@ export default function TrendLines({
             >
               {currentYear}
             </text>
-            {series.map((s, i) => {
+            {drawOrder.map(({ s, i }) => {
               const pt = s.values.find(
                 (v) =>
                   v.year === currentYear &&
@@ -234,12 +282,13 @@ export default function TrendLines({
                   (!useLog || v.value > 0),
               );
               if (!pt) return null;
+              const dim = focusArea && focusArea !== s.area;
               return (
                 <circle
                   key={s.area}
-                  className="trend__marker-dot"
+                  className={`trend__marker-dot ${dim ? "is-dim" : ""}`}
                   cy={y(pt.value)}
-                  r={4.5}
+                  r={focusArea === s.area ? 5.5 : 4.5}
                   fill={PALETTE[i % PALETTE.length]}
                 />
               );

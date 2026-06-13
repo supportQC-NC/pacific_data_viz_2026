@@ -19,7 +19,14 @@
 //     choisi (cultures/élevage) ; les vides montrés, jamais comblés.
 // ============================================================
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchAgriProduction } from "../../services/agriApi";
@@ -68,7 +75,9 @@ const median = (arr) => {
 // Rendement MÉDIAN par territoire-année pour un type ("crop" = kg/ha).
 function buildAggregate(data, kind = "crop") {
   if (!data || !data.commodities) return null;
-  const codes = data.commodities.filter((c) => c.kind === kind).map((c) => c.code);
+  const codes = data.commodities
+    .filter((c) => c.kind === kind)
+    .map((c) => c.code);
   const bucket = {};
   codes.forEach((code) => {
     const d = data.byCommodity[code];
@@ -103,7 +112,10 @@ function buildAggregate(data, kind = "crop") {
     byArea,
     years,
     areas: Object.keys(byArea),
-    range: { min: min === Infinity ? 0 : min, max: max === -Infinity ? 0 : max },
+    range: {
+      min: min === Infinity ? 0 : min,
+      max: max === -Infinity ? 0 : max,
+    },
     firstYear: years[0] ?? null,
     lastYear: years[years.length - 1] ?? null,
   };
@@ -113,7 +125,11 @@ function allSeries(agg, lang) {
   if (!agg) return [];
   return agg.areas
     .filter((a) => isPict(a))
-    .map((a) => ({ area: a, name: pictName(a, lang), values: (agg.byArea[a] || []).filter((p) => Number.isFinite(p.value)) }));
+    .map((a) => ({
+      area: a,
+      name: pictName(a, lang),
+      values: (agg.byArea[a] || []).filter((p) => Number.isFinite(p.value)),
+    }));
 }
 function pointsAt(agg, year, lang) {
   if (!agg) return [];
@@ -121,7 +137,9 @@ function pointsAt(agg, year, lang) {
     .filter((a) => isPict(a))
     .map((a) => {
       const p = (agg.byArea[a] || []).find((q) => q.year === year);
-      return p && Number.isFinite(p.value) ? { area: a, name: pictName(a, lang), value: p.value, year } : null;
+      return p && Number.isFinite(p.value)
+        ? { area: a, name: pictName(a, lang), value: p.value, year }
+        : null;
     })
     .filter(Boolean);
 }
@@ -132,7 +150,12 @@ function Select({ label, options, value, onChange }) {
     <div className="act1f act1f--select">
       {label ? <span className="act1f__lbl">{label}</span> : null}
       <div className="act1f__selwrap">
-        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+        <select
+          className="act1f__select"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
           {options.map((o) => (
             <option key={String(o.v)} value={o.v}>
               {o.label}
@@ -197,7 +220,10 @@ export default function Act6Agriculture() {
     dispatch(loadDataset("landCover"));
   }, [dispatch]);
 
-  const agg = useMemo(() => (agri.data ? buildAggregate(agri.data, kind) : null), [agri.data, kind]);
+  const agg = useMemo(
+    () => (agri.data ? buildAggregate(agri.data, kind) : null),
+    [agri.data, kind],
+  );
   const years = useMemo(() => agg?.years || [], [agg]);
 
   // Le type (cultures/élevage) a ses propres années → on réinitialise le curseur.
@@ -210,14 +236,30 @@ export default function Act6Agriculture() {
   }, [years, yearIdx]);
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
 
-  const areaVisible = useCallback((a) => region === "all" || REGION_OF[a] === region, [region]);
+  const areaVisible = useCallback(
+    (a) => region === "all" || REGION_OF[a] === region,
+    [region],
+  );
 
-  const vSeries = useMemo(() => allSeries(agg, lang).filter((s) => areaVisible(s.area) && s.values.length), [agg, lang, areaVisible]);
+  const vSeries = useMemo(
+    () =>
+      allSeries(agg, lang).filter(
+        (s) => areaVisible(s.area) && s.values.length,
+      ),
+    [agg, lang, areaVisible],
+  );
   const points = useMemo(
-    () => (agg && currentYear != null ? pointsAt(agg, currentYear, lang) : []).filter((p) => areaVisible(p.area)),
+    () =>
+      (agg && currentYear != null
+        ? pointsAt(agg, currentYear, lang)
+        : []
+      ).filter((p) => areaVisible(p.area)),
     [agg, currentYear, lang, areaVisible],
   );
-  const refMedian = useMemo(() => median(points.map((p) => p.value)) ?? 0, [points]);
+  const refMedian = useMemo(
+    () => median(points.map((p) => p.value)) ?? 0,
+    [points],
+  );
 
   const firstYear = agg?.firstYear ?? null;
   const lastYear = agg?.lastYear ?? null;
@@ -225,7 +267,10 @@ export default function Act6Agriculture() {
   // Indice d'occupation des sols modifiant le climat (CALCI, base 2015 = 100),
   // chargé via le store (DF_CLIMATE_CHANGE · ALT_LAND_COVER), filtré par sous-région.
   const landReady = land.status === "succeeded" && !!land.data;
-  const landYears = useMemo(() => (land.data ? land.data.years : []), [land.data]);
+  const landYears = useMemo(
+    () => (land.data ? land.data.years : []),
+    [land.data],
+  );
   const landSeries = useMemo(() => {
     const d = land.data;
     if (!d) return [];
@@ -234,7 +279,9 @@ export default function Act6Agriculture() {
       .map((a) => ({
         area: a,
         name: pictName(a, lang),
-        values: (d.byArea[a] || []).filter((q) => Number.isFinite(q.value)).sort((x, y) => x.year - y.year),
+        values: (d.byArea[a] || [])
+          .filter((q) => Number.isFinite(q.value))
+          .sort((x, y) => x.year - y.year),
       }))
       .filter((sx) => sx.values.length);
   }, [land.data, lang, areaVisible]);
@@ -242,7 +289,10 @@ export default function Act6Agriculture() {
   const landChangeRows = useMemo(
     () =>
       landSeries
-        .map((sx) => ({ name: sx.name, delta: sx.values[sx.values.length - 1].value - 100 }))
+        .map((sx) => ({
+          name: sx.name,
+          delta: sx.values[sx.values.length - 1].value - 100,
+        }))
         .filter((r) => Number.isFinite(r.delta)),
     [landSeries],
   );
@@ -250,7 +300,11 @@ export default function Act6Agriculture() {
   const landSlopeRows = useMemo(
     () =>
       landSeries
-        .map((sx) => ({ name: sx.name, left: sx.values[0].value, right: sx.values[sx.values.length - 1].value }))
+        .map((sx) => ({
+          name: sx.name,
+          left: sx.values[0].value,
+          right: sx.values[sx.values.length - 1].value,
+        }))
         .filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right)),
     [landSeries],
   );
@@ -272,7 +326,12 @@ export default function Act6Agriculture() {
           .filter((p) => p && Number.isFinite(p.value))
           .map((p) => p.value);
         if (!vals.length) return null;
-        return { code: c.code, label: c.label, value: median(vals), year: currentYear };
+        return {
+          code: c.code,
+          label: c.label,
+          value: median(vals),
+          year: currentYear,
+        };
       })
       .filter(Boolean);
   }, [agri.data, currentYear, areaVisible, kind]);
@@ -284,7 +343,12 @@ export default function Act6Agriculture() {
       .map((s) => {
         const pa = s.values.find((p) => p.year === firstYear);
         const pb = s.values.find((p) => p.year === lastYear);
-        return pa && pb && Number.isFinite(pa.value) && Number.isFinite(pb.value) ? { area: s.area, name: s.name, a: pa.value, b: pb.value } : null;
+        return pa &&
+          pb &&
+          Number.isFinite(pa.value) &&
+          Number.isFinite(pb.value)
+          ? { area: s.area, name: s.name, a: pa.value, b: pb.value }
+          : null;
       })
       .filter(Boolean);
   }, [agg, lang, areaVisible, firstYear, lastYear]);
@@ -317,13 +381,17 @@ export default function Act6Agriculture() {
         const xs = s.values.map((p) => p.value);
         const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
         if (!mean) return null;
-        const variance = xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length;
+        const variance =
+          xs.reduce((a, b) => a + (b - mean) ** 2, 0) / xs.length;
         const cv = (Math.sqrt(variance) / mean) * 100;
         return { name: s.name, value: Math.round(cv * 10) / 10 };
       })
       .filter(Boolean);
   }, [agg, lang, areaVisible]);
-  const volatilityMedian = useMemo(() => median(volatilityRows.map((r) => r.value)) ?? 0, [volatilityRows]);
+  const volatilityMedian = useMemo(
+    () => median(volatilityRows.map((r) => r.value)) ?? 0,
+    [volatilityRows],
+  );
 
   // --- Course animée : un produit choisi, ses territoires sur toute la période ---
   const raceProducts = useMemo(() => {
@@ -333,17 +401,27 @@ export default function Act6Agriculture() {
       .filter((c) => {
         const d = agri.data.byCommodity[c.code];
         if (!d) return false;
-        return d.areas.filter((a) => isPict(a) && (d.byArea[a] || []).some((p) => Number.isFinite(p.value))).length >= 2;
+        return (
+          d.areas.filter(
+            (a) =>
+              isPict(a) &&
+              (d.byArea[a] || []).some((p) => Number.isFinite(p.value)),
+          ).length >= 2
+        );
       });
   }, [agri.data, kind]);
 
   useEffect(() => {
-    if (raceProducts.length && (raceProduct == null || !raceProducts.some((c) => c.code === raceProduct))) {
+    if (
+      raceProducts.length &&
+      (raceProduct == null || !raceProducts.some((c) => c.code === raceProduct))
+    ) {
       setRaceProduct(raceProducts[0].code);
     }
   }, [raceProducts, raceProduct]);
 
-  const raceData = raceProduct && agri.data ? agri.data.byCommodity[raceProduct] : null;
+  const raceData =
+    raceProduct && agri.data ? agri.data.byCommodity[raceProduct] : null;
   const raceMeta = raceProducts.find((c) => c.code === raceProduct);
   const raceYears = useMemo(() => raceData?.years || [], [raceData]);
   const raceSeries = useMemo(() => {
@@ -351,7 +429,9 @@ export default function Act6Agriculture() {
     return raceData.areas
       .filter((a) => isPict(a) && areaVisible(a))
       .map((a) => {
-        const s = (raceData.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year);
+        const s = (raceData.byArea[a] || [])
+          .filter((p) => Number.isFinite(p.value))
+          .sort((x, y) => x.year - y.year);
         let last = null;
         const values = raceYears.map((y) => {
           const ex = s.find((p) => p.year === y);
@@ -369,9 +449,27 @@ export default function Act6Agriculture() {
     const high = sorted[sorted.length - 1];
     const low = sorted[0];
     return [
-      { key: "median", value: fmt(refMedian, 0), unit, label: t("act6.board.kpi_median"), tone: "accent" },
-      { key: "high", value: fmt(high.value, 0), unit: high.name, label: t("act6.board.kpi_high"), tone: "positive" },
-      { key: "low", value: fmt(low.value, 0), unit: low.name, label: t("act6.board.kpi_low"), tone: "warm" },
+      {
+        key: "median",
+        value: fmt(refMedian, 0),
+        unit,
+        label: t("act6.board.kpi_median"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: fmt(high.value, 0),
+        unit: high.name,
+        label: t("act6.board.kpi_high"),
+        tone: "positive",
+      },
+      {
+        key: "low",
+        value: fmt(low.value, 0),
+        unit: low.name,
+        label: t("act6.board.kpi_low"),
+        tone: "warm",
+      },
     ];
   }, [agri.status, points, refMedian, unit, t]);
 
@@ -384,14 +482,42 @@ export default function Act6Agriculture() {
     });
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
-  const status = agri.status === "ready" ? (years.length ? "ready" : "empty") : agri.status === "loading" ? "loading" : "empty";
+  const regionOpts = REGION_KEYS.map((k) => ({
+    v: k,
+    label: t(`act1.filter.${k}`),
+  }));
+  const status =
+    agri.status === "ready"
+      ? years.length
+        ? "ready"
+        : "empty"
+      : agri.status === "loading"
+        ? "loading"
+        : "empty";
 
   const filtersEl = (
     <>
-      <Select label={t("act6.board.kind_label")} options={[{ v: "crop", label: t("act6.board.kind_crop") }, { v: "livestock", label: t("act6.board.kind_livestock") }]} value={kind} onChange={setKind} />
-      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={(i) => setYearIdx(i)} />
+      <Select
+        label={t("act6.board.kind_label")}
+        options={[
+          { v: "crop", label: t("act6.board.kind_crop") },
+          { v: "livestock", label: t("act6.board.kind_livestock") },
+        ]}
+        value={kind}
+        onChange={setKind}
+      />
+      <Select
+        label={t("act1.filter.title")}
+        options={regionOpts}
+        value={region}
+        onChange={setRegion}
+      />
+      <YearSlider
+        label={t("act1.f.year")}
+        years={years}
+        index={yearIdx}
+        onChange={(i) => setYearIdx(i)}
+      />
     </>
   );
 
@@ -423,7 +549,13 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.small_take"),
             node: (
               <div className="act6b__scroll">
-                <SmallMultiples series={vSeries} years={years} unit={unit} currentYear={currentYear} labels={{ last: t("act6.smallmult_last") }} />
+                <SmallMultiples
+                  series={vSeries}
+                  years={years}
+                  unit={unit}
+                  currentYear={currentYear}
+                  labels={{ last: t("act6.smallmult_last") }}
+                />
               </div>
             ),
           },
@@ -438,28 +570,43 @@ export default function Act6Agriculture() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act6.spotlight.ex_kicker"), text: t("act6.spotlight.ex_text") }}
-                link={{ href: "https://www.fao.org/faostat/en/#data/QCL/metadata", label: t("act6.spotlight.link_label") }}
+                example={{
+                  kicker: t("act6.spotlight.ex_kicker"),
+                  text: t("act6.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://www.fao.org/faostat/en/#data/QCL/metadata",
+                  label: t("act6.spotlight.link_label"),
+                }}
               />
             ),
           },
           {
             id: "regional",
-            empty: !regionalSeries.length || regionalSeries[0].values.length < 2,
+            empty:
+              !regionalSeries.length || regionalSeries[0].values.length < 2,
             tab: t("act6.board.tab_regional"),
             title: t("act6.regional_title"),
             finding: t("act6.board.regional_find"),
             takeaway: t("act6.board.regional_take"),
             node: (
               <div className="act6b__fit">
-                <TrendLines series={regionalSeries} years={years} currentYear={currentYear} unit={unit} />
+                <TrendLines
+                  series={regionalSeries}
+                  years={years}
+                  currentYear={currentYear}
+                  unit={unit}
+                />
               </div>
             ),
           },
           {
             id: "crops",
             empty: cropRankRows.length === 0,
-            tab: kind === "crop" ? t("act6.board.tab_crops") : t("act6.board.tab_animals"),
+            tab:
+              kind === "crop"
+                ? t("act6.board.tab_crops")
+                : t("act6.board.tab_animals"),
             title: `${kind === "crop" ? t("act6.crop_rank_title") : t("act6.animal_rank_title")} · ${currentYear}`,
             finding: t("act6.board.crops_find"),
             takeaway: t("act6.board.crops_take"),
@@ -478,7 +625,17 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.change_take"),
             node: (
               <div className="act6b__scroll">
-                <DumbbellChart rows={dumbbellRows} yearA={firstYear} yearB={lastYear} unit={unit} decimals={0} labels={{ up: t("act6.compare_up"), down: t("act6.compare_down") }} />
+                <DumbbellChart
+                  rows={dumbbellRows}
+                  yearA={firstYear}
+                  yearB={lastYear}
+                  unit={unit}
+                  decimals={0}
+                  labels={{
+                    up: t("act6.compare_up"),
+                    down: t("act6.compare_down"),
+                  }}
+                />
               </div>
             ),
           },
@@ -489,7 +646,16 @@ export default function Act6Agriculture() {
             title: t("act6.board.stability_title"),
             finding: t("act6.board.stability_find"),
             takeaway: t("act6.board.stability_take"),
-            node: <RankChart points={volatilityRows} unit="%" median={volatilityMedian} refLabel={t("act6.median_ref")} sort="desc" scale="lin" />,
+            node: (
+              <RankChart
+                points={volatilityRows}
+                unit="%"
+                median={volatilityMedian}
+                refLabel={t("act6.median_ref")}
+                sort="desc"
+                scale="lin"
+              />
+            ),
           },
           {
             id: "race",
@@ -501,9 +667,31 @@ export default function Act6Agriculture() {
             node: (
               <div className="act6b__race">
                 <div className="act6b__racebar">
-                  <Select label={t("act6.board.race_pick")} options={raceProducts.map((c) => ({ v: c.code, label: c.label }))} value={raceProduct ?? ""} onChange={setRaceProduct} />
+                  <Select
+                    label={t("act6.board.race_pick")}
+                    options={raceProducts.map((c) => ({
+                      v: c.code,
+                      label: c.label,
+                    }))}
+                    value={raceProduct ?? ""}
+                    onChange={setRaceProduct}
+                  />
                 </div>
-                <BarRace series={raceSeries} years={raceYears} unit={raceMeta?.unit || unit} decimals={0} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} autoplay={false} loop={false} tick={1800} />
+                <BarRace
+                  series={raceSeries}
+                  years={raceYears}
+                  unit={raceMeta?.unit || unit}
+                  decimals={0}
+                  tk={tk}
+                  labels={{
+                    play: t("act1.race.play"),
+                    pause: t("act1.race.pause"),
+                    restart: t("act1.race.restart"),
+                  }}
+                  autoplay={false}
+                  loop={false}
+                  tick={1800}
+                />
               </div>
             ),
           },
@@ -522,7 +710,10 @@ export default function Act6Agriculture() {
                   unit={unit}
                   scale="sequential"
                   decimals={0}
-                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
+                  labels={{
+                    low: t("act6.heatmap_low"),
+                    high: t("act6.heatmap_high"),
+                  }}
                 />
               </div>
             ),
@@ -535,15 +726,33 @@ export default function Act6Agriculture() {
             finding: t("act6.board.map_find"),
             takeaway: t("act6.board.map_take"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
-                  <OceanMap data={points} unit={unit} range={agg ? agg.range : null} logScale lowLabel={t("act6.map_low")} midLabel={t("act6.map_mid")} highLabel={t("act6.map_high")} noTokenMsg={t("act1.map_no_token")} />
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
+                  <OceanMap
+                    data={points}
+                    unit={unit}
+                    range={agg ? agg.range : null}
+                    logScale
+                    lowLabel={t("act6.map_low")}
+                    midLabel={t("act6.map_mid")}
+                    highLabel={t("act6.map_high")}
+                    noTokenMsg={t("act1.map_no_token")}
+                  />
                 </Suspense>
               </ErrorBoundary>
             ),
           },
           {
             id: "explorer",
+            bare: true,
             empty: !agri.data,
             tab: t("act6.board.tab_explorer"),
             title: t("act6.explorer_title"),
@@ -551,7 +760,16 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.explorer_take"),
             node: (
               <div className="act6b__scroll">
-                <CropExplorer data={agri.data} kind={kind} labels={{ pick: kind === "crop" ? t("act6.explorer_pick") : t("act6.explorer_animal_pick") }} />
+                <CropExplorer
+                  data={agri.data}
+                  kind={kind}
+                  labels={{
+                    pick:
+                      kind === "crop"
+                        ? t("act6.explorer_pick")
+                        : t("act6.explorer_animal_pick"),
+                  }}
+                />
               </div>
             ),
           },
@@ -562,7 +780,14 @@ export default function Act6Agriculture() {
             title: t("act6.land.change_title"),
             finding: t("act6.board.land_change_find"),
             takeaway: t("act6.board.land_change_take"),
-            node: <ChangeChart rows={landChangeRows} unit={t("act6.land.change_unit")} direction="all" polarity="down_good" />,
+            node: (
+              <ChangeChart
+                rows={landChangeRows}
+                unit={t("act6.land.change_unit")}
+                direction="all"
+                polarity="down_good"
+              />
+            ),
           },
           {
             id: "land_lines",
@@ -571,7 +796,14 @@ export default function Act6Agriculture() {
             title: t("act6.land.lines_title"),
             finding: t("act6.board.land_lines_find"),
             takeaway: t("act6.board.land_lines_take"),
-            node: <TrendChart series={landSeries} years={landYears} unit={t("act6.land.index_unit")} scale="lin" />,
+            node: (
+              <TrendChart
+                series={landSeries}
+                years={landYears}
+                unit={t("act6.land.index_unit")}
+                scale="lin"
+              />
+            ),
           },
           {
             id: "land_slope",
@@ -602,7 +834,10 @@ export default function Act6Agriculture() {
               <CoverageChart
                 series={vSeries}
                 years={years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
