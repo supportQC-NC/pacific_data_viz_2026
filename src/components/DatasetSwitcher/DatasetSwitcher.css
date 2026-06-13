@@ -112,6 +112,51 @@
 .dsw__card.is-active .dsw__ico {
   opacity: 1;
 }
+.dsw--icononly .dsw__list {
+  gap: var(--sp-2);
+}
+.dsw--icononly .dsw__card {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+.dsw--icononly .dsw__top {
+  flex: 0 0 auto;
+  gap: 0;
+}
+.dsw--icononly .dsw__ico {
+  width: 1.35rem;
+  height: 1.35rem;
+  opacity: 1;
+}
+.dsw--icononly .dsw__meta {
+  position: absolute;
+  left: calc(100% + var(--sp-2));
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+.dsw--icononly .dsw__unit {
+  opacity: 1;
+}
+.dsw--icononly .dsw__card:hover .dsw__meta, .dsw--icononly .dsw__card:focus-visible .dsw__meta {
+  opacity: 1;
+}
 .dsw--dense .dsw__list {
   gap: var(--sp-1);
 }
@@ -133,4 +178,11 @@
   width: 4.25rem;
   height: 1.2rem;
   flex-shrink: 0;
+}
+.dsw__card--dense .dsw__unit {
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+.dsw__card--dense:hover .dsw__unit, .dsw__card--dense:focus-visible .dsw__unit {
+  opacity: 1;
 }/*# sourceMappingURL=DatasetSwitcher.css.map */

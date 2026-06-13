@@ -22,6 +22,7 @@ import { useJourney } from "../../store/context/journeyContext";
 import KpiRow from "../KpiRow/KpiRow";
 import Loader from "../Loader/Loader";
 import ActBar from "../ActBar/ActBar";
+import ChartCarousel from "../ChartCarousel/ChartCarousel";
 import "./ActBoard.scss";
 
 export default function ActBoard({
@@ -38,6 +39,8 @@ export default function ActBoard({
   charts = [],
   progress,
   outro,
+  nav = "rail",
+  initialTab,
 }) {
   const { t } = useLang();
   const { pathname } = useLocation();
@@ -83,6 +86,17 @@ export default function ActBoard({
 
   const count = charts.length;
   const [tab, setTab] = useState(() => {
+    if (initialTab != null) {
+      const byId = charts.findIndex((c) => c.id === initialTab);
+      if (byId >= 0) return byId;
+      if (
+        typeof initialTab === "number" &&
+        initialTab >= 0 &&
+        initialTab < charts.length
+      ) {
+        return initialTab;
+      }
+    }
     const sig = charts.findIndex((c) => c.signature);
     return sig >= 0 ? sig : 0;
   });
@@ -133,7 +147,9 @@ export default function ActBoard({
   const showActBar = step === 1 || step === 2;
 
   return (
-    <main className={`board board--s${step}`}>
+    <main
+      className={`board board--s${step} ${nav === "carousel" ? "board--carousel" : ""}`}
+    >
       {/* ---------- Barre d'acte persistante (préc · titre+progression · suiv) ---------- */}
       {showActBar && (
         <ActBar
@@ -209,38 +225,59 @@ export default function ActBoard({
           (status === "ready" && active ? (
             <section className="board__panel">
               <div className="board__work">
-                <aside className="board__rail">
-                  <div className="board__rail-filters">{filters}</div>
+                {(nav !== "carousel" || filters) && (
+                  <aside className="board__rail">
+                    {filters ? (
+                      <div className="board__rail-filters">{filters}</div>
+                    ) : null}
 
-                  <nav
-                    className="board__navlist"
-                    role="tablist"
-                    aria-label={labels.signature}
-                  >
-                    {charts.map((c, i) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={i === idx}
-                        className={`board__navitem ${i === idx ? "is-active" : ""} ${c.signature ? "is-signature" : ""}`}
-                        onClick={() => goTab(i)}
+                    {nav !== "carousel" && (
+                      <nav
+                        className="board__navlist"
+                        role="tablist"
+                        aria-label={labels.signature}
                       >
-                        {c.signature ? (
-                          <span
-                            className="board__navitem-star"
-                            aria-hidden="true"
+                        {charts.map((c, i) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={i === idx}
+                            className={`board__navitem ${i === idx ? "is-active" : ""} ${c.signature ? "is-signature" : ""}`}
+                            onClick={() => goTab(i)}
                           >
-                            ★
-                          </span>
-                        ) : null}
-                        <span className="board__navitem-label">{c.tab}</span>
-                      </button>
-                    ))}
-                  </nav>
-                </aside>
+                            {c.signature ? (
+                              <span
+                                className="board__navitem-star"
+                                aria-hidden="true"
+                              >
+                                ★
+                              </span>
+                            ) : null}
+                            <span className="board__navitem-label">
+                              {c.tab}
+                            </span>
+                          </button>
+                        ))}
+                      </nav>
+                    )}
+                  </aside>
+                )}
 
                 <div className="board__main">
+                  {nav === "carousel" && (
+                    <ChartCarousel
+                      charts={charts}
+                      index={idx}
+                      onSelect={goTab}
+                      labels={{
+                        prev: labels.prev,
+                        next: labels.next,
+                        signature: labels.signature,
+                        group: labels.viewGroup,
+                      }}
+                    />
+                  )}
                   {!active.bare && (
                     <div className="board__head">
                       <span className="board__num">
@@ -262,7 +299,12 @@ export default function ActBoard({
                   {active.empty ? (
                     <div className="board__chart-empty">{labels.empty}</div>
                   ) : (
-                    <div className="board__chart">{active.node}</div>
+                    <div
+                      className={`board__chart ${nav === "carousel" ? "chcar-fade" : ""}`}
+                      key={nav === "carousel" ? idx : undefined}
+                    >
+                      {active.node}
+                    </div>
                   )}
                 </div>
               </div>

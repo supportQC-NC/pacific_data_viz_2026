@@ -1,14 +1,15 @@
 // src/components/SmallMultiples/SmallMultiples.jsx
 // ============================================================
-// Petits multiples : une mini-courbe (sparkline) par territoire, lisible,
-// triée par dernière valeur décroissante. Chaque carte porte le NOM COMPLET
-// (sur deux lignes au besoin), la dernière valeur connue mise en avant, un
-// badge de TENDANCE (▲/▼ % entre le premier et le dernier point) et une aire
-// dégradée. Chaque cellule a sa propre échelle Y : on lit la FORME/tendance ;
-// la comparaison des NIVEAUX entre territoires se fait via la heatmap.
+// Petits multiples — « registre classé ». Une entrée par territoire, triée
+// par dernière valeur décroissante : RANG discret (mono), NOM complet, dernière
+// VALEUR en gros chiffre serif, badge de TENDANCE (▲/▼ % entre premier et
+// dernier point) et une sparkline posée sur une « ligne d'eau » (baseline
+// filaire commune par rangée). Pas de cadre : la hiérarchie vient de la typo
+// et de l'alignement. Chaque cellule garde sa propre échelle Y (on lit la
+// FORME) ; la comparaison des NIVEAUX se fait via la heatmap.
 //
-// NOUVEAU : cliquer une carte l'AGRANDIT dans une modale autonome (grand
-// graphe annoté, axes, fermeture par Échap / clic sur le fond / bouton).
+// Cliquer une entrée l'AGRANDIT dans une modale autonome (grand graphe annoté,
+// axes, fermeture par Échap / clic sur le fond / bouton).
 //
 // SCSS only, couleurs via tokens. Aucune dépendance.
 // Props (API inchangée) :
@@ -62,15 +63,20 @@ function BigChart({ cell, minYear, maxYear }) {
   const sx = (yr) => BL + ((yr - minYear) / span) * (BW - BL - BR);
   const sy = (v) => BT + (1 - (v - cell.min) / vSpan) * (BH - BT - BB);
   const line = vals
-    .map((p, i) => `${i === 0 ? "M" : "L"}${sx(p.year).toFixed(1)},${sy(p.value).toFixed(1)}`)
+    .map(
+      (p, i) =>
+        `${i === 0 ? "M" : "L"}${sx(p.year).toFixed(1)},${sy(p.value).toFixed(1)}`,
+    )
     .join(" ");
   const area = `${line} L${sx(vals[vals.length - 1].year).toFixed(1)},${BH - BB} L${sx(
     vals[0].year,
   ).toFixed(1)},${BH - BB} Z`;
   // 3 graduations d'années (début, milieu, fin) sans surcharger
-  const ticks = [vals[0], vals[Math.floor(vals.length / 2)], vals[vals.length - 1]].filter(
-    (p, i, a) => a.indexOf(p) === i,
-  );
+  const ticks = [
+    vals[0],
+    vals[Math.floor(vals.length / 2)],
+    vals[vals.length - 1],
+  ].filter((p, i, a) => a.indexOf(p) === i);
   const gid = `smbig-${cell.area}`;
   return (
     <svg
@@ -87,12 +93,34 @@ function BigChart({ cell, minYear, maxYear }) {
         </linearGradient>
       </defs>
       {/* repères haut / bas */}
-      <line className="smallmult__axis" x1={BL} y1={sy(cell.max)} x2={BW - BR} y2={sy(cell.max)} />
-      <line className="smallmult__axis" x1={BL} y1={sy(cell.min)} x2={BW - BR} y2={sy(cell.min)} />
-      <text className="smallmult__ytick" x={BL - 8} y={sy(cell.max) + 4} textAnchor="end">
+      <line
+        className="smallmult__axis"
+        x1={BL}
+        y1={sy(cell.max)}
+        x2={BW - BR}
+        y2={sy(cell.max)}
+      />
+      <line
+        className="smallmult__axis"
+        x1={BL}
+        y1={sy(cell.min)}
+        x2={BW - BR}
+        y2={sy(cell.min)}
+      />
+      <text
+        className="smallmult__ytick"
+        x={BL - 8}
+        y={sy(cell.max) + 4}
+        textAnchor="end"
+      >
         {fmt(cell.max)}
       </text>
-      <text className="smallmult__ytick" x={BL - 8} y={sy(cell.min) + 4} textAnchor="end">
+      <text
+        className="smallmult__ytick"
+        x={BL - 8}
+        y={sy(cell.min) + 4}
+        textAnchor="end"
+      >
         {fmt(cell.min)}
       </text>
       {/* aire + ligne */}
@@ -110,7 +138,13 @@ function BigChart({ cell, minYear, maxYear }) {
       ))}
       {/* années */}
       {ticks.map((p) => (
-        <text key={p.year} className="smallmult__xtick" x={sx(p.year)} y={BH - 10} textAnchor="middle">
+        <text
+          key={p.year}
+          className="smallmult__xtick"
+          x={sx(p.year)}
+          y={BH - 10}
+          textAnchor="middle"
+        >
           {p.year}
         </text>
       ))}
@@ -171,7 +205,7 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
 
   return (
     <div className="smallmult">
-      {cells.map((c) => (
+      {cells.map((c, i) => (
         <div
           key={c.area}
           className={`smallmult__cell ${c.trend < 0 ? "is-down" : "is-up"}`}
@@ -186,9 +220,14 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
             }
           }}
         >
-          <span className="smallmult__name" title={c.name}>
-            {c.name}
-          </span>
+          <div className="smallmult__head">
+            <span className="smallmult__rank">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="smallmult__name" title={c.name}>
+              {c.name}
+            </span>
+          </div>
 
           <div className="smallmult__metric">
             <span className="smallmult__val">{fmt(c.last)}</span>
@@ -221,10 +260,6 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
             <path className="smallmult__line" d={c.d} />
             <circle className="smallmult__dot" cx={c.lx} cy={c.ly} r="2.6" />
           </svg>
-
-          <span className="smallmult__foot">
-            {labels.last || ""} {c.lastYear}
-          </span>
         </div>
       ))}
 
@@ -255,7 +290,8 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
                 <span className="smallmult__unit"> {unit}</span>
                 {open.trendPct != null ? (
                   <span className="smallmult__trend">
-                    {open.trend < 0 ? "\u25be" : "\u25b4"} {fmtPct(open.trendPct)}
+                    {open.trend < 0 ? "\u25be" : "\u25b4"}{" "}
+                    {fmtPct(open.trendPct)}
                   </span>
                 ) : null}
               </span>
@@ -263,7 +299,9 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
             <BigChart cell={open} minYear={minYear} maxYear={maxYear} />
             <div className="smallmult__dlg-foot">
               {minYear} – {maxYear}
-              {labels.last ? ` · ${labels.last} ${open.lastYear}` : ` · ${open.lastYear}`}
+              {labels.last
+                ? ` · ${labels.last} ${open.lastYear}`
+                : ` · ${open.lastYear}`}
             </div>
           </div>
         </div>

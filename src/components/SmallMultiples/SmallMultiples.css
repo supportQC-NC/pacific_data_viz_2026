@@ -1,295 +1,256 @@
-@charset "UTF-8";
-/* src/index.scss
-   ============================================================
-   Feuille globale : importe les variables puis pose le reset
-   et les styles de base. Importée une seule fois dans index.js.
-   ============================================================ */
-/* src/styles/_variables.scss
-   ============================================================
-   Tokens du design system + variantes de thème (light / dark).
-   Tout est en custom properties CSS : les composants utilisent
-   var(--x) directement (pas besoin d'importer ce fichier), ce qui
-   permet la bascule de thème instantanée à l'exécution.
-   ============================================================ */
-/* Les polices sont chargées via <link> dans public/index.html
-   (et NON ici : un @import distant dans un fichier @use casse Sass). */
-/* ---------- Tokens non chromatiques (communs) ---------- */
-:root {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Hanken Grotesk", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.875rem;
-  --fs-base: 1rem;
-  --fs-md: 1.25rem;
-  --fs-lg: 1.75rem;
-  --fs-xl: 2.5rem;
-  --fs-2xl: clamp(2.5rem, 6vw, 4.5rem);
-  --fw-light: 300;
-  --fw-reg: 400;
-  --fw-med: 500;
-  --fw-semi: 600;
-  --fw-bold: 700;
-  --lh-tight: 1.1;
-  --lh-base: 1.6;
-  --ls-tight: -0.03em;
-  --ls-wide: 0.18em;
-  --sp-1: 0.25rem;
-  --sp-2: 0.5rem;
-  --sp-3: 0.75rem;
-  --sp-4: 1rem;
-  --sp-6: 1.5rem;
-  --sp-8: 2rem;
-  --sp-12: 3rem;
-  --sp-16: 4rem;
-  --sp-24: 6rem;
-  --r-sm: 4px;
-  --r-md: 10px;
-  --r-pill: 999px;
-  --border-hair: 1px;
-  --maxw: 1320px;
-  --maxw-text: 720px;
-  --nav-h: 72px;
-  --z-base: 1;
-  --z-nav: 100;
-  --z-overlay: 1000;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --t-fast: 0.2s;
-  --t-base: 0.45s;
-  --t-slow: 0.9s;
-}
-
-/* ---------- Thème DARK (défaut) ---------- */
-:root,
-[data-theme=dark] {
-  --c-bg: #020912;
-  --c-bg-2: #051421;
-  --c-surface: #081a2b;
-  --c-line: rgba(120, 200, 230, 0.14);
-  --c-line-strong: rgba(120, 200, 230, 0.32);
-  --c-text: #e8f4f8;
-  --c-text-soft: #9fc0cf;
-  --c-text-mute: #5e8295;
-  --c-accent: #00e6ff;
-  --c-accent-deep: #0090c8;
-  --c-accent-glow: rgba(0, 230, 255, 0.45);
-  --c-warm: #ff6b4a;
-  --c-warm-soft: #ffb38a;
-  /* Sémantique — UNIQUEMENT pour les jugements (mieux / pire).
-     L'identité reste portée par --c-accent (cyan) et --c-warm (corail). */
-  --c-positive: #25e09a;
-  --c-positive-soft: #8ff0cc;
-  --c-positive-glow: rgba(37, 224, 154, 0.4);
-  --c-negative: #ff4d6d;
-  --c-negative-soft: #ff9bb0;
-  --c-negative-glow: rgba(255, 77, 109, 0.4);
-  --grad-abyss: radial-gradient(
-    120% 90% at 50% -10%,
-    #08233a 0%,
-    #04101d 45%,
-    #020912 100%
-  );
-  --shadow-glow: 0 0 40px -8px var(--c-accent-glow);
-  color-scheme: dark;
-}
-
-/* ---------- Thème LIGHT ---------- */
-[data-theme=light] {
-  --c-bg: #eef4f6;
-  --c-bg-2: #e2edf1;
-  --c-surface: #ffffff;
-  --c-line: rgba(8, 40, 60, 0.12);
-  --c-line-strong: rgba(8, 40, 60, 0.28);
-  --c-text: #06222f;
-  --c-text-soft: #2f5566;
-  --c-text-mute: #6b8895;
-  --c-accent: #0086b3;
-  --c-accent-deep: #005f86;
-  --c-accent-glow: rgba(0, 134, 179, 0.3);
-  --c-warm: #e0502c;
-  --c-warm-soft: #c2410c;
-  /* Sémantique — versions assombries pour le contraste sur fond clair. */
-  --c-positive: #0f9d6b;
-  --c-positive-soft: #0b7a52;
-  --c-positive-glow: rgba(15, 157, 107, 0.3);
-  --c-negative: #d92d4e;
-  --c-negative-soft: #b01e3a;
-  --c-negative-glow: rgba(217, 45, 78, 0.3);
-  --grad-abyss: radial-gradient(
-    120% 90% at 50% -10%,
-    #ffffff 0%,
-    #e8f1f4 50%,
-    #dbe8ec 100%
-  );
-  --shadow-glow: 0 0 30px -10px var(--c-accent-glow);
-  color-scheme: light;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  font-family: var(--font-body);
-  font-size: var(--fs-base);
-  line-height: var(--lh-base);
-  color: var(--c-text);
-  background: var(--c-bg);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  transition: background var(--t-slow) var(--ease-out), color var(--t-base) var(--ease-out);
-  overflow-x: hidden;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
-  font-weight: var(--fw-semi);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-tight);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: inherit;
-}
-
-ul {
-  list-style: none;
-}
-
-img,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-}
-
-.app-root {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Conteneur centré réutilisable */
-.container {
-  width: 100%;
-  max-width: var(--maxw);
-  margin-inline: auto;
-  padding-inline: clamp(var(--sp-4), 5vw, var(--sp-16));
-}
-
-/* Étiquette technique mono */
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--ls-wide);
-  text-transform: uppercase;
-  color: var(--c-accent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
-}
 .smallmult {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: var(--sp-3, 0.75rem);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--sp-3) var(--sp-6);
 }
 .smallmult__cell {
-  padding: var(--sp-3, 0.75rem);
-  border: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
-  border-radius: var(--r-md, 10px);
-  background: var(--c-surface, rgba(255, 255, 255, 0.03));
-  transition: border-color var(--t-fast, 0.15s) var(--ease-out, ease), transform var(--t-fast, 0.15s) var(--ease-out, ease);
-}
-.smallmult__cell:hover {
-  border-color: var(--c-line-strong, rgba(255, 255, 255, 0.25));
-  transform: translateY(-2px);
-}
-.smallmult__cell {
-  --tone: var(--c-accent, #46d3e6);
+  --tone: var(--c-accent);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-1) var(--sp-2);
+  border: 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
 }
 .smallmult__cell.is-down {
-  --tone: var(--c-warm, #ff7a59);
+  --tone: var(--c-warm);
+}
+.smallmult__cell:hover {
+  transform: translateY(-2px);
+  border-bottom-color: var(--tone);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 7%, transparent), transparent 72%);
+}
+.smallmult__cell:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
 }
 .smallmult__head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-2, 0.5rem);
-  margin-bottom: var(--sp-2, 0.5rem);
+  gap: var(--sp-2);
+}
+.smallmult__rank {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--c-text-mute);
 }
 .smallmult__name {
-  font-size: var(--fs-sm, 0.8125rem);
-  font-weight: var(--fw-medium, 600);
-  color: var(--c-text, #fff);
-  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  line-height: 1.2;
+  color: var(--c-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+.smallmult__metric {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
 }
 .smallmult__val {
-  font-family: var(--font-mono, "IBM Plex Mono", monospace);
-  font-size: var(--fs-sm, 0.8125rem);
-  color: var(--tone);
-  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
 }
 .smallmult__unit {
-  color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
-  font-size: var(--fs-xs, 0.6875rem);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+.smallmult__trend {
+  margin-left: auto;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  padding: 3px var(--sp-2);
+  border-radius: var(--r-pill);
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  white-space: nowrap;
 }
 .smallmult__spark {
   width: 100%;
-  height: 38px;
+  height: 40px;
   display: block;
+  margin-top: auto;
+}
+.smallmult__area {
+  opacity: 1;
+}
+.smallmult__g0 {
+  stop-color: var(--tone);
+  stop-opacity: 0.32;
+}
+.smallmult__g1 {
+  stop-color: var(--tone);
+  stop-opacity: 0;
 }
 .smallmult__line {
   fill: none;
   stroke: var(--tone);
-  stroke-width: 1.5;
+  stroke-width: 1.6;
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-.smallmult__area {
-  fill: var(--tone);
-  opacity: 0.1;
-}
 .smallmult__dot {
   fill: var(--tone);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent));
 }
-.smallmult__foot {
+.smallmult__modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: smFade var(--t-fast) var(--ease-out) both;
+}
+.smallmult__dialog {
+  --tone: var(--c-accent);
+  position: relative;
+  width: min(720px, 100%);
+  padding: var(--sp-6);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: radial-gradient(120% 130% at 50% 0%, var(--c-surface), var(--c-bg-2));
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.7);
+  animation: smRise var(--t-base) var(--ease-out) both;
+}
+.smallmult__dialog.is-down {
+  --tone: var(--c-warm);
+}
+.smallmult__close {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-mute);
+  font-size: var(--fs-base);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+.smallmult__close:hover {
+  color: var(--c-text);
+  background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+}
+.smallmult__dlg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  padding-right: var(--sp-8);
+}
+.smallmult__dlg-name {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+}
+.smallmult__dlg-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.smallmult__dlg-val {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  font-size: var(--fs-lg);
+  color: var(--tone);
+  font-variant-numeric: tabular-nums;
+}
+.smallmult__dlg-foot {
+  margin-top: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.smallmult__big {
+  width: 100%;
+  height: auto;
   display: block;
-  margin-top: var(--sp-1, 0.25rem);
-  font-family: var(--font-mono, "IBM Plex Mono", monospace);
-  font-size: var(--fs-xs, 0.6875rem);
-  color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
+}
+.smallmult__axis {
+  stroke: var(--c-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.smallmult__ytick, .smallmult__xtick {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--c-text-mute);
+}
+.smallmult__bigline {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.smallmult__bigpt {
+  fill: var(--tone);
+}
+
+@keyframes smFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes smRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .smallmult__modal,
+  .smallmult__dialog {
+    animation: none;
+  }
+  .smallmult__cell {
+    transition: none;
+  }
 }/*# sourceMappingURL=SmallMultiples.css.map */

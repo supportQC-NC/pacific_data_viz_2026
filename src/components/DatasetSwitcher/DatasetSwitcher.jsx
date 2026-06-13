@@ -95,9 +95,13 @@ export default function DatasetSwitcher({
   value,
   onChange,
   dense = false,
+  hideSpark = false,
+  iconOnly = false,
 }) {
   return (
-    <div className={`dsw ${dense ? "dsw--dense" : ""}`}>
+    <div
+      className={`dsw ${dense ? "dsw--dense" : ""} ${iconOnly ? "dsw--icononly" : ""}`}
+    >
       {label ? <span className="dsw__label">{label}</span> : null}
       <div
         className="dsw__list"
@@ -137,7 +141,7 @@ export default function DatasetSwitcher({
                   ) : null}
                 </span>
               </span>
-              <Spark values={it.spark} />
+              {!hideSpark && <Spark values={it.spark} />}
             </button>
           );
         })}

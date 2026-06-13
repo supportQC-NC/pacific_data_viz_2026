@@ -1,39 +1,22 @@
-// src/components/ActBoard/ActBoard.scss
-// ============================================================
-// Design « dashboard narratif » partagé. Stepper 3 temps. Le board tient
-// dans l'écran (hauteur bornée), exploite la largeur : RAIL de filtres +
-// sélecteur de graphes à gauche, GRAPHE plein cadre à droite.
-// Tokens --c-*, --sp-*, --r-*, --font-* (light/dark gérés par variables).
-//
-// MAJ : étapes BOARD (s1) et OUTRO (s2) verrouillées en PLEIN ÉCRAN NON
-// SCROLLABLE (100dvh, overflow hidden, colonne flex). La barre d'acte
-// sticky est absorbée par le flux flex ; la liste des graphes du rail
-// défile en interne → les boutons d'étape restent toujours à l'écran.
-// ============================================================
-
+@charset "UTF-8";
 .board {
   position: relative;
   min-height: 100vh;
   padding-block: clamp(var(--sp-6), 6vh, 4rem) var(--sp-12);
-
-  &::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(
-      55% 45% at 82% 0%,
-      var(--c-accent-glow),
-      transparent 62%
-    );
-    opacity: 0.45;
-    z-index: 0;
-  }
-  > .container {
-    position: relative;
-    z-index: 1;
-    max-width: min(1840px, 96vw);
-  }
+}
+.board::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(55% 45% at 82% 0%, var(--c-accent-glow), transparent 62%);
+  opacity: 0.45;
+  z-index: 0;
+}
+.board > .container {
+  position: relative;
+  z-index: 1;
+  max-width: min(1840px, 96vw);
 }
 
 /* Surtitre + progression */
@@ -43,6 +26,7 @@
   justify-content: space-between;
   gap: var(--sp-4);
 }
+
 .board__progress {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -53,6 +37,7 @@
   padding: 2px var(--sp-3);
   white-space: nowrap;
 }
+
 .board__title {
   font-family: var(--font-display);
   font-weight: var(--fw-semi);
@@ -60,6 +45,7 @@
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
 }
+
 .board__thesis {
   font-family: var(--font-body);
   line-height: var(--lh-base);
@@ -72,28 +58,34 @@
 .board--s0 {
   padding-block: 0;
 }
+
 .board__intro {
   min-height: 100vh;
   display: flex;
   align-items: center;
   padding-block: var(--sp-12);
 }
+
 .board__intro-inner {
   width: 100%;
   max-width: 1120px;
 }
+
 .board__title--xl {
   font-size: clamp(2.6rem, 6vw, 4.6rem);
   margin: var(--sp-3) 0 var(--sp-5);
 }
+
 .board__thesis--xl {
   font-size: clamp(1rem, 1.5vw, 1.3rem);
   max-width: 96ch;
   margin: 15px 0;
 }
+
 .board__intro-actions {
   margin-top: clamp(var(--sp-6), 4vh, 2.5rem);
 }
+
 .board__cta {
   display: inline-flex;
   align-items: center;
@@ -110,10 +102,9 @@
   box-shadow: var(--shadow-glow);
   cursor: pointer;
   transition: transform 0.18s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
+}
+.board__cta:hover {
+  transform: translateY(-2px);
 }
 
 /* ============================================================
@@ -122,6 +113,7 @@
 .board--s1 {
   padding-block: var(--sp-6);
 }
+
 .board__panel {
   display: flex;
   flex-direction: column;
@@ -142,6 +134,7 @@
   padding-bottom: var(--sp-3);
   border-bottom: 1px solid var(--c-line);
 }
+
 .board__crumb-title {
   font-family: var(--font-display);
   font-size: var(--fs-md);
@@ -165,6 +158,7 @@
   min-height: 0;
   overflow: visible;
 }
+
 .board__rail-filters {
   display: flex;
   flex-direction: column;
@@ -172,13 +166,15 @@
   padding-bottom: var(--sp-5);
   border-bottom: 1px solid var(--c-line);
 }
+
 .board__rail .act1f--select {
   margin-bottom: var(--sp-2);
 }
+
 .board__rail .act1f--year {
   padding-block: var(--sp-1);
 }
-// Les groupes de filtres passent en colonne dans le rail.
+
 .board__rail .act1f {
   display: flex;
   flex-direction: column;
@@ -187,14 +183,17 @@
   width: 100%;
   max-width: 100%;
 }
+
 .board__rail .act1f__pills {
   flex-wrap: wrap;
   max-width: 100%;
 }
+
 .board__rail .act1f--year,
 .board__rail .act1f--select {
   width: 100%;
 }
+
 .board__rail .act1f__range {
   width: 100%;
   margin-top: var(--sp-1);
@@ -205,9 +204,11 @@
   position: relative;
   width: 100%;
 }
+
 .act1f__select {
   width: 100%;
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
   -webkit-appearance: none;
   padding: var(--sp-2) var(--sp-6) var(--sp-2) var(--sp-3);
   font-family: var(--font-mono);
@@ -217,15 +218,15 @@
   border: 1px solid var(--c-line-strong);
   border-radius: var(--r-sm);
   cursor: pointer;
-
-  &:hover {
-    border-color: var(--c-accent);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--c-accent);
-    outline-offset: 2px;
-  }
 }
+.act1f__select:hover {
+  border-color: var(--c-accent);
+}
+.act1f__select:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
 .act1f__caret {
   position: absolute;
   right: var(--sp-3);
@@ -241,6 +242,7 @@
   flex-direction: column;
   gap: var(--sp-1);
 }
+
 .board__navitem {
   display: flex;
   align-items: center;
@@ -257,29 +259,26 @@
   border: 1px solid transparent;
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition:
-    color 0.16s ease,
-    background 0.16s ease,
-    border-color 0.16s ease;
-
-  &:hover {
-    color: var(--c-text-soft);
-    background: color-mix(in srgb, var(--c-surface) 60%, transparent);
-  }
-  &.is-signature {
-    color: var(--c-warm);
-  }
-  &.is-active {
-    color: var(--c-bg);
-    background: var(--c-accent);
-    border-color: var(--c-accent);
-    font-weight: var(--fw-semi);
-  }
-  &.is-signature.is-active {
-    background: var(--c-warm);
-    border-color: var(--c-warm);
-  }
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
+.board__navitem:hover {
+  color: var(--c-text-soft);
+  background: color-mix(in srgb, var(--c-surface) 60%, transparent);
+}
+.board__navitem.is-signature {
+  color: var(--c-warm);
+}
+.board__navitem.is-active {
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  font-weight: var(--fw-semi);
+}
+.board__navitem.is-signature.is-active {
+  background: var(--c-warm);
+  border-color: var(--c-warm);
+}
+
 .board__navitem-star {
   font-size: 10px;
   line-height: 1;
@@ -293,6 +292,7 @@
   gap: var(--sp-3);
   padding-top: var(--sp-5);
 }
+
 .board__rail-steps .board__btn {
   width: auto;
   min-width: 60%;
@@ -307,16 +307,19 @@
   min-height: 0;
   gap: var(--sp-3);
 }
+
 .board__head {
   flex: 0 0 auto;
   max-width: 98ch;
 }
+
 .board__num {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: var(--ls-wide);
   color: var(--c-accent);
 }
+
 .board__chart-title {
   font-family: var(--font-display);
   font-size: var(--fs-lg);
@@ -325,6 +328,7 @@
   color: var(--c-text);
   margin: var(--sp-1) 0;
 }
+
 .board__finding {
   font-family: var(--font-body);
   font-size: var(--fs-sm);
@@ -332,29 +336,27 @@
   color: var(--c-text-soft);
   max-width: 100ch;
 }
+
 .board__chart {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-
-  // Tout enfant direct (ECharts, ApexCharts, carte Mapbox, conteneur SVG…)
-  // remplit exactement la boîte — règle au passage la hauteur des cartes.
-  > * {
-    height: 100% !important;
-    min-height: 0 !important;
-    width: 100%;
-  }
-
-  .apexchart,
-  .apexchart--tall,
-  .apexchart--xl,
-  .echart,
-  .barrace {
-    height: 100% !important;
-    min-height: 0 !important;
-    width: 100%;
-  }
 }
+.board__chart > * {
+  height: 100% !important;
+  min-height: 0 !important;
+  width: 100%;
+}
+.board__chart .apexchart,
+.board__chart .apexchart--tall,
+.board__chart .apexchart--xl,
+.board__chart .echart,
+.board__chart .barrace {
+  height: 100% !important;
+  min-height: 0 !important;
+  width: 100%;
+}
+
 .board__takeaway {
   flex: 0 0 auto;
   font-family: var(--font-body);
@@ -364,6 +366,7 @@
   padding-left: var(--sp-4);
   border-left: 3px solid var(--c-warm);
 }
+
 /* Graphe sans données : message au lieu d'un axe vide 0–1. */
 .board__chart-empty {
   flex: 1 1 auto;
@@ -377,6 +380,7 @@
   border: 1px dashed var(--c-line);
   border-radius: var(--r-sm);
 }
+
 .board__takeaway-k {
   display: inline-block;
   margin-right: var(--sp-2);
@@ -401,11 +405,9 @@
     display: flex;
     flex-direction: column;
   }
-  // La barre d'acte sticky garde sa hauteur (ne se comprime pas).
   .board--s1 > .actbar {
     flex: 0 0 auto;
   }
-  // Le conteneur prend toute la hauteur restante SOUS la barre.
   .board--s1 > .container {
     flex: 1 1 auto;
     min-height: 0;
@@ -413,18 +415,14 @@
     flex-direction: column;
     padding-block: var(--sp-3);
   }
-  // Le panneau remplit le conteneur ; plus de calc(100vh) figé.
   .board__panel {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
   }
-
   .board__work {
     grid-template-columns: 280px minmax(0, 1fr);
   }
-
-  // Rail borné : il clippe, et c'est la LISTE des graphes qui défile.
   .board__rail {
     padding-right: var(--sp-4);
     border-right: 1px solid var(--c-line);
@@ -434,8 +432,6 @@
   .board__rail-filters {
     flex: 0 0 auto;
   }
-  // La liste prend l'espace restant et défile seule → les boutons d'étape
-  // (en dessous) restent TOUJOURS visibles, même avec 14 vues.
   .board__navlist {
     flex: 1 1 auto;
     min-height: 0;
@@ -455,25 +451,21 @@
   .board__rail-steps {
     flex: 0 0 auto;
   }
-
-  // Respiration : le titre/numéro/sous-titre ne collent plus au rail.
   .board__main {
     padding-left: var(--sp-6);
   }
 }
 @media (max-width: 900px) {
-  // Sur mobile, rail et graphe sont empilés : on garde un scroll naturel
-  // (impossible de loger les deux dans une seule hauteur d'écran utilement).
   .board__chart {
     min-height: 56vh;
   }
 }
-
 /* ---------- Bulle d'aide (ex. échelle log) ---------- */
 .act1f__info {
   position: relative;
   display: inline-flex;
 }
+
 .act1f__tip {
   position: absolute;
   top: calc(100% + 6px);
@@ -494,10 +486,9 @@
   opacity: 0;
   transform: translateY(-4px);
   pointer-events: none;
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
+
 .act1f__info:hover .act1f__tip,
 .act1f__info:focus-within .act1f__tip {
   opacity: 1;
@@ -510,6 +501,7 @@
 .board--s2 {
   padding-block: 0;
 }
+
 .board__outro {
   min-height: 100vh;
   display: flex;
@@ -518,19 +510,17 @@
   padding: var(--sp-12) 0;
   text-align: center;
 }
+
 .board__outro-inner {
   width: 100%;
   max-width: 640px;
   padding: clamp(var(--sp-8), 8vh, 4rem) var(--sp-6);
   border: 1px solid var(--c-line);
   border-radius: var(--r-md);
-  background: radial-gradient(
-    120% 130% at 50% 0%,
-    var(--c-surface),
-    var(--c-bg-2)
-  );
+  background: radial-gradient(120% 130% at 50% 0%, var(--c-surface), var(--c-bg-2));
   box-shadow: 0 24px 70px -40px rgba(0, 0, 0, 0.65);
 }
+
 .board__outro-title {
   font-family: var(--font-display);
   font-size: var(--fs-xl);
@@ -538,6 +528,7 @@
   color: var(--c-text);
   margin: var(--sp-3) 0;
 }
+
 .board__outro-text {
   max-width: 56ch;
   margin: 0 auto var(--sp-6);
@@ -546,12 +537,14 @@
   line-height: var(--lh-base);
   color: var(--c-text-soft);
 }
+
 .board__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--sp-4);
 }
+
 .board__revise {
   margin-top: var(--sp-6);
   background: none;
@@ -561,10 +554,9 @@
   font-size: var(--fs-sm);
   color: var(--c-text-mute);
   transition: color 0.18s ease;
-
-  &:hover {
-    color: var(--c-accent);
-  }
+}
+.board__revise:hover {
+  color: var(--c-accent);
 }
 
 /* Verrouillage plein écran de l'OUTRO (la barre d'acte est au-dessus). */
@@ -576,14 +568,17 @@
   display: flex;
   flex-direction: column;
 }
+
 .board--s2 > .actbar {
   flex: 0 0 auto;
 }
+
 .board--s2 > .container {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
 }
+
 .board--s2 .board__outro {
   flex: 1 1 auto;
   min-height: 0;
@@ -608,29 +603,25 @@
   color: var(--c-text-soft);
   background: transparent;
   cursor: pointer;
-  transition:
-    color 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
-
-  &:hover {
-    color: var(--c-text);
-    border-color: var(--c-accent);
-  }
-  &--ghost {
-    color: var(--c-text-mute);
-  }
-  &--primary {
-    color: var(--c-bg);
-    background: var(--c-accent);
-    border-color: var(--c-accent);
-    box-shadow: var(--shadow-glow);
-
-    &:hover {
-      color: var(--c-bg);
-    }
-  }
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
+.board__btn:hover {
+  color: var(--c-text);
+  border-color: var(--c-accent);
+}
+.board__btn--ghost {
+  color: var(--c-text-mute);
+}
+.board__btn--primary {
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  box-shadow: var(--shadow-glow);
+}
+.board__btn--primary:hover {
+  color: var(--c-bg);
+}
+
 .board__back {
   display: inline-block;
   margin-top: var(--sp-6);
@@ -638,23 +629,23 @@
   font-size: var(--fs-sm);
   color: var(--c-text-mute);
   text-decoration: none;
-
-  &:hover {
-    color: var(--c-accent);
-  }
 }
+.board__back:hover {
+  color: var(--c-accent);
+}
+
 .board__state {
   padding: var(--sp-6) 0;
   font-family: var(--font-mono);
   color: var(--c-text-mute);
-
-  &--err {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-4);
-    color: var(--c-warm);
-  }
 }
+.board__state--err {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  color: var(--c-warm);
+}
+
 .board__retry {
   padding: var(--sp-2) var(--sp-4);
   font-family: var(--font-mono);
@@ -665,11 +656,10 @@
   border: 1px solid var(--c-accent);
   border-radius: var(--r-pill);
   cursor: pointer;
-
-  &:hover {
-    background: var(--c-accent);
-    color: var(--c-bg);
-  }
+}
+.board__retry:hover {
+  background: var(--c-accent);
+  color: var(--c-bg);
 }
 
 /* Étape board : on exploite quasiment toute la largeur de l'écran. */
@@ -678,7 +668,6 @@
     max-width: 97vw;
   }
 }
-
 /* Bouton « retour au début » de BarRace (ajout). Style aligné sur le bouton play. */
 .barrace__restart {
   margin-left: var(--sp-2);
@@ -690,14 +679,11 @@
   font-size: var(--fs-sm);
   line-height: 1;
   cursor: pointer;
-  transition:
-    color 0.15s var(--ease-out),
-    border-color 0.15s var(--ease-out);
-
-  &:hover {
-    color: var(--c-accent);
-    border-color: var(--c-accent);
-  }
+  transition: color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+}
+.barrace__restart:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
 }
 
 /* ============================================================
@@ -712,7 +698,6 @@
    • graphe pleine largeur dessous
    ============================================================ */
 @media (min-width: 901px) {
-  // — Plus de cadre : le panneau devient une surface nue, pleine largeur. —
   .board--carousel .board__panel {
     background: transparent;
     border: none;
@@ -720,18 +705,11 @@
     padding: 0;
     gap: var(--sp-5);
   }
-
-  // Empilement vertical : barre de filtres (si présente) en haut, graphe qui
-  // remplit le reste. En flex (et non grid) : si l'acte n'a PAS de filtres, le
-  // rail n'est pas rendu et le graphe occupe alors toute la hauteur.
   .board--carousel .board__work {
     display: flex;
     flex-direction: column;
     gap: var(--sp-6);
   }
-
-  // Le rail se couche en BARRE HORIZONTALE de filtres, sans séparateur vertical.
-  // position/z-index : la barre (et ses bulles) passe AU-DESSUS du carrousel.
   .board--carousel .board__rail {
     flex: 0 0 auto;
     position: relative;
@@ -744,7 +722,6 @@
     border-right: none;
     overflow: visible;
   }
-  // Deux GROUPES étiquetés (Mesure · Zone) alignés en haut, séparés par un filet.
   .board--carousel .board__rail-filters {
     flex-direction: row;
     align-items: flex-start;
@@ -753,18 +730,13 @@
     padding-bottom: 0;
     border-bottom: none;
   }
-  // Filet entre groupes — quel que soit le type de filtre (DatasetSwitcher .dsw
-  // pour Act8, Select .act1f pour Act12…).
   .board--carousel .board__rail-filters > * + * {
     border-left: var(--border-hair) solid var(--c-line);
     padding-left: var(--sp-4);
   }
-  // Étiquette de groupe : un peu d'air sous le libellé.
   .board--carousel .board__rail-filters .dsw__label {
     margin-bottom: var(--sp-1);
   }
-  // Filtres Select (Act12) : dans la barre horizontale, largeur au contenu
-  // (sinon le rail les force en pleine largeur → ils s'empilent).
   .board--carousel .board__rail .act1f,
   .board--carousel .board__rail .act1f--select,
   .board--carousel .board__rail .act1f__selwrap {
@@ -774,41 +746,28 @@
   .board--carousel .board__rail .act1f__select {
     min-width: 11rem;
   }
-
-  // Les listes de filtres passent en LIGNE.
   .board--carousel .dsw__list {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
   }
-  // Les pilules « région » (variante dense) se dimensionnent au contenu.
   .board--carousel .dsw--dense .dsw__card {
     width: auto;
   }
-  // Bulle des mesures (icône seule) : SOUS l'icône, alignée à son bord gauche
-  // (centrée, la 1re débordait hors écran) et au-dessus du carrousel.
   .board--carousel .dsw--icononly .dsw__meta {
     left: 0;
     top: calc(100% + var(--sp-2));
     transform: none;
     z-index: 60;
   }
-
-  // Graphe pleine largeur : on retire le décalage hérité du rail.
   .board--carousel .board__main {
     flex: 1 1 auto;
     min-height: 0;
     padding-left: 0;
   }
-
-  // Cohérence visuelle : dans la barre, les cartes filtres sont transparentes
-  // au repos (comme les pilules du carrousel) ; teinte douce à l'état actif.
   .board--carousel .board__rail .dsw__card:not(.is-active) {
     background: transparent;
   }
-
-  // Tête condensée : on retire le numéro et le GROS titre — il ne reste qu'une
-  // phrase de résumé, discrète, juste au-dessus du graphe.
   .board--carousel .board__num,
   .board--carousel .board__chart-title {
     display: none;
@@ -822,4 +781,4 @@
     line-height: 1.4;
     color: var(--c-text-soft);
   }
-}
+}/*# sourceMappingURL=ActBoard.css.map */

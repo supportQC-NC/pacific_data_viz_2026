@@ -1642,6 +1642,9 @@
     },
     "thesis": "Three official datasets for one sky: rainfall and temperature gaps to their respective normals — and the station network that makes knowing them possible in the first place.",
     "board": {
+      "group_measure": "Measure",
+      "group_zone": "Area",
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",
@@ -2579,9 +2582,10 @@
       "wp_y": "Maximum wind (kt)",
       "season_avg": "5-season moving average",
       "wp_relation": "Average relationship",
-"season_mean": "Average"
+      "season_mean": "Average"
     },
     "board": {
+      "group_view": "View",
       "tab_map": "Map",
       "tab_stage": "Stages",
       "tab_season": "Per season",

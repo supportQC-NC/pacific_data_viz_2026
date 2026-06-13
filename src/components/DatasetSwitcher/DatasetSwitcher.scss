@@ -143,6 +143,54 @@
     opacity: 1;
   }
 
+  // --- Variante ICÔNE SEULE : carré d'icône, libellé en BULLE au survol ---
+  &--icononly &__list {
+    gap: var(--sp-2);
+  }
+  &--icononly &__card {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+  &--icononly &__top {
+    flex: 0 0 auto;
+    gap: 0;
+  }
+  &--icononly &__ico {
+    width: 1.35rem;
+    height: 1.35rem;
+    opacity: 1;
+  }
+  &--icononly &__meta {
+    position: absolute;
+    left: calc(100% + var(--sp-2));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--c-surface);
+    border: var(--border-hair) solid var(--c-line-strong);
+    border-radius: var(--r-md);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 30;
+    transition: opacity var(--t-fast) var(--ease-out);
+  }
+  &--icononly &__unit {
+    opacity: 1; // dans la bulle, on montre aussi l'unité
+  }
+  &--icononly &__card:hover &__meta,
+  &--icononly &__card:focus-visible &__meta {
+    opacity: 1;
+  }
+
   // --- Variante COMPACTE (filtres) : une seule ligne, sparkline à droite ---
   &--dense &__list {
     gap: var(--sp-1);
@@ -168,6 +216,17 @@
       width: 4.25rem;
       height: 1.2rem;
       flex-shrink: 0;
+    }
+
+    // Sobre par défaut : seulement l'icône + le mot. L'unité / le nombre ne
+    // se révèlent qu'au survol (ou au focus clavier).
+    .dsw__unit {
+      opacity: 0;
+      transition: opacity var(--t-fast) var(--ease-out);
+    }
+    &:hover .dsw__unit,
+    &:focus-visible .dsw__unit {
+      opacity: 1;
     }
   }
 }

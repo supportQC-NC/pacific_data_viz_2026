@@ -1,0 +1,112 @@
+.chcar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  margin-bottom: var(--sp-5, 1.25rem);
+}
+.chcar__group {
+  flex-shrink: 0;
+  margin-right: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.chcar__arrow {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-mute);
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+.chcar__arrow:hover:not(:disabled) {
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+}
+.chcar__arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.chcar__track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-4);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: var(--sp-1) var(--sp-1);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chcar__track::-webkit-scrollbar {
+  display: none;
+}
+.chcar__item {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-1) calc(var(--sp-2) - 2px);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--c-text-mute);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-med);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.chcar__item:hover {
+  color: var(--c-text);
+}
+.chcar__item.is-active {
+  color: var(--c-accent);
+  border-bottom-color: var(--c-accent);
+}
+.chcar__item.is-signature.is-active {
+  color: var(--c-warm);
+  border-bottom-color: var(--c-warm);
+}
+.chcar__star {
+  color: var(--c-warm);
+  font-size: 0.85em;
+}
+.chcar__label {
+  font-weight: var(--fw-med);
+}
+
+@keyframes chcarFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.chcar-fade {
+  animation: chcarFade 0.38s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chcar__track {
+    scroll-behavior: auto;
+  }
+  .chcar-fade {
+    animation: none;
+  }
+}/*# sourceMappingURL=ChartCarousel.css.map */

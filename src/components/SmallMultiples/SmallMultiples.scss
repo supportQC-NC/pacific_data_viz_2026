@@ -1,106 +1,129 @@
 // src/components/SmallMultiples/SmallMultiples.scss
 // ============================================================
-// Petits multiples — une carte par territoire. Nom complet (jusqu'à 2 lignes),
-// valeur mise en avant, badge de tendance, sparkline à aire dégradée.
-// Couleurs via tokens uniquement ; --tone porte l'identité de la cellule.
+// « Registre classé » : pas de cartes encadrées, mais des entrées d'index
+// sans cadre, reliées par une ligne d'eau (baseline filaire). Hiérarchie par
+// la typo (valeur en gros chiffre serif Fraunces) et l'alignement. Sparkline
+// posée en bas de cellule → les baselines s'alignent par rangée (effet
+// « ligne d'horizon »). Tonalité --tone : cyan (hausse) / corail (baisse).
+// Tokens uniquement, light/dark via variables. Clic → modale d'agrandissement.
 // ============================================================
 
 .smallmult {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: var(--sp-3);
+  gap: var(--sp-3) var(--sp-6);
 
+  // ---------- Entrée (cellule) ----------
   &__cell {
     --tone: var(--c-accent);
+
+    position: relative;
     display: flex;
     flex-direction: column;
-    padding: var(--sp-3) var(--sp-4);
-    border: var(--border-hair) solid var(--c-line);
-    border-radius: var(--r-md);
-    background: var(--c-surface);
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-1) var(--sp-2);
+    border: 0;
+    border-bottom: var(--border-hair) solid var(--c-line); // la « ligne d'eau »
+    background: transparent;
+    text-align: left;
     cursor: pointer;
     transition:
+      transform var(--t-fast) var(--ease-out),
       border-color var(--t-fast) var(--ease-out),
-      transform var(--t-fast) var(--ease-out);
-
-    &:hover {
-      border-color: var(--c-line-strong);
-      transform: translateY(-2px);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--tone);
-      outline-offset: 2px;
-    }
+      background var(--t-fast) var(--ease-out);
 
     &.is-down {
       --tone: var(--c-warm);
     }
+
+    &:hover {
+      transform: translateY(-2px);
+      border-bottom-color: var(--tone);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--tone) 7%, transparent),
+        transparent 72%
+      );
+    }
+    &:focus-visible {
+      outline: 2px solid var(--tone);
+      outline-offset: 3px;
+      border-radius: var(--r-sm);
+    }
   }
 
-  // Nom complet : jusqu'à deux lignes, hauteur réservée pour aligner les cartes.
+  // ---------- Tête : rang + nom ----------
+  &__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+  }
+  &__rank {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    color: var(--c-text-mute);
+  }
   &__name {
+    flex: 1 1 auto;
+    min-width: 0;
     font-family: var(--font-body);
     font-size: var(--fs-sm);
-    font-weight: var(--fw-semi);
-    line-height: 1.25;
+    font-weight: var(--fw-med);
+    line-height: 1.2;
     color: var(--c-text);
+    // jusqu'à deux lignes (noms longs : « Papouasie-Nouvelle-Guinée »), puis ellipse
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.5em;
-    margin-bottom: var(--sp-2);
   }
 
+  // ---------- Métrique : grande valeur serif + unité + tendance ----------
   &__metric {
     display: flex;
     align-items: baseline;
-    flex-wrap: wrap;
-    gap: var(--sp-1) var(--sp-2);
-    margin-bottom: var(--sp-2);
+    gap: var(--sp-2);
   }
-
   &__val {
-    font-family: var(--font-mono);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi);
+    font-size: var(--fs-lg);
+    line-height: 1;
     letter-spacing: var(--ls-tight);
-    color: var(--tone);
+    color: var(--c-text);
+    font-variant-numeric: tabular-nums;
   }
-
   &__unit {
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
     color: var(--c-text-mute);
   }
-
   &__trend {
     margin-left: auto;
+    align-self: center;
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
-    color: var(--tone);
-    padding: 1px var(--sp-2);
-    border: var(--border-hair) solid var(--c-line);
+    line-height: 1;
+    padding: 3px var(--sp-2);
     border-radius: var(--r-pill);
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 14%, transparent);
     white-space: nowrap;
   }
 
+  // ---------- Sparkline posée sur la ligne d'eau ----------
   &__spark {
     width: 100%;
-    height: 44px;
+    height: 40px;
     display: block;
+    margin-top: auto; // ancrée en bas → baselines alignées par rangée
   }
-
-  &__line {
-    fill: none;
-    stroke: var(--tone);
-    stroke-width: 1.6;
-    vector-effect: non-scaling-stroke;
-    stroke-linejoin: round;
-    stroke-linecap: round;
+  &__area {
+    opacity: 1; // remplissage via le dégradé inline (g0/g1)
   }
-
   &__g0 {
     stop-color: var(--tone);
     stop-opacity: 0.32;
@@ -109,25 +132,24 @@
     stop-color: var(--tone);
     stop-opacity: 0;
   }
-
+  &__line {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 1.6;
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
   &__dot {
     fill: var(--tone);
-    stroke: var(--c-surface);
-    stroke-width: 1;
+    filter: drop-shadow(
+      0 0 4px color-mix(in srgb, var(--tone) 60%, transparent)
+    );
   }
 
-  &__foot {
-    display: block;
-    margin-top: auto;
-    padding-top: var(--sp-2);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-  }
-
-  // ---- Modale d'agrandissement --------------------------------------------
+  // ============================================================
+  // Modale d'agrandissement
+  // ============================================================
   &__modal {
     position: fixed;
     inset: 0;
@@ -136,82 +158,109 @@
     align-items: center;
     justify-content: center;
     padding: var(--sp-6);
-    background: rgba(2, 9, 18, 0.72);
-    backdrop-filter: blur(3px);
-    animation: smfade var(--t-fast) var(--ease-out);
+    background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: smFade var(--t-fast) var(--ease-out) both;
   }
-
   &__dialog {
     --tone: var(--c-accent);
+
     position: relative;
     width: min(720px, 100%);
     padding: var(--sp-6);
     border: var(--border-hair) solid var(--c-line-strong);
     border-radius: var(--r-md);
-    background: var(--c-bg-2);
-    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+    background: radial-gradient(
+      120% 130% at 50% 0%,
+      var(--c-surface),
+      var(--c-bg-2)
+    );
+    box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.7);
+    animation: smRise var(--t-base) var(--ease-out) both;
 
     &.is-down {
       --tone: var(--c-warm);
     }
   }
-
   &__close {
     position: absolute;
     top: var(--sp-3);
     right: var(--sp-3);
-    width: 30px;
-    height: 30px;
-    border: var(--border-hair) solid var(--c-line);
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
     border-radius: var(--r-pill);
-    color: var(--c-text-soft);
-    font-size: var(--fs-sm);
+    background: transparent;
+    color: var(--c-text-mute);
+    font-size: var(--fs-base);
     line-height: 1;
-    transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+    cursor: pointer;
+    transition:
+      color var(--t-fast) var(--ease-out),
+      background var(--t-fast) var(--ease-out);
 
     &:hover {
-      border-color: var(--c-line-strong);
       color: var(--c-text);
+      background: color-mix(in srgb, var(--c-surface) 70%, transparent);
     }
   }
-
   &__dlg-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--sp-2);
+    gap: var(--sp-3) var(--sp-4);
     margin-bottom: var(--sp-4);
-    padding-right: var(--sp-8);
+    padding-right: var(--sp-8); // place pour la croix
   }
-
   &__dlg-name {
     font-family: var(--font-display);
-    font-size: var(--fs-md);
     font-weight: var(--fw-semi);
+    font-size: var(--fs-md);
+    line-height: var(--lh-tight);
     color: var(--c-text);
   }
-
   &__dlg-metric {
     display: inline-flex;
     align-items: baseline;
     gap: var(--sp-2);
   }
-
   &__dlg-val {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi);
     font-size: var(--fs-lg);
-    font-weight: var(--fw-bold);
-    letter-spacing: var(--ls-tight);
     color: var(--tone);
+    font-variant-numeric: tabular-nums;
+  }
+  &__dlg-foot {
+    margin-top: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.04em;
+    color: var(--c-text-mute);
   }
 
+  // ---------- Grand graphe ----------
   &__big {
     width: 100%;
     height: auto;
     display: block;
   }
-
+  &__axis {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  &__ytick,
+  &__xtick {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--c-text-mute);
+  }
   &__bigline {
     fill: none;
     stroke: var(--tone);
@@ -220,41 +269,36 @@
     stroke-linejoin: round;
     stroke-linecap: round;
   }
-
   &__bigpt {
     fill: var(--tone);
-    stroke: var(--c-bg-2);
-    stroke-width: 1.5;
-  }
-
-  &__axis {
-    stroke: var(--c-line);
-    stroke-width: 1;
-    stroke-dasharray: 2 3;
-  }
-
-  &__ytick,
-  &__xtick {
-    fill: var(--c-text-mute);
-    font-family: var(--font-mono);
-    font-size: 11px;
-  }
-
-  &__dlg-foot {
-    margin-top: var(--sp-3);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    color: var(--c-text-mute);
   }
 }
 
-@keyframes smfade {
+@keyframes smFade {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes smRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smallmult__modal,
+  .smallmult__dialog {
+    animation: none;
+  }
+  .smallmult__cell {
+    transition: none;
   }
 }

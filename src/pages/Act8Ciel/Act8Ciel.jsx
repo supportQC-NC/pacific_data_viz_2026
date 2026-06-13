@@ -517,14 +517,15 @@ export default function Act8Ciel() {
   const filtersEl = (
     <>
       <DatasetSwitcher
-        label={t("act8.board.metric_label")}
+        label={t("act8.board.group_measure")}
         items={measureItems}
         value={metric}
         onChange={setMetric}
-        dense
+        iconOnly
+        hideSpark
       />
       <DatasetSwitcher
-        label={t("act1.filter.title")}
+        label={t("act8.board.group_zone")}
         items={regionItems}
         value={region}
         onChange={(k) => {
@@ -532,6 +533,7 @@ export default function Act8Ciel() {
           setCountry("all");
         }}
         dense
+        hideSpark
       />
     </>
   );
@@ -786,6 +788,8 @@ export default function Act8Ciel() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
+      initialTab="map"
       progress={{ index: 3, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -801,6 +805,7 @@ export default function Act8Ciel() {
         conclusion: t("act8.board.conclusion"),
         backIntro: t("act8.board.back_intro"),
         reviseData: t("act8.board.revise_data"),
+        viewGroup: t("act8.board.group_view"),
       }}
       outro={{
         kicker: t("act8.outro.kicker"),

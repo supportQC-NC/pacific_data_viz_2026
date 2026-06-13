@@ -1642,6 +1642,9 @@
     },
     "thesis": "Trois jeux officiels pour un même ciel : l'écart des pluies et des températures à leurs normales respectives — et le réseau de stations qui permet, précisément, de les connaître.",
     "board": {
+      "group_measure": "Mesure",
+      "group_zone": "Zone",
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
@@ -2582,6 +2585,7 @@
       "season_mean": "Moyenne"
     },
     "board": {
+      "group_view": "Vue",
       "tab_map": "Carte",
       "tab_stage": "Stades",
       "tab_season": "Par saison",

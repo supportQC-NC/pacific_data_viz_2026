@@ -14,7 +14,14 @@
 // Données via fetchCyclones (fichier statique). i18n via t(). Couleurs --cy-*.
 // ============================================================
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useLang } from "../../store/context/langContext";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import PICT_GEO from "../../data/pictGeo";
@@ -23,7 +30,14 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import ApexChart from "../../components/ApexChart/ApexChart";
-import { baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, MONO } from "../../components/charts/apexBase";
+import {
+  baseChart,
+  baseGrid,
+  baseXaxis,
+  baseYaxis,
+  baseTooltip,
+  MONO,
+} from "../../components/charts/apexBase";
 import { fetchCyclones, STAGES } from "../../services/cycloneApi";
 import "./Act12Cyclones.scss";
 
@@ -35,7 +49,6 @@ const SUBREGIONS = {
   polynesia: ["PF", "WS", "TO", "TV", "CK", "NU", "WF", "TK", "AS", "PN"],
   micronesia: ["FM", "GU", "MP", "MH", "NR", "PW", "KI"],
 };
-const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
 // Cadrage carte par région (recentrage au filtre). null = vue par défaut.
 const REGION_FOCUS = {
@@ -80,7 +93,8 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   const dLat = (lat2 - lat1) * toR;
   const dLon = (lon2 - lon1) * toR;
   const a =
-    Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * toR) * Math.cos(lat2 * toR) * Math.sin(dLon / 2) ** 2;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * toR) * Math.cos(lat2 * toR) * Math.sin(dLon / 2) ** 2;
   return 2 * R_EARTH_KM * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 
@@ -94,7 +108,13 @@ function hexToRgb(h) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 function rgbToHex(rgb) {
-  return `#${rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("")}`;
+  return `#${rgb
+    .map((v) =>
+      Math.max(0, Math.min(255, Math.round(v)))
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
 }
 function mixRgb(a, b, t) {
   return a.map((v, i) => v + (b[i] - v) * t);
@@ -124,7 +144,9 @@ function ProvenancePanel({ t }) {
       </dl>
       <p className="act12-src__genealogy">{t("act12.source.genealogy")}</p>
       <div className="act12-src__scope">
-        <h4 className="act12-src__scope-title">{t("act12.source.scope_title")}</h4>
+        <h4 className="act12-src__scope-title">
+          {t("act12.source.scope_title")}
+        </h4>
         <ul className="act12-src__scope-list">
           <li>{t("act12.source.scope_nc")}</li>
           <li>{t("act12.source.scope_swp")}</li>
@@ -133,33 +155,20 @@ function ProvenancePanel({ t }) {
         <p className="act12-src__note">{t("act12.source.scope_note")}</p>
       </div>
       <div className="act12-src__links">
-        <span className="act12-src__links-lbl">{t("act12.source.links_label")}</span>
+        <span className="act12-src__links-lbl">
+          {t("act12.source.links_label")}
+        </span>
         {links.map((l) => (
-          <a className="act12-src__link" key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
+          <a
+            className="act12-src__link"
+            key={l.href}
+            href={l.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {l.label}
           </a>
         ))}
-      </div>
-    </div>
-  );
-}
-
-/* ---------- Contrôle de filtre (global à l'acte) ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
       </div>
     </div>
   );
@@ -173,11 +182,11 @@ export default function Act12Cyclones() {
   const [status, setStatus] = useState("loading"); // loading | ready | empty | error
   const [reload, setReload] = useState(0);
 
-  const [region, setRegion] = useState("all");
+  const region = "all";
   const [seasonIdx, setSeasonIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const [intensity, setIntensity] = useState("all"); // all | intense (CT+)
+  const intensity = "all"; // filtres retirés de l'UI → on montre tout
 
   // ---- Chargement (fichier statique) ----
   useEffect(() => {
@@ -204,7 +213,10 @@ export default function Act12Cyclones() {
   // Alimente carte + graphes d'exploration. L'intensification (tendance long
   // terme) reste calculée sur l'ENSEMBLE des données.
   const view = useMemo(
-    () => (intensity === "intense" ? cyclones.filter((c) => (c.stageRank ?? -1) >= 3) : cyclones),
+    () =>
+      intensity === "intense"
+        ? cyclones.filter((c) => (c.stageRank ?? -1) >= 3)
+        : cyclones,
     [cyclones, intensity],
   );
 
@@ -223,10 +235,16 @@ export default function Act12Cyclones() {
 
   // Marqueurs des territoires suivis (filtrés par région).
   const territories = useMemo(() => {
-    const codes = region === "all" ? Object.keys(PICT_GEO) : SUBREGIONS[region] || [];
+    const codes =
+      region === "all" ? Object.keys(PICT_GEO) : SUBREGIONS[region] || [];
     return codes
       .filter((c) => PICT_GEO[c])
-      .map((c) => ({ code: c, name: pictName(c, lang), lng: PICT_GEO[c][0], lat: PICT_GEO[c][1] }));
+      .map((c) => ({
+        code: c,
+        name: pictName(c, lang),
+        lng: PICT_GEO[c][0],
+        lat: PICT_GEO[c][1],
+      }));
   }, [region, lang]);
 
   const focus = REGION_FOCUS[region] || null;
@@ -248,7 +266,10 @@ export default function Act12Cyclones() {
   // (durée ∝ nombre de cyclones) + un temps de pause, puis on avance.
   useEffect(() => {
     if (!playing || !seasons.length || seasonIdx == null) return undefined;
-    const base = Math.min(DRAW_MAX, Math.max(DRAW_MIN, activeCount * PER_CYCLONE_MS));
+    const base = Math.min(
+      DRAW_MAX,
+      Math.max(DRAW_MIN, activeCount * PER_CYCLONE_MS),
+    );
     const dur = base / (speed > 0 ? speed : 1) + SEASON_DWELL_MS;
     const id = setTimeout(() => {
       setSeasonIdx((i) => {
@@ -276,7 +297,11 @@ export default function Act12Cyclones() {
   const bySeason = useMemo(() => {
     const m = new Map();
     view.forEach((cy) => {
-      const e = m.get(cy.season) || { count: 0, peakRank: -1, peakStage: "DTFA" };
+      const e = m.get(cy.season) || {
+        count: 0,
+        peakRank: -1,
+        peakStage: "DTFA",
+      };
       e.count += 1;
       if ((cy.stageRank ?? -1) > e.peakRank) {
         e.peakRank = cy.stageRank ?? -1;
@@ -284,23 +309,36 @@ export default function Act12Cyclones() {
       }
       m.set(cy.season, e);
     });
-    return seasons.map((s) => ({ season: s, ...(m.get(s) || { count: 0, peakRank: -1, peakStage: "DTFA" }) }));
+    return seasons.map((s) => ({
+      season: s,
+      ...(m.get(s) || { count: 0, peakRank: -1, peakStage: "DTFA" }),
+    }));
   }, [view, seasons]);
 
   const busiest = useMemo(
-    () => bySeason.reduce((best, r) => (r.count > (best?.count ?? -1) ? r : best), null),
+    () =>
+      bySeason.reduce(
+        (best, r) => (r.count > (best?.count ?? -1) ? r : best),
+        null,
+      ),
     [bySeason],
   );
 
   const mostIntense = useMemo(() => {
     if (!view.length) return null;
     return [...view].sort(
-      (a, b) => (b.stageRank ?? -1) - (a.stageRank ?? -1) || (b.maxWind ?? 0) - (a.maxWind ?? 0),
+      (a, b) =>
+        (b.stageRank ?? -1) - (a.stageRank ?? -1) ||
+        (b.maxWind ?? 0) - (a.maxWind ?? 0),
     )[0];
   }, [view]);
 
   const maxWind = useMemo(
-    () => view.reduce((mx, cy) => (cy.maxWind != null && cy.maxWind > mx ? cy.maxWind : mx), 0),
+    () =>
+      view.reduce(
+        (mx, cy) => (cy.maxWind != null && cy.maxWind > mx ? cy.maxWind : mx),
+        0,
+      ),
     [view],
   );
 
@@ -321,8 +359,11 @@ export default function Act12Cyclones() {
     });
     const roll = share.map((_, i) => {
       const win = [];
-      for (let k = Math.max(0, i - 4); k <= i; k += 1) if (share[k] != null) win.push(share[k]);
-      return win.length ? Math.round(win.reduce((a, b) => a + b, 0) / win.length) : null;
+      for (let k = Math.max(0, i - 4); k <= i; k += 1)
+        if (share[k] != null) win.push(share[k]);
+      return win.length
+        ? Math.round(win.reduce((a, b) => a + b, 0) / win.length)
+        : null;
     });
     return { seasons, share, roll };
   }, [cyclones, seasons]);
@@ -347,7 +388,10 @@ export default function Act12Cyclones() {
     const decades = [...decSet].sort((a, b) => a - b);
     const monthLabels = order.map((mo) => {
       try {
-        return new Date(2001, mo, 1).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US", { month: "short" });
+        return new Date(2001, mo, 1).toLocaleDateString(
+          lang === "fr" ? "fr-FR" : "en-US",
+          { month: "short" },
+        );
       } catch (e) {
         return String(mo + 1);
       }
@@ -371,9 +415,16 @@ export default function Act12Cyclones() {
     view.forEach((cy) => {
       if (cy.maxWind == null || cy.minPressureHpa == null) return;
       const sid = cy.stage || "DTFA";
-      (byStage[sid] = byStage[sid] || []).push({ x: cy.minPressureHpa, y: cy.maxWind, name: cy.name || cy.id });
+      (byStage[sid] = byStage[sid] || []).push({
+        x: cy.minPressureHpa,
+        y: cy.maxWind,
+        name: cy.name || cy.id,
+      });
     });
-    return stages.map((s) => ({ name: stageLabels[s.id], data: byStage[s.id] || [] }));
+    return stages.map((s) => ({
+      name: stageLabels[s.id],
+      data: byStage[s.id] || [],
+    }));
   }, [view, stages, stageLabels]);
 
   // Exposition par territoire (croisement tracés × points PICT). Calcul lourd
@@ -394,7 +445,10 @@ export default function Act12Cyclones() {
         const tlat = PICT_GEO[code][1];
         let near = false;
         for (let k = 0; k < pts.length; k += 1) {
-          if (haversineKm(tlat, tlng, pts[k][1], normLng(pts[k][0])) <= EXPOSURE_KM) {
+          if (
+            haversineKm(tlat, tlng, pts[k][1], normLng(pts[k][0])) <=
+            EXPOSURE_KM
+          ) {
             near = true;
             break;
           }
@@ -413,11 +467,14 @@ export default function Act12Cyclones() {
   }, [status, view]);
 
   const exposure = useMemo(
-    () => exposureRaw.slice(0, 10).map((r) => ({ ...r, name: pictName(r.code, lang) || r.code })),
+    () =>
+      exposureRaw
+        .slice(0, 10)
+        .map((r) => ({ ...r, name: pictName(r.code, lang) || r.code })),
     [exposureRaw, lang],
   );
 
-// ---- KPI ----
+  // ---- KPI ----
   const kpiItems = useMemo(() => {
     if (status !== "ready") return [];
 
@@ -489,20 +546,34 @@ export default function Act12Cyclones() {
   const stageBarOptions = useMemo(() => {
     const ordered = [...stages];
     const cats = ordered.map((s) => stageLabels[s.id]);
-    const vals = ordered.map((s) => view.filter((c) => c.stage === s.id).length);
+    const vals = ordered.map(
+      (s) => view.filter((c) => c.stage === s.id).length,
+    );
     const colors = ordered.map((s) => stageColors[s.id] || tk.accent);
     const maxV = Math.max(1, ...vals);
     return {
       chart: baseChart(tk, { type: "bar" }),
       series: [{ name: t("act12.viz.bystage_series"), data: vals }],
       colors,
-      plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: "66%" } },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          distributed: true,
+          borderRadius: 4,
+          barHeight: "66%",
+        },
+      },
       // Effectif en bout de barre, SUR LE FOND (pas de boîte blanche illisible).
       dataLabels: {
         enabled: true,
         textAnchor: "start",
         offsetX: 10,
-        style: { fontFamily: MONO, fontSize: "13px", fontWeight: 700, colors: [tk.text] },
+        style: {
+          fontFamily: MONO,
+          fontSize: "13px",
+          fontWeight: 700,
+          colors: [tk.text],
+        },
         background: { enabled: false },
         formatter: (v) => `${v}`,
       },
@@ -560,7 +631,15 @@ export default function Act12Cyclones() {
         type: "line",
         // Halo sombre sous la ligne de tendance (série 1) → reste lisible même
         // par-dessus les barres claires/blanches (saisons à pointe CTTI).
-        dropShadow: { enabled: true, enabledOnSeries: [1], top: 0, left: 0, blur: 3, color: tk.bg, opacity: 0.7 },
+        dropShadow: {
+          enabled: true,
+          enabledOnSeries: [1],
+          top: 0,
+          left: 0,
+          blur: 3,
+          color: tk.bg,
+          opacity: 0.7,
+        },
       }),
       series: [
         { name: t("act12.viz.season_series"), type: "column", data: barData },
@@ -586,12 +665,19 @@ export default function Act12Cyclones() {
       xaxis: baseXaxis(tk, {
         type: "category",
         tickAmount: Math.min(12, Math.max(2, bySeason.length - 1)),
-        labels: { rotate: -45, rotateAlways: false, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
+        labels: {
+          rotate: -45,
+          rotateAlways: false,
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+        },
       }),
       yaxis: baseYaxis(tk, {
         min: 0,
         forceNiceScale: true,
-        labels: { formatter: (v) => `${Math.round(v)}`, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        labels: {
+          formatter: (v) => `${Math.round(v)}`,
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+        },
       }),
       tooltip: baseTooltip({
         shared: true,
@@ -605,7 +691,9 @@ export default function Act12Cyclones() {
             `<div class="cmap-pop"><span class="cmap-pop__name">${r.season}</span>` +
             `<span class="cmap-pop__row">${r.count} ${t("act12.viz.season_series")}</span>` +
             (peak ? `<span class="cmap-pop__row">${peak}</span>` : "") +
-            (avg != null ? `<span class="cmap-pop__row">${t("act12.viz.season_avg")} : ${avg}</span>` : "") +
+            (avg != null
+              ? `<span class="cmap-pop__row">${t("act12.viz.season_avg")} : ${avg}</span>`
+              : "") +
             `</div>`
           );
         },
@@ -624,7 +712,9 @@ export default function Act12Cyclones() {
       chart: baseChart(tk, { type: "bar", stacked: true }),
       series,
       colors,
-      plotOptions: { bar: { horizontal: true, borderRadius: 2, barHeight: "70%" } },
+      plotOptions: {
+        bar: { horizontal: true, borderRadius: 2, barHeight: "70%" },
+      },
       dataLabels: { enabled: false },
       stroke: { width: 1, colors: [tk.bg] },
       legend: {
@@ -644,7 +734,9 @@ export default function Act12Cyclones() {
       // tooltip partagé par défaut (« reading '0' »). Modèle : MirrorBars.
       xaxis: baseXaxis(tk, {
         categories: cats,
-        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+        },
       }),
       yaxis: baseYaxis(tk, {
         labels: {
@@ -684,15 +776,28 @@ export default function Act12Cyclones() {
     return {
       chart: baseChart(tk, { type: "line" }),
       series: [
-        { name: t("act12.viz.intensify_raw"), type: "scatter", data: sea.map((s, i) => ({ x: s, y: intensify.share[i] })) },
-        { name: t("act12.viz.intensify_trend"), type: "area", data: sea.map((s, i) => ({ x: s, y: intensify.roll[i] })) },
+        {
+          name: t("act12.viz.intensify_raw"),
+          type: "scatter",
+          data: sea.map((s, i) => ({ x: s, y: intensify.share[i] })),
+        },
+        {
+          name: t("act12.viz.intensify_trend"),
+          type: "area",
+          data: sea.map((s, i) => ({ x: s, y: intensify.roll[i] })),
+        },
       ],
       colors: [tk.textMute, tk.warm],
       stroke: { width: [0, 3.5], curve: "smooth" },
       fill: {
         type: ["solid", "gradient"],
         opacity: [0.5, 0.25],
-        gradient: { shadeIntensity: 0.5, opacityFrom: 0.34, opacityTo: 0.02, stops: [0, 100] },
+        gradient: {
+          shadeIntensity: 0.5,
+          opacityFrom: 0.34,
+          opacityTo: 0.02,
+          stops: [0, 100],
+        },
       },
       markers: { size: [3.5, 0], strokeWidth: 0, hover: { size: 5 } },
       dataLabels: { enabled: false },
@@ -709,13 +814,20 @@ export default function Act12Cyclones() {
       xaxis: baseXaxis(tk, {
         type: "category",
         tickAmount: Math.min(10, Math.max(2, sea.length - 1)),
-        labels: { rotate: -45, rotateAlways: false, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
+        labels: {
+          rotate: -45,
+          rotateAlways: false,
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+        },
       }),
       yaxis: baseYaxis(tk, {
         min: 0,
         max: 100,
         tickAmount: 5,
-        labels: { formatter: (v) => `${Math.round(v)} %`, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        labels: {
+          formatter: (v) => `${Math.round(v)} %`,
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+        },
       }),
       // Repère « 50 % » : seuil où la majorité des cyclones atteignent CT+.
       annotations: {
@@ -728,12 +840,21 @@ export default function Act12Cyclones() {
               text: "50 %",
               position: "left",
               borderWidth: 0,
-              style: { background: "transparent", color: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+              style: {
+                background: "transparent",
+                color: tk.textMute,
+                fontFamily: MONO,
+                fontSize: "10px",
+              },
             },
           },
         ],
       },
-      tooltip: { shared: true, intersect: false, y: { formatter: (v) => (v == null ? "—" : `${Math.round(v)} %`) } },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: { formatter: (v) => (v == null ? "—" : `${Math.round(v)} %`) },
+      },
     };
   }, [intensify, tk, t]);
 
@@ -742,7 +863,13 @@ export default function Act12Cyclones() {
     const allVals = calendar.series.flatMap((s) => s.data.map((d) => d.y));
     const maxV = Math.max(1, ...allVals);
     // 0 = vert SOMBRE/calme (hors-saison) — s'efface dans le fond.
-    const calm = rgbToHex(mixRgb(hexToRgb(tk.positive) || [37, 224, 154], hexToRgb(tk.bg) || [2, 9, 18], 0.74));
+    const calm = rgbToHex(
+      mixRgb(
+        hexToRgb(tk.positive) || [37, 224, 154],
+        hexToRgb(tk.bg) || [2, 9, 18],
+        0.74,
+      ),
+    );
     // Activité : rampe MONOCHROME ROUGE (sans orange). 1 cyclone = rouge pâle,
     // de plus en plus saturé/profond à mesure que la saison est active.
     const neg = hexToRgb(tk.negative) || [255, 77, 109];
@@ -769,11 +896,17 @@ export default function Act12Cyclones() {
       grid: baseGrid(tk),
       xaxis: {
         type: "category",
-        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+        },
         axisBorder: { show: false },
         axisTicks: { show: false },
       },
-      yaxis: { labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" } } },
+      yaxis: {
+        labels: {
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "10px" },
+        },
+      },
       tooltip: {
         custom: ({ seriesIndex, dataPointIndex, w }) => {
           const s = w.config.series[seriesIndex];
@@ -818,14 +951,19 @@ export default function Act12Cyclones() {
     }
     const hasTrend = trend.length > 0;
     const series = hasTrend
-      ? [...wpSeries, { name: t("act12.viz.wp_relation"), type: "line", data: trend }]
+      ? [
+          ...wpSeries,
+          { name: t("act12.viz.wp_relation"), type: "line", data: trend },
+        ]
       : wpSeries;
     const stageCols = stages.map((s) => stageColors[s.id] || tk.accent);
     const colors = hasTrend ? [...stageCols, tk.text] : stageCols;
     // Réglages PAR SÉRIE : marqueurs pour les stades (points), trait pour la
     // seule droite de tendance (pas de marqueurs dessus).
     const mkSize = hasTrend ? [...stages.map(() => 6), 0] : stages.map(() => 6);
-    const stWidth = hasTrend ? [...stages.map(() => 0), 2.5] : stages.map(() => 0);
+    const stWidth = hasTrend
+      ? [...stages.map(() => 0), 2.5]
+      : stages.map(() => 0);
     const stDash = hasTrend ? [...stages.map(() => 0), 6] : 0;
     return {
       chart: baseChart(tk, { type: "line" }),
@@ -846,19 +984,41 @@ export default function Act12Cyclones() {
       grid: baseGrid(tk),
       xaxis: {
         type: "numeric",
-        title: { text: t("act12.viz.wp_x"), style: { color: tk.textMute, fontFamily: MONO, fontSize: "11px", fontWeight: 400 } },
-        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        title: {
+          text: t("act12.viz.wp_x"),
+          style: {
+            color: tk.textMute,
+            fontFamily: MONO,
+            fontSize: "11px",
+            fontWeight: 400,
+          },
+        },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+        },
         axisBorder: { show: true, color: tk.line },
         axisTicks: { show: true, color: tk.line },
         tooltip: { enabled: false },
       },
       yaxis: {
-        title: { text: t("act12.viz.wp_y"), style: { color: tk.textMute, fontFamily: MONO, fontSize: "11px", fontWeight: 400 } },
-        labels: { style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
+        title: {
+          text: t("act12.viz.wp_y"),
+          style: {
+            color: tk.textMute,
+            fontFamily: MONO,
+            fontSize: "11px",
+            fontWeight: 400,
+          },
+        },
+        labels: {
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+        },
       },
       tooltip: {
         custom: ({ seriesIndex, dataPointIndex, w }) => {
-          const d = w.config.series[seriesIndex] && w.config.series[seriesIndex].data[dataPointIndex];
+          const d =
+            w.config.series[seriesIndex] &&
+            w.config.series[seriesIndex].data[dataPointIndex];
           // Pas d'info-bulle sur la droite de tendance (points sans nom).
           if (!d || d.name == null) return "";
           return (
@@ -871,23 +1031,6 @@ export default function Act12Cyclones() {
     };
   }, [windPress, stages, stageColors, tk, t]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
-  const intensityOpts = [
-    { v: "all", label: t("act12.filter.intensity_all") },
-    { v: "intense", label: t("act12.filter.intensity_intense") },
-  ];
-  const filtersEl = (
-    <>
-      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <Select
-        label={t("act12.filter.intensity_label")}
-        options={intensityOpts}
-        value={intensity}
-        onChange={setIntensity}
-      />
-    </>
-  );
-
   // ---- Charts ActBoard ----
   const charts =
     status === "ready"
@@ -899,8 +1042,16 @@ export default function Act12Cyclones() {
             title: t("act12.viz.map_title"),
             finding: t("act12.viz.map_find"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
                   <CycloneMap
                     cyclones={view}
                     seasons={seasons}
@@ -989,8 +1140,9 @@ export default function Act12Cyclones() {
       thesis={t("act12.thesis")}
       kpis={kpiItems}
       kpiTitle={t("act1.stats.title")}
-      filters={filtersEl}
       charts={charts}
+      nav="carousel"
+      initialTab="map"
       progress={{ index: 4, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -1006,6 +1158,7 @@ export default function Act12Cyclones() {
         conclusion: t("act12.board.conclusion"),
         backIntro: t("act12.board.back_intro"),
         reviseData: t("act12.board.revise_data"),
+        viewGroup: t("act12.board.group_view"),
       }}
       outro={{
         kicker: t("act12.outro.kicker"),
