@@ -1,0 +1,173 @@
+// src/components/DatasetSwitcher/DatasetSwitcher.scss
+// ============================================================
+// Sélecteur de jeux de données en cartes. Variables globales uniquement
+// (couleurs, typo, espacements, rayons, transitions) — light / dark via
+// data-theme. La couleur d'accent de chaque carte vient d'une classe de
+// tonalité (is-accent / is-warm / …) qui pose --dsw-c ; l'icône et la
+// sparkline l'héritent par currentColor.
+// ============================================================
+
+.dsw {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+
+  &__label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  // --- Carte d'un jeu ---
+  &__card {
+    --dsw-c: var(--c-accent); // défaut, surchargé par les tonalités ci-dessous
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    width: 100%;
+    padding: var(--sp-3);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+    color: var(--c-text-soft);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color var(--t-fast) var(--ease-out),
+      background var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+
+    &:hover {
+      border-color: var(--dsw-c);
+      transform: translateY(-1px);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--dsw-c);
+      outline-offset: 2px;
+    }
+    &.is-active {
+      border-color: var(--dsw-c);
+      background: color-mix(in srgb, var(--dsw-c) 14%, var(--c-surface));
+    }
+
+    // Tonalités → couleur d'accent du jeu
+    &.is-accent {
+      --dsw-c: var(--c-accent);
+    }
+    &.is-warm {
+      --dsw-c: var(--c-warm);
+    }
+    &.is-positive {
+      --dsw-c: var(--c-positive);
+    }
+    &.is-secondary {
+      --dsw-c: var(--c-secondary);
+    }
+    &.is-neutral {
+      --dsw-c: var(--c-text-mute);
+    }
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+
+  &__ico {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--dsw-c);
+    opacity: 0.85;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-med);
+    color: var(--c-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__unit {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+  }
+
+  // --- Sparkline : silhouette de la trajectoire, couleur du jeu ---
+  &__spark {
+    width: 100%;
+    height: 1.75rem;
+    color: var(--dsw-c);
+    opacity: 0.5;
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &--empty {
+      display: block;
+    }
+  }
+
+  &__card:hover &__spark,
+  &__card.is-active &__spark {
+    opacity: 1;
+  }
+  &__card.is-active &__ico {
+    opacity: 1;
+  }
+
+  // --- Variante COMPACTE (filtres) : une seule ligne, sparkline à droite ---
+  &--dense &__list {
+    gap: var(--sp-1);
+  }
+
+  &__card--dense {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+
+    .dsw__top {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .dsw__ico {
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+
+    .dsw__spark {
+      width: 4.25rem;
+      height: 1.2rem;
+      flex-shrink: 0;
+    }
+  }
+}

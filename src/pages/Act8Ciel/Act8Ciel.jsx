@@ -34,6 +34,7 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
@@ -451,19 +452,58 @@ export default function Act8Ciel() {
     );
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({
-    v: k,
-    label: t(`act1.filter.${k}`),
-  }));
-  const metricOpts = [
-    { v: "rain", label: t("act8.board.metric_rain") },
-    { v: "temp", label: t("act8.board.metric_temp") },
-    { v: "meteo", label: t("act8.board.metric_meteo") },
+  // Jeux de données pour le sélecteur en cartes (icône + unité + sparkline).
+  // Spark : moyenne régionale annuelle (anomalies) ou total réseau par an.
+  const measureItems = [
+    {
+      id: "rain",
+      label: t("act8.board.metric_rain"),
+      unit: t("act8.rain_unit"),
+      icon: "rain",
+      tone: "accent",
+      spark: rainBand.map((d) => d.mean),
+    },
+    {
+      id: "temp",
+      label: t("act8.board.metric_temp"),
+      unit: t("act8.temp_unit"),
+      icon: "temp",
+      tone: "warm",
+      spark: tempBand.map((d) => d.mean),
+    },
+    {
+      id: "meteo",
+      label: t("act8.board.metric_meteo"),
+      unit: t("act8.meteo_unit"),
+      icon: "network",
+      tone: "positive",
+      spark: meteoLine[0] ? meteoLine[0].values.map((v) => v.value) : [],
+    },
   ];
-  const countryOpts = [
-    { v: "all", label: t("act7.country_all") },
-    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
-  ];
+  // Régions en cartes : sparkline = agrégat régional de la mesure active
+  // (moyenne des anomalies, ou total réseau par an) → la couleur suit le jeu.
+  const metricAll =
+    metric === "rain" ? rainAll : metric === "temp" ? tempAll : meteoAll;
+  const regionSpark = (subset) =>
+    M.kind === "count"
+      ? ((totalLine(subset, M.years, "")[0] || {}).values || []).map(
+          (v) => v.value,
+        )
+      : anomalyBand(subset, M.years).map((d) => d.mean);
+  const regionItems = REGION_KEYS.map((k) => {
+    const subset =
+      k === "all"
+        ? metricAll
+        : metricAll.filter((s) => REGION_OF[s.area] === k);
+    return {
+      id: k,
+      label: t(`act1.filter.${k}`),
+      unit: String(subset.length),
+      icon: k === "all" ? "globe" : "map",
+      tone: M.tone || "positive",
+      spark: regionSpark(subset),
+    };
+  });
 
   const status =
     state.status === "ready"
@@ -476,26 +516,22 @@ export default function Act8Ciel() {
 
   const filtersEl = (
     <>
-      <Select
+      <DatasetSwitcher
         label={t("act8.board.metric_label")}
-        options={metricOpts}
+        items={measureItems}
         value={metric}
         onChange={setMetric}
+        dense
       />
-      <Select
+      <DatasetSwitcher
         label={t("act1.filter.title")}
-        options={regionOpts}
+        items={regionItems}
         value={region}
         onChange={(k) => {
           setRegion(k);
           setCountry("all");
         }}
-      />
-      <Select
-        label={t("act7.country_label")}
-        options={countryOpts}
-        value={country}
-        onChange={setCountry}
+        dense
       />
     </>
   );
