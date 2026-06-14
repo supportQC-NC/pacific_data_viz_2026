@@ -6,12 +6,20 @@
 // ANIMÉ (BarRace) + trajectoires ajoutés. 5 graphes.
 // ============================================================
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
@@ -49,9 +57,13 @@ const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 // Couleur sémantique par source d'énergie (tokens du thème) : chaque source
 // reçoit une teinte distincte — notamment hydro (bleu) ≠ biogaz (vert).
 function energyColor(label, tk) {
-  const n = (label || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const n = (label || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
   if (/charbon|coal|tourbe|peat/.test(n)) return tk.textMute;
-  if (/biogaz|biogas|bio|biomass|biocombustible|biofuel/.test(n)) return tk.positive;
+  if (/biogaz|biogas|bio|biomass|biocombustible|biofuel/.test(n))
+    return tk.positive;
   if (/petrole|oil|gaz|gas/.test(n)) return tk.warm;
   if (/hydro/.test(n)) return tk.accentDeep;
   if (/solaire|solar/.test(n)) return tk.warmSoft;
@@ -65,7 +77,9 @@ function pct(sorted, q) {
   const i = (sorted.length - 1) * q;
   const lo = Math.floor(i);
   const hi = Math.ceil(i);
-  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+  return lo === hi
+    ? sorted[lo]
+    : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
 }
 function meanSeries(d, inR) {
   if (!d) return [];
@@ -88,7 +102,11 @@ function allSeries(d, lang, inR) {
   if (!d) return [];
   return d.areas
     .filter((a) => isPict(a) && inR(a))
-    .map((a) => ({ area: a, name: pictName(a, lang), values: (d.byArea[a] || []).filter((p) => Number.isFinite(p.value)) }));
+    .map((a) => ({
+      area: a,
+      name: pictName(a, lang),
+      values: (d.byArea[a] || []).filter((p) => Number.isFinite(p.value)),
+    }));
 }
 // Pour la course : on remplit chaque année avec la dernière valeur connue
 // (report en avant) pour une animation fluide malgré les trous.
@@ -97,7 +115,9 @@ function raceSeries(d, lang, inR) {
   return d.areas
     .filter((a) => isPict(a) && inR(a))
     .map((a) => {
-      const s = (d.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year);
+      const s = (d.byArea[a] || [])
+        .filter((p) => Number.isFinite(p.value))
+        .sort((x, y) => x.year - y.year);
       let last = null;
       const values = d.years.map((y) => {
         const exact = s.find((p) => p.year === y);
@@ -118,7 +138,15 @@ function pointsAt(d, year, lang, inR) {
       for (let i = 0; i < s.length; i += 1) {
         if (s[i].year <= year && Number.isFinite(s[i].value)) chosen = s[i];
       }
-      return chosen ? { area: a, code: a, name: pictName(a, lang), value: chosen.value, year: chosen.year } : null;
+      return chosen
+        ? {
+            area: a,
+            code: a,
+            name: pictName(a, lang),
+            value: chosen.value,
+            year: chosen.year,
+          }
+        : null;
     })
     .filter(Boolean);
 }
@@ -129,7 +157,12 @@ function Select({ label, options, value, onChange }) {
     <div className="act1f act1f--select">
       {label ? <span className="act1f__lbl">{label}</span> : null}
       <div className="act1f__selwrap">
-        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+        <select
+          className="act1f__select"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+        >
           {options.map((o) => (
             <option key={String(o.v)} value={o.v}>
               {o.label}
@@ -171,6 +204,7 @@ export default function Act5Momentum() {
   const renew = useSelector(selectDataset("renewables"));
 
   const [region, setRegion] = useState("all");
+  const [dataset, setDataset] = useState("renew");
   const [yearIdx, setYearIdx] = useState(null);
   const [mix, setMix] = useState({ status: "loading", data: null });
 
@@ -223,14 +257,38 @@ export default function Act5Momentum() {
   }, [years, yearIdx, bestIdx]);
 
   const currentYear = years.length && yearIdx != null ? years[yearIdx] : null;
-  const inRegion = useCallback((area) => region === "all" || REGION_OF[area] === region, [region]);
+  const inRegion = useCallback(
+    (area) => region === "all" || REGION_OF[area] === region,
+    [region],
+  );
 
   const trend = useMemo(() => meanSeries(data, inRegion), [data, inRegion]);
-  const series = useMemo(() => allSeries(data, lang, inRegion), [data, lang, inRegion]);
-  const race = useMemo(() => raceSeries(data, lang, inRegion), [data, lang, inRegion]);
-  const points = useMemo(() => (data && currentYear != null ? pointsAt(data, currentYear, lang, inRegion) : []), [data, currentYear, lang, inRegion]);
-  const regionalMean = useMemo(() => (points.length ? points.reduce((s, p) => s + p.value, 0) / points.length : 0), [points]);
-  const overallMax = useMemo(() => (data ? Math.max(1, data.range.max) : 100), [data]);
+  const series = useMemo(
+    () => allSeries(data, lang, inRegion),
+    [data, lang, inRegion],
+  );
+  const race = useMemo(
+    () => raceSeries(data, lang, inRegion),
+    [data, lang, inRegion],
+  );
+  const points = useMemo(
+    () =>
+      data && currentYear != null
+        ? pointsAt(data, currentYear, lang, inRegion)
+        : [],
+    [data, currentYear, lang, inRegion],
+  );
+  const regionalMean = useMemo(
+    () =>
+      points.length
+        ? points.reduce((s, p) => s + p.value, 0) / points.length
+        : 0,
+    [points],
+  );
+  const overallMax = useMemo(
+    () => (data ? Math.max(1, data.range.max) : 100),
+    [data],
+  );
 
   // ---- Mix électrique par source (powerApi, en parallèle des renouvelables) ----
   const mixReady = mix.status === "ready" && !!mix.data;
@@ -253,8 +311,16 @@ export default function Act5Momentum() {
   const mixBandSeries = useMemo(() => {
     if (!mix.data) return [];
     return [
-      { name: t("act5.mix.fossil"), color: tk.warm, data: sumByYear((a, y) => a.fossil[y] || 0) },
-      { name: t("act5.mix.renew"), color: tk.positive, data: sumByYear((a, y) => a.renew[y] || 0) },
+      {
+        name: t("act5.mix.fossil"),
+        color: tk.warm,
+        data: sumByYear((a, y) => a.fossil[y] || 0),
+      },
+      {
+        name: t("act5.mix.renew"),
+        color: tk.positive,
+        data: sumByYear((a, y) => a.renew[y] || 0),
+      },
     ];
   }, [mix.data, sumByYear, t, tk]);
   const mixDetailSeries = useMemo(() => {
@@ -291,7 +357,9 @@ export default function Act5Momentum() {
       Object.keys(d.byArea).forEach((g) => {
         if (!isPict(g)) return;
         const det = d.byArea[g].detail || {};
-        Object.keys(det).forEach((lab) => { tot += (det[lab] || {})[yr] || 0; });
+        Object.keys(det).forEach((lab) => {
+          tot += (det[lab] || {})[yr] || 0;
+        });
       });
       return tot > 0;
     });
@@ -301,8 +369,20 @@ export default function Act5Momentum() {
     if (!d || !mixYears.length) return [];
     const last = mixYears[mixYears.length - 1];
     return Object.keys(d.byArea)
-      .filter((g) => isPict(g) && inRegion(g) && mixYears.some((y) => ((d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0)) > 0))
-      .sort((g1, g2) => (shareAt(d.byArea[g1], last) || 0) - (shareAt(d.byArea[g2], last) || 0));
+      .filter(
+        (g) =>
+          isPict(g) &&
+          inRegion(g) &&
+          mixYears.some(
+            (y) =>
+              (d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0) > 0,
+          ),
+      )
+      .sort(
+        (g1, g2) =>
+          (shareAt(d.byArea[g1], last) || 0) -
+          (shareAt(d.byArea[g2], last) || 0),
+      );
   }, [mix.data, mixYears, inRegion]);
   // Année animée de la composition (play/pause propre, indépendant du curseur).
   const [compoIdx, setCompoIdx] = useState(0);
@@ -313,10 +393,15 @@ export default function Act5Momentum() {
   }, [detailYears.length, region]);
   useEffect(() => {
     if (!compoPlaying || detailYears.length < 2) return undefined;
-    const id = setInterval(() => setCompoIdx((i) => (i + 1) % detailYears.length), 1100);
+    const id = setInterval(
+      () => setCompoIdx((i) => (i + 1) % detailYears.length),
+      1100,
+    );
     return () => clearInterval(id);
   }, [compoPlaying, detailYears.length]);
-  const compoYear = detailYears.length ? detailYears[Math.min(compoIdx, detailYears.length - 1)] : null;
+  const compoYear = detailYears.length
+    ? detailYears[Math.min(compoIdx, detailYears.length - 1)]
+    : null;
   // Composition par territoire (barres empilées 100 % par source), animée.
   const mixCompo = useMemo(() => {
     const d = mix.data;
@@ -324,13 +409,20 @@ export default function Act5Momentum() {
     const terr = compoOrder.filter((g) => {
       const det = d.byArea[g].detail || {};
       let tot = 0;
-      Object.keys(det).forEach((lab) => { tot += (det[lab] || {})[compoYear] || 0; });
+      Object.keys(det).forEach((lab) => {
+        tot += (det[lab] || {})[compoYear] || 0;
+      });
       return tot > 0;
     });
     const series = d.detailSources.map((sx) => ({
       name: sx.label,
       color: energyColor(sx.label, tk),
-      data: terr.map((g) => Math.round(((d.byArea[g].detail[sx.label] || {})[compoYear] || 0) * 10) / 10),
+      data: terr.map(
+        (g) =>
+          Math.round(
+            ((d.byArea[g].detail[sx.label] || {})[compoYear] || 0) * 10,
+          ) / 10,
+      ),
     }));
     return { categories: terr.map((g) => pictName(g, lang)), series };
   }, [mix.data, compoYear, compoOrder, lang, tk]);
@@ -349,7 +441,11 @@ export default function Act5Momentum() {
       });
     return Object.keys(totals)
       .filter((lab) => totals[lab] > 0)
-      .map((lab) => ({ label: lab, value: Math.round(totals[lab] * 10) / 10, color: energyColor(lab, tk) }))
+      .map((lab) => ({
+        label: lab,
+        value: Math.round(totals[lab] * 10) / 10,
+        color: energyColor(lab, tk),
+      }))
       .sort((a, b) => b.value - a.value);
   }, [mix.data, mixYear, inRegion, tk]);
   // ---- Donut autonome : mix d'UNE sélection (filtres propres) ----
@@ -357,38 +453,69 @@ export default function Act5Momentum() {
   const [dTerr, setDTerr] = useState("all");
   const [dYear, setDYear] = useState(null);
   useEffect(() => {
-    if (mixYears.length) setDYear((y) => (y == null ? mixYears[mixYears.length - 1] : y));
+    if (mixYears.length)
+      setDYear((y) => (y == null ? mixYears[mixYears.length - 1] : y));
   }, [mixYears.length]);
-  useEffect(() => { setDTerr("all"); }, [dRegion]);
+  useEffect(() => {
+    setDTerr("all");
+  }, [dRegion]);
   const dTerrOpts = useMemo(() => {
     const base = [{ v: "all", label: t("act1.filter.all") }];
     const d = mix.data;
     if (!d) return base;
     const terrs = Object.keys(d.byArea)
-      .filter((g) => isPict(g) && (dRegion === "all" || REGION_OF[g] === dRegion) && mixYears.some((y) => ((d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0)) > 0))
+      .filter(
+        (g) =>
+          isPict(g) &&
+          (dRegion === "all" || REGION_OF[g] === dRegion) &&
+          mixYears.some(
+            (y) =>
+              (d.byArea[g].fossil[y] || 0) + (d.byArea[g].renew[y] || 0) > 0,
+          ),
+      )
       .map((g) => ({ v: g, label: pictName(g, lang) }))
       .sort((a, b) => a.label.localeCompare(b.label));
     return base.concat(terrs);
   }, [mix.data, dRegion, mixYears, lang, t]);
-  const dYearOpts = useMemo(() => mixYears.map((y) => ({ v: String(y), label: String(y) })), [mixYears]);
+  const dYearOpts = useMemo(
+    () => mixYears.map((y) => ({ v: String(y), label: String(y) })),
+    [mixYears],
+  );
   const donut = useMemo(() => {
     const d = mix.data;
-    if (!d || dYear == null) return { labels: [], series: [], colors: [], renewShare: null };
+    if (!d || dYear == null)
+      return { labels: [], series: [], colors: [], renewShare: null };
     const kindOf = {};
-    (d.detailSources || []).forEach((sx) => { kindOf[sx.label] = sx.kind; });
+    (d.detailSources || []).forEach((sx) => {
+      kindOf[sx.label] = sx.kind;
+    });
     const totals = {};
     Object.keys(d.byArea)
-      .filter((g) => isPict(g) && (dRegion === "all" || REGION_OF[g] === dRegion) && (dTerr === "all" || g === dTerr))
+      .filter(
+        (g) =>
+          isPict(g) &&
+          (dRegion === "all" || REGION_OF[g] === dRegion) &&
+          (dTerr === "all" || g === dTerr),
+      )
       .forEach((g) => {
         const det = d.byArea[g].detail || {};
-        Object.keys(det).forEach((lab) => { totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[dYear] || 0); });
+        Object.keys(det).forEach((lab) => {
+          totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[dYear] || 0);
+        });
       });
     const entries = Object.keys(totals)
       .filter((lab) => totals[lab] > 0)
-      .map((lab) => ({ lab, val: totals[lab], color: energyColor(lab, tk), kind: kindOf[lab] }))
+      .map((lab) => ({
+        lab,
+        val: totals[lab],
+        color: energyColor(lab, tk),
+        kind: kindOf[lab],
+      }))
       .sort((a, b) => b.val - a.val);
     const total = entries.reduce((acc, e) => acc + e.val, 0);
-    const renew = entries.filter((e) => e.kind === "renew").reduce((acc, e) => acc + e.val, 0);
+    const renew = entries
+      .filter((e) => e.kind === "renew")
+      .reduce((acc, e) => acc + e.val, 0);
     return {
       labels: entries.map((e) => e.lab),
       series: entries.map((e) => Math.round(e.val * 10) / 10),
@@ -396,7 +523,10 @@ export default function Act5Momentum() {
       renewShare: total > 0 ? Math.round((renew / total) * 1000) / 10 : null,
     };
   }, [mix.data, dRegion, dTerr, dYear, tk]);
-  const donutScope = dTerr === "all" ? t(`act1.filter.${dRegion}`) : ((dTerrOpts.find((o) => o.v === dTerr) || {}).label || "");
+  const donutScope =
+    dTerr === "all"
+      ? t(`act1.filter.${dRegion}`)
+      : (dTerrOpts.find((o) => o.v === dTerr) || {}).label || "";
   // Par source : volume total + premier territoire consommateur (mixYear).
   const mixSourceLeader = useMemo(() => {
     const d = mix.data;
@@ -409,9 +539,13 @@ export default function Act5Momentum() {
         Object.keys(det).forEach((lab) => {
           const v = (det[lab] || {})[mixYear] || 0;
           if (v <= 0) return;
-          if (!bySource[lab]) bySource[lab] = { total: 0, top: null, topVal: 0 };
+          if (!bySource[lab])
+            bySource[lab] = { total: 0, top: null, topVal: 0 };
           bySource[lab].total += v;
-          if (v > bySource[lab].topVal) { bySource[lab].topVal = v; bySource[lab].top = g; }
+          if (v > bySource[lab].topVal) {
+            bySource[lab].topVal = v;
+            bySource[lab].top = g;
+          }
         });
       });
     return Object.keys(bySource)
@@ -437,11 +571,17 @@ export default function Act5Momentum() {
       .filter((g) => isPict(g))
       .forEach((g) => {
         const det = d.byArea[g].detail || {};
-        Object.keys(det).forEach((lab) => { totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[mixYear] || 0); });
+        Object.keys(det).forEach((lab) => {
+          totals[lab] = (totals[lab] || 0) + ((det[lab] || {})[mixYear] || 0);
+        });
       });
     return Object.keys(totals)
       .filter((lab) => totals[lab] > 0)
-      .map((lab) => ({ label: lab, value: Math.round(totals[lab] * 10) / 10, color: energyColor(lab, tk) }))
+      .map((lab) => ({
+        label: lab,
+        value: Math.round(totals[lab] * 10) / 10,
+        color: energyColor(lab, tk),
+      }))
       .sort((a, b) => b.value - a.value);
   }, [mix.data, mixYear, tk]);
   // Évolution des parts (100 % empilé) pour TOUT le Pacifique. On NE GARDE que
@@ -456,7 +596,9 @@ export default function Act5Momentum() {
       color: energyColor(sx.label, tk),
       data: years.map((yr) => {
         let sum = 0;
-        Object.keys(d.byArea).forEach((g) => { if (isPict(g)) sum += (d.byArea[g].detail[sx.label] || {})[yr] || 0; });
+        Object.keys(d.byArea).forEach((g) => {
+          if (isPict(g)) sum += (d.byArea[g].detail[sx.label] || {})[yr] || 0;
+        });
         return Math.round(sum * 10) / 10;
       }),
     }));
@@ -465,7 +607,12 @@ export default function Act5Momentum() {
 
   const unit = t("act5.unit");
   const evoLabels = useMemo(
-    () => ({ improved: t("act5.evo_down"), worsened: t("act5.evo_up"), since: t("act1.evo.since"), no_data: t("act1.evo.no_data") }),
+    () => ({
+      improved: t("act5.evo_down"),
+      worsened: t("act5.evo_up"),
+      since: t("act1.evo.since"),
+      no_data: t("act1.evo.no_data"),
+    }),
     [t],
   );
 
@@ -475,21 +622,87 @@ export default function Act5Momentum() {
     const high = sorted[sorted.length - 1];
     const low = sorted[0];
     return [
-      { key: "mean", value: fmt(regionalMean, 1), unit, label: t("act5.board.kpi_mean"), tone: "accent" },
-      { key: "high", value: fmt(high.value, 1), unit: high.name, label: t("act5.board.kpi_high"), tone: "positive" },
-      { key: "low", value: fmt(low.value, 1), unit: low.name, label: t("act5.board.kpi_low"), tone: "warm" },
+      {
+        key: "mean",
+        value: fmt(regionalMean, 1),
+        unit,
+        label: t("act5.board.kpi_mean"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: fmt(high.value, 1),
+        unit: high.name,
+        label: t("act5.board.kpi_high"),
+        tone: "positive",
+      },
+      {
+        key: "low",
+        value: fmt(low.value, 1),
+        unit: low.name,
+        label: t("act5.board.kpi_low"),
+        tone: "warm",
+      },
     ];
   }, [ready, points, regionalMean, unit, t]);
 
-  const retry = useCallback(() => dispatch(loadDataset("renewables")), [dispatch]);
+  const retry = useCallback(
+    () => dispatch(loadDataset("renewables")),
+    [dispatch],
+  );
 
-  const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
-  const status = failed ? "error" : !ready ? "loading" : years.length === 0 ? "empty" : "ready";
+  const regionOpts = REGION_KEYS.map((k) => ({
+    v: k,
+    label: t(`act1.filter.${k}`),
+  }));
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
+    label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
+  }));
+  // Deux familles de vues basculées par icônes : part renouvelable vs mix électrique.
+  const datasetItems = [
+    {
+      id: "renew",
+      label: t("act5.dataset.renew"),
+      icon: "leaf",
+      tone: "positive",
+    },
+    { id: "mix", label: t("act5.dataset.mix"), icon: "bolt", tone: "warm" },
+  ];
+  const status = failed
+    ? "error"
+    : !ready
+      ? "loading"
+      : years.length === 0
+        ? "empty"
+        : "ready";
 
   const filtersEl = (
     <>
-      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <YearSlider label={t("act1.f.year")} years={years} index={yearIdx} onChange={(i) => setYearIdx(i)} />
+      <DatasetSwitcher
+        label={t("act5.board.dataset_label")}
+        items={datasetItems}
+        value={dataset}
+        onChange={setDataset}
+        iconOnly
+        hideSpark
+      />
+      <DatasetSwitcher
+        label={t("act1.filter.title")}
+        items={regionItems}
+        value={region}
+        onChange={setRegion}
+        dense
+        hideSpark
+      />
+      <YearSlider
+        label={t("act1.f.year")}
+        years={years}
+        index={yearIdx}
+        onChange={(i) => setYearIdx(i)}
+      />
     </>
   );
 
@@ -521,7 +734,14 @@ export default function Act5Momentum() {
             takeaway: t("act5.board.trend_take"),
             node: (
               <div className="act5b__scroll">
-                <AnomalyTrend data={trend} currentYear={currentYear} unit={unit} tone="green" baselineLabel={t("act5.baseline")} meanLabel={t("act5.mean_label")} />
+                <AnomalyTrend
+                  data={trend}
+                  currentYear={currentYear}
+                  unit={unit}
+                  tone="green"
+                  baselineLabel={t("act5.baseline")}
+                  meanLabel={t("act5.mean_label")}
+                />
               </div>
             ),
           },
@@ -536,8 +756,14 @@ export default function Act5Momentum() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act5.spotlight.ex_kicker"), text: t("act5.spotlight.ex_text") }}
-                link={{ href: "https://stats.pacificdata.org", label: t("act5.spotlight.link_label") }}
+                example={{
+                  kicker: t("act5.spotlight.ex_kicker"),
+                  text: t("act5.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://stats.pacificdata.org",
+                  label: t("act5.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -548,7 +774,14 @@ export default function Act5Momentum() {
             title: t("act5.board.lines_title"),
             finding: t("act5.board.lines_find"),
             takeaway: t("act5.board.lines_take"),
-            node: <TrendChart series={series} years={years} unit={unit} scale="lin" />,
+            node: (
+              <TrendChart
+                series={series}
+                years={years}
+                unit={unit}
+                scale="lin"
+              />
+            ),
           },
           {
             id: "rank",
@@ -557,7 +790,19 @@ export default function Act5Momentum() {
             title: t("act5.board.rank_title"),
             finding: t("act5.board.rank_find"),
             takeaway: t("act5.board.rank_take"),
-            node: <BarRace series={race} years={years} unit={unit} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
+            node: (
+              <BarRace
+                series={race}
+                years={years}
+                unit={unit}
+                tk={tk}
+                labels={{
+                  play: t("act1.race.play"),
+                  pause: t("act1.race.pause"),
+                  restart: t("act1.race.restart"),
+                }}
+              />
+            ),
           },
           {
             id: "map",
@@ -567,9 +812,25 @@ export default function Act5Momentum() {
             finding: t("act5.board.map_find"),
             takeaway: t("act5.board.map_take"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
-                  <OceanMap data={points} unit={unit} range={{ min: 0, max: overallMax }} ramp="good" lowLabel={t("act5.map_low")} highLabel={t("act5.map_high")} noTokenMsg={t("act1.map_no_token")} />
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
+                  <OceanMap
+                    data={points}
+                    unit={unit}
+                    range={{ min: 0, max: overallMax }}
+                    ramp="good"
+                    lowLabel={t("act5.map_low")}
+                    highLabel={t("act5.map_high")}
+                    noTokenMsg={t("act1.map_no_token")}
+                  />
                 </Suspense>
               </ErrorBoundary>
             ),
@@ -583,18 +844,32 @@ export default function Act5Momentum() {
             takeaway: t("act5.board.evo_take"),
             node: (
               <div className="act5b__scroll">
-                <EvolutionPanel series={series} labels={evoLabels} unit={unit} mode="absolute" topN={8} />
+                <EvolutionPanel
+                  series={series}
+                  labels={evoLabels}
+                  unit={unit}
+                  mode="absolute"
+                  topN={8}
+                />
               </div>
             ),
           },
           {
             id: "mix_band",
-            empty: !mixReady || mixBandSeries.every((sx) => sx.data.every((v) => !v)),
+            empty:
+              !mixReady ||
+              mixBandSeries.every((sx) => sx.data.every((v) => !v)),
             tab: t("act5.board.tab_mix_band"),
             title: t("act5.mix.band_title"),
             finding: t("act5.board.mix_band_find"),
             takeaway: t("act5.board.mix_band_take"),
-            node: <PowerMixChart series={mixBandSeries} years={mixYears} unit={t("act5.mix.unit")} />,
+            node: (
+              <PowerMixChart
+                series={mixBandSeries}
+                years={mixYears}
+                unit={t("act5.mix.unit")}
+              />
+            ),
           },
           {
             id: "mix_detail",
@@ -603,7 +878,13 @@ export default function Act5Momentum() {
             title: t("act5.mix.detail_title"),
             finding: t("act5.board.mix_detail_find"),
             takeaway: t("act5.board.mix_detail_take"),
-            node: <StackedColsChart series={mixDetailSeries} years={mixYears} unit={t("act5.mix.unit")} />,
+            node: (
+              <StackedColsChart
+                series={mixDetailSeries}
+                years={mixYears}
+                unit={t("act5.mix.unit")}
+              />
+            ),
           },
           {
             id: "mix_compo",
@@ -615,15 +896,32 @@ export default function Act5Momentum() {
             node: (
               <div>
                 <div className="barrace__top">
-                  <button type="button" className="barrace__play" onClick={() => setCompoPlaying((v) => !v)}>
+                  <button
+                    type="button"
+                    className="barrace__play"
+                    onClick={() => setCompoPlaying((v) => !v)}
+                  >
                     {compoPlaying ? t("act1.race.pause") : t("act1.race.play")}
                   </button>
-                  <button type="button" className="barrace__restart" onClick={() => { setCompoPlaying(false); setCompoIdx(0); }} aria-label={t("act1.race.restart")} title={t("act1.race.restart")}>
+                  <button
+                    type="button"
+                    className="barrace__restart"
+                    onClick={() => {
+                      setCompoPlaying(false);
+                      setCompoIdx(0);
+                    }}
+                    aria-label={t("act1.race.restart")}
+                    title={t("act1.race.restart")}
+                  >
                     {"\u21BA"}
                   </button>
                   <span className="barrace__yr">{compoYear}</span>
                 </div>
-                <MixCompositionChart series={mixCompo.series} categories={mixCompo.categories} unit={t("act5.mix.unit")} />
+                <MixCompositionChart
+                  series={mixCompo.series}
+                  categories={mixCompo.categories}
+                  unit={t("act5.mix.unit")}
+                />
               </div>
             ),
           },
@@ -646,9 +944,24 @@ export default function Act5Momentum() {
             node: (
               <div>
                 <div className="act1viz__filters">
-                  <Select label={t("act1.filter.title")} options={regionOpts} value={dRegion} onChange={setDRegion} />
-                  <Select label={t("act5.mix.donut_terr")} options={dTerrOpts} value={dTerr} onChange={setDTerr} />
-                  <Select label={t("act1.f.year")} options={dYearOpts} value={String(dYear ?? "")} onChange={(v) => setDYear(Number(v))} />
+                  <Select
+                    label={t("act1.filter.title")}
+                    options={regionOpts}
+                    value={dRegion}
+                    onChange={setDRegion}
+                  />
+                  <Select
+                    label={t("act5.mix.donut_terr")}
+                    options={dTerrOpts}
+                    value={dTerr}
+                    onChange={setDTerr}
+                  />
+                  <Select
+                    label={t("act1.f.year")}
+                    options={dYearOpts}
+                    value={String(dYear ?? "")}
+                    onChange={(v) => setDYear(Number(v))}
+                  />
                 </div>
                 {donut.series.length ? (
                   <DonutChart
@@ -658,7 +971,9 @@ export default function Act5Momentum() {
                     colors={donut.colors}
                     unit={t("act5.mix.unit")}
                     centerLabel={t("act5.mix.donut_center")}
-                    centerValue={donut.renewShare != null ? `${donut.renewShare} %` : "—"}
+                    centerValue={
+                      donut.renewShare != null ? `${donut.renewShare} %` : "—"
+                    }
                   />
                 ) : (
                   <p className="act5__nodata">{t("act1.empty")}</p>
@@ -673,7 +988,12 @@ export default function Act5Momentum() {
             title: `${t("act5.mix.leader_title")} · ${mixYear ?? ""}`,
             finding: t("act5.board.mix_leader_find"),
             takeaway: t("act5.board.mix_leader_take"),
-            node: <SourceLeaderChart points={mixSourceLeader} unit={t("act5.mix.unit")} />,
+            node: (
+              <SourceLeaderChart
+                points={mixSourceLeader}
+                unit={t("act5.mix.unit")}
+              />
+            ),
           },
           {
             id: "mix_funnel",
@@ -691,7 +1011,13 @@ export default function Act5Momentum() {
             title: t("act5.mix.share_evo_title"),
             finding: t("act5.board.mix_share_evo_find"),
             takeaway: t("act5.board.mix_share_evo_take"),
-            node: <ShareAreaChart series={mixShareEvo.series} years={mixShareEvo.years} unit={t("act5.mix.unit")} />,
+            node: (
+              <ShareAreaChart
+                series={mixShareEvo.series}
+                years={mixShareEvo.years}
+                unit={t("act5.mix.unit")}
+              />
+            ),
           },
           {
             id: "coverage",
@@ -704,12 +1030,20 @@ export default function Act5Momentum() {
               <CoverageChart
                 series={series}
                 years={years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
         ]
       : [];
+
+  // Filtrage du carrousel par famille de vues (part renouvelable / mix électrique).
+  const visibleCharts = charts.filter((c) =>
+    dataset === "mix" ? c.id.startsWith("mix_") : !c.id.startsWith("mix_"),
+  );
 
   return (
     <ActBoard
@@ -722,7 +1056,8 @@ export default function Act5Momentum() {
       kpis={kpiItems}
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
-      charts={charts}
+      charts={visibleCharts}
+      nav="carousel"
       progress={{ index: 10, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -738,6 +1073,7 @@ export default function Act5Momentum() {
         conclusion: t("act5.board.conclusion"),
         backIntro: t("act5.board.back_intro"),
         reviseData: t("act5.board.revise_data"),
+        viewGroup: t("act5.board.group_view"),
       }}
       outro={{
         kicker: t("act5.outro.kicker"),

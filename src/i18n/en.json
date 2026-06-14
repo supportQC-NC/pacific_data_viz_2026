@@ -1047,6 +1047,7 @@
   "act5": {
     "value_label": "Renewable share",
     "unit": "%",
+    "dataset": { "renew": "Renewable share", "mix": "Electricity mix" },
     "baseline": "0 %",
     "mean_label": "avg",
     "ren_title": "Renewable share — final energy",

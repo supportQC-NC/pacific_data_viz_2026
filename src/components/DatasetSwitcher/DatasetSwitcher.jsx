@@ -113,6 +113,8 @@ const ICONS = {
       <path d="M6 12h.01M18 12h.01" />
     </>
   ),
+  // Mix électrique : éclair
+  bolt: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />,
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).
