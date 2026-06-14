@@ -994,6 +994,7 @@
     },
     "thesis": "People affected and direct economic losses from disasters, reported by national focal points in the Sendai Framework Monitoring system. Two official UN indicators, to be read for what they are: a declarative record, valuable but uneven across countries.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

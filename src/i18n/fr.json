@@ -994,6 +994,7 @@
     },
     "thesis": "Personnes affectées et pertes économiques directes des catastrophes, déclarées par les points focaux nationaux dans le système de suivi du Cadre de Sendai. Deux indicateurs officiels de l'ONU, à lire pour ce qu'ils sont : un recensement déclaratif, précieux mais inégal selon les pays.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",

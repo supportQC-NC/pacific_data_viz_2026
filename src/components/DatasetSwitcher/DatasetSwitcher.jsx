@@ -105,6 +105,14 @@ const ICONS = {
   ),
   // Santé : pouls (ECG)
   pulse: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  // Pertes économiques : billet
+  money: (
+    <>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M6 12h.01M18 12h.01" />
+    </>
+  ),
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).
