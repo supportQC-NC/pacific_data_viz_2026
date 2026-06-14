@@ -1221,6 +1221,7 @@
     }
   },
   "act6": {
+    "dataset": { "soil": "Soil" },
     "tag": "Act 06 — The plate",
     "title": "The nourishing land",
     "lead": "How much does the land give back, crop by crop, animal by animal? FAOSTAT has measured it since 1961 — and the IMF's CALCI index tells, alongside, how land cover has shifted around its 2015 baseline. Two official datasets, two precise definitions, and many singular stories.",
@@ -1339,6 +1340,7 @@
     "thesis": "Yields (kg/ha, kg/animal) and land cover (CALCI index, 2015 = 100): two official measures, each to be read for what it is — productivity on one side, a land-use index on the other. Yields rarely move for a single reason: here, we first learn to read them.",
     "board": {
       "group_view": "View",
+      "dataset_label": "Dataset",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

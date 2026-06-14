@@ -45,6 +45,32 @@ const ICONS = {
       <path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18" />
     </>
   ),
+  // Culture : pousse (tige + deux feuilles)
+  crop: (
+    <>
+      <path d="M12 22V10" />
+      <path d="M12 14c0-3.3 2.2-5.5 5.5-5.5C17.5 11.8 15.3 14 12 14z" />
+      <path d="M12 12C12 9.2 10 7 7 7c0 2.8 2 5 5 5z" />
+    </>
+  ),
+  // Élevage : empreinte (animal)
+  livestock: (
+    <>
+      <circle cx="12" cy="14.5" r="3" />
+      <circle cx="6.5" cy="11" r="1.5" />
+      <circle cx="17.5" cy="11" r="1.5" />
+      <circle cx="9" cy="7.5" r="1.5" />
+      <circle cx="15" cy="7.5" r="1.5" />
+    </>
+  ),
+  // Sol : strates (bloc de terre)
+  soil: (
+    <>
+      <path d="M5 5h14v14H5z" />
+      <path d="M5 10h14" />
+      <path d="M5 15h14" />
+    </>
+  ),
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).

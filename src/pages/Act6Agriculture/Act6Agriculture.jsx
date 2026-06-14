@@ -35,6 +35,7 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
@@ -169,25 +170,6 @@ function Select({ label, options, value, onChange }) {
     </div>
   );
 }
-function YearSlider({ label, years, index, onChange }) {
-  if (!years.length) return null;
-  return (
-    <div className="act1f act1f--year">
-      <span className="act1f__lbl">
-        {label} <strong>{years[index] ?? ""}</strong>
-      </span>
-      <input
-        className="act1f__range"
-        type="range"
-        min={0}
-        max={years.length - 1}
-        value={index ?? years.length - 1}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-      />
-    </div>
-  );
-}
 
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
@@ -198,7 +180,8 @@ export default function Act6Agriculture() {
   const [agri, setAgri] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
   const [yearIdx, setYearIdx] = useState(null);
-  const [kind, setKind] = useState("crop");
+  const [dataset, setDataset] = useState("crop"); // crop | livestock | soil
+  const kind = dataset === "soil" ? "crop" : dataset; // les vues de production restent en crop/livestock
   const [raceProduct, setRaceProduct] = useState(null);
 
   useEffect(() => {
@@ -482,10 +465,6 @@ export default function Act6Agriculture() {
     });
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({
-    v: k,
-    label: t(`act1.filter.${k}`),
-  }));
   const status =
     agri.status === "ready"
       ? years.length
@@ -495,29 +474,54 @@ export default function Act6Agriculture() {
         ? "loading"
         : "empty";
 
+  // Trois JEUX DE DONNÉES traités à égalité, basculés par icônes.
+  const datasetItems = [
+    {
+      id: "crop",
+      label: t("act6.board.kind_crop"),
+      icon: "crop",
+      tone: "positive",
+    },
+    {
+      id: "livestock",
+      label: t("act6.board.kind_livestock"),
+      icon: "livestock",
+      tone: "warm",
+    },
+    {
+      id: "soil",
+      label: t("act6.dataset.soil"),
+      icon: "soil",
+      tone: "secondary",
+    },
+  ];
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
+    label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
+  }));
+
   const filtersEl = (
     <>
-      <Select
-        label={t("act6.board.kind_label")}
-        options={[
-          { v: "crop", label: t("act6.board.kind_crop") },
-          { v: "livestock", label: t("act6.board.kind_livestock") },
-        ]}
-        value={kind}
-        onChange={setKind}
+      <DatasetSwitcher
+        label={t("act6.board.dataset_label")}
+        items={datasetItems}
+        value={dataset}
+        onChange={setDataset}
+        iconOnly
+        hideSpark
       />
-      <Select
-        label={t("act1.filter.title")}
-        options={regionOpts}
-        value={region}
-        onChange={setRegion}
-      />
-      <YearSlider
-        label={t("act1.f.year")}
-        years={years}
-        index={yearIdx}
-        onChange={(i) => setYearIdx(i)}
-      />
+      {dataset !== "soil" ? (
+        <DatasetSwitcher
+          label={t("act1.filter.title")}
+          items={regionItems}
+          value={region}
+          onChange={setRegion}
+          dense
+          hideSpark
+        />
+      ) : null}
     </>
   );
 
@@ -844,6 +848,13 @@ export default function Act6Agriculture() {
         ]
       : [];
 
+  // Le jeu choisi décide des VUES : Sol → ses 3 vues d'occupation ; Culture /
+  // Élevage → toutes les vues de production.
+  const SOIL_IDS = ["land_change", "land_lines", "land_slope"];
+  const visibleCharts = charts.filter((c) =>
+    dataset === "soil" ? SOIL_IDS.includes(c.id) : !SOIL_IDS.includes(c.id),
+  );
+
   return (
     <ActBoard
       status={status}
@@ -855,7 +866,7 @@ export default function Act6Agriculture() {
       kpis={kpiItems}
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
-      charts={charts}
+      charts={visibleCharts}
       nav="carousel"
       progress={{ index: 5, total: 12 }}
       labels={{

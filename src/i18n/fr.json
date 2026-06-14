@@ -1223,6 +1223,7 @@
   "act6": {
     "tag": "Acte 06 — L'assiette",
     "title": "La terre nourricière",
+    "dataset": { "soil": "Sol" },
     "lead": "Combien la terre rend-elle, culture par culture, bête par bête ? FAOSTAT le mesure depuis 1961 — et l'indice CALCI du FMI dit, en regard, comment la couverture des sols évolue depuis 2015. Deux jeux officiels, deux définitions précises, et beaucoup d'histoires singulières.",
     "guide": {
       "title": "Guide de lecture",
@@ -1339,6 +1340,7 @@
     "thesis": "Rendements (kg/ha, kg/animal) et couverture des sols (indice CALCI, 2015 = 100) : deux mesures officielles à lire chacune pour ce qu'elle est — la productivité d'un côté, un indice d'usage des sols de l'autre. Les rendements bougent rarement pour une seule raison : ici, on apprend d'abord à les lire.",
     "board": {
       "group_view": "Vue",
+      "dataset_label": "Données",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
