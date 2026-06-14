@@ -19,6 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchEco } from "../../services/ecoApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
@@ -130,30 +131,32 @@ function buildDumbbell(series, yearA, yearB) {
 // `breakdown.byCat` = { id: { byArea, years } }. On somme sur les territoires visibles.
 function breakdownStack(breakdown, years, order, labels, colors, areaVisible) {
   if (!breakdown || !breakdown.byCat) return [];
-  return order
-    .filter((id) => breakdown.byCat[id])
-    .map((id) => {
-      const cat = breakdown.byCat[id];
-      const data = years.map((y) => {
-        let sum = 0;
-        let n = 0;
-        (cat.areas || []).forEach((area) => {
-          if (!areaVisible(area)) return;
-          const v = valueAt(cat.byArea[area] || [], y);
-          if (Number.isFinite(v) && v > 0) {
-            sum += v;
-            n += 1;
-          }
+  return (
+    order
+      .filter((id) => breakdown.byCat[id])
+      .map((id) => {
+        const cat = breakdown.byCat[id];
+        const data = years.map((y) => {
+          let sum = 0;
+          let n = 0;
+          (cat.areas || []).forEach((area) => {
+            if (!areaVisible(area)) return;
+            const v = valueAt(cat.byArea[area] || [], y);
+            if (Number.isFinite(v) && v > 0) {
+              sum += v;
+              n += 1;
+            }
+          });
+          // Moyenne des déclarants : reste à l'échelle réelle (% du PIB / arrivées),
+          // et ne gonfle pas avec le nombre de pays visibles.
+          return n > 0 ? sum / n : null;
         });
-        // Moyenne des déclarants : reste à l'échelle réelle (% du PIB / arrivées),
-        // et ne gonfle pas avec le nombre de pays visibles.
-        return n > 0 ? sum / n : null;
-      });
-      return { id, name: labels[id] || id, color: colors[id], data };
-    })
-    // On garde toute catégorie présente dans le jeu (même rare), pour une
-    // légende complète ; on retire seulement celles totalement vides.
-    .filter((s) => s.data.some((v) => Number.isFinite(v)));
+        return { id, name: labels[id] || id, color: colors[id], data };
+      })
+      // On garde toute catégorie présente dans le jeu (même rare), pour une
+      // légende complète ; on retire seulement celles totalement vides.
+      .filter((s) => s.data.some((v) => Number.isFinite(v)))
+  );
 }
 
 function totalLine(series, years, name) {
@@ -216,32 +219,6 @@ function subAverages(all, years, t) {
     .filter(Boolean);
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Act9Eco() {
   const { t, lang } = useLang();
   const tk = useThemeTokens();
@@ -274,16 +251,6 @@ export default function Act9Eco() {
   const tourAll = useMemo(() => toSeries(tour, lang), [tour, lang]);
   const taxAll = useMemo(() => toSeries(tax, lang), [tax, lang]);
 
-  const countryOptions = useMemo(() => {
-    const set = new Set([
-      ...tourAll.map((s) => s.area),
-      ...taxAll.map((s) => s.area),
-    ]);
-    return [...set]
-      .map((a) => ({ area: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [tourAll, taxAll, lang]);
-
   const areaVisible = useCallback(
     (a) =>
       country !== "all"
@@ -300,7 +267,6 @@ export default function Act9Eco() {
     () => taxAll.filter((s) => areaVisible(s.area)),
     [taxAll, areaVisible],
   );
-
 
   const span = (ind, fb0, fb1) => [
     ind?.firstYear ?? ind?.years?.[0] ?? fb0,
@@ -362,11 +328,24 @@ export default function Act9Eco() {
 
   // Tourisme — qui capte les visiteurs (treemap) à la dernière année connue de chaque territoire.
   const tourTree = useMemo(() => {
-    const palette = [tk.accent, tk.warm, tk.positive, tk.negative, tk.accentDeep, tk.secondary];
+    const palette = [
+      tk.accent,
+      tk.warm,
+      tk.positive,
+      tk.negative,
+      tk.accentDeep,
+      tk.secondary,
+    ];
     return tourS
       .map((s, i) => {
         const last = s.values[s.values.length - 1];
-        return last ? { label: s.name, value: last.value, color: palette[i % palette.length] } : null;
+        return last
+          ? {
+              label: s.name,
+              value: last.value,
+              color: palette[i % palette.length],
+            }
+          : null;
       })
       .filter(Boolean)
       .sort((x, y) => y.value - x.value);
@@ -557,8 +536,16 @@ export default function Act9Eco() {
     const nodataLabel = t("act9.board.heat_nodata");
     const ranges = [{ from: -1.5, to: -0.5, color: GREY, name: nodataLabel }];
     if (all.length >= 5) {
-      const q = (p) => all[Math.min(all.length - 1, Math.floor(p * all.length))];
-      const edges = [0, q(0.2), q(0.4), q(0.6), q(0.8), all[all.length - 1] + 1];
+      const q = (p) =>
+        all[Math.min(all.length - 1, Math.floor(p * all.length))];
+      const edges = [
+        0,
+        q(0.2),
+        q(0.4),
+        q(0.6),
+        q(0.8),
+        all[all.length - 1] + 1,
+      ];
       for (let i = 1; i < edges.length; i += 1) {
         if (edges[i] <= edges[i - 1]) edges[i] = edges[i - 1] + 1e-6;
       }
@@ -572,13 +559,20 @@ export default function Act9Eco() {
         ranges.push({ from: lo, to: hi, color: c, name });
       });
     } else if (all.length) {
-      ranges.push({ from: 0, to: all[all.length - 1] + 1, color: HEAT[2], name: M.unit });
+      ranges.push({
+        from: 0,
+        to: all[all.length - 1] + 1,
+        color: HEAT[2],
+        name: M.unit,
+      });
     }
     return {
       chart: baseChart(tk, { type: "heatmap" }),
       series,
       dataLabels: { enabled: false },
-      plotOptions: { heatmap: { radius: 2, enableShades: false, colorScale: { ranges } } },
+      plotOptions: {
+        heatmap: { radius: 2, enableShades: false, colorScale: { ranges } },
+      },
       stroke: { width: 1, colors: [tk.line] },
       legend: {
         show: true,
@@ -593,15 +587,25 @@ export default function Act9Eco() {
       grid: baseGrid(tk),
       xaxis: {
         type: "category",
-        labels: { rotate: -45, style: { colors: tk.textMute, fontFamily: MONO, fontSize: "9px" } },
+        labels: {
+          rotate: -45,
+          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "9px" },
+        },
         axisBorder: { show: false },
         axisTicks: { show: false },
       },
       yaxis: {
-        labels: { show: true, maxWidth: 150, style: { colors: tk.text, fontFamily: MONO, fontSize: "11px" } },
+        labels: {
+          show: true,
+          maxWidth: 150,
+          style: { colors: tk.text, fontFamily: MONO, fontSize: "11px" },
+        },
       },
       tooltip: {
-        y: { formatter: (v) => (v == null || v < 0 ? nodataLabel : `${fmtVal(v)} ${M.unit}`) },
+        y: {
+          formatter: (v) =>
+            v == null || v < 0 ? nodataLabel : `${fmtVal(v)} ${M.unit}`,
+        },
       },
     };
   }, [M.series, M.years, M.B, M.unit, tk, t]);
@@ -649,18 +653,27 @@ export default function Act9Eco() {
     );
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({
-    v: k,
+  // Deux JEUX DE DONNÉES traités à égalité, basculés par icônes.
+  const metricItems = [
+    {
+      id: "tour",
+      label: t("act9.board.metric_tour"),
+      icon: "plane",
+      tone: "accent",
+    },
+    {
+      id: "tax",
+      label: t("act9.board.metric_tax"),
+      icon: "money",
+      tone: "positive",
+    },
+  ];
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
     label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
   }));
-  const metricOpts = [
-    { v: "tour", label: t("act9.board.metric_tour") },
-    { v: "tax", label: t("act9.board.metric_tax") },
-  ];
-  const countryOpts = [
-    { v: "all", label: t("act7.country_all") },
-    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
-  ];
 
   // Une fois le jeu de données chargé, on reste « ready » : un filtre qui ne
   // renvoie aucune série n'affiche PLUS le loader plein écran (bug), mais
@@ -674,26 +687,24 @@ export default function Act9Eco() {
 
   const filtersEl = (
     <>
-      <Select
+      <DatasetSwitcher
         label={t("act9.board.metric_label")}
-        options={metricOpts}
+        items={metricItems}
         value={metric}
         onChange={setMetric}
+        iconOnly
+        hideSpark
       />
-      <Select
+      <DatasetSwitcher
         label={t("act1.filter.title")}
-        options={regionOpts}
+        items={regionItems}
         value={region}
         onChange={(k) => {
           setRegion(k);
           setCountry("all");
         }}
-      />
-      <Select
-        label={t("act7.country_label")}
-        options={countryOpts}
-        value={country}
-        onChange={setCountry}
+        dense
+        hideSpark
       />
     </>
   );
@@ -749,7 +760,10 @@ export default function Act9Eco() {
                   years={M.years}
                   unit={M.unit}
                   currentYear={M.B}
-                  labels={{ last: t("act6.smallmult_last"), close: t("act9.board.zoom_close") }}
+                  labels={{
+                    last: t("act6.smallmult_last"),
+                    close: t("act9.board.zoom_close"),
+                  }}
                 />
               </div>
             ),
@@ -763,7 +777,11 @@ export default function Act9Eco() {
             takeaway: M.compoTake,
             node: (
               <div className="act9b__fit">
-                <StackedColsChart series={M.stack} years={M.years} unit={M.unit} />
+                <StackedColsChart
+                  series={M.stack}
+                  years={M.years}
+                  unit={M.unit}
+                />
               </div>
             ),
           },
@@ -922,8 +940,14 @@ export default function Act9Eco() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act9.spotlight.ex_kicker"), text: t("act9.spotlight.ex_text") }}
-                link={{ href: "https://stats.pacificdata.org", label: t("act9.spotlight.link_label") }}
+                example={{
+                  kicker: t("act9.spotlight.ex_kicker"),
+                  text: t("act9.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://stats.pacificdata.org",
+                  label: t("act9.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -938,7 +962,10 @@ export default function Act9Eco() {
               <CoverageChart
                 series={M.series}
                 years={M.years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
@@ -957,6 +984,7 @@ export default function Act9Eco() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
       progress={{ index: 11, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -972,6 +1000,7 @@ export default function Act9Eco() {
         conclusion: t("act9.board.conclusion"),
         backIntro: t("act9.board.back_intro"),
         reviseData: t("act9.board.revise_data"),
+        viewGroup: t("act9.board.group_view"),
       }}
       outro={{
         kicker: t("act9.outro.kicker"),

@@ -115,6 +115,13 @@ const ICONS = {
   ),
   // Mix électrique : éclair
   bolt: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />,
+  // Tourisme : avion
+  plane: (
+    <>
+      <path d="M22 2 11 13" />
+      <path d="M22 2 15 22l-4-9-9-4 20-7z" />
+    </>
+  ),
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).

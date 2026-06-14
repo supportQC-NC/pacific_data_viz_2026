@@ -399,6 +399,7 @@
     },
     "thesis": "Across the Pacific, per-capita footprints vary tenfold between territories — and the data explains every gap, denominator included.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",
@@ -633,6 +634,7 @@
     },
     "thesis": "The gap to the normal, territory by territory: a simple read — one that teaches you to tell a single year's swing from a decade's trend.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",
@@ -1817,6 +1819,7 @@
     },
     "thesis": "Visitor arrivals (counts, UN Tourism) and environmental taxation (% of GDP, IMF ↠ OECD). Two official indicators read for what they are — a count and a ratio — and broken down: visitor levels, tax types.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

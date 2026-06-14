@@ -399,6 +399,7 @@
     },
     "thesis": "Dans le Pacifique, l'empreinte carbone par habitant varie du simple au décuple entre territoires — et la donnée explique chaque écart, dénominateur compris.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
@@ -633,6 +634,7 @@
     },
     "thesis": "L'écart à la normale, territoire par territoire : une donnée simple à lire — et qui apprend à distinguer l'oscillation d'une année de la tendance d'une décennie.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
@@ -1825,6 +1827,7 @@
     },
     "thesis": "Arrivées de visiteurs (effectifs, ONU Tourisme) et fiscalité environnementale (% du PIB, FMI ↠ OCDE). Deux indicateurs officiels qu'on lit pour ce qu'ils sont — un dénombrement et un ratio — et qu'on décompose : niveaux de visiteur, types de taxe.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
