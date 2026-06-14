@@ -32,6 +32,7 @@ export default function CountryMiniMap({
   pitch = 45,
   controls = false,
   coast = null,
+  coastlineUrl = null,
   noTokenMsg = "",
 }) {
   const ref = useRef(null);
@@ -54,6 +55,8 @@ export default function CountryMiniMap({
     // La molette reste désactivée (ne pas piéger le scroll de la page) ; les
     // boutons +/- permettent quand même de zoomer quand `controls` est actif.
     if (map.scrollZoom) map.scrollZoom.disable();
+
+    let cancelled = false;
 
     if (controls && mapboxgl.NavigationControl) {
       map.addControl(
@@ -79,6 +82,71 @@ export default function CountryMiniMap({
       } catch (e) {
         /* terrain absent sur certaines versions — sans gravité */
       }
+
+      // Vrais points du trait de côte (Digital Earth Pacific) : cercles
+      // colorés du rouge (recul) au bleu (avancée) selon le taux `r` (m/an).
+      if (coastlineUrl) {
+        fetch(coastlineUrl)
+          .then((r) => r.json())
+          .then((gj) => {
+            if (cancelled || !map.getStyle() || !gj || !gj.features) return;
+            if (map.getSource("coast")) {
+              map.getSource("coast").setData(gj);
+              return;
+            }
+            const absR = ["abs", ["get", "r"]];
+            map.addSource("coast", { type: "geojson", data: gj });
+            map.addLayer({
+              id: "coast",
+              type: "circle",
+              source: "coast",
+              paint: {
+                "circle-radius": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  4,
+                  ["interpolate", ["linear"], absR, 0, 2.5, 1, 5, 6, 11],
+                  9,
+                  ["interpolate", ["linear"], absR, 0, 5, 1, 9, 6, 18],
+                  13,
+                  ["interpolate", ["linear"], absR, 0, 8, 1, 15, 6, 28],
+                ],
+                "circle-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["get", "r"],
+                  -2,
+                  "#b3122a",
+                  -0.6,
+                  "#e8453c",
+                  -0.2,
+                  "#f3a08a",
+                  0,
+                  "#aeb7bd",
+                  0.2,
+                  "#86c6e6",
+                  0.6,
+                  "#2c7fb8",
+                  2,
+                  "#0b4f9e",
+                ],
+                "circle-opacity": 0.92,
+                "circle-stroke-width": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  4,
+                  0.6,
+                  10,
+                  1.6,
+                ],
+                "circle-stroke-color": "rgba(255,255,255,0.9)",
+              },
+            });
+          })
+          .catch(() => {});
+      }
     });
 
     // Aura « trait de côte » (derrière le marqueur), colorée par le bilan.
@@ -100,11 +168,12 @@ export default function CountryMiniMap({
       .addTo(map);
 
     return () => {
+      cancelled = true;
       if (coastMarker) coastMarker.remove();
       marker.remove();
       map.remove();
     };
-  }, [coords, zoom, pitch, controls, coast]);
+  }, [coords, zoom, pitch, controls, coast, coastlineUrl]);
 
   if (!TOKEN || !mapboxgl) {
     return <div className="cmm cmm--notoken">{noTokenMsg}</div>;

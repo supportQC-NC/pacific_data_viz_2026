@@ -536,81 +536,79 @@ export default function CountryPage() {
   return (
     <main className="country">
       <div className="country__glow" aria-hidden="true" />
-      <div className="country__inner container">
-        <Link to="/" className="country__back">
-          <FiArrowLeft aria-hidden="true" /> {t("country.back")}
-        </Link>
 
-        {/* 1. Hero immersif : carte 3D + aura littoral + identité */}
-        <header className="cpHero">
-          <div className="cpHero__map">
-            <CountryMiniMap
-              coords={PICT_GEO[code]}
-              zoom={ZOOM[code] || 7}
-              controls
-              coast={coast || null}
-              noTokenMsg={t("country.no_token")}
-            />
-          </div>
-          <div className="cpHero__scrim" aria-hidden="true" />
-          <div className="cpHero__grain" aria-hidden="true" />
+      {/* 1. Hero immersif plein écran : carte 3D + points trait de côte + aura */}
+      <header className="cpHero">
+        <div className="cpHero__map">
+          <CountryMiniMap
+            coords={PICT_GEO[code]}
+            zoom={ZOOM[code] || 7}
+            controls
+            coast={coast || null}
+            coastlineUrl={`${process.env.PUBLIC_URL || ""}/data/coastline-hotspots.geojson`}
+            noTokenMsg={t("country.no_token")}
+          />
+        </div>
+        <div className="cpHero__scrim" aria-hidden="true" />
+        <div className="cpHero__grain" aria-hidden="true" />
 
-          {coast ? (
-            <div className={`cpCoast cpCoast--${coastTone}`}>
-              <span className="cpCoast__dot" aria-hidden="true" />
-              <span className="cpCoast__txt">
-                <span className="cpCoast__k">
-                  {tf("country.coast.label", "Trait de côte", "Coastline")}
-                </span>
-                <span className="cpCoast__v">{coastStr}</span>
+        {coast ? (
+          <div className={`cpCoast cpCoast--${coastTone}`}>
+            <span className="cpCoast__dot" aria-hidden="true" />
+            <span className="cpCoast__txt">
+              <span className="cpCoast__k">
+                {tf("country.coast.label", "Trait de côte", "Coastline")}
               </span>
-            </div>
-          ) : null}
-
-          <div className="cpHero__overlay">
-            <p className="eyebrow cpHero__eyebrow">{t("country.eyebrow")}</p>
-            <div className="cpHero__id">
-              <span className="cpHero__flag">
-                <img
-                  src={flagUrl(code, { format: "svg" })}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              </span>
-              <h1 className="cpHero__title">{pictName(code, lang)}</h1>
-            </div>
-            <p className="cpHero__lead">{t("country.lead")}</p>
+              <span className="cpCoast__v">{coastStr}</span>
+            </span>
           </div>
-        </header>
-
-        {/* 2. En bref : chiffres-clés (bande instrument) */}
-        {keyFigs.length ? (
-          <section
-            className="cpKeys"
-            aria-label={tf("country.keys_title", "En bref", "At a glance")}
-          >
-            <p className="eyebrow cpKeys__title">
-              {tf("country.keys_title", "En bref", "At a glance")}
-            </p>
-            <div className="cpKeys__strip">
-              {keyFigs.map((k) => (
-                <div className={`cpStat cpStat--${k.tone}`} key={k.id}>
-                  <span className="cpStat__val">
-                    {k.val}
-                    {k.unit ? <i className="cpStat__unit">{k.unit}</i> : null}
-                  </span>
-                  <span className="cpStat__label">{k.label}</span>
-                  <span className="cpStat__delta">{k.delta}</span>
-                </div>
-              ))}
-            </div>
-          </section>
         ) : null}
 
+        <div className="cpHero__overlay">
+          <p className="eyebrow cpHero__eyebrow">{t("country.eyebrow")}</p>
+          <div className="cpHero__id">
+            <span className="cpHero__flag">
+              <img
+                src={flagUrl(code, { format: "svg" })}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </span>
+            <h1 className="cpHero__title">{pictName(code, lang)}</h1>
+          </div>
+          <p className="cpHero__lead">{t("country.lead")}</p>
+        </div>
+      </header>
+
+      {/* 2. En bref : chiffres-clés (bande instrument) */}
+      {keyFigs.length ? (
+        <section
+          className="cpKeys"
+          aria-label={tf("country.keys_title", "En bref", "At a glance")}
+        >
+          <p className="eyebrow cpKeys__title">
+            {tf("country.keys_title", "En bref", "At a glance")}
+          </p>
+          <div className="cpKeys__strip">
+            {keyFigs.map((k) => (
+              <div className={`cpStat cpStat--${k.tone}`} key={k.id}>
+                <span className="cpStat__val">
+                  {k.val}
+                  {k.unit ? <i className="cpStat__unit">{k.unit}</i> : null}
+                </span>
+                <span className="cpStat__label">{k.label}</span>
+                <span className="cpStat__delta">{k.delta}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <div className="country__inner container">
         {/* 3. Chapitres en carrousel */}
         {chapters.length ? (
           <section className="cpChapters">
