@@ -2670,6 +2670,9 @@
     "next": "Next page"
   },
   "country": {
+    "keys_title": "At a glance",
+    "coast": { "label": "Coastline", "eroding": "eroding" },
+    "nav": { "prev": "Previous", "next": "Next", "group": "Chapter" },
     "back": "Home",
     "eyebrow": "Territory profile",
     "lead": "All of Datamoana's open indicators, for this single territory (excluding cyclones, specific to New Caledonia).",

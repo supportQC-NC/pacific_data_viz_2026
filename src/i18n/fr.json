@@ -2678,6 +2678,9 @@
     "next": "Page suivante"
   },
   "country": {
+    "keys_title": "En bref",
+    "coast": { "label": "Trait de côte", "eroding": "en recul" },
+    "nav": { "prev": "Précédent", "next": "Suivant", "group": "Chapitre" },
     "back": "Accueil",
     "eyebrow": "Profil territoire",
     "lead": "Tous les indicateurs ouverts de Datamoana, pour ce seul territoire (hors cyclones, propres à la Nouvelle-Calédonie).",

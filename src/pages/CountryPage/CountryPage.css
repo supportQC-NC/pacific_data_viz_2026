@@ -1,9 +1,9 @@
+@charset "UTF-8";
 /* src/pages/CountryPage/CountryPage.scss
    ============================================================
    Page TERRITOIRE — refonte immersive & avant-gardiste.
    100 % tokens (thème light/dark géré par les variables). Aucune valeur en dur.
    ============================================================ */
-
 .country {
   position: relative;
   min-height: 100vh;
@@ -18,17 +18,7 @@
   height: 78vh;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(
-      70% 60% at 80% -6%,
-      color-mix(in srgb, var(--c-accent) 20%, transparent),
-      transparent 68%
-    ),
-    radial-gradient(
-      60% 50% at 4% 0%,
-      color-mix(in srgb, var(--c-warm) 12%, transparent),
-      transparent 70%
-    );
+  background: radial-gradient(70% 60% at 80% -6%, color-mix(in srgb, var(--c-accent) 20%, transparent), transparent 68%), radial-gradient(60% 50% at 4% 0%, color-mix(in srgb, var(--c-warm) 12%, transparent), transparent 70%);
 }
 
 .country__inner {
@@ -49,24 +39,19 @@
   border-radius: var(--r-pill);
   background: color-mix(in srgb, var(--c-surface) 70%, transparent);
   color: var(--c-text-soft);
-  font: var(--fw-med) var(--fs-sm) / 1 var(--font-body);
+  font: var(--fw-med) var(--fs-sm)/1 var(--font-body);
   letter-spacing: var(--ls-wide);
   text-decoration: none;
-  transition:
-    color var(--t-fast) var(--ease-out),
-    border-color var(--t-fast) var(--ease-out),
-    transform var(--t-fast) var(--ease-out);
-
-  svg {
-    width: 1em;
-    height: 1em;
-  }
-
-  &:hover {
-    color: var(--c-accent);
-    border-color: var(--c-accent);
-    transform: translateX(-2px);
-  }
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+}
+.country__back svg {
+  width: 1em;
+  height: 1em;
+}
+.country__back:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+  transform: translateX(-2px);
 }
 
 /* ---------- 1. Hero immersif ---------- */
@@ -76,9 +61,7 @@
   border-radius: var(--r-md);
   overflow: hidden;
   border: var(--border-hair) solid var(--c-line-strong);
-  box-shadow:
-    0 30px 80px -30px rgb(0 0 0 / 0.6),
-    inset 0 0 0 1px color-mix(in srgb, var(--c-text) 6%, transparent);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6), inset 0 0 0 1px color-mix(in srgb, var(--c-text) 6%, transparent);
   isolation: isolate;
 }
 
@@ -86,14 +69,13 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-
-  .cmm,
-  .cmm__map {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
+}
+.cpHero__map .cmm,
+.cpHero__map .cmm__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* Fonds dégradés : le haut se fond dans la page, le bas porte le texte. */
@@ -102,23 +84,7 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--c-bg) 55%, transparent) 0%,
-      transparent 22%
-    ),
-    linear-gradient(
-      to top,
-      var(--c-bg) 1%,
-      color-mix(in srgb, var(--c-bg) 62%, transparent) 30%,
-      transparent 60%
-    ),
-    radial-gradient(
-      120% 80% at 50% 120%,
-      color-mix(in srgb, var(--c-accent) 14%, transparent),
-      transparent 60%
-    );
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--c-bg) 55%, transparent) 0%, transparent 22%), linear-gradient(to top, var(--c-bg) 1%, color-mix(in srgb, var(--c-bg) 62%, transparent) 30%, transparent 60%), radial-gradient(120% 80% at 50% 120%, color-mix(in srgb, var(--c-accent) 14%, transparent), transparent 60%);
 }
 
 /* Grain léger pour casser l'aplat numérique. */
@@ -160,24 +126,23 @@
   flex: 0 0 auto;
   display: inline-flex;
   width: clamp(2.6rem, 6vw, 3.8rem);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4/3;
   border-radius: var(--r-sm);
   overflow: hidden;
-  border: var(--border-hair) solid
-    color-mix(in srgb, var(--c-text) 28%, transparent);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  border: var(--border-hair) solid color-mix(in srgb, var(--c-text) 28%, transparent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.cpHero__flag img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  display: block;
 }
 
 .cpHero__title {
   margin: 0;
-  font: var(--fw-semi) clamp(2.4rem, 7vw, 4.6rem) / 0.98 var(--font-display);
+  font: var(--fw-semi) clamp(2.4rem, 7vw, 4.6rem)/0.98 var(--font-display);
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
   text-shadow: 0 2px 30px color-mix(in srgb, var(--c-bg) 75%, transparent);
@@ -203,23 +168,21 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
-  border: var(--border-hair) solid
-    color-mix(in srgb, var(--tone) 45%, var(--c-line));
+  border: var(--border-hair) solid color-mix(in srgb, var(--tone) 45%, var(--c-line));
   border-radius: var(--r-pill);
   background: color-mix(in srgb, var(--c-bg) 58%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   pointer-events: none;
-
-  &--warm {
-    --tone: var(--c-warm);
-  }
-  &--positive {
-    --tone: var(--c-positive);
-  }
-  &--accent {
-    --tone: var(--c-accent);
-  }
+}
+.cpCoast--warm {
+  --tone: var(--c-warm);
+}
+.cpCoast--positive {
+  --tone: var(--c-positive);
+}
+.cpCoast--accent {
+  --tone: var(--c-accent);
 }
 
 .cpCoast__dot {
@@ -236,14 +199,16 @@
   flex-direction: column;
   line-height: 1.15;
 }
+
 .cpCoast__k {
-  font: var(--fw-med) var(--fs-xs) / 1 var(--font-mono);
+  font: var(--fw-med) var(--fs-xs)/1 var(--font-mono);
   letter-spacing: var(--ls-wide);
   color: var(--c-text-mute);
   text-transform: uppercase;
 }
+
 .cpCoast__v {
-  font: var(--fw-med) var(--fs-sm) / 1.2 var(--font-body);
+  font: var(--fw-med) var(--fs-sm)/1.2 var(--font-body);
   color: var(--c-text);
 }
 
@@ -251,12 +216,10 @@
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 60%, transparent);
   }
-  70%,
-  100% {
+  70%, 100% {
     box-shadow: 0 0 0 0.5rem transparent;
   }
 }
-
 /* ---------- Aura « trait de côte » SUR la carte (marqueur Mapbox) ---------- */
 .cmm__coast {
   --coast-c: var(--c-accent);
@@ -265,12 +228,7 @@
   height: clamp(160px, 22vw, 240px);
   pointer-events: none;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--coast-c) 46%, transparent) 0%,
-    color-mix(in srgb, var(--coast-c) 16%, transparent) 40%,
-    transparent 68%
-  );
+  background: radial-gradient(circle, color-mix(in srgb, var(--coast-c) 46%, transparent) 0%, color-mix(in srgb, var(--coast-c) 16%, transparent) 40%, transparent 68%);
   filter: blur(1px);
 }
 
@@ -283,6 +241,7 @@
   border: 2px solid color-mix(in srgb, var(--coast-c) 80%, transparent);
   animation: cmmCoastPulse 3.6s var(--ease-out) infinite;
 }
+
 .cmm__coast::after {
   animation-delay: 1.8s;
 }
@@ -297,7 +256,6 @@
     opacity: 0;
   }
 }
-
 /* ---------- 2. En bref : bande instrument ---------- */
 .cpKeys {
   position: relative;
@@ -328,43 +286,40 @@
   min-width: 9.5rem;
   padding: var(--sp-5);
   border-left: var(--border-hair) solid var(--c-line);
-
-  &:first-child {
-    border-left: 0;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: var(--sp-5);
-    bottom: var(--sp-5);
-    width: 2px;
-    border-radius: 2px;
-    background: var(--tone);
-    opacity: 0.85;
-  }
-  &:first-child::after {
-    left: 0;
-  }
-
-  &--warm {
-    --tone: var(--c-warm);
-  }
-  &--positive {
-    --tone: var(--c-positive);
-  }
-  &--negative {
-    --tone: var(--c-negative);
-  }
-  &--accent {
-    --tone: var(--c-accent);
-  }
+}
+.cpStat:first-child {
+  border-left: 0;
+}
+.cpStat::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--sp-5);
+  bottom: var(--sp-5);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--tone);
+  opacity: 0.85;
+}
+.cpStat:first-child::after {
+  left: 0;
+}
+.cpStat--warm {
+  --tone: var(--c-warm);
+}
+.cpStat--positive {
+  --tone: var(--c-positive);
+}
+.cpStat--negative {
+  --tone: var(--c-negative);
+}
+.cpStat--accent {
+  --tone: var(--c-accent);
 }
 
 .cpStat__val {
   display: block;
-  font: var(--fw-semi) var(--fs-lg) / 1 var(--font-display);
+  font: var(--fw-semi) var(--fs-lg)/1 var(--font-display);
   color: var(--c-text);
   letter-spacing: var(--ls-tight);
 }
@@ -388,7 +343,7 @@
 .cpStat__delta {
   display: block;
   margin-top: var(--sp-1);
-  font: var(--fw-med) var(--fs-xs) / 1.2 var(--font-mono);
+  font: var(--fw-med) var(--fs-xs)/1.2 var(--font-mono);
   color: var(--tone);
   letter-spacing: var(--ls-wide);
 }
@@ -421,8 +376,7 @@
 
 .cpChapter__title {
   margin: 0 0 var(--sp-5);
-  font: var(--fw-semi) clamp(var(--fs-lg), 3vw, var(--fs-xl)) / var(--lh-tight)
-    var(--font-display);
+  font: var(--fw-semi) clamp(var(--fs-lg), 3vw, var(--fs-xl))/var(--lh-tight) var(--font-display);
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
 }
@@ -437,13 +391,13 @@
 }
 
 .cpChapter__val {
-  font: var(--fw-semi) clamp(var(--fs-xl), 5vw, 3rem) / 0.95 var(--font-display);
+  font: var(--fw-semi) clamp(var(--fs-xl), 5vw, 3rem)/0.95 var(--font-display);
   color: var(--c-text);
   letter-spacing: var(--ls-tight);
 }
 
 .cpChapter__unit {
-  font: var(--fw-med) var(--fs-sm) / 1 var(--font-mono);
+  font: var(--fw-med) var(--fs-sm)/1 var(--font-mono);
   color: var(--c-text-mute);
 }
 
@@ -486,7 +440,7 @@
 }
 
 .cpChip__v {
-  font: var(--fw-med) var(--fs-sm) / 1.1 var(--font-mono);
+  font: var(--fw-med) var(--fs-sm)/1.1 var(--font-mono);
   color: var(--c-text);
 }
 
@@ -496,7 +450,7 @@
 }
 
 .cpChapter__single {
-  font: var(--fw-med) var(--fs-md) / 1 var(--font-mono);
+  font: var(--fw-med) var(--fs-md)/1 var(--font-mono);
   color: var(--c-text-soft);
 }
 
@@ -521,19 +475,16 @@
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-md);
   background: color-mix(in srgb, var(--c-surface) 70%, transparent);
-  transition:
-    border-color var(--t-fast) var(--ease-out),
-    transform var(--t-fast) var(--ease-out);
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--c-accent) 50%, var(--c-line));
-    transform: translateY(-3px);
-  }
+  transition: border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+}
+.cpCross__card:hover {
+  border-color: color-mix(in srgb, var(--c-accent) 50%, var(--c-line));
+  transform: translateY(-3px);
 }
 
 .cpCross__card-title {
   margin: 0 0 var(--sp-2);
-  font: var(--fw-semi) var(--fs-md) / var(--lh-tight) var(--font-display);
+  font: var(--fw-semi) var(--fs-md)/var(--lh-tight) var(--font-display);
   color: var(--c-text);
 }
 
@@ -554,11 +505,10 @@
   text-align: center;
   color: var(--c-text-mute);
   font-size: var(--fs-sm);
-
-  &--soft {
-    opacity: 0.7;
-    margin-top: var(--sp-6);
-  }
+}
+.cpHint--soft {
+  opacity: 0.7;
+  margin-top: var(--sp-6);
 }
 
 /* ---------- Responsive ---------- */
@@ -569,7 +519,6 @@
     padding: var(--sp-6);
   }
 }
-
 @media (max-width: 560px) {
   .cpStat {
     flex-basis: 50%;
@@ -586,7 +535,6 @@
     top: var(--sp-4);
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .country__back:hover,
   .cpCross__card:hover {
@@ -597,4 +545,4 @@
   .cmm__coast::after {
     animation: none;
   }
-}
+}/*# sourceMappingURL=CountryPage.css.map */
