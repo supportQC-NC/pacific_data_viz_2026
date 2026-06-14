@@ -15,7 +15,13 @@
 // Token : REACT_APP_MAPBOX_TOKEN.
 // ============================================================
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PICT_GEO from "../../data/pictGeo";
 import { pictName } from "../../i18n/pictNames";
 import { useLang } from "../../store/context/langContext";
@@ -140,6 +146,7 @@ export default function OceanMap({
   onTogglePlay = null,
   onScrub = null,
   coastlineUrl = null,
+  fitAreas = null,
 }) {
   const { lang } = useLang();
   const ml = mapLabels[lang] || mapLabels.fr;
@@ -222,8 +229,23 @@ export default function OceanMap({
     [fc],
   );
 
+  // Cadrage caméra : si `fitAreas` est fourni (codes ou objets {area}), on
+  // recentre sur ces territoires SANS les afficher (utile pour la vue trait de
+  // côte, qui n'a pas de points). Sinon, on cadre sur les points affichés.
+  const fitFeatures = useMemo(() => {
+    if (fitAreas && fitAreas.length) {
+      const fts = [];
+      fitAreas.forEach((a) => {
+        const code = typeof a === "string" ? a : a && a.area;
+        const c = code ? PICT_GEO[code] : null;
+        if (c) fts.push({ properties: { lng: c[0], lat: c[1] } });
+      });
+      if (fts.length) return fts;
+    }
+    return fc.features;
+  }, [fitAreas, fc]);
+
   useEffect(() => {
-    if (!TOKEN || mapRef.current || !containerRef.current) return undefined;
     mapboxgl.accessToken = TOKEN;
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -241,7 +263,10 @@ export default function OceanMap({
 
     // Navigation 3D : zoom +/- et boussole d'inclinaison (pour vraiment se
     // balader : pivoter, incliner, plonger sur les cotes et les villes).
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-left");
+    map.addControl(
+      new mapboxgl.NavigationControl({ visualizePitch: true }),
+      "top-left",
+    );
 
     map.on("load", () => {
       map.addLayer({
@@ -373,7 +398,17 @@ export default function OceanMap({
         type: "circle",
         source: "centers",
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 1.5, 12, 6, 20, 10, 30],
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            1.5,
+            12,
+            6,
+            20,
+            10,
+            30,
+          ],
           "circle-color": "#000000",
           "circle-opacity": 0,
         },
@@ -458,12 +493,12 @@ export default function OceanMap({
     // territoires présents (leurs positions). Elle change quand les FILTRES
     // changent (sous-région, territoire…), mais PAS au scrub d'année (mêmes
     // territoires) → la caméra suit les filtres sans sauter à chaque année.
-    if (fc.features.length) {
-      const lngs = fc.features.map((f) =>
+    if (fitFeatures.length) {
+      const lngs = fitFeatures.map((f) =>
         f.properties.lng < 0 ? f.properties.lng + 360 : f.properties.lng,
       );
-      const lats = fc.features.map((f) => f.properties.lat);
-      const key = fc.features
+      const lats = fitFeatures.map((f) => f.properties.lat);
+      const key = fitFeatures
         .map(
           (f) =>
             `${f.properties.lng.toFixed(2)},${f.properties.lat.toFixed(2)}`,
@@ -487,7 +522,7 @@ export default function OceanMap({
         fittedKeyRef.current = key;
       }
     }
-  }, [loaded, fc, centers]);
+  }, [loaded, fc, centers, fitFeatures]);
 
   // Couche optionnelle « trait de côte » (Digital Earth Pacific — Landsat
   // Coastlines, CC BY-NC 4.0). Lisibilité à deux niveaux :
@@ -504,8 +539,24 @@ export default function OceanMap({
 
     // |r| = intensité ; poids signés pour chaque nappe (capés à 2 m/an).
     const absR = ["max", ["*", -1, ["get", "r"]], ["get", "r"]];
-    const eroW = ["interpolate", ["linear"], ["max", ["*", -1, ["get", "r"]], 0], 0, 0, 2, 1];
-    const accW = ["interpolate", ["linear"], ["max", ["get", "r"], 0], 0, 0, 2, 1];
+    const eroW = [
+      "interpolate",
+      ["linear"],
+      ["max", ["*", -1, ["get", "r"]], 0],
+      0,
+      0,
+      2,
+      1,
+    ];
+    const accW = [
+      "interpolate",
+      ["linear"],
+      ["max", ["get", "r"], 0],
+      0,
+      0,
+      2,
+      1,
+    ];
 
     const cpop = new mapboxgl.Popup({
       closeButton: false,
@@ -518,7 +569,9 @@ export default function OceanMap({
       const placeName = place ? pictName(place, lang) : "";
       const lines = [];
       if (placeName) lines.push(`<strong>${placeName}</strong>`);
-      lines.push(`${dir || ""} \u00b7 ${r > 0 ? "+" : ""}${r.toFixed(2)} ${cw.unit || ""}`);
+      lines.push(
+        `${dir || ""} \u00b7 ${r > 0 ? "+" : ""}${r.toFixed(2)} ${cw.unit || ""}`,
+      );
       return lines.join("<br/>");
     };
     const onMove = (e) => {
@@ -565,12 +618,43 @@ export default function OceanMap({
             source: "coast",
             paint: {
               "heatmap-weight": eroW,
-              "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.2],
-              "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 2, 14, 6, 26],
-              "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.5, 5, 0],
+              "heatmap-intensity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                0.6,
+                6,
+                1.2,
+              ],
+              "heatmap-radius": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                14,
+                6,
+                26,
+              ],
+              "heatmap-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                0.5,
+                5,
+                0,
+              ],
               "heatmap-color": [
-                "interpolate", ["linear"], ["heatmap-density"],
-                0, "rgba(232,69,60,0)", 0.3, "rgba(232,69,60,0.5)", 1, "rgba(255,77,109,0.95)",
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0,
+                "rgba(232,69,60,0)",
+                0.3,
+                "rgba(232,69,60,0.5)",
+                1,
+                "rgba(255,77,109,0.95)",
               ],
             },
           },
@@ -583,12 +667,43 @@ export default function OceanMap({
             source: "coast",
             paint: {
               "heatmap-weight": accW,
-              "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.2],
-              "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 2, 14, 6, 26],
-              "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.45, 5, 0],
+              "heatmap-intensity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                0.6,
+                6,
+                1.2,
+              ],
+              "heatmap-radius": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                14,
+                6,
+                26,
+              ],
+              "heatmap-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                0.45,
+                5,
+                0,
+              ],
               "heatmap-color": [
-                "interpolate", ["linear"], ["heatmap-density"],
-                0, "rgba(44,127,184,0)", 0.3, "rgba(44,127,184,0.5)", 1, "rgba(0,230,255,0.95)",
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0,
+                "rgba(44,127,184,0)",
+                0.3,
+                "rgba(44,127,184,0.5)",
+                1,
+                "rgba(0,230,255,0.95)",
               ],
             },
           },
@@ -601,24 +716,59 @@ export default function OceanMap({
             source: "coast",
             paint: {
               "circle-radius": [
-                "interpolate", ["linear"], ["zoom"],
-                2,  ["interpolate", ["linear"], absR, 0, 2, 1, 4, 6, 9],
-                6,  ["interpolate", ["linear"], absR, 0, 3, 1, 6, 6, 13],
-                11, ["interpolate", ["linear"], absR, 0, 6, 1, 12, 6, 24],
-                16, ["interpolate", ["linear"], absR, 0, 11, 1, 20, 6, 38],
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                ["interpolate", ["linear"], absR, 0, 2, 1, 4, 6, 9],
+                6,
+                ["interpolate", ["linear"], absR, 0, 3, 1, 6, 6, 13],
+                11,
+                ["interpolate", ["linear"], absR, 0, 6, 1, 12, 6, 24],
+                16,
+                ["interpolate", ["linear"], absR, 0, 11, 1, 20, 6, 38],
               ],
               "circle-color": [
-                "interpolate", ["linear"], ["get", "r"],
-                -2, "#b3122a", -0.6, "#e8453c", -0.2, "#f3a08a",
-                0, "#aeb7bd",
-                0.2, "#86c6e6", 0.6, "#2c7fb8", 2, "#0b4f9e",
+                "interpolate",
+                ["linear"],
+                ["get", "r"],
+                -2,
+                "#b3122a",
+                -0.6,
+                "#e8453c",
+                -0.2,
+                "#f3a08a",
+                0,
+                "#aeb7bd",
+                0.2,
+                "#86c6e6",
+                0.6,
+                "#2c7fb8",
+                2,
+                "#0b4f9e",
               ],
               "circle-opacity": [
-                "interpolate", ["linear"], ["zoom"],
-                2,  ["interpolate", ["linear"], absR, 0, 0.35, 0.4, 0.9],
-                12, ["interpolate", ["linear"], absR, 0, 0.75, 0.4, 1],
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                ["interpolate", ["linear"], absR, 0, 0.35, 0.4, 0.9],
+                12,
+                ["interpolate", ["linear"], absR, 0, 0.75, 0.4, 1],
               ],
-              "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 2, 0.4, 6, 1.1, 12, 1.7, 16, 2.4],
+              "circle-stroke-width": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                2,
+                0.4,
+                6,
+                1.1,
+                12,
+                1.7,
+                16,
+                2.4,
+              ],
               "circle-stroke-color": "rgba(255,255,255,0.9)",
             },
           },
@@ -829,12 +979,27 @@ export default function OceanMap({
               aria-label={coastPrevLabel}
               title={coastPrevLabel}
             >
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
-                <path d="M14 6 L8 12 L14 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M14 6 L8 12 L14 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
             <span className="omap__coastlabel">
-              {coastNav.idx < 0 ? coastBrowseLabel : `${coastNav.idx + 1} / ${coastNav.total}`}
+              {coastNav.idx < 0
+                ? coastBrowseLabel
+                : `${coastNav.idx + 1} / ${coastNav.total}`}
             </span>
             <button
               type="button"
@@ -843,8 +1008,21 @@ export default function OceanMap({
               aria-label={coastNextLabel}
               title={coastNextLabel}
             >
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
-                <path d="M10 6 L16 12 L10 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M10 6 L16 12 L10 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>

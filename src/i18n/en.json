@@ -691,6 +691,7 @@
     }
   },
   "act3": {
+    "dataset": { "sea": "Sea", "pop": "Population" },
     "lead": "While the sea departs from its reference, the human map is being redrawn. Reading both together — where the water rises, where people live and arrive — turns two official series into a tool for anticipation.",
     "value_label": "Annual growth",
     "unit": "%",
@@ -777,6 +778,7 @@
     "balance_down": "Declining",
     "thesis": "Two official datasets side by side: the sea-level anomaly (m, 1993–2012 ref.) and the population growth rate (%). Crossing them proves no cause — it locates the places where adaptation gets planned.",
     "board": {
+      "dataset_label": "Dataset",
       "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",

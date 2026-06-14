@@ -86,6 +86,23 @@ const ICONS = {
       <circle cx="7" cy="11" r="0.7" />
     </>
   ),
+  // Mer : vagues
+  waves: (
+    <>
+      <path d="M2 7c2 0 2 1.6 4 1.6S8 7 10 7s2 1.6 4 1.6S16 7 18 7s2 1.6 4 1.6" />
+      <path d="M2 12c2 0 2 1.6 4 1.6S8 12 10 12s2 1.6 4 1.6S16 12 18 12s2 1.6 4 1.6" />
+      <path d="M2 17c2 0 2 1.6 4 1.6S8 17 10 17s2 1.6 4 1.6S16 17 18 17s2 1.6 4 1.6" />
+    </>
+  ),
+  // Population : personnes
+  people: (
+    <>
+      <circle cx="9" cy="7" r="3" />
+      <path d="M3 21v-1a6 6 0 0 1 12 0v1" />
+      <path d="M16 3.5a3 3 0 0 1 0 6" />
+      <path d="M21 21v-1a6 6 0 0 0-4-5.7" />
+    </>
+  ),
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).

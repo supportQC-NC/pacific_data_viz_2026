@@ -691,6 +691,7 @@
     }
   },
   "act3": {
+    "dataset": { "sea": "Mer", "pop": "Population" },
     "lead": "Pendant que la mer s'écarte de sa référence, la carte humaine se redessine. Lire les deux ensemble — où l'eau monte, où les habitants vivent et arrivent — c'est transformer deux séries officielles en outil d'anticipation.",
     "value_label": "Croissance annuelle",
     "unit": "%",
@@ -777,6 +778,7 @@
     "balance_down": "En déclin",
     "thesis": "Deux jeux officiels en regard : l'anomalie du niveau de la mer (m, réf. 1993–2012) et le taux de croissance de la population (%). Le croisement ne prouve pas une cause — il localise les lieux où l'adaptation se planifie.",
     "board": {
+      "dataset_label": "Données",
       "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",

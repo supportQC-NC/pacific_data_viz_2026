@@ -62,6 +62,24 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
+// Rattachement de chaque vue à un jeu — "sea" (mer), "population", ou "both"
+// (vues croisées qui restent visibles dans les deux). Modifiable librement.
+const DATASET_OF = {
+  band: "sea",
+  slope: "sea",
+  profile: "sea",
+  map: "sea",
+  coast: "sea",
+  coastmap: "sea",
+  spread: "sea",
+  growth: "population",
+  path: "population",
+  read: "both",
+  coastbal: "both",
+  bubble: "both",
+  coverage: "both",
+};
+
 function allSeries(d, lang, inR) {
   if (!d) return [];
   return d.areas
@@ -139,6 +157,7 @@ export default function Act3Territory() {
   const pop = useSelector(selectDataset("population"));
 
   const [region, setRegion] = useState("all");
+  const [dataset, setDataset] = useState("sea"); // sea | population
   const [yearIdx, setYearIdx] = useState(null); // index sur les années de la MER
   const [playing, setPlaying] = useState(false);
 
@@ -441,6 +460,15 @@ export default function Act3Territory() {
     dispatch(loadDataset("population"));
   }, [dispatch]);
 
+  const datasetItems = [
+    { id: "sea", label: t("act3.dataset.sea"), icon: "waves", tone: "accent" },
+    {
+      id: "population",
+      label: t("act3.dataset.pop"),
+      icon: "people",
+      tone: "warm",
+    },
+  ];
   const regionItems = REGION_KEYS.map((k) => ({
     id: k,
     label: t(`act1.filter.${k}`),
@@ -463,6 +491,14 @@ export default function Act3Territory() {
 
   const filtersEl = (
     <>
+      <DatasetSwitcher
+        label={t("act3.board.dataset_label")}
+        items={datasetItems}
+        value={dataset}
+        onChange={setDataset}
+        iconOnly
+        hideSpark
+      />
       <DatasetSwitcher
         label={t("act1.filter.title")}
         items={regionItems}
@@ -649,6 +685,7 @@ export default function Act3Territory() {
                   >
                     <OceanMap
                       data={[]}
+                      fitAreas={coastRows}
                       unit={seaUnit}
                       range={mapRange}
                       ramp="semantic"
@@ -794,6 +831,12 @@ export default function Act3Territory() {
         ]
       : [];
 
+  // Le jeu choisi décide des VUES : "both" reste visible dans les deux.
+  const visibleCharts = charts.filter((c) => {
+    const d = DATASET_OF[c.id] || "both";
+    return d === "both" || d === dataset;
+  });
+
   return (
     <ActBoard
       status={status}
@@ -805,9 +848,10 @@ export default function Act3Territory() {
       kpis={kpiItems}
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
-      charts={charts}
+      charts={visibleCharts}
       nav="carousel"
-      progress={{ index: 6, total: 11 }}
+      initialTab="coast"
+      progress={{ index: 7, total: 12 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act1.empty"),
