@@ -103,6 +103,8 @@ const ICONS = {
       <path d="M21 21v-1a6 6 0 0 0-4-5.7" />
     </>
   ),
+  // Santé : pouls (ECG)
+  pulse: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).

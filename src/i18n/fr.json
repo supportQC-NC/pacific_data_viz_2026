@@ -1985,6 +1985,7 @@
     },
     "thesis": "Eau potable gérée en sécurité (%, OMS/UNICEF) et incidence de la tuberculose (cas/100 000, OMS) : deux indicateurs ONU, estimés par modélisation. Polarités inverses — la couleur et le sens « avant→après » s'ajustent à la mesure choisie pour ne jamais induire en erreur.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",

@@ -1985,6 +1985,7 @@
     },
     "thesis": "Safely managed drinking water (%, WHO/UNICEF) and tuberculosis incidence (cases/100,000, WHO): two UN indicators, model-estimated. Opposite polarities — colour and the before→after direction adjust to the chosen measure so they never mislead.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

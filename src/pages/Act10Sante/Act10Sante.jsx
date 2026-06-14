@@ -19,6 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSante } from "../../services/santeApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
@@ -145,32 +146,6 @@ function subAverages(all, years, t) {
     .filter(Boolean);
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Act10Sante() {
   const { t, lang } = useLang();
   const tk = useThemeTokens();
@@ -202,16 +177,6 @@ export default function Act10Sante() {
 
   const waterAll = useMemo(() => toSeries(water, lang), [water, lang]);
   const tbAll = useMemo(() => toSeries(tb, lang), [tb, lang]);
-
-  const countryOptions = useMemo(() => {
-    const set = new Set([
-      ...waterAll.map((s) => s.area),
-      ...tbAll.map((s) => s.area),
-    ]);
-    return [...set]
-      .map((a) => ({ area: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [waterAll, tbAll, lang]);
 
   const areaVisible = useCallback(
     (a) =>
@@ -364,7 +329,6 @@ export default function Act10Sante() {
     ];
   }, [M.rank, M.unit, M.highTone, M.lowTone, metricDecimals, t]);
 
-
   const retry = useCallback(() => {
     setState({ status: "loading", data: null });
     fetchSante({ lang }).then((res) =>
@@ -375,18 +339,27 @@ export default function Act10Sante() {
     );
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({
-    v: k,
+  // Deux JEUX DE DONNÉES traités à égalité, basculés par icônes.
+  const metricItems = [
+    {
+      id: "water",
+      label: t("act10.board.metric_water"),
+      icon: "rain",
+      tone: "accent",
+    },
+    {
+      id: "tb",
+      label: t("act10.board.metric_tb"),
+      icon: "pulse",
+      tone: "warm",
+    },
+  ];
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
     label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
   }));
-  const metricOpts = [
-    { v: "water", label: t("act10.board.metric_water") },
-    { v: "tb", label: t("act10.board.metric_tb") },
-  ];
-  const countryOpts = [
-    { v: "all", label: t("act7.country_all") },
-    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
-  ];
 
   const status =
     state.status === "ready"
@@ -399,26 +372,24 @@ export default function Act10Sante() {
 
   const filtersEl = (
     <>
-      <Select
+      <DatasetSwitcher
         label={t("act10.board.metric_label")}
-        options={metricOpts}
+        items={metricItems}
         value={metric}
         onChange={setMetric}
+        iconOnly
+        hideSpark
       />
-      <Select
+      <DatasetSwitcher
         label={t("act1.filter.title")}
-        options={regionOpts}
+        items={regionItems}
         value={region}
         onChange={(k) => {
           setRegion(k);
           setCountry("all");
         }}
-      />
-      <Select
-        label={t("act7.country_label")}
-        options={countryOpts}
-        value={country}
-        onChange={setCountry}
+        dense
+        hideSpark
       />
     </>
   );
@@ -471,8 +442,14 @@ export default function Act10Sante() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act10.spotlight.ex_kicker"), text: t("act10.spotlight.ex_text") }}
-                link={{ href: "https://washdata.org/", label: t("act10.spotlight.link_label") }}
+                example={{
+                  kicker: t("act10.spotlight.ex_kicker"),
+                  text: t("act10.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://washdata.org/",
+                  label: t("act10.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -552,7 +529,10 @@ export default function Act10Sante() {
                   unit={M.unit}
                   scale="sequential"
                   decimals={metricDecimals}
-                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
+                  labels={{
+                    low: t("act6.heatmap_low"),
+                    high: t("act6.heatmap_high"),
+                  }}
                 />
               </div>
             ),
@@ -612,7 +592,10 @@ export default function Act10Sante() {
               <CoverageChart
                 series={M.series}
                 years={M.years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
@@ -631,6 +614,7 @@ export default function Act10Sante() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
       progress={{ index: 8, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -646,6 +630,7 @@ export default function Act10Sante() {
         conclusion: t("act10.board.conclusion"),
         backIntro: t("act10.board.back_intro"),
         reviseData: t("act10.board.revise_data"),
+        viewGroup: t("act10.board.group_view"),
       }}
       outro={{
         kicker: t("act10.outro.kicker"),
