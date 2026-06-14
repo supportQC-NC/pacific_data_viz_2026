@@ -14,12 +14,20 @@
 //     mer — les vides montrés, jamais comblés.
 // ============================================================
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
@@ -61,7 +69,9 @@ function allSeries(d, lang, inR) {
     .map((a) => ({
       area: a,
       name: pictName(a, lang),
-      values: (d.byArea[a] || []).filter((p) => Number.isFinite(p.value)).sort((x, y) => x.year - y.year),
+      values: (d.byArea[a] || [])
+        .filter((p) => Number.isFinite(p.value))
+        .sort((x, y) => x.year - y.year),
     }))
     .filter((s) => s.values.length);
 }
@@ -71,12 +81,16 @@ function pointsAt(d, year, lang, inR) {
     .filter((a) => isPict(a) && inR(a))
     .map((a) => {
       const p = (d.byArea[a] || []).find((q) => q.year === year);
-      return p && Number.isFinite(p.value) ? { area: a, name: pictName(a, lang), value: p.value, year } : null;
+      return p && Number.isFinite(p.value)
+        ? { area: a, name: pictName(a, lang), value: p.value, year }
+        : null;
     })
     .filter(Boolean);
 }
 function latestValue(series) {
-  return series.values.length ? series.values[series.values.length - 1].value : null;
+  return series.values.length
+    ? series.values[series.values.length - 1].value
+    : null;
 }
 function firstValue(series) {
   return series.values.length ? series.values[0].value : null;
@@ -96,26 +110,6 @@ function rankIndex(byArea) {
 }
 
 /* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select className="act1f__select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function YearSlider({ label, years, index, onChange }) {
   if (!years.length) return null;
   return (
@@ -180,20 +174,36 @@ export default function Act3Territory() {
     return () => clearInterval(id);
   }, [playing, seaYears]);
 
-  const currentSeaYear = seaYears.length && yearIdx != null ? seaYears[yearIdx] : null;
+  const currentSeaYear =
+    seaYears.length && yearIdx != null ? seaYears[yearIdx] : null;
 
-  const inRegion = useCallback((area) => region === "all" || REGION_OF[area] === region, [region]);
+  const inRegion = useCallback(
+    (area) => region === "all" || REGION_OF[area] === region,
+    [region],
+  );
 
   // Séries par territoire (mer & population), filtrées par sous-région.
-  const seaSeries = useMemo(() => allSeries(sea.data, lang, inRegion), [sea.data, lang, inRegion]);
-  const popSeries = useMemo(() => allSeries(pop.data, lang, inRegion), [pop.data, lang, inRegion]);
+  const seaSeries = useMemo(
+    () => allSeries(sea.data, lang, inRegion),
+    [sea.data, lang, inRegion],
+  );
+  const popSeries = useMemo(
+    () => allSeries(pop.data, lang, inRegion),
+    [pop.data, lang, inRegion],
+  );
 
   // Points « niveau de la mer » à l'année courante (carte + KPIs).
   const seaPoints = useMemo(
-    () => (sea.data && currentSeaYear != null ? pointsAt(sea.data, currentSeaYear, lang, inRegion) : []),
+    () =>
+      sea.data && currentSeaYear != null
+        ? pointsAt(sea.data, currentSeaYear, lang, inRegion)
+        : [],
     [sea.data, currentSeaYear, lang, inRegion],
   );
-  const seaMedian = useMemo(() => median(seaPoints.map((p) => p.value)) ?? 0, [seaPoints]);
+  const seaMedian = useMemo(
+    () => median(seaPoints.map((p) => p.value)) ?? 0,
+    [seaPoints],
+  );
 
   // Dernières valeurs par territoire.
   const seaLatestByArea = useMemo(() => {
@@ -223,7 +233,12 @@ export default function Act3Territory() {
     popSeries.forEach((s) => (names[s.area] = s.name));
     return Object.keys(names)
       .filter((a) => Number.isFinite(seaRank[a]) && Number.isFinite(popRank[a]))
-      .map((a) => ({ name: names[a], area: a, left: seaRank[a], right: popRank[a] }))
+      .map((a) => ({
+        name: names[a],
+        area: a,
+        left: seaRank[a],
+        right: popRank[a],
+      }))
       .sort((x, y) => x.left + x.right - (y.left + y.right)); // plus exposé en haut (Apex empile du bas)
   }, [seaLatestByArea, popLatestByArea, seaSeries, popSeries]);
 
@@ -242,7 +257,11 @@ export default function Act3Territory() {
     () =>
       popSeries
         .filter((s) => s.values.length >= 2)
-        .map((s) => ({ name: s.name, start: firstValue(s), end: latestValue(s) }))
+        .map((s) => ({
+          name: s.name,
+          start: firstValue(s),
+          end: latestValue(s),
+        }))
         .filter((r) => Number.isFinite(r.start) && Number.isFinite(r.end)),
     [popSeries],
   );
@@ -269,13 +288,22 @@ export default function Act3Territory() {
 
   // Croisement pression humaine x recul cotier (bulles, par sous-region).
   const bubbleGroups = useMemo(() => {
-    const colorByRegion = { melanesia: tk.accent, polynesia: tk.warm, micronesia: tk.positive };
+    const colorByRegion = {
+      melanesia: tk.accent,
+      polynesia: tk.warm,
+      micronesia: tk.positive,
+    };
     const acc = {};
     coastRows.forEach((d) => {
       const g = popLatestByArea[d.area];
       if (!Number.isFinite(g)) return;
       const reg = REGION_OF[d.area] || "all";
-      (acc[reg] = acc[reg] || []).push({ x: g, y: d.ero, z: d.n, name: d.name });
+      (acc[reg] = acc[reg] || []).push({
+        x: g,
+        y: d.ero,
+        z: d.n,
+        name: d.name,
+      });
     });
     return Object.entries(acc).map(([reg, points]) => ({
       name: t(`act1.filter.${reg}`),
@@ -288,7 +316,11 @@ export default function Act3Territory() {
   const slopeRows = useMemo(
     () =>
       seaSeries
-        .map((s) => ({ name: s.name, left: firstValue(s) * 1000, right: latestValue(s) * 1000 }))
+        .map((s) => ({
+          name: s.name,
+          left: firstValue(s) * 1000,
+          right: latestValue(s) * 1000,
+        }))
         .filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right)),
     [seaSeries],
   );
@@ -300,7 +332,10 @@ export default function Act3Territory() {
 
   // Dispersion des vitesses par territoire (boite a moustaches).
   const spreadRows = useMemo(
-    () => coastRows.filter((d) => Array.isArray(d.box)).map((d) => ({ name: d.name, box: d.box, n: d.n })),
+    () =>
+      coastRows
+        .filter((d) => Array.isArray(d.box))
+        .map((d) => ({ name: d.name, box: d.box, n: d.n })),
     [coastRows],
   );
 
@@ -312,20 +347,41 @@ export default function Act3Territory() {
     if (!ready || !seaPoints.length) return [];
     const sorted = [...seaPoints].sort((a, b) => a.value - b.value);
     const top = sorted[sorted.length - 1];
-    const medFirst = median(pointsAt(sea.data, firstSeaYear, lang, inRegion).map((p) => p.value));
-    const medLast = median(pointsAt(sea.data, lastSeaYear, lang, inRegion).map((p) => p.value));
-    const rise = Number.isFinite(medFirst) && Number.isFinite(medLast) ? medLast - medFirst : null;
+    const medFirst = median(
+      pointsAt(sea.data, firstSeaYear, lang, inRegion).map((p) => p.value),
+    );
+    const medLast = median(
+      pointsAt(sea.data, lastSeaYear, lang, inRegion).map((p) => p.value),
+    );
+    const rise =
+      Number.isFinite(medFirst) && Number.isFinite(medLast)
+        ? medLast - medFirst
+        : null;
     const popLatest = Object.values(popLatestByArea);
     const popMed = popLatest.length ? median(popLatest) : null;
     const items = [
-      { key: "sea", value: `${seaMedian > 0 ? "+" : ""}${fmt(seaMedian, 2)}`, unit: seaUnit, label: t("act3.board.kpi_sea_median"), tone: "accent" },
-      { key: "top", value: `${top.value > 0 ? "+" : ""}${fmt(top.value, 2)}`, unit: top.name, label: t("act3.board.kpi_most_exposed"), tone: "warm" },
+      {
+        key: "sea",
+        value: `${seaMedian > 0 ? "+" : ""}${fmt(seaMedian, 2)}`,
+        unit: seaUnit,
+        label: t("act3.board.kpi_sea_median"),
+        tone: "accent",
+      },
+      {
+        key: "top",
+        value: `${top.value > 0 ? "+" : ""}${fmt(top.value, 2)}`,
+        unit: top.name,
+        label: t("act3.board.kpi_most_exposed"),
+        tone: "warm",
+      },
     ];
     if (rise != null) {
       items.push({
         key: "rise",
         value: `${rise > 0 ? "+" : ""}${fmt(rise, 2)}`,
-        unit: firstSeaYear ? `${t("act3.board.kpi_since")} ${firstSeaYear}` : seaUnit,
+        unit: firstSeaYear
+          ? `${t("act3.board.kpi_since")} ${firstSeaYear}`
+          : seaUnit,
         label: t("act3.board.kpi_sea_rise"),
         tone: rise > 0 ? "warm" : "positive",
       });
@@ -350,7 +406,21 @@ export default function Act3Territory() {
       });
     }
     return items;
-  }, [ready, seaPoints, seaMedian, sea.data, firstSeaYear, lastSeaYear, lang, inRegion, popLatestByArea, coastRows, seaUnit, popUnit, t]);
+  }, [
+    ready,
+    seaPoints,
+    seaMedian,
+    sea.data,
+    firstSeaYear,
+    lastSeaYear,
+    lang,
+    inRegion,
+    popLatestByArea,
+    coastRows,
+    seaUnit,
+    popUnit,
+    t,
+  ]);
 
   const mapRange = useMemo(() => {
     if (!seaPoints.length) return { min: -0.2, max: 0.2 };
@@ -371,8 +441,19 @@ export default function Act3Territory() {
     dispatch(loadDataset("population"));
   }, [dispatch]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({ v: k, label: t(`act1.filter.${k}`) }));
-  const status = failed ? "error" : !ready ? "loading" : empty ? "empty" : "ready";
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
+    label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
+  }));
+  const status = failed
+    ? "error"
+    : !ready
+      ? "loading"
+      : empty
+        ? "empty"
+        : "ready";
 
   const noSeaSeries = seaSeries.length === 0;
   const noSeaPts = currentSeaYear != null && seaPoints.length === 0;
@@ -382,8 +463,23 @@ export default function Act3Territory() {
 
   const filtersEl = (
     <>
-      <Select label={t("act1.filter.title")} options={regionOpts} value={region} onChange={setRegion} />
-      <YearSlider label={t("act1.f.year")} years={seaYears} index={yearIdx} onChange={(i) => { setPlaying(false); setYearIdx(i); }} />
+      <DatasetSwitcher
+        label={t("act1.filter.title")}
+        items={regionItems}
+        value={region}
+        onChange={setRegion}
+        dense
+        hideSpark
+      />
+      <YearSlider
+        label={t("act1.f.year")}
+        years={seaYears}
+        index={yearIdx}
+        onChange={(i) => {
+          setPlaying(false);
+          setYearIdx(i);
+        }}
+      />
     </>
   );
 
@@ -413,7 +509,13 @@ export default function Act3Territory() {
             title: t("act3.viz.band_title"),
             finding: t("act3.board.band_find"),
             takeaway: t("act3.board.band_take"),
-            node: <AnomalyBandChart series={seaSeries} years={seaYears} unit={seaUnit} />,
+            node: (
+              <AnomalyBandChart
+                series={seaSeries}
+                years={seaYears}
+                unit={seaUnit}
+              />
+            ),
           },
           {
             id: "read",
@@ -426,8 +528,14 @@ export default function Act3Territory() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act3.spotlight.ex_kicker"), text: t("act3.spotlight.ex_text") }}
-                link={{ href: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global?tab=overview", label: t("act3.spotlight.link_label") }}
+                example={{
+                  kicker: t("act3.spotlight.ex_kicker"),
+                  text: t("act3.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://cds.climate.copernicus.eu/datasets/satellite-sea-level-global?tab=overview",
+                  label: t("act3.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -473,7 +581,14 @@ export default function Act3Territory() {
             title: t("act3.viz.pop_title"),
             finding: t("act3.board.pop_find"),
             takeaway: t("act3.board.pop_take"),
-            node: <ChangeChart rows={growthRows} unit={popUnit} direction="all" polarity="up_good" />,
+            node: (
+              <ChangeChart
+                rows={growthRows}
+                unit={popUnit}
+                direction="all"
+                polarity="up_good"
+              />
+            ),
           },
           {
             id: "map",
@@ -483,8 +598,16 @@ export default function Act3Territory() {
             finding: t("act3.board.map_find"),
             takeaway: t("act3.board.map_take"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
                   <OceanMap
                     data={seaPoints}
                     unit={seaUnit}
@@ -514,8 +637,16 @@ export default function Act3Territory() {
             takeaway: t("act3.board.coast_take"),
             node: (
               <div className="act6coast">
-                <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                  <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+                <ErrorBoundary
+                  fallback={
+                    <div className="board__state board__state--err">
+                      {t("scene.error")}
+                    </div>
+                  }
+                >
+                  <Suspense
+                    fallback={<Loader compact label={t("scene.loading")} />}
+                  >
                     <OceanMap
                       data={[]}
                       unit={seaUnit}
@@ -540,7 +671,9 @@ export default function Act3Territory() {
                       {t("act3.coast.legend_accretion")}
                     </span>
                   </div>
-                  <span className="act6coast__attr">{t("act3.coast.attr")}</span>
+                  <span className="act6coast__attr">
+                    {t("act3.coast.attr")}
+                  </span>
                 </div>
               </div>
             ),
@@ -569,8 +702,16 @@ export default function Act3Territory() {
             finding: t("act3.board.coastmap_find"),
             takeaway: t("act3.board.coastmap_take"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
                   <OceanMap
                     data={coastEroPoints}
                     unit={t("act3.coast.ero_unit")}
@@ -592,7 +733,12 @@ export default function Act3Territory() {
             title: t("act3.viz.spread_title"),
             finding: t("act3.board.spread_find"),
             takeaway: t("act3.board.spread_take"),
-            node: <CoastSpreadChart rows={spreadRows} unit={t("act3.coast.rate_unit")} />,
+            node: (
+              <CoastSpreadChart
+                rows={spreadRows}
+                unit={t("act3.coast.rate_unit")}
+              />
+            ),
           },
           {
             id: "bubble",
@@ -619,7 +765,12 @@ export default function Act3Territory() {
             finding: t("act3.board.path_find"),
             takeaway: t("act3.board.path_take"),
             node: (
-              <DumbbellChart rows={pathRows} unit={popUnit} startLabel={t("act3.path_start")} endLabel={t("act3.path_end")} />
+              <DumbbellChart
+                rows={pathRows}
+                unit={popUnit}
+                startLabel={t("act3.path_start")}
+                endLabel={t("act3.path_end")}
+              />
             ),
           },
           {
@@ -633,7 +784,10 @@ export default function Act3Territory() {
               <CoverageChart
                 series={seaSeries}
                 years={seaYears}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
@@ -652,6 +806,7 @@ export default function Act3Territory() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
       progress={{ index: 6, total: 11 }}
       labels={{
         loading: t("scene.loading"),
@@ -667,6 +822,7 @@ export default function Act3Territory() {
         conclusion: t("act3.board.conclusion"),
         backIntro: t("act3.board.back_intro"),
         reviseData: t("act3.board.revise_data"),
+        viewGroup: t("act3.board.group_view"),
       }}
       outro={{
         kicker: t("act3.outro.kicker"),
