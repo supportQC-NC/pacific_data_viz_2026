@@ -21,6 +21,7 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import CoverageChart from "../../components/charts/CoverageChart";
@@ -125,32 +126,6 @@ function raceFrom(series, years, lang) {
     .filter((r) => r.values.some((v) => v.value > 0));
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Act7Vivant() {
   const { t, lang } = useLang();
   const tk = useThemeTokens();
@@ -182,16 +157,6 @@ export default function Act7Vivant() {
 
   const rlAll = useMemo(() => toSeries(rl, lang), [rl, lang]);
   const fishAll = useMemo(() => toSeries(fish, lang), [fish, lang]);
-
-  const countryOptions = useMemo(() => {
-    const set = new Set([
-      ...rlAll.map((s) => s.area),
-      ...fishAll.map((s) => s.area),
-    ]);
-    return [...set]
-      .map((a) => ({ area: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [rlAll, fishAll, lang]);
 
   const areaVisible = useCallback(
     (a) =>
@@ -352,18 +317,27 @@ export default function Act7Vivant() {
     );
   }, [lang]);
 
-  const regionOpts = REGION_KEYS.map((k) => ({
-    v: k,
+  // Deux JEUX DE DONNÉES traités à égalité, basculés par icônes.
+  const metricItems = [
+    {
+      id: "redlist",
+      label: t("act7.board.metric_rl"),
+      icon: "leaf",
+      tone: "positive",
+    },
+    {
+      id: "fish",
+      label: t("act7.board.metric_fish"),
+      icon: "fish",
+      tone: "accent",
+    },
+  ];
+  const regionItems = REGION_KEYS.map((k) => ({
+    id: k,
     label: t(`act1.filter.${k}`),
+    icon: k === "all" ? "globe" : "map",
+    tone: "accent",
   }));
-  const metricOpts = [
-    { v: "redlist", label: t("act7.board.metric_rl") },
-    { v: "fish", label: t("act7.board.metric_fish") },
-  ];
-  const countryOpts = [
-    { v: "all", label: t("act7.country_all") },
-    ...countryOptions.map((c) => ({ v: c.area, label: c.name })),
-  ];
 
   const status =
     state.status === "ready"
@@ -376,26 +350,24 @@ export default function Act7Vivant() {
 
   const filtersEl = (
     <>
-      <Select
+      <DatasetSwitcher
         label={t("act7.board.metric_label")}
-        options={metricOpts}
+        items={metricItems}
         value={metric}
         onChange={setMetric}
+        iconOnly
+        hideSpark
       />
-      <Select
+      <DatasetSwitcher
         label={t("act1.filter.title")}
-        options={regionOpts}
+        items={regionItems}
         value={region}
         onChange={(k) => {
           setRegion(k);
           setCountry("all");
         }}
-      />
-      <Select
-        label={t("act7.country_label")}
-        options={countryOpts}
-        value={country}
-        onChange={setCountry}
+        dense
+        hideSpark
       />
     </>
   );
@@ -448,8 +420,14 @@ export default function Act7Vivant() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act7.spotlight.ex_kicker"), text: t("act7.spotlight.ex_text") }}
-                link={{ href: "https://stats.pacificdata.org/vis?df[ds]=ds:SPC2&df[id]=DF_SDG_15&df[ag]=SPC&df[vs]=3.0&dq=A.ER_RSK_LST.........", label: t("act7.spotlight.link_label") }}
+                example={{
+                  kicker: t("act7.spotlight.ex_kicker"),
+                  text: t("act7.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://stats.pacificdata.org/vis?df[ds]=ds:SPC2&df[id]=DF_SDG_15&df[ag]=SPC&df[vs]=3.0&dq=A.ER_RSK_LST.........",
+                  label: t("act7.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -529,7 +507,10 @@ export default function Act7Vivant() {
                   unit={M.unit}
                   scale="sequential"
                   decimals={metricDecimals}
-                  labels={{ low: t("act6.heatmap_low"), high: t("act6.heatmap_high") }}
+                  labels={{
+                    low: t("act6.heatmap_low"),
+                    high: t("act6.heatmap_high"),
+                  }}
                 />
               </div>
             ),
@@ -576,7 +557,10 @@ export default function Act7Vivant() {
               <CoverageChart
                 series={M.series}
                 years={M.years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
@@ -595,6 +579,7 @@ export default function Act7Vivant() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
       progress={{ index: 6, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -610,6 +595,7 @@ export default function Act7Vivant() {
         conclusion: t("act7.board.conclusion"),
         backIntro: t("act7.board.back_intro"),
         reviseData: t("act7.board.revise_data"),
+        viewGroup: t("act7.board.group_view"),
       }}
       outro={{
         kicker: t("act7.outro.kicker"),

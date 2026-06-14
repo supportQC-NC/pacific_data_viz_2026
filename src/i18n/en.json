@@ -1481,6 +1481,7 @@
     },
     "thesis": "Red List Index (0–1, SDG 15.5.1) and fisheries-management measures (cumulative count, FAOLEX): two official indicators of different natures. One estimates, the other counts — read side by side, without confusing an estimate with a tally or inferring a cause.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

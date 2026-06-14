@@ -71,6 +71,21 @@ const ICONS = {
       <path d="M5 15h14" />
     </>
   ),
+  // Indice (biodiversité / Liste Rouge) : feuille
+  leaf: (
+    <>
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.52-4.48 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
+    </>
+  ),
+  // Mesures (gestion halieutique) : poisson
+  fish: (
+    <>
+      <path d="M16.5 12c0 2.8-3.2 5-7.2 5-2.6 0-4.9-1-6.3-2.5 1.4-1.4 1.4-3.6 0-5C4.4 8 6.7 7 9.3 7c4 0 7.2 2.2 7.2 5z" />
+      <path d="M16.5 12 21 8.5v7z" />
+      <circle cx="7" cy="11" r="0.7" />
+    </>
+  ),
 };
 
 // Petite sparkline normalisée (silhouette de la trajectoire du jeu).

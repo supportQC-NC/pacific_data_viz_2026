@@ -1481,6 +1481,7 @@
     },
     "thesis": "Indice Liste Rouge (0–1, SDG 15.5.1) et mesures de gestion des pêches (décompte cumulatif, FAOLEX) : deux indicateurs officiels de natures différentes. Le premier estime, le second dénombre — on les lit côte à côte, sans confondre une estimation avec un compte ni en déduire une cause.",
     "board": {
+      "group_view": "Vue",
       "switch_hint": "← → pour changer de vue",
       "signature": "graphe signature",
       "takeaway_kicker": "À retenir",
