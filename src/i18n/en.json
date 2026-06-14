@@ -1338,6 +1338,7 @@
     },
     "thesis": "Yields (kg/ha, kg/animal) and land cover (CALCI index, 2015 = 100): two official measures, each to be read for what it is — productivity on one side, a land-use index on the other. Yields rarely move for a single reason: here, we first learn to read them.",
     "board": {
+      "group_view": "View",
       "switch_hint": "← → to switch view",
       "signature": "signature chart",
       "takeaway_kicker": "Takeaway",

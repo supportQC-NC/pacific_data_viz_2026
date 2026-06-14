@@ -746,6 +746,9 @@
   .board--carousel .board__rail .act1f__select {
     min-width: 11rem;
   }
+  .board--carousel .board__rail .act1f--year {
+    min-width: 13rem;
+  }
   .board--carousel .dsw__list {
     flex-direction: row;
     flex-wrap: wrap;

@@ -774,6 +774,10 @@
   .board--carousel .board__rail .act1f__select {
     min-width: 11rem;
   }
+  // Curseur d'année (Act6) : assez de place pour rester manipulable.
+  .board--carousel .board__rail .act1f--year {
+    min-width: 13rem;
+  }
 
   // Les listes de filtres passent en LIGNE.
   .board--carousel .dsw__list {

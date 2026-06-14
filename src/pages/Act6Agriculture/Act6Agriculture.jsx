@@ -856,6 +856,7 @@ export default function Act6Agriculture() {
       kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      nav="carousel"
       progress={{ index: 5, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -871,6 +872,7 @@ export default function Act6Agriculture() {
         conclusion: t("act6.board.conclusion"),
         backIntro: t("act6.board.back_intro"),
         reviseData: t("act6.board.revise_data"),
+        viewGroup: t("act6.board.group_view"),
       }}
       outro={{
         kicker: t("act6.outro.kicker"),
