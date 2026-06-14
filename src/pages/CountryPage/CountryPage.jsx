@@ -30,6 +30,7 @@ import AnnualBarsChart from "../../components/charts/AnnualBarsChart";
 import StackedColsChart from "../../components/charts/StackedColsChart";
 import DualAxisChart from "../../components/charts/DualAxisChart";
 import ChartCarousel from "../../components/ChartCarousel/ChartCarousel";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import CountryMiniMap from "../../components/CountryMiniMap/CountryMiniMap";
 import Loader from "../../components/Loader/Loader";
 import "./CountryPage.scss";
@@ -171,6 +172,13 @@ export default function CountryPage() {
   const [tick, setTick] = useState(0);
   const [graceOver, setGraceOver] = useState(false);
   const [chIdx, setChIdx] = useState(0);
+  const [lens, setLens] = useState("coast");
+
+  // Mode plein écran : masque header/footer globaux le temps de la page.
+  useEffect(() => {
+    document.body.classList.add("country-immersive");
+    return () => document.body.classList.remove("country-immersive");
+  }, []);
 
   const nf = lang === "fr" ? "fr-FR" : "en-US";
   const valid = isPict(code);
@@ -533,11 +541,90 @@ export default function CountryPage() {
   const safeIdx = Math.max(0, Math.min(chIdx, chapters.length - 1));
   const activeCh = chapters[safeIdx];
 
+  // Navigation pays précédent / suivant (liste ordonnée, bouclée).
+  const CODES = Object.keys(PICT_NAMES);
+  const idxC = CODES.indexOf(code);
+  const prevCode = idxC > 0 ? CODES[idxC - 1] : CODES[CODES.length - 1];
+  const nextCode =
+    idxC >= 0 && idxC < CODES.length - 1 ? CODES[idxC + 1] : CODES[0];
+
+  // Lentilles = la SYNTHÈSE DES ACTES, thème par thème, pour ce territoire.
+  const CH_ICON = {
+    warming: "temp",
+    sea: "waves",
+    rain: "rain",
+    carbon: "cloud",
+    energy: "bolt",
+    people: "people",
+    health: "pulse",
+    nature: "leaf",
+    crops: "crop",
+    livestock: "livestock",
+    shocks: "alert",
+  };
+  const lensItems = [];
+  if (coast) {
+    lensItems.push({
+      id: "coast",
+      label: tf("country.coast.label", "Trait de côte", "Coastline"),
+      icon: "shore",
+      tone: coastTone,
+    });
+  }
+  chapters.forEach((ch) => {
+    lensItems.push({
+      id: ch.key,
+      label: t(`country.story.${ch.key}.title`),
+      icon: CH_ICON[ch.key] || "generic",
+      tone: keyTone(ch.feature.id, ch.feature.trend),
+    });
+  });
+  const activeLens = lensItems.some((i) => i.id === lens)
+    ? lens
+    : lensItems[0] && lensItems[0].id;
+
+  // Sélectionner une lentille synchronise le chapitre détaillé plus bas.
+  const onLens = (id) => {
+    setLens(id);
+    const i = chapters.findIndex((c) => c.key === id);
+    if (i >= 0) setChIdx(i);
+  };
+
+  let lensCard = null;
+  if (activeLens === "coast" && coast) {
+    lensCard = {
+      label: tf("country.coast.label", "Trait de côte", "Coastline"),
+      value: `${coast.bal > 0 ? "+" : coast.bal < 0 ? "\u2212" : ""}${fmt(Math.abs(coast.bal), 0)}`,
+      unit: "%",
+      delta: `${fmt(coast.ero, 0)}\u00a0% ${tf("country.coast.eroding", "en recul", "eroding")}`,
+      tone: coastTone,
+    };
+  } else {
+    const ch = chapters.find((c) => c.key === activeLens);
+    if (ch) {
+      const f = ch.feature;
+      const delta =
+        !ANOMALY.has(f.id) && f.trendPct != null
+          ? `${f.trendPct > 0 ? "+" : "\u2212"}${Math.round(Math.abs(f.trendPct))}\u00a0%`
+          : f.multi
+            ? `${f.trend > 0 ? "+" : "\u2212"}${fmt(Math.abs(f.trend), f.dec)}`
+            : "";
+      lensCard = {
+        label: f.label,
+        value: fmt(f.last, f.dec),
+        unit: f.unit,
+        delta,
+        year: f.lastYear,
+        tone: keyTone(f.id, f.trend),
+      };
+    }
+  }
+
   return (
     <main className="country">
       <div className="country__glow" aria-hidden="true" />
 
-      {/* 1. Hero immersif plein écran : carte 3D + points trait de côte + aura */}
+      {/* 1. Explorateur plein écran : carte 3D + points trait de côte + switch data */}
       <header className="cpHero">
         <div className="cpHero__map">
           <CountryMiniMap
@@ -552,6 +639,61 @@ export default function CountryPage() {
         <div className="cpHero__scrim" aria-hidden="true" />
         <div className="cpHero__grain" aria-hidden="true" />
 
+        {/* Navigation territoire précédent / suivant */}
+        <Link
+          to={`/territoire/${prevCode}`}
+          className="cpNav cpNav--prev"
+          aria-label={pictName(prevCode, lang)}
+          title={pictName(prevCode, lang)}
+        >
+          <span className="cpNav__chev" aria-hidden="true">
+            ‹
+          </span>
+          <span className="cpNav__name">{pictName(prevCode, lang)}</span>
+        </Link>
+        <Link
+          to={`/territoire/${nextCode}`}
+          className="cpNav cpNav--next"
+          aria-label={pictName(nextCode, lang)}
+          title={pictName(nextCode, lang)}
+        >
+          <span className="cpNav__name">{pictName(nextCode, lang)}</span>
+          <span className="cpNav__chev" aria-hidden="true">
+            ›
+          </span>
+        </Link>
+
+        {/* Boutons switch : quelle donnée afficher */}
+        {lensItems.length ? (
+          <div className="cpLensBar">
+            <DatasetSwitcher
+              items={lensItems}
+              value={activeLens}
+              onChange={onLens}
+              iconOnly
+              hideSpark
+            />
+          </div>
+        ) : null}
+
+        {/* Lecteur de la donnée sélectionnée, posé sur la carte (sans graphe) */}
+        {lensCard && activeLens !== "coast" ? (
+          <div className={`cpLens cpLens--${lensCard.tone}`}>
+            <p className="cpLens__label">{lensCard.label}</p>
+            <p className="cpLens__metric">
+              <span className="cpLens__val">{lensCard.value}</span>
+              {lensCard.unit ? (
+                <span className="cpLens__unit">{lensCard.unit}</span>
+              ) : null}
+            </p>
+            <p className="cpLens__delta">
+              {lensCard.delta}
+              {lensCard.year ? ` · ${lensCard.year}` : ""}
+            </p>
+          </div>
+        ) : null}
+
+        {/* Indicateur littoral permanent */}
         {coast ? (
           <div className={`cpCoast cpCoast--${coastTone}`}>
             <span className="cpCoast__dot" aria-hidden="true" />
@@ -564,7 +706,8 @@ export default function CountryPage() {
           </div>
         ) : null}
 
-        <div className="cpHero__overlay">
+        {/* Identité compacte (nom en petit, sans phrase) */}
+        <div className="cpHero__overlay cpHero__overlay--mini">
           <p className="eyebrow cpHero__eyebrow">{t("country.eyebrow")}</p>
           <div className="cpHero__id">
             <span className="cpHero__flag">
@@ -578,9 +721,10 @@ export default function CountryPage() {
                 }}
               />
             </span>
-            <h1 className="cpHero__title">{pictName(code, lang)}</h1>
+            <h1 className="cpHero__title cpHero__title--sm">
+              {pictName(code, lang)}
+            </h1>
           </div>
-          <p className="cpHero__lead">{t("country.lead")}</p>
         </div>
       </header>
 

@@ -4,6 +4,12 @@
    100 % tokens (thème light/dark géré par les variables). Aucune valeur en dur.
    ============================================================ */
 
+/* Mode plein écran : header/footer globaux masqués sur la page territoire. */
+body.country-immersive .header,
+body.country-immersive .footer {
+  display: none !important;
+}
+
 .country {
   position: relative;
   min-height: 100vh;
@@ -292,6 +298,189 @@
   100% {
     transform: scale(1.6);
     opacity: 0;
+  }
+}
+
+/* ---------- Identité compacte (nom en petit, sans phrase) ---------- */
+.cpHero__overlay--mini {
+  gap: var(--sp-1);
+  padding: clamp(var(--sp-5), 3vw, var(--sp-8));
+}
+
+.cpHero__title--sm {
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.05;
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--c-bg) 78%, transparent);
+}
+
+/* ---------- Navigation territoire précédent / suivant ---------- */
+.cpNav {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: 38vw;
+  padding: var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--c-bg) 55%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--c-text-soft);
+  text-decoration: none;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  &--prev {
+    left: var(--sp-5);
+  }
+  &--next {
+    right: var(--sp-5);
+  }
+
+  &:hover {
+    color: var(--c-accent);
+    border-color: color-mix(in srgb, var(--c-accent) 55%, var(--c-line));
+    background: color-mix(in srgb, var(--c-bg) 72%, transparent);
+  }
+}
+
+.cpNav__chev {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  text-align: center;
+}
+
+.cpNav__name {
+  font: var(--fw-med) var(--fs-sm) / 1 var(--font-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width var(--t-fast) var(--ease-out),
+    opacity var(--t-fast) var(--ease-out);
+}
+
+.cpNav:hover .cpNav__name {
+  max-width: 13rem;
+  opacity: 1;
+}
+
+/* ---------- Barre de switch : quelle donnée afficher ---------- */
+.cpLensBar {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: var(--sp-6);
+  transform: translateX(-50%);
+  max-width: min(92vw, 42rem);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--c-bg) 58%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow-x: auto;
+}
+
+.cpLensBar .dsw__list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.cpLensBar .dsw__label {
+  display: none;
+}
+
+/* ---------- HUD : donnée sélectionnée posée sur la carte ---------- */
+.cpLens {
+  --tone: var(--c-accent);
+  position: absolute;
+  z-index: 4;
+  top: var(--sp-6);
+  left: var(--sp-6);
+  width: clamp(13rem, 24vw, 18rem);
+  padding: var(--sp-5);
+  border: var(--border-hair) solid
+    color-mix(in srgb, var(--tone) 40%, var(--c-line));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--c-bg) 60%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  &--warm {
+    --tone: var(--c-warm);
+  }
+  &--positive {
+    --tone: var(--c-positive);
+  }
+  &--negative {
+    --tone: var(--c-negative);
+  }
+  &--accent {
+    --tone: var(--c-accent);
+  }
+}
+
+.cpLens__label {
+  margin: 0;
+  font: var(--fw-med) var(--fs-xs) / 1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+}
+
+.cpLens__metric {
+  margin: var(--sp-2) 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+}
+
+.cpLens__val {
+  font: var(--fw-semi) var(--fs-xl) / 1 var(--font-display);
+  color: var(--c-text);
+  letter-spacing: var(--ls-tight);
+}
+
+.cpLens__unit {
+  font: var(--fw-med) var(--fs-xs) / 1 var(--font-mono);
+  color: var(--c-text-mute);
+}
+
+.cpLens__delta {
+  margin: var(--sp-1) 0 0;
+  font: var(--fw-med) var(--fs-xs) / 1.2 var(--font-mono);
+  color: var(--tone);
+  letter-spacing: var(--ls-wide);
+}
+
+.cpLens__chart {
+  margin-top: var(--sp-3);
+  height: 6.5rem;
+}
+
+@media (max-width: 640px) {
+  .cpLens {
+    width: clamp(11rem, 60vw, 15rem);
+    padding: var(--sp-4);
+  }
+  .cpLens__chart {
+    display: none;
+  }
+  .cpHero__overlay--mini {
+    padding-bottom: calc(var(--sp-8) + 3rem);
   }
 }
 

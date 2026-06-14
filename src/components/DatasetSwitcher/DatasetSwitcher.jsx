@@ -115,6 +115,25 @@ const ICONS = {
   ),
   // Mix électrique : éclair
   bolt: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />,
+  // Trait de côte : vague sur rivage
+  shore: (
+    <>
+      <path d="M2 16c2.7 0 2.7-2.2 5.3-2.2S10 16 12.7 16s2.7-2.2 5.3-2.2S20.7 16 22 16" />
+      <path d="M2 20h20" />
+    </>
+  ),
+  // Carbone : nuage d'émissions
+  cloud: (
+    <path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.5 9.5 4.5 4.5 0 0 0 7 19h10.5z" />
+  ),
+  // Chocs / catastrophes : alerte
+  alert: (
+    <>
+      <path d="M10.3 4.3 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+    </>
+  ),
   // Tourisme : avion
   plane: (
     <>
