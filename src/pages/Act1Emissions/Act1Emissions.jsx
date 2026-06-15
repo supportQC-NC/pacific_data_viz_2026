@@ -44,7 +44,7 @@ import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import ScatterChart from "../../components/charts/ScatterChart";
-import ChangeChart from "../../components/charts/ChangeChart";
+import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import {
   median,
   fmt,
@@ -263,21 +263,6 @@ export default function Act1Emissions() {
 
   // Évolution nette depuis le début des données (dernière − première valeur).
   // delta < 0 = baisse (s'améliore) ; delta > 0 = hausse (empire).
-  const changeRows = useMemo(
-    () =>
-      regionSeries
-        .filter((s) => s.values.length >= 2)
-        .map((s) => ({
-          name: s.name,
-          delta: Number(
-            (s.values[s.values.length - 1].value - s.values[0].value).toFixed(
-              2,
-            ),
-          ),
-        })),
-    [regionSeries],
-  );
-
   // Chiffres-chocs (PDH).
   const kpiItems = useMemo(() => {
     const pts = pointsFor(currentYear);
@@ -515,23 +500,31 @@ export default function Act1Emissions() {
                   ]}
                 />
                 <div className="chartview__chart">
-                  <RiverChart subAvg={trendSeries} years={years} />
+                  <RiverChart
+                    subAvg={trendSeries}
+                    years={years}
+                    compactLegend
+                  />
                 </div>
               </div>
             ),
           },
           {
             id: "change",
-            empty: changeRows.length === 0,
+            empty: noSeries,
             tab: t("act1.board.tab_change"),
             title: t("act1.board.change_title"),
             finding: t("act1.board.change_find"),
             takeaway: t("act1.board.change_take"),
             node: (
-              <ChangeChart
-                rows={changeRows}
+              <SmallMultiples
+                series={regionSeries}
+                years={years}
                 unit={t("act1.unit")}
-                direction="all"
+                labels={{
+                  last: tf("act1.sm.last", "dernière", "latest"),
+                  close: tf("act1.sm.close", "Fermer", "Close"),
+                }}
               />
             ),
           },
