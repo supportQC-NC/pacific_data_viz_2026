@@ -21,12 +21,11 @@
     color: var(--c-text-mute);
   }
 
-  // Piste pleine largeur avec filet de base ; scroll en repli si trop étroit.
+  // Piste pleine largeur ; scroll en repli si trop étroit.
   &__track {
     position: relative;
     display: flex;
     width: 100%;
-    border-bottom: var(--border-hair) solid var(--c-line);
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none;
@@ -38,7 +37,10 @@
   }
 
   // Onglet : grandit pour remplir la largeur, sans écraser le texte.
+  // (position relative + z-index : le texte passe AU-DESSUS de la pilule.)
   &__item {
+    position: relative;
+    z-index: 1;
     flex: 1 1 0;
     min-width: max-content;
     display: inline-flex;
@@ -47,7 +49,7 @@
     gap: var(--sp-2);
     padding: var(--sp-3) var(--sp-4);
     border: 0;
-    border-radius: var(--r-sm) var(--r-sm) 0 0;
+    border-radius: var(--r-sm);
     background: transparent;
     color: var(--c-text-mute);
     font-family: var(--font-body);
@@ -59,16 +61,19 @@
     transition: color var(--t-fast) var(--ease-out),
       background var(--t-fast) var(--ease-out);
 
-    &:hover {
+    &:hover:not(.is-active) {
       color: var(--c-text);
       background: color-mix(in srgb, var(--c-surface) 45%, transparent);
     }
+    // Vue active : texte sombre pour contraster avec la pilule colorée.
     &.is-active {
-      color: var(--c-accent);
+      color: var(--c-bg);
     }
-    &.is-signature.is-active {
-      color: var(--c-warm);
-    }
+  }
+
+  // Étoile : sombre quand l'onglet est actif (sinon invisible sur la pilule).
+  &__item.is-active &__star {
+    color: var(--c-bg);
   }
 
   &__star {
@@ -81,16 +86,18 @@
     font-weight: var(--fw-semi, 600);
   }
 
-  // Indicateur glissant (position posée en JS via ref).
+  // Pilule glissante : fond coloré PLEINE HAUTEUR derrière l'onglet actif
+  // (position posée en JS via ref). z-index 0 → sous le texte des onglets.
   &__indicator {
     position: absolute;
     left: 0;
-    bottom: -1px;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
     width: 0;
-    height: 2px;
-    border-radius: var(--r-pill);
+    border-radius: var(--r-sm);
     background: var(--c-accent);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--c-accent) 55%, transparent);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--c-accent) 32%, transparent);
     transition: transform 0.34s var(--ease-out), width 0.34s var(--ease-out),
       background var(--t-fast) var(--ease-out),
       box-shadow var(--t-fast) var(--ease-out);
@@ -98,7 +105,7 @@
 
     &.is-signature {
       background: var(--c-warm);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--c-warm) 55%, transparent);
+      box-shadow: 0 6px 18px color-mix(in srgb, var(--c-warm) 32%, transparent);
     }
   }
 }
