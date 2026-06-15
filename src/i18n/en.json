@@ -2056,16 +2056,20 @@
     }
   },
   "act11": {
+    "bubble": {
+      "size": "Coastline",
+      "hint": "Hover a bubble for details"
+    },
     "corr": {
-  "pos": "Strike together (+)",
-  "neg": "Pull apart (−)",
-  "hint": "Hover a cell for r and n"
-},
+      "pos": "Strike together (+)",
+      "neg": "Pull apart (−)",
+      "hint": "Hover a cell for r and n"
+    },
     "parallel": {
-  "hi": "High average stress",
-  "lo": "Lower stress",
-  "hint": "Hover a territory to trace its profile"
-},
+      "hi": "High average stress",
+      "lo": "Lower stress",
+      "hint": "Hover a territory to trace its profile"
+    },
     "radial": {
       "hint": "Hover a bar for details"
     },
@@ -2160,6 +2164,10 @@
     "gauge_sub": "median composite index of the current selection",
     "gauge_label": "median vulnerability",
     "story": {
+      "bubble_k": "Synthesis · The stakes",
+      "bubble_title": "And how much coast at stake",
+      "bubble_text": "The same paradox, but each bubble is sized by the extent of its coastline. Left, the low emitters; top, the most vulnerable. The large bubbles in the shaded quadrant say it all: not abstract points but kilometres of inhabited coast, exposed by territories that emitted almost nothing.",
+      "bubble_m": "Method: X = per-capita GHG emissions (t CO₂e), Y = composite vulnerability index (0–100), size ∝ coastline extent (number of tracked coast segments, an approximate proxy). Shaded quadrant = low emissions and high vulnerability. Colour by sub-region. Sources: Pacific Data Hub (SPC); coastline from Digital Earth Pacific.",
       "mix_hint": "Hover a source to follow it through the flow",
       "top_m": "Method: the 8 territories with the highest composite index (0–100), shown as a lollipop to stay readable despite long names. This isn't the full list — it's the top of the ranking. The index combines 6 stresses with equal weights, normalised by rank within the Pacific.",
       "mix_share": "· share",
@@ -2288,15 +2296,14 @@
       "swarm_m": "Method: each circle is a territory, placed on the composite index axis (0–100). No averaging: you see the real distribution — the pack and the outliers. Same scored territories as the other views.",
       "top_m": "Method: the 6 territories with the highest composite index (0–100), shown as rings to stay legible. This is not the full list: it is the top of the ranking. The index combines 6 stresses at equal weight, normalised by rank within the Pacific.",
       "studio_m": "Method: you adjust each dimension's weight (0 = removed, 1 = normal, 2 = doubled); the composite index is recomputed live as the weighted average of available dimensions, then re-normalised. No weighting is neutral — that is the point of this view.",
-        "parallel_k": "Synthesis · Profiles",
-"parallel_title": "Each island's fingerprint",
-"parallel_text": "Each line is a territory crossing the six climate stresses, lowest to highest. Follow one: you instantly see whether the island is hit on every front at once — the line stays high from axis to axis — or only on one or two. Coral lines pile on the stresses; cyan ones fare better. When several lines rise and fall together, two stresses are moving in step.",
-"parallel_m": "Method: each indicator is normalised by percentile rank (0–100) within the Pacific, then plotted on its own axis. Colour reflects the territory's average stress across available axes; a missing segment marks unavailable data. Source: Pacific Data Hub (SPC).",
-"corr_k": "Synthesis · Correlations",
-"corr_title": "Which stresses strike together",
-"corr_text": "Each cell crosses two stresses and measures whether they move together across the Pacific. In coral, two pressures that rise together: territories hit hard by one are often hit by the other. In cyan, two pressures that pull apart. The bolder the colour, the clearer the link. Across only about fifteen territories it's an indicative read — but it reveals the hidden structure of vulnerability.",
-"corr_m": "Method: Pearson correlation between percentile ranks (≈ Spearman), for each pair of indicators, over territories where both are available (n shown on hover). Diagonal neutralised. Colour runs from cyan (−1) through neutral to coral (+1). Small sample: read it as a signal, not a proof. Source: Pacific Data Hub (SPC)."
-      
+      "parallel_k": "Synthesis · Profiles",
+      "parallel_title": "Each island's fingerprint",
+      "parallel_text": "Each line is a territory crossing the six climate stresses, lowest to highest. Follow one: you instantly see whether the island is hit on every front at once — the line stays high from axis to axis — or only on one or two. Coral lines pile on the stresses; cyan ones fare better. When several lines rise and fall together, two stresses are moving in step.",
+      "parallel_m": "Method: each indicator is normalised by percentile rank (0–100) within the Pacific, then plotted on its own axis. Colour reflects the territory's average stress across available axes; a missing segment marks unavailable data. Source: Pacific Data Hub (SPC).",
+      "corr_k": "Synthesis · Correlations",
+      "corr_title": "Which stresses strike together",
+      "corr_text": "Each cell crosses two stresses and measures whether they move together across the Pacific. In coral, two pressures that rise together: territories hit hard by one are often hit by the other. In cyan, two pressures that pull apart. The bolder the colour, the clearer the link. Across only about fifteen territories it's an indicative read — but it reveals the hidden structure of vulnerability.",
+      "corr_m": "Method: Pearson correlation between percentile ranks (≈ Spearman), for each pair of indicators, over territories where both are available (n shown on hover). Diagonal neutralised. Colour runs from cyan (−1) through neutral to coral (+1). Small sample: read it as a signal, not a proof. Source: Pacific Data Hub (SPC)."
     },
     "outro": {
       "kicker": "End of the journey",

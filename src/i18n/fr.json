@@ -2168,7 +2168,15 @@
     "gauge_title": "La vulnérabilité médiane",
     "gauge_sub": "indice composite médian de la sélection courante",
     "gauge_label": "vulnérabilité médiane",
+    "bubble": {
+  "size": "Littoral",
+  "hint": "Survolez une bulle pour le détail"
+    },
     "story": {
+      "bubble_k": "Synthèse · L'enjeu",
+"bubble_title": "Et combien de littoral en jeu",
+"bubble_text": "Le même paradoxe, mais chaque bulle est dimensionnée par l'ampleur de son littoral. À gauche, les faibles émetteurs ; en haut, les plus vulnérables. Les grosses bulles posées dans le cadran ombré disent l'essentiel : ce ne sont pas des points abstraits, ce sont des kilomètres de côtes habitées, exposées par des territoires qui n'ont presque rien émis.",
+"bubble_m": "Calcul : X = émissions de GES par habitant (t éq. CO₂), Y = indice composite de vulnérabilité (0–100), taille ∝ ampleur du littoral (nombre de segments de côte suivis, proxy approché). Cadran ombré = faibles émissions et forte vulnérabilité. Couleur par sous-région. Sources : Pacific Data Hub (SPC) ; trait de côte Digital Earth Pacific.",
       "corr_k": "Synthèse · Corrélations",
 "corr_title": "Quels stress frappent ensemble",
 "corr_text": "Chaque case croise deux stress et mesure s'ils vont de pair à travers le Pacifique. En corail, deux pressions qui montent ensemble : les territoires durement touchés par l'une le sont souvent par l'autre. En cyan, deux pressions qui s'opposent. Plus la couleur est franche, plus le lien est net. À l'échelle d'une quinzaine de territoires, c'est une lecture indicative — mais elle révèle la structure cachée de la vulnérabilité.",

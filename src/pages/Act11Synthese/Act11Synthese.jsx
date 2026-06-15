@@ -19,6 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSynthese } from "../../services/syntheseApi";
 import PICT_GEO from "../../data/pictGeo";
+import COASTLINE_BY_TERRITORY from "../../data/coastlineByTerritory";
 import Loader from "../../components/Loader/Loader";
 import AtlasMap from "../../components/AtlasMap/AtlasMap";
 import ParadoxScatterLive from "../../components/charts/PardoxScatterLive";
@@ -33,6 +34,7 @@ import StreamMix from "../../components/charts/StreamMix/StreamMix";
 import Lollipop from "../../components/charts/Lollipop/Lollipop";
 import ParallelPlot from "../../components/charts/ParallelPlot/ParallelPlot";
 import Correlogram from "../../components/charts/Correlogram/Correlogram";
+import BubblePlot from "../../components/charts/BubblePlot/BubblePlot";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
@@ -736,6 +738,47 @@ export default function Act11Synthese() {
     return { labels, mat, counts };
   }, [activeVuln, normByInd, t]);
 
+  // Ampleur du littoral par territoire (proxy : nb de segments de côte suivis).
+  const coastOf = useMemo(() => {
+    const m = {};
+    COASTLINE_BY_TERRITORY.forEach((d) => {
+      m[d.area] = d.n;
+    });
+    return m;
+  }, []);
+
+  // Bulles du paradoxe : X = émissions, Y = vulnérabilité, taille = littoral.
+  const bubbleGroups = useMemo(() => {
+    const emi = latest.emissions || {};
+    const pal = {
+      melanesia: tk.accent,
+      polynesia: tk.warm,
+      micronesia: tk.positive,
+      other: tk.secondary,
+    };
+    return Object.keys(SUBREGIONS)
+      .map((reg) => ({
+        name: t(`act1.filter.${reg}`),
+        color: pal[reg],
+        points: areas
+          .filter(
+            (a) =>
+              REGION_OF[a] === reg &&
+              Number.isFinite(emi[a]) &&
+              Number.isFinite(composite[a]) &&
+              Number.isFinite(coastOf[a]),
+          )
+          .map((a) => ({
+            x: Number(emi[a].toFixed(2)),
+            y: Math.round(composite[a]),
+            r: coastOf[a],
+            name: pictName(a, lang),
+            code: a,
+          })),
+      }))
+      .filter((g) => g.points.length);
+  }, [areas, latest, composite, coastOf, lang, t, tk]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -903,6 +946,26 @@ export default function Act11Synthese() {
         />
       ),
     });
+    if (bubbleGroups.length) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.bubble_k"),
+        title: t("act11.story.bubble_title"),
+        text: t("act11.story.bubble_text"),
+        method: t("act11.story.bubble_m"),
+        visual: (
+          <BubblePlot
+            groups={bubbleGroups}
+            medianX={medianX}
+            medianY={medianY}
+            xName={t("act11.scatter_x_unit")}
+            yName={t("act11.scatter_y")}
+            sizeName={t("act11.bubble.size")}
+            hintLabel={t("act11.bubble.hint")}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.reversal_k"),
@@ -1188,6 +1251,7 @@ export default function Act11Synthese() {
     powerMixSeries,
     powerMixYears,
     corr,
+    bubbleGroups,
   ]);
 
   const total = scenes.length;

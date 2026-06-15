@@ -1,0 +1,159 @@
+// src/components/charts/BubblePlot/BubblePlot.scss
+// ============================================================
+// Styles du bubble plot. La couleur de bulle (--c) vient de la sous-région ;
+// le reste passe par les tokens du thème.
+// ============================================================
+
+.bub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- cadran injustice ---------- */
+  &__inj {
+    fill: var(--c-warm);
+    opacity: 0.07;
+  }
+
+  /* ---------- grille / axes ---------- */
+  &__grid {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__med {
+    stroke: var(--c-line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 4 5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__ytick,
+  &__xtick {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  &__axis-title {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- bulles ---------- */
+  &__dot {
+    fill: var(--c, var(--c-accent));
+    fill-opacity: 0.55;
+    stroke: var(--c, var(--c-accent));
+    stroke-width: 1.5;
+    cursor: pointer;
+    outline: none;
+    transition:
+      fill-opacity var(--t-fast) var(--ease-out),
+      opacity var(--t-fast) var(--ease-out);
+
+    &.is-dim {
+      opacity: 0.3;
+    }
+
+    &.is-active {
+      fill-opacity: 0.85;
+      stroke: var(--c-text);
+      stroke-width: 2;
+    }
+  }
+
+  &__label {
+    fill: var(--c-text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--c-bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- lecture ---------- */
+  &__readout {
+    min-height: 1.4em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+  }
+
+  &__readout-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--c, var(--c-accent));
+    flex: none;
+  }
+
+  &__readout-name {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  /* ---------- légende ---------- */
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+
+    &--size {
+      color: var(--c-text-mute);
+    }
+  }
+
+  &__leg-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--c, var(--c-accent));
+    flex: none;
+  }
+
+  &__leg-size {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--c-text-mute);
+    flex: none;
+  }
+}

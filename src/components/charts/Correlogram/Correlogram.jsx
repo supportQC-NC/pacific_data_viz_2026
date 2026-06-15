@@ -5,6 +5,9 @@
 // Pacifique : corail = ils frappent ensemble (montent de pair), cyan = ils
 // s'opposent. L'intensité encode la force ; la diagonale est neutralisée.
 //
+// Cellules RECTANGULAIRES (larges et basses) pour que la matrice 6×6 remplisse
+// la carte sans la déborder en hauteur.
+//
 // Couleurs interpolées à partir des tokens (donc light/dark correct) : on
 // mélange la SURFACE (≈0) vers --c-warm (positif) ou --c-accent (négatif).
 // Au survol : la cellule s'entoure, ses deux libellés s'allument, et un
@@ -18,11 +21,12 @@ import React, { useMemo, useState, useCallback } from "react";
 import useThemeTokens from "../../../hooks/UseThemeTokens";
 import "./Correlogram.scss";
 
-const LW = 216; // colonne des libellés de lignes
-const TH = 130; // bandeau des libellés de colonnes
-const RIGHT = 18;
-const BOTTOM = 16;
-const CELL = 104;
+const LW = 210; // colonne des libellés de lignes
+const TH = 124; // bandeau des libellés de colonnes (inclinés)
+const RIGHT = 16;
+const BOTTOM = 14;
+const CELL_W = 104;
+const CELL_H = 62;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
@@ -52,8 +56,8 @@ export default function Correlogram({
   const [hover, setHover] = useState(null); // { i, j }
 
   const K = labels.length;
-  const VB_W = LW + K * CELL + RIGHT;
-  const VB_H = TH + K * CELL + BOTTOM;
+  const VB_W = LW + K * CELL_W + RIGHT;
+  const VB_H = TH + K * CELL_H + BOTTOM;
 
   const colorFor = useCallback(
     (v, diag) => {
@@ -76,8 +80,8 @@ export default function Correlogram({
           j,
           v,
           diag: i === j,
-          x: LW + j * CELL,
-          y: TH + i * CELL,
+          x: LW + j * CELL_W,
+          y: TH + i * CELL_H,
           color: colorFor(v, i === j),
         });
       }
@@ -90,16 +94,15 @@ export default function Correlogram({
 
   if (K < 2) return null;
 
-  const active =
-    hover && !Number.isNaN(hover.i)
-      ? {
-          a: labels[hover.i],
-          b: labels[hover.j],
-          v: matrix[hover.i] ? matrix[hover.i][hover.j] : NaN,
-          n: counts[hover.i] ? counts[hover.i][hover.j] : null,
-          diag: hover.i === hover.j,
-        }
-      : null;
+  const active = hover
+    ? {
+        a: labels[hover.i],
+        b: labels[hover.j],
+        v: matrix[hover.i] ? matrix[hover.i][hover.j] : NaN,
+        n: counts[hover.i] ? counts[hover.i][hover.j] : null,
+        diag: hover.i === hover.j,
+      }
+    : null;
 
   return (
     <figure className="corr">
@@ -110,16 +113,15 @@ export default function Correlogram({
         aria-label={labels.join(" · ")}
       >
         {cells.map((c) => {
-          const on =
-            hover && (hover.i === c.i && hover.j === c.j);
+          const on = hover && hover.i === c.i && hover.j === c.j;
           return (
             <g key={`${c.i}-${c.j}`}>
               <rect
                 className={`corr__cell ${c.diag ? "is-diag" : ""} ${on ? "is-active" : ""}`}
                 x={c.x}
                 y={c.y}
-                width={CELL}
-                height={CELL}
+                width={CELL_W}
+                height={CELL_H}
                 style={{ "--c": c.color }}
                 onMouseEnter={() => enter(c.i, c.j)}
                 onMouseLeave={leave}
@@ -132,8 +134,8 @@ export default function Correlogram({
               {!c.diag && Number.isFinite(c.v) ? (
                 <text
                   className="corr__val"
-                  x={c.x + CELL / 2}
-                  y={c.y + CELL / 2}
+                  x={c.x + CELL_W / 2}
+                  y={c.y + CELL_H / 2}
                   dy="0.32em"
                   textAnchor="middle"
                 >
@@ -151,7 +153,7 @@ export default function Correlogram({
             key={`r-${i}`}
             className={`corr__rowlabel ${hover && hover.i === i ? "is-on" : ""}`}
             x={LW - 12}
-            y={TH + (i + 0.5) * CELL}
+            y={TH + (i + 0.5) * CELL_H}
             dy="0.32em"
             textAnchor="end"
           >
@@ -161,7 +163,7 @@ export default function Correlogram({
 
         {/* libellés de colonnes (inclinés) */}
         {labels.map((lab, j) => {
-          const cx = LW + (j + 0.5) * CELL;
+          const cx = LW + (j + 0.5) * CELL_W;
           const cy = TH - 12;
           return (
             <text
@@ -170,7 +172,7 @@ export default function Correlogram({
               x={cx}
               y={cy}
               textAnchor="start"
-              transform={`rotate(-40 ${cx} ${cy})`}
+              transform={`rotate(-38 ${cx} ${cy})`}
             >
               {lab}
             </text>
@@ -191,7 +193,10 @@ export default function Correlogram({
                 Number.isFinite(active.v) && active.v >= 0 ? "is-pos" : "is-neg"
               }`}
             >
-              r = {Number.isFinite(active.v) ? `${active.v >= 0 ? "+" : ""}${active.v.toFixed(2)}` : "—"}
+              r ={" "}
+              {Number.isFinite(active.v)
+                ? `${active.v >= 0 ? "+" : ""}${active.v.toFixed(2)}`
+                : "—"}
             </span>
             <span className="corr__readout-n">n = {active.n ?? "—"}</span>
           </>
