@@ -177,6 +177,7 @@
 }
 
 .board__work {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
@@ -850,9 +851,9 @@
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 3;
-  width: 2rem;
-  height: 2rem;
+  z-index: 6;
+  width: 2.1rem;
+  height: 2.1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -876,6 +877,11 @@
   color: var(--c-accent);
   border-color: var(--c-accent);
   transform: translateY(-1px);
+}
+/* En carrousel, les filtres sont en barre du haut : on aligne le ⓘ sur la
+   rangée de pilules (sous l'étiquette du filtre). */
+.board--carousel .board__infobtn {
+  top: 1.5rem;
 }
 
 /* Overlay */

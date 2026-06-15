@@ -242,6 +242,18 @@ export default function ActBoard({
           (status === "ready" && active ? (
             <section className="board__panel">
               <div className="board__work">
+                {hasInfo && (
+                  <button
+                    type="button"
+                    className="board__infobtn"
+                    onClick={() => setInfoOpen(true)}
+                    aria-haspopup="dialog"
+                    aria-label={tf("board.info_title", "Données & couverture", "Data & coverage")}
+                    title={tf("board.info_title", "Données & couverture", "Data & coverage")}
+                  >
+                    <span aria-hidden="true">i</span>
+                  </button>
+                )}
                 {(nav !== "carousel" || filters) && (
                 <aside className="board__rail">
                   {filters ? <div className="board__rail-filters">{filters}</div> : null}
@@ -278,18 +290,6 @@ export default function ActBoard({
                 )}
 
                 <div className="board__main">
-                  {hasInfo && (
-                    <button
-                      type="button"
-                      className="board__infobtn"
-                      onClick={() => setInfoOpen(true)}
-                      aria-haspopup="dialog"
-                      aria-label={tf("board.info_title", "Données & couverture", "Data & coverage")}
-                      title={tf("board.info_title", "Données & couverture", "Data & coverage")}
-                    >
-                      <span aria-hidden="true">i</span>
-                    </button>
-                  )}
                   {nav === "carousel" && (
                     <ChartCarousel
                       charts={mainCharts}

@@ -1,32 +1,50 @@
 // src/components/ChartCarousel/ChartCarousel.jsx
 // ============================================================
-// Navigation des graphes d'un acte en CARROUSEL (alternative au rail
-// vertical). Pilules dans le style des filtres : numéro + nom, étoile pour
-// le graphe signature, pilule active en accent. Flèches précédent / suivant,
-// piste qui défile et RECENTRE automatiquement la pilule active. Le contenu
-// du graphe se fait en fondu à chaque changement (voir .chcar-fade + key).
-// Props : charts [{ id, tab, signature }], index, onSelect(i), labels { prev, next, signature }.
+// Navigation des graphes d'un acte en BARRE PLEINE LARGEUR. Tous les onglets
+// sont visibles d'un coup (flex 1, répartis sur toute la largeur) ; un
+// INDICATEUR glissant souligne l'onglet actif (accent, ou « warm » pour le
+// graphe signature). Repli en scroll horizontal si l'écran est trop étroit.
+// Aucun style inline en JSX : la position de l'indicateur est posée via ref
+// (el.style) dans un effet.
+// Props : charts [{ id, tab, signature }], index, onSelect(i), labels { group, signature }.
 // ============================================================
 
 import React, { useEffect, useRef } from "react";
 import "./ChartCarousel.scss";
 
-export default function ChartCarousel({
-  charts = [],
-  index = 0,
-  onSelect,
-  labels = {},
-}) {
+export default function ChartCarousel({ charts = [], index = 0, onSelect, labels = {} }) {
   const trackRef = useRef(null);
-  const activeRef = useRef(null);
+  const itemRefs = useRef([]);
+  const indRef = useRef(null);
 
-  // Recentre la pilule active dans la piste (sans faire défiler la page).
-  useEffect(() => {
+  // Positionne l'indicateur sous l'onglet actif (et recentre si scrollable).
+  const place = () => {
+    const el = itemRefs.current[index];
     const track = trackRef.current;
-    const el = activeRef.current;
-    if (!track || !el) return;
-    const target = el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2;
-    track.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+    const ind = indRef.current;
+    if (!el || !track) return;
+    if (ind) {
+      ind.style.transform = `translateX(${el.offsetLeft}px)`;
+      ind.style.width = `${el.offsetWidth}px`;
+      const sig = !!(charts[index] && charts[index].signature);
+      ind.classList.toggle("is-signature", sig);
+    }
+    if (track.scrollWidth > track.clientWidth + 1) {
+      const target = el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2;
+      track.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    place();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, charts]);
+
+  useEffect(() => {
+    const onResize = () => place();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
 
   const go = (i) => {
@@ -37,31 +55,23 @@ export default function ChartCarousel({
   if (!charts.length) return null;
 
   return (
-    <div
-      className="chcar"
-      role="tablist"
-      aria-label={labels.signature || undefined}
-    >
-      {labels.group ? (
-        <span className="chcar__group">{labels.group}</span>
-      ) : null}
-      <button
-        type="button"
-        className="chcar__arrow"
-        onClick={() => go(index - 1)}
-        disabled={index <= 0}
-        aria-label={labels.prev || "Précédent"}
-      >
-        <span aria-hidden="true">‹</span>
-      </button>
+    <div className="chcar">
+      {labels.group ? <span className="chcar__group">{labels.group}</span> : null}
 
-      <div className="chcar__track" ref={trackRef}>
+      <div
+        className="chcar__track"
+        ref={trackRef}
+        role="tablist"
+        aria-label={labels.signature || undefined}
+      >
         {charts.map((c, i) => {
           const active = i === index;
           return (
             <button
               key={c.id}
-              ref={active ? activeRef : null}
+              ref={(el) => {
+                itemRefs.current[i] = el;
+              }}
               type="button"
               role="tab"
               aria-selected={active}
@@ -77,17 +87,9 @@ export default function ChartCarousel({
             </button>
           );
         })}
-      </div>
 
-      <button
-        type="button"
-        className="chcar__arrow"
-        onClick={() => go(index + 1)}
-        disabled={index >= charts.length - 1}
-        aria-label={labels.next || "Suivant"}
-      >
-        <span aria-hidden="true">›</span>
-      </button>
+        <span className="chcar__indicator" ref={indRef} aria-hidden="true" />
+      </div>
     </div>
   );
 }
