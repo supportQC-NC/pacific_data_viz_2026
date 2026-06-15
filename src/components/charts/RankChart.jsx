@@ -43,7 +43,7 @@ export default function RankChart({
           data: pts.map((p) => ({
             value: p.value,
             itemStyle: {
-              color: p.value >= median ? tk.warm : tk.positive,
+              color: p.color || (p.value >= median ? tk.warm : tk.positive),
               borderRadius: [0, 4, 4, 0],
             },
           })),
@@ -51,7 +51,12 @@ export default function RankChart({
             symbol: "none",
             data: [{ xAxis: median }],
             lineStyle: { color: tk.accent, type: "dashed", width: 1.5 },
-            label: { formatter: refLabel, color: tk.accent, fontFamily: MONO, fontSize: 10 },
+            label: {
+              formatter: refLabel,
+              color: tk.accent,
+              fontFamily: MONO,
+              fontSize: 10,
+            },
           },
           animationDuration: 600,
         },

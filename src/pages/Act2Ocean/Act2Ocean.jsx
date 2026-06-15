@@ -33,7 +33,6 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
@@ -43,6 +42,8 @@ import HeatmapChart from "../../components/charts/HeatmapChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import ShareAboveChart from "../../components/charts/ShareAboveChart";
 import ChangeChart from "../../components/charts/ChangeChart";
+import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import { BRAND as EVO_PALETTE } from "../../components/charts/EvolutionLines";
 import { median, fmt, valAt } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
 
@@ -140,6 +141,19 @@ export default function Act2Ocean() {
     () => median(pointsFor(currentYear).map((p) => p.value)) ?? 0,
     [pointsFor, currentYear],
   );
+
+  // Classement coloré par territoire (même palette de marque que l'Évolution).
+  const rankPoints = useMemo(() => {
+    const reg = allSeries.filter((s) => inRegion(s.area));
+    const colorByArea = {};
+    reg.forEach((s, i) => {
+      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
+    });
+    return pointsFor(currentYear).map((p) => ({
+      ...p,
+      color: colorByArea[p.area] || EVO_PALETTE[0],
+    }));
+  }, [allSeries, inRegion, pointsFor, currentYear]);
 
   // Évolution depuis le début (dernière − première valeur), par territoire.
   // delta > 0 = réchauffement ; delta < 0 = refroidissement relatif.
@@ -275,7 +289,6 @@ export default function Act2Ocean() {
       ? [
           {
             id: "band",
-            signature: true,
             empty: noSeries,
             tab: t("act2.board.tab_band"),
             title: t("act2.viz.band_title"),
@@ -320,7 +333,7 @@ export default function Act2Ocean() {
             takeaway: t("act2.board.rank_take"),
             node: (
               <RankChart
-                points={pointsFor(currentYear)}
+                points={rankPoints}
                 unit={t("act2.sst_unit")}
                 median={0}
                 refLabel={t("act2.ref")}
@@ -446,7 +459,7 @@ export default function Act2Ocean() {
       filters={filtersEl}
       charts={charts}
       nav="carousel"
-      progress={{ index: 2, total: 12 }}
+      progress={{ index: 2, total: 11 }}
       labels={{
         loading: t("scene.loading"),
         empty: t("act1.empty"),
@@ -461,7 +474,6 @@ export default function Act2Ocean() {
         conclusion: t("act2.board.conclusion"),
         backIntro: t("act2.board.back_intro"),
         reviseData: t("act2.board.revise_data"),
-        viewGroup: t("act2.board.group_view"),
       }}
       outro={{
         kicker: t("act2.outro.kicker"),
