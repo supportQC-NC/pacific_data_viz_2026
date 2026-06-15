@@ -157,20 +157,22 @@ export default function Act2Ocean() {
 
   // Évolution depuis le début (dernière − première valeur), par territoire.
   // delta > 0 = réchauffement ; delta < 0 = refroidissement relatif.
-  const changeRows = useMemo(
-    () =>
-      regionSeries
-        .filter((s) => s.values.length >= 2)
-        .map((s) => ({
-          name: s.name,
-          delta: Number(
-            (s.values[s.values.length - 1].value - s.values[0].value).toFixed(
-              3,
-            ),
-          ),
-        })),
-    [regionSeries],
-  );
+  const changeRows = useMemo(() => {
+    // Couleur de marque par territoire (même base que rank / évolution).
+    const colorByArea = {};
+    regionSeries.forEach((s, i) => {
+      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
+    });
+    return regionSeries
+      .filter((s) => s.values.length >= 2)
+      .map((s) => ({
+        name: s.name,
+        delta: Number(
+          (s.values[s.values.length - 1].value - s.values[0].value).toFixed(3),
+        ),
+        color: colorByArea[s.area],
+      }));
+  }, [regionSeries]);
 
   // Chiffres-chocs (SST).
   const kpiItems = useMemo(() => {
