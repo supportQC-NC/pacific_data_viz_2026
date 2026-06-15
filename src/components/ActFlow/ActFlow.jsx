@@ -29,6 +29,7 @@ export default function ActFlow({ actId, children }) {
   const [revealed, setRevealed] = useState(!needsIntro);
 
   const introRef = useRef(null);
+  const rootRef = useRef(null);
 
   // Si on change d'acte (remontage), on recalcule l'état d'intro.
   useEffect(() => {
@@ -99,6 +100,16 @@ export default function ActFlow({ actId, children }) {
     }
   }, [actId, revealed]);
 
+  // Même image, gardée en FOND de tout l'acte (board + KPI + chargement).
+  useEffect(() => {
+    if (rootRef.current) {
+      rootRef.current.style.setProperty(
+        "--act-img",
+        `url("/intro/${actId}.jpg")`,
+      );
+    }
+  }, [actId]);
+
   const reveal = () => {
     markSeen(actId);
     setRevealed(true);
@@ -115,7 +126,7 @@ export default function ActFlow({ actId, children }) {
   const tag = `${t("flow.act")} ${num}${actName ? ` — ${actName}` : ""}`;
 
   return (
-    <div className="actflow">
+    <div className="actflow" ref={rootRef}>
       {/* Écran d'intro / ouvre-chapitre (mode guidé, intro non vue) */}
       {!revealed && (
         <section className="actflow__intro" ref={introRef}>

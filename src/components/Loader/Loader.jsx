@@ -18,9 +18,25 @@ import "./Loader.scss";
 
 const BARS = [0, 1, 2, 3, 4, 5, 6];
 
-export default function Loader({ label, fullscreen = false, compact = false }) {
+export default function Loader({ label, fullscreen = false, compact = false, minimal = false }) {
   const { t } = useLang();
   const text = label || t("scene.loading");
+
+  // Loader minimal : juste le libellé (sur le fond de l'acte), sans pluie de
+  // chiffres, sans titre ni phrase.
+  if (fullscreen && minimal) {
+    return (
+      <div
+        className="loader-overlay loader-overlay--minimal"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label={text}
+      >
+        <span className="loader-overlay__minimal-label">{text}</span>
+      </div>
+    );
+  }
 
   if (fullscreen) {
     return (

@@ -36,3 +36,52 @@
     transform: rotate(360deg);
   }
 }
+
+/* ============================================================
+   Loader minimal : juste « Chargement… » sur l'image de l'acte
+   (--act-img est héritée de .actflow ; pas de fond derrière les graphiques)
+   ============================================================ */
+.loader-overlay--minimal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-bg) 58%, transparent),
+      color-mix(in srgb, var(--c-bg) 72%, transparent) 55%,
+      color-mix(in srgb, var(--c-bg) 84%, transparent)
+    ),
+    var(--act-img, none);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.loader-overlay__minimal-label {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--fs-sm, 0.875rem);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-text-soft, #c9d4e3);
+}
+.loader-overlay__minimal-label::after {
+  content: "";
+  animation: loaderDots 1.4s steps(1, end) infinite;
+}
+
+@keyframes loaderDots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+  100% { content: ""; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-overlay__minimal-label::after { content: "…"; animation: none; }
+}

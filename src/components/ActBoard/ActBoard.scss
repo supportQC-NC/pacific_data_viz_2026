@@ -21,11 +21,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(
-      55% 45% at 82% 0%,
-      var(--c-accent-glow),
-      transparent 62%
-    );
+    background: radial-gradient(55% 45% at 82% 0%, var(--c-accent-glow), transparent 62%);
     opacity: 0.45;
     z-index: 0;
   }
@@ -64,6 +60,7 @@
   font-family: var(--font-body);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
+ 
 }
 
 /* ============================================================
@@ -73,12 +70,42 @@
   padding-block: 0;
 }
 .board__intro {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   padding-block: var(--sp-12);
 }
+/* Image de l'acte UNIQUEMENT sur l'écran KPI : calque plein viewport
+   (100% largeur ET hauteur, bord à bord, jamais encadré). --act-img est
+   posée par ActFlow. Ces pseudos n'existent que pendant l'étape KPI. */
+.board__intro::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--act-img, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.board__intro::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--c-bg) 50%, transparent),
+    color-mix(in srgb, var(--c-bg) 64%, transparent) 55%,
+    color-mix(in srgb, var(--c-bg) 80%, transparent)
+  );
+}
 .board__intro-inner {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 1120px;
 }
@@ -257,10 +284,7 @@
   border: 1px solid transparent;
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition:
-    color 0.16s ease,
-    background 0.16s ease,
-    border-color 0.16s ease;
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 
   &:hover {
     color: var(--c-text-soft);
@@ -302,6 +326,7 @@
 
 /* ---------- Colonne principale : graphe plein cadre ---------- */
 .board__main {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -494,9 +519,7 @@
   opacity: 0;
   transform: translateY(-4px);
   pointer-events: none;
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .act1f__info:hover .act1f__tip,
 .act1f__info:focus-within .act1f__tip {
@@ -524,11 +547,7 @@
   padding: clamp(var(--sp-8), 8vh, 4rem) var(--sp-6);
   border: 1px solid var(--c-line);
   border-radius: var(--r-md);
-  background: radial-gradient(
-    120% 130% at 50% 0%,
-    var(--c-surface),
-    var(--c-bg-2)
-  );
+  background: radial-gradient(120% 130% at 50% 0%, var(--c-surface), var(--c-bg-2));
   box-shadow: 0 24px 70px -40px rgba(0, 0, 0, 0.65);
 }
 .board__outro-title {
@@ -608,10 +627,7 @@
   color: var(--c-text-soft);
   background: transparent;
   cursor: pointer;
-  transition:
-    color 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   &:hover {
     color: var(--c-text);
@@ -690,9 +706,7 @@
   font-size: var(--fs-sm);
   line-height: 1;
   cursor: pointer;
-  transition:
-    color 0.15s var(--ease-out),
-    border-color 0.15s var(--ease-out);
+  transition: color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
 
   &:hover {
     color: var(--c-accent);
@@ -826,4 +840,176 @@
     line-height: 1.4;
     color: var(--c-text-soft);
   }
+}
+
+/* ============================================================
+   Bouton ⓘ + panneau « Données & couverture »
+   (les graphiques méta sont sortis du carrousel)
+   ============================================================ */
+.board__infobtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+  color: var(--c-text-soft);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.board__infobtn:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
+}
+
+/* Overlay */
+.board__info {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+}
+.board__info-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--c-bg) 72%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: boardInfoFade 0.2s var(--ease-out);
+}
+.board__info-panel {
+  position: relative;
+  width: min(1280px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--c-surface), var(--c-bg-2));
+  box-shadow: var(--shadow-glow);
+  animation: boardInfoRise 0.24s var(--ease-out);
+}
+.board__info-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.board__info-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-1);
+}
+.board__info-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  color: var(--c-text);
+}
+.board__info-close {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+.board__info-close:hover {
+  color: var(--c-warm);
+  border-color: var(--c-warm);
+}
+.board__info-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.board__info-tab {
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+.board__info-tab.is-active {
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+.board__info-charttitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--c-text);
+}
+.board__info-finding {
+  margin: var(--sp-1) 0 0;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  line-height: var(--lh);
+}
+.board__info-chart {
+  margin-top: var(--sp-2);
+}
+/* L'EChart (matrice de couverture) a besoin d'une hauteur explicite dans le
+   modal, sinon il se rend sur 0px. La fiche « La donnée » (HTML) n'a pas de
+   .echart → pas d'espace vide ajouté. */
+.board__info-chart .echart,
+.board__info-chart .echart--tall {
+  width: 100%;
+  height: clamp(420px, 62vh, 640px);
+}
+
+@keyframes boardInfoFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes boardInfoRise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .board__info-scrim,
+  .board__info-panel { animation: none; }
 }
