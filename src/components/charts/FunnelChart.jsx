@@ -15,9 +15,19 @@ export default function FunnelChart({ points = [], unit = "" }) {
 
   const option = useMemo(
     () => ({
-      chart: { ...baseChart(tk, { type: "bar" }), animations: { enabled: false } },
+      chart: {
+        ...baseChart(tk, { type: "bar" }),
+        animations: { enabled: false },
+      },
       colors: points.map((p) => p.color || tk.accent),
-      plotOptions: { bar: { horizontal: true, isFunnel: true, distributed: true, borderRadius: 0 } },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          isFunnel: true,
+          distributed: true,
+          borderRadius: 0,
+        },
+      },
       legend: { show: false },
       grid: { show: false },
       dataLabels: {
@@ -26,11 +36,28 @@ export default function FunnelChart({ points = [], unit = "" }) {
           const p = points[opts.dataPointIndex];
           return p ? `${p.label} · ${fmt(val)} ${unit}` : `${fmt(val)} ${unit}`;
         },
-        style: { fontFamily: SANS, fontSize: "12px", fontWeight: 700, colors: ["#ffffff"] },
-        dropShadow: { enabled: true, top: 0, left: 0, blur: 3, color: "#000000", opacity: 0.6 },
+        style: {
+          fontFamily: SANS,
+          fontSize: "12px",
+          fontWeight: 800,
+          colors: ["#ffffff"],
+        },
+        dropShadow: {
+          enabled: true,
+          top: 0,
+          left: 0,
+          blur: 2,
+          color: "#000000",
+          opacity: 0.95,
+        },
       },
       series: [{ name: unit, data: points.map((p) => p.value) }],
-      xaxis: { categories: points.map((p) => p.label), labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+      xaxis: {
+        categories: points.map((p) => p.label),
+        labels: { show: false },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
       tooltip: baseTooltip({ y: { formatter: (v) => `${fmt(v)} ${unit}` } }),
       states: { active: { filter: { type: "none" } } },
     }),

@@ -44,7 +44,9 @@ import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import ScatterChart from "../../components/charts/ScatterChart";
-import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
+import EvolutionLines, {
+  BRAND as EVO_PALETTE,
+} from "../../components/charts/EvolutionLines";
 import {
   median,
   fmt,
@@ -149,19 +151,23 @@ export default function Act1Emissions() {
     [pointsFor, currentYear],
   );
 
-  // Classement en FUNNEL : du plus gros émetteur au plus petit. Couleur
-  // sémantique autour de la médiane (sous = vert, au-dessus = corail).
-  const rankFunnel = useMemo(
-    () =>
-      [...pointsFor(currentYear)]
-        .sort((a, b) => b.value - a.value)
-        .map((p) => ({
-          label: p.name,
-          value: p.value,
-          color: p.value > medianAll ? tk.warm : tk.positive,
-        })),
-    [pointsFor, currentYear, medianAll, tk],
-  );
+  // Classement en FUNNEL : du plus gros émetteur au plus petit. Chaque
+  // territoire garde la MÊME couleur que dans la vue Évolution (palette de
+  // marque indexée sur l'ordre régional).
+  const rankFunnel = useMemo(() => {
+    const reg = allSeries.filter((s) => inRegion(s.area));
+    const colorByArea = {};
+    reg.forEach((s, i) => {
+      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
+    });
+    return [...pointsFor(currentYear)]
+      .sort((a, b) => b.value - a.value)
+      .map((p) => ({
+        label: p.name,
+        value: p.value,
+        color: colorByArea[p.area] || EVO_PALETTE[0],
+      }));
+  }, [pointsFor, currentYear, allSeries, inRegion]);
 
   // Vue Tendance : aire empilée par territoire. Options du filtre pays
   // (limitées à la sous-région courante) et séries effectivement tracées.
@@ -195,12 +201,14 @@ export default function Act1Emissions() {
 
   // Nuage niveau × évolution (groupé par sous-région).
   const scatterGroups = useMemo(() => {
-    const palette = paletteOf(tk);
+    // Couleurs de marque, distinctes et lisibles en clair ET sombre :
+    // cyan (Mélanésie) · corail (Polynésie) · violet (Micronésie).
+    const SUB_COLORS = ["#06b6d4", "#ff6b4a", "#8b5cf6"];
     const inReg = allSeries.filter((s) => inRegion(s.area));
     return Object.keys(SUBREGIONS)
       .map((reg, i) => ({
         name: subNames[reg],
-        color: palette[i],
+        color: SUB_COLORS[i % SUB_COLORS.length],
         points: inReg
           .filter((s) => REGION_OF[s.area] === reg)
           .map((s) => {
@@ -517,14 +525,12 @@ export default function Act1Emissions() {
             finding: t("act1.board.change_find"),
             takeaway: t("act1.board.change_take"),
             node: (
-              <SmallMultiples
+              <EvolutionLines
                 series={regionSeries}
                 years={years}
                 unit={t("act1.unit")}
-                labels={{
-                  last: tf("act1.sm.last", "dernière", "latest"),
-                  close: tf("act1.sm.close", "Fermer", "Close"),
-                }}
+                mode="index"
+                labels={{ base: tf("act1.evo.base", "base 100", "base 100") }}
               />
             ),
           },
@@ -540,6 +546,7 @@ export default function Act1Emissions() {
                 groups={scatterGroups}
                 unit={t("act1.unit")}
                 medianX={scatterMedianX}
+                logX
               />
             ),
           },
@@ -573,7 +580,14 @@ export default function Act1Emissions() {
                 years={years}
                 unit={t("act1.unit")}
                 mode="rank"
-                ramp={[tk.positive, tk.warm, tk.negative]}
+                ramp={[
+                  "#43745f",
+                  "#7ba18d",
+                  "#b3c0a6",
+                  "#d6c29c",
+                  "#c28a72",
+                  "#9e564f",
+                ]}
                 labels={{
                   low: t("act1.heatmap.low"),
                   high: t("act1.heatmap.high"),
