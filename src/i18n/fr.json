@@ -2064,6 +2064,16 @@
     }
   },
   "act11": {
+    "corr": {
+  "pos": "Frappent ensemble (+)",
+  "neg": "S'opposent (−)",
+  "hint": "Survolez une case pour r et n"
+},
+    "parallel": {
+  "hi": "Stress moyen élevé",
+  "lo": "Stress plus faible",
+  "hint": "Survolez un territoire pour suivre son profil"
+},
     "radial": {
   "hint": "Survolez une barre pour le détail"
 },
@@ -2159,9 +2169,14 @@
     "gauge_sub": "indice composite médian de la sélection courante",
     "gauge_label": "vulnérabilité médiane",
     "story": {
+      "corr_k": "Synthèse · Corrélations",
+"corr_title": "Quels stress frappent ensemble",
+"corr_text": "Chaque case croise deux stress et mesure s'ils vont de pair à travers le Pacifique. En corail, deux pressions qui montent ensemble : les territoires durement touchés par l'une le sont souvent par l'autre. En cyan, deux pressions qui s'opposent. Plus la couleur est franche, plus le lien est net. À l'échelle d'une quinzaine de territoires, c'est une lecture indicative — mais elle révèle la structure cachée de la vulnérabilité.",
+"corr_m": "Calcul : corrélation de Pearson entre les rangs percentiles (≈ corrélation de Spearman), pour chaque paire d'indicateurs, sur les territoires où les deux sont renseignés (n affiché au survol). Diagonale neutralisée. La couleur va du cyan (−1) au corail (+1) en passant par le neutre. Échantillon réduit : à lire comme un signal, pas comme une preuve. Source : Pacific Data Hub (SPC).",
       "power_center": "Production électrique",
       "mix_k": "Synthèse · Mix électrique",
       "mix_hint": "Survolez une source pour la suivre dans le flux",
+      "top_m": "Calcul : les 8 territoires au plus haut indice composite (0–100), en lollipop pour rester lisibles malgré les noms longs. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
 "mix_share": "· part",
 "mix_t": "Comment le courant est produit",
 "mix_x": "Aire empilée du mix électrique du Pacifique au fil des années, source par source : en bas les combustibles fossiles (pétrole, diesel, charbon, gaz…), en haut les renouvelables (hydraulique, solaire, éolien, géothermie, biomasse). On lit d'un coup la dépendance encore massive aux fossiles — et la part renouvelable qui gagne du terrain, trop lentement.",
@@ -2293,7 +2308,12 @@
       "reversal_m": "Calcul : à gauche, le rang d'émissions par habitant (1 = plus gros émetteur) ; à droite, le rang de vulnérabilité. Les deux rangs sont calculés sur les mêmes territoires notés. Une ligne qui monte = peu d'émissions mais forte exposition.",
       "swarm_m": "Calcul : chaque cercle est un territoire, posé sur l'axe de l'indice composite (0–100). Aucune moyenne : on voit la distribution réelle — le peloton et les cas isolés. Mêmes territoires notés que les autres vues.",
       "top_m": "Calcul : les 6 territoires au plus haut indice composite (0–100), affichés en anneaux pour rester lisibles. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
-      "studio_m": "Calcul : vous ajustez le poids de chaque dimension (0 = retirée, 1 = normale, 2 = doublée) ; l'indice composite est recalculé en direct comme moyenne pondérée des dimensions disponibles, puis re-normalisé. Aucune pondération n'est neutre — c'est le but de cette vue."
+      "studio_m": "Calcul : vous ajustez le poids de chaque dimension (0 = retirée, 1 = normale, 2 = doublée) ; l'indice composite est recalculé en direct comme moyenne pondérée des dimensions disponibles, puis re-normalisé. Aucune pondération n'est neutre — c'est le but de cette vue.",
+      "parallel_k": "Synthèse · Profils",
+"parallel_title": "Le portrait de chaque île",
+"parallel_text": "Chaque ligne est un territoire qui traverse les six stress climatiques, du plus bas au plus haut. Suivez-en une : on voit aussitôt si l'île est touchée sur tous les fronts à la fois — la ligne reste en haut d'un axe à l'autre — ou seulement sur un ou deux. Les lignes corail cumulent les stress ; les cyan s'en sortent mieux. Quand plusieurs lignes montent et descendent ensemble, c'est que deux stress vont de pair.",
+"parallel_m": "Calcul : chaque indicateur est normalisé par rang percentile (0–100) au sein du Pacifique, puis tracé sur son propre axe. La couleur reflète le stress moyen du territoire sur les axes renseignés ; un segment manquant signale une donnée indisponible. Source : Pacific Data Hub (SPC)."
+
     },
     "outro": {
       "kicker": "Fin du voyage",

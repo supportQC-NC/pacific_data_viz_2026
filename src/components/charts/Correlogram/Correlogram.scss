@@ -1,0 +1,143 @@
+// src/components/charts/Correlogram/Correlogram.scss
+// ============================================================
+// Styles du correlogram. La couleur de cellule (--c) est interpolée en JS
+// depuis les tokens (donc light/dark correct). Le reste passe par les tokens.
+// ============================================================
+
+.corr {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+  align-items: center;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    max-width: 760px;
+    overflow: visible;
+  }
+
+  /* ---------- cellules ---------- */
+  &__cell {
+    fill: var(--c, transparent);
+    stroke: var(--c-bg);
+    stroke-width: 2;
+    cursor: pointer;
+    outline: none;
+    transition: stroke var(--t-fast) var(--ease-out);
+
+    &.is-diag {
+      cursor: default;
+    }
+
+    &.is-active {
+      stroke: var(--c-text);
+      stroke-width: 2.5;
+    }
+  }
+
+  &__val {
+    fill: var(--c-text);
+    font-family: var(--font-mono);
+    font-size: 19px;
+    font-weight: var(--fw-med);
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--c-surface);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- libellés ---------- */
+  &__rowlabel {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 14px;
+
+    &.is-on {
+      fill: var(--c-text);
+      font-weight: var(--fw-semi);
+    }
+  }
+
+  &__collabel {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 14px;
+
+    &.is-on {
+      fill: var(--c-text);
+      font-weight: var(--fw-semi);
+    }
+  }
+
+  /* ---------- lecture ---------- */
+  &__readout {
+    min-height: 1.4em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+  }
+
+  &__readout-pair {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-r {
+    font-weight: var(--fw-semi);
+
+    &.is-pos {
+      color: var(--c-warm);
+    }
+
+    &.is-neg {
+      color: var(--c-accent);
+    }
+  }
+
+  &__readout-n {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  /* ---------- légende ---------- */
+  &__legend {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__legend-scale {
+    width: 180px;
+    height: 0.7rem;
+    border-radius: var(--r-pill);
+    background: linear-gradient(
+      90deg,
+      var(--c-accent),
+      var(--c-surface),
+      var(--c-warm)
+    );
+    border: var(--border-hair) solid var(--c-line);
+  }
+
+  &__legend-lab {
+    white-space: nowrap;
+  }
+}

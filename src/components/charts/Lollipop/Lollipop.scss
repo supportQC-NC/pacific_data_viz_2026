@@ -1,0 +1,116 @@
+// src/components/charts/Lollipop/Lollipop.scss
+// ============================================================
+// Styles du lollipop. La teinte (--tone) dépend du sens (favorable/défavorable)
+// via les classes is-good / is-bad ; l'intensité (--i) vient des données.
+// Couleurs par tokens → bascule light/dark automatique.
+// ============================================================
+
+.lolli {
+  width: 100%;
+
+  &.is-bad {
+    --tone: var(--c-warm);
+  }
+
+  &.is-good {
+    --tone: var(--c-positive);
+  }
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- grille ---------- */
+  &__grid {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__tick {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  &__axis-title {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+  }
+
+  /* ---------- lignes ---------- */
+  &__row {
+    cursor: pointer;
+    outline: none;
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &.is-dim {
+      opacity: 0.32;
+    }
+
+    &.is-active {
+      opacity: 1;
+    }
+  }
+
+  &__hit {
+    fill: transparent;
+  }
+
+  &__name {
+    fill: var(--c-text-soft);
+    font-family: var(--font-body);
+    font-size: 17px;
+  }
+
+  &__row.is-top &__name,
+  &__row.is-active &__name {
+    fill: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__stem {
+    stroke: var(--tone);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: var(--i, 0.7);
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
+  &__dot {
+    fill: var(--tone);
+    opacity: var(--i, 0.85);
+    stroke: var(--c-bg);
+    stroke-width: 1.5;
+    pointer-events: none;
+    transition: r var(--t-fast) var(--ease-out);
+  }
+
+  &__row.is-active &__stem,
+  &__row.is-active &__dot {
+    opacity: 1;
+  }
+
+  &__row.is-active &__dot {
+    filter: drop-shadow(0 0 6px var(--tone));
+  }
+
+  &__val {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: var(--fw-med);
+    pointer-events: none;
+  }
+
+  &__row.is-top &__val,
+  &__row.is-active &__val {
+    fill: var(--c-text);
+  }
+}

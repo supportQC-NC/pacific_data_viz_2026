@@ -2056,25 +2056,35 @@
     }
   },
   "act11": {
+    "corr": {
+  "pos": "Strike together (+)",
+  "neg": "Pull apart (−)",
+  "hint": "Hover a cell for r and n"
+},
+    "parallel": {
+  "hi": "High average stress",
+  "lo": "Lower stress",
+  "hint": "Hover a territory to trace its profile"
+},
     "radial": {
-  "hint": "Hover a bar for details"
-},
+      "hint": "Hover a bar for details"
+    },
     "mv": {
-  "cause": "Movement 1 · The cause",
-  "conseq": "Movement 2 · The consequence",
-  "injustice": "Movement 3 · The injustice",
-  "reponse": "Movement 4 · The response"
-},
-"arc": {
-  "resp": "Responsibility",
-  "vuln": "Vulnerability",
-  "low": "low",
-  "high": "high",
-  "up": "Exposed, not responsible",
-  "down": "Emits more than exposed",
-  "gap": "gap",
-  "hint": "Hover an arc for details"
-},
+      "cause": "Movement 1 · The cause",
+      "conseq": "Movement 2 · The consequence",
+      "injustice": "Movement 3 · The injustice",
+      "reponse": "Movement 4 · The response"
+    },
+    "arc": {
+      "resp": "Responsibility",
+      "vuln": "Vulnerability",
+      "low": "low",
+      "high": "high",
+      "up": "Exposed, not responsible",
+      "down": "Emits more than exposed",
+      "gap": "gap",
+      "hint": "Hover an arc for details"
+    },
     "tag": "Act 11 — Synthesis",
     "title": "Guilty of almost nothing, exposed to almost everything",
     "lead": "Ten acts, one thread. Here we cross everything we've seen: what these islands emit, and what they bear. Responsibility on one side, vulnerability on the other — and the gap that lays bare the Pacific's climate injustice.",
@@ -2151,11 +2161,12 @@
     "gauge_label": "median vulnerability",
     "story": {
       "mix_hint": "Hover a source to follow it through the flow",
-"mix_share": "· share",
+      "top_m": "Method: the 8 territories with the highest composite index (0–100), shown as a lollipop to stay readable despite long names. This isn't the full list — it's the top of the ranking. The index combines 6 stresses with equal weights, normalised by rank within the Pacific.",
+      "mix_share": "· share",
       "mix_k": "Synthesis · Power mix",
-"mix_t": "How the power is made",
-"mix_x": "Stacked area of the Pacific's electricity mix over the years, source by source: fossil fuels at the bottom (oil, diesel, coal, gas…), renewables on top (hydro, solar, wind, geothermal, biomass). At a glance: a still-heavy reliance on fossil fuels — and a renewable share gaining ground, too slowly.",
-"mix_m": "Method: generation by source (GWh), grid-connected ‘Total’ only, aggregated across all Pacific territories and summed per year. Fossil sources in coral, renewables in green. Source: IRENA via Pacific Data Hub (IMF / climate change).",
+      "mix_t": "How the power is made",
+      "mix_x": "Stacked area of the Pacific's electricity mix over the years, source by source: fossil fuels at the bottom (oil, diesel, coal, gas…), renewables on top (hydro, solar, wind, geothermal, biomass). At a glance: a still-heavy reliance on fossil fuels — and a renewable share gaining ground, too slowly.",
+      "mix_m": "Method: generation by source (GWh), grid-connected ‘Total’ only, aggregated across all Pacific territories and summed per year. Fossil sources in coral, renewables in green. Source: IRENA via Pacific Data Hub (IMF / climate change).",
       "scatter": "Read left to right: the further left, the fewer emissions per capita. The higher up, the more vulnerable. The vertical line marks the regional emissions median, the horizontal one the median vulnerability. The top-left corner — few emissions, high exposure — gathers the territories most exposed relative to their responsibility.",
       "bubble": "Same plane, but bubble size now adds exposure to sea-level rise. The big bubbles clustered on the left say it plainly: those hit hardest by the sea are not those who loaded the atmosphere.",
       "slope": "Each line starts at a territory's responsibility (left) and reaches its vulnerability (right). An upward slope (coral) = few emissions but high exposure. The thicket of rising slopes sums up the whole act.",
@@ -2276,7 +2287,16 @@
       "reversal_m": "Method: on the left, the per-capita emissions rank (1 = biggest emitter); on the right, the vulnerability rank. Both ranks are computed on the same scored territories. A rising line = few emissions but high exposure.",
       "swarm_m": "Method: each circle is a territory, placed on the composite index axis (0–100). No averaging: you see the real distribution — the pack and the outliers. Same scored territories as the other views.",
       "top_m": "Method: the 6 territories with the highest composite index (0–100), shown as rings to stay legible. This is not the full list: it is the top of the ranking. The index combines 6 stresses at equal weight, normalised by rank within the Pacific.",
-      "studio_m": "Method: you adjust each dimension's weight (0 = removed, 1 = normal, 2 = doubled); the composite index is recomputed live as the weighted average of available dimensions, then re-normalised. No weighting is neutral — that is the point of this view."
+      "studio_m": "Method: you adjust each dimension's weight (0 = removed, 1 = normal, 2 = doubled); the composite index is recomputed live as the weighted average of available dimensions, then re-normalised. No weighting is neutral — that is the point of this view.",
+        "parallel_k": "Synthesis · Profiles",
+"parallel_title": "Each island's fingerprint",
+"parallel_text": "Each line is a territory crossing the six climate stresses, lowest to highest. Follow one: you instantly see whether the island is hit on every front at once — the line stays high from axis to axis — or only on one or two. Coral lines pile on the stresses; cyan ones fare better. When several lines rise and fall together, two stresses are moving in step.",
+"parallel_m": "Method: each indicator is normalised by percentile rank (0–100) within the Pacific, then plotted on its own axis. Colour reflects the territory's average stress across available axes; a missing segment marks unavailable data. Source: Pacific Data Hub (SPC).",
+"corr_k": "Synthesis · Correlations",
+"corr_title": "Which stresses strike together",
+"corr_text": "Each cell crosses two stresses and measures whether they move together across the Pacific. In coral, two pressures that rise together: territories hit hard by one are often hit by the other. In cyan, two pressures that pull apart. The bolder the colour, the clearer the link. Across only about fifteen territories it's an indicative read — but it reveals the hidden structure of vulnerability.",
+"corr_m": "Method: Pearson correlation between percentile ranks (≈ Spearman), for each pair of indicators, over territories where both are available (n shown on hover). Diagonal neutralised. Colour runs from cyan (−1) through neutral to coral (+1). Small sample: read it as a signal, not a proof. Source: Pacific Data Hub (SPC)."
+      
     },
     "outro": {
       "kicker": "End of the journey",
@@ -2487,12 +2507,12 @@
     "story": {
       "power_center": "Electricity output",
       "arc_title": "The threads of injustice",
-"arc_text": "Each arc links a territory from its responsibility — its rank in per-capita emissions — to its vulnerability. When an arc climbs to the right — few emissions, high exposure — it turns coral. The tangle of these coral arcs, all leaning the same way, captures the Pacific's climate injustice at a glance: those who weigh the least bear the most.",
-"arc_m": "Method: responsibility is the percentile rank of per-capita GHG emissions within the Pacific (0 = lowest, 100 = highest); vulnerability is the synthesis composite index (0–100). Two different scales mapped to the same rank to stay comparable. Source: Pacific Data Hub (SPC).",
-"renew2_title": "The effort: footprint vs clean energy",
-"renew2_text": "Here we set footprint — per-capita emissions, horizontal — against effort — share of renewable energy, vertical. Top-left, territories combining a low footprint with largely renewable power are leading the way; bottom-right, those where the transition still lies ahead.",
-"renew2_m": "Method: per-capita GHG emissions (latest year) on X; share of renewables in final energy consumption (%) on Y. One point per territory, grouped by sub-region. Source: SDG 7 and climate change, Pacific Data Hub (SPC).",
-"renew2_y": "Renewable share (%)",
+      "arc_text": "Each arc links a territory from its responsibility — its rank in per-capita emissions — to its vulnerability. When an arc climbs to the right — few emissions, high exposure — it turns coral. The tangle of these coral arcs, all leaning the same way, captures the Pacific's climate injustice at a glance: those who weigh the least bear the most.",
+      "arc_m": "Method: responsibility is the percentile rank of per-capita GHG emissions within the Pacific (0 = lowest, 100 = highest); vulnerability is the synthesis composite index (0–100). Two different scales mapped to the same rank to stay comparable. Source: Pacific Data Hub (SPC).",
+      "renew2_title": "The effort: footprint vs clean energy",
+      "renew2_text": "Here we set footprint — per-capita emissions, horizontal — against effort — share of renewable energy, vertical. Top-left, territories combining a low footprint with largely renewable power are leading the way; bottom-right, those where the transition still lies ahead.",
+      "renew2_m": "Method: per-capita GHG emissions (latest year) on X; share of renewables in final energy consumption (%) on Y. One point per territory, grouped by sub-region. Source: SDG 7 and climate change, Pacific Data Hub (SPC).",
+      "renew2_y": "Renewable share (%)",
       "eyebrow": "The power of data",
       "title": "When a number changes a decision",
       "lead": "I don't build charts for decoration. I look for the moment a single number changes a decision — when a pattern invisible to the eye becomes a concrete action. One story sums up that conviction better than any pitch.",

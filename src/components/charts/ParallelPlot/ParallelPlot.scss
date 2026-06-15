@@ -1,0 +1,159 @@
+// src/components/charts/ParallelPlot/ParallelPlot.scss
+// ============================================================
+// Styles du parallel coordinates. Teinte par stress moyen (is-high corail /
+// is-low cyan), intensité (--i) selon l'écart à la médiane. Tokens du thème.
+// ============================================================
+
+.par {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- repères ---------- */
+  &__grid {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__gridlabel {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  &__axis {
+    stroke: var(--c-line-strong);
+    stroke-width: 1.25;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__axislabel {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- lignes ---------- */
+  &__line {
+    --tone: var(--c-accent);
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    opacity: var(--i, 0.5);
+    cursor: pointer;
+    outline: none;
+    transition:
+      opacity var(--t-fast) var(--ease-out),
+      stroke-width var(--t-fast) var(--ease-out);
+
+    &.is-high {
+      --tone: var(--c-warm);
+    }
+
+    &.is-low {
+      --tone: var(--c-accent);
+    }
+
+    &.is-dim {
+      opacity: 0.12;
+    }
+
+    &.is-active {
+      opacity: 1;
+      stroke-width: 3.5;
+      filter: drop-shadow(0 0 6px var(--tone));
+    }
+  }
+
+  /* ---------- marqueurs de la ligne survolée ---------- */
+  &__mark {
+    pointer-events: none;
+
+    circle {
+      fill: var(--c-text);
+      stroke: var(--c-bg);
+      stroke-width: 1.5;
+    }
+
+    text {
+      fill: var(--c-text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: var(--fw-semi);
+      paint-order: stroke;
+      stroke: var(--c-bg);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+  }
+
+  /* ---------- lecture + légende ---------- */
+  &__readout {
+    min-height: 1.4em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+  }
+
+  &__readout-name {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__leg-mark {
+    width: 1.4rem;
+    height: 0;
+    border-top: 3px solid var(--c-accent);
+    flex: none;
+
+    &--hi {
+      border-top-color: var(--c-warm);
+    }
+
+    &--lo {
+      border-top-color: var(--c-accent);
+    }
+  }
+}

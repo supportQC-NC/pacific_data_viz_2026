@@ -27,10 +27,12 @@ import ProfileRadar from "../../components/charts/ProfileRadar";
 import TrendChart from "../../components/charts/TrendChart";
 import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
 import SlopeChart from "../../components/charts/SlopeChart";
-import RankBars from "../../components/RankBars/RankBars";
 import ArcParadox from "../../components/charts/ArcParadox/ArcParadox";
 import RadialRank from "../../components/charts/RadialRank/RadialRank";
 import StreamMix from "../../components/charts/StreamMix/StreamMix";
+import Lollipop from "../../components/charts/Lollipop/Lollipop";
+import ParallelPlot from "../../components/charts/ParallelPlot/ParallelPlot";
+import Correlogram from "../../components/charts/Correlogram/Correlogram";
 import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
@@ -217,6 +219,33 @@ function Kpi({ value, prefix = "", suffix = "", label, tone = "accent" }) {
       <span className="vkpi__label">{label}</span>
     </div>
   );
+}
+
+// Corrélation de Pearson sur des vecteurs appariés (>= 3 points requis).
+// Appliquée aux rangs percentiles, elle équivaut à une corrélation de rang
+// (≈ Spearman) — robuste sur petit échantillon et données asymétriques.
+function pearson(xs, ys) {
+  const n = xs.length;
+  if (n < 3) return NaN;
+  let sx = 0;
+  let sy = 0;
+  let sxx = 0;
+  let syy = 0;
+  let sxy = 0;
+  for (let i = 0; i < n; i += 1) {
+    const x = xs[i];
+    const y = ys[i];
+    sx += x;
+    sy += y;
+    sxx += x * x;
+    syy += y * y;
+    sxy += x * y;
+  }
+  const cov = sxy - (sx * sy) / n;
+  const vx = sxx - (sx * sx) / n;
+  const vy = syy - (sy * sy) / n;
+  const d = Math.sqrt(vx * vy);
+  return d > 0 ? cov / d : NaN;
 }
 
 export default function Act11Synthese() {
@@ -448,9 +477,15 @@ export default function Act11Synthese() {
   const topExposed = useMemo(
     () =>
       areas
-        .map((a) => ({ name: pictName(a, lang), value: Math.round(composite[a] ?? 0) }))
+        .map((a) => ({
+          code: a,
+          area: a,
+          name: pictName(a, lang),
+          value: Math.round(composite[a] ?? 0),
+        }))
         .filter((r) => Number.isFinite(r.value))
-        .sort((x, y) => y.value - x.value),
+        .sort((x, y) => y.value - x.value)
+        .slice(0, 8),
     [areas, composite, lang],
   );
 
@@ -663,6 +698,44 @@ export default function Act11Synthese() {
     return [...build(fossils, "fossil"), ...build(renews, "renew")];
   }, [powerMix]);
 
+  // Matrice de corrélation des stress : pour chaque paire d'indicateurs, on
+  // corrèle les rangs percentiles sur les territoires où LES DEUX existent.
+  const corr = useMemo(() => {
+    const keys = activeVuln;
+    if (keys.length < 3) return null;
+    const labels = keys.map((k) => t(`act11.ind_${k}`));
+    const vecs = keys.map((k) => normByInd[k] || {});
+    const K = keys.length;
+    const mat = [];
+    const counts = [];
+    for (let i = 0; i < K; i += 1) {
+      mat[i] = [];
+      counts[i] = [];
+      for (let j = 0; j < K; j += 1) {
+        if (i === j) {
+          mat[i][j] = 1;
+          counts[i][j] = null;
+          continue;
+        }
+        const xs = [];
+        const ys = [];
+        Object.keys(vecs[i]).forEach((a) => {
+          if (
+            isPict(a) &&
+            Number.isFinite(vecs[i][a]) &&
+            Number.isFinite(vecs[j][a])
+          ) {
+            xs.push(vecs[i][a]);
+            ys.push(vecs[j][a]);
+          }
+        });
+        mat[i][j] = pearson(xs, ys);
+        counts[i][j] = xs.length;
+      }
+    }
+    return { labels, mat, counts };
+  }, [activeVuln, normByInd, t]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -857,6 +930,25 @@ export default function Act11Synthese() {
         <ProfileRadar indicators={radarIndicators} series={radarSeries} />
       ),
     });
+    if (matrixRows.length >= 3 && indLabels.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.parallel_k"),
+        title: t("act11.story.parallel_title"),
+        text: t("act11.story.parallel_text"),
+        method: t("act11.story.parallel_m"),
+        hint: t("act11.story.focus_hint"),
+        visual: (
+          <ParallelPlot
+            rows={matrixRows}
+            axes={indLabels}
+            hiLabel={t("act11.parallel.hi")}
+            loLabel={t("act11.parallel.lo")}
+            hintLabel={t("act11.parallel.hint")}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.matrix_k"),
@@ -874,6 +966,25 @@ export default function Act11Synthese() {
         />
       ),
     });
+    if (corr) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.corr_k"),
+        title: t("act11.story.corr_title"),
+        text: t("act11.story.corr_text"),
+        method: t("act11.story.corr_m"),
+        visual: (
+          <Correlogram
+            labels={corr.labels}
+            matrix={corr.mat}
+            counts={corr.counts}
+            posLabel={t("act11.corr.pos")}
+            negLabel={t("act11.corr.neg")}
+            hintLabel={t("act11.corr.hint")}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.swarm_k"),
@@ -901,7 +1012,12 @@ export default function Act11Synthese() {
       text: t("act11.story.top_text"),
       method: t("act11.story.top_m"),
       visual: (
-        <RankBars data={topExposed} unit={t("act11.index_unit")} betterWhen="low" />
+        <Lollipop
+          rows={topExposed}
+          unit={t("act11.index_unit")}
+          betterWhen="low"
+          axisMax={100}
+        />
       ),
     });
 
@@ -951,8 +1067,8 @@ export default function Act11Synthese() {
         text: t(contextRecap.textKey),
         method: t(contextRecap.methodKey),
         visual: (
-          <RankBars
-            data={contextRecap.rows}
+          <Lollipop
+            rows={contextRecap.rows}
             unit={t(contextRecap.unitKey)}
             betterWhen={contextRecap.better}
           />
@@ -967,7 +1083,7 @@ export default function Act11Synthese() {
         text: t("act11.story.crops_x"),
         method: t("act11.story.crops_m"),
         visual: (
-          <RankBars data={cropsRows} unit={t("act11.ctx_unit_kgha")} betterWhen="high" />
+          <Lollipop rows={cropsRows} unit={t("act11.ctx_unit_kgha")} betterWhen="high" />
         ),
       });
     }
@@ -979,7 +1095,7 @@ export default function Act11Synthese() {
         text: t("act11.story.stock_x"),
         method: t("act11.story.stock_m"),
         visual: (
-          <RankBars data={livestockRows} unit={t("act11.ctx_unit_kganim")} betterWhen="high" />
+          <Lollipop rows={livestockRows} unit={t("act11.ctx_unit_kganim")} betterWhen="high" />
         ),
       });
     }
@@ -991,7 +1107,7 @@ export default function Act11Synthese() {
         text: t("act11.story.envtax2_x"),
         method: t("act11.story.envtax2_m"),
         visual: (
-          <RankBars data={envtaxRows} unit={t("act11.ctx_unit_gdp")} betterWhen="high" />
+          <Lollipop rows={envtaxRows} unit={t("act11.ctx_unit_gdp")} betterWhen="high" />
         ),
       });
     }
@@ -1071,6 +1187,7 @@ export default function Act11Synthese() {
     powerRadialRows,
     powerMixSeries,
     powerMixYears,
+    corr,
   ]);
 
   const total = scenes.length;
