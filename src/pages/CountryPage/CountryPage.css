@@ -167,18 +167,13 @@ body.country-immersive .footer {
   --tone: var(--c-accent);
   position: absolute;
   z-index: 4;
-  right: var(--sp-6);
-  bottom: var(--sp-6);
+  right: clamp(var(--sp-5), 3vw, var(--sp-8));
+  bottom: calc(var(--sp-6) + 3.5rem);
   display: inline-flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
-  border: var(--border-hair) solid color-mix(in srgb, var(--tone) 45%, var(--c-line));
-  border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--c-bg) 58%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   pointer-events: none;
+  text-align: right;
 }
 .cpCoast--warm {
   --tone: var(--c-warm);
@@ -193,16 +188,18 @@ body.country-immersive .footer {
 .cpCoast__dot {
   width: 0.7rem;
   height: 0.7rem;
+  flex: 0 0 auto;
   border-radius: 50%;
   background: var(--tone);
   box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 70%, transparent);
   animation: cpCoastPing 2.6s var(--ease-out) infinite;
+  order: 2;
 }
 
 .cpCoast__txt {
   display: inline-flex;
   flex-direction: column;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .cpCoast__k {
@@ -210,11 +207,13 @@ body.country-immersive .footer {
   letter-spacing: var(--ls-wide);
   color: var(--c-text-mute);
   text-transform: uppercase;
+  text-shadow: 0 1px 10px color-mix(in srgb, var(--c-bg) 82%, transparent);
 }
 
 .cpCoast__v {
   font: var(--fw-med) var(--fs-sm)/1.2 var(--font-body);
   color: var(--c-text);
+  text-shadow: 0 1px 12px color-mix(in srgb, var(--c-bg) 80%, transparent);
 }
 
 @keyframes cpCoastPing {
@@ -332,17 +331,20 @@ body.country-immersive .footer {
 .cpLensBar {
   position: absolute;
   z-index: 4;
-  left: 50%;
+  left: var(--sp-8);
+  right: var(--sp-8);
   bottom: var(--sp-6);
-  transform: translateX(-50%);
-  max-width: min(92vw, 42rem);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
   border: var(--border-hair) solid var(--c-line);
   border-radius: var(--r-pill);
   background: color-mix(in srgb, var(--c-bg) 58%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  overflow-x: auto;
+}
+
+.cpLensBar .dsw,
+.cpLensBar .dsw__list {
+  width: 100%;
 }
 
 .cpLensBar .dsw__list {
@@ -350,6 +352,7 @@ body.country-immersive .footer {
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--sp-2);
 }
 
@@ -358,81 +361,133 @@ body.country-immersive .footer {
 }
 
 /* ---------- HUD : donnée sélectionnée posée sur la carte ---------- */
-.cpLens {
-  --tone: var(--c-accent);
+/* ---------- HUD typographique (sans cadre) : identité + lecture ---------- */
+.cpHud {
   position: absolute;
   z-index: 4;
-  top: var(--sp-6);
-  left: var(--sp-6);
-  width: clamp(13rem, 24vw, 18rem);
-  padding: var(--sp-5);
-  border: var(--border-hair) solid color-mix(in srgb, var(--tone) 40%, var(--c-line));
-  border-radius: var(--r-md);
-  background: color-mix(in srgb, var(--c-bg) 60%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  top: clamp(var(--sp-5), 3vw, var(--sp-8));
+  left: clamp(var(--sp-5), 3vw, var(--sp-8));
+  max-width: min(42vw, 26rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  pointer-events: none;
 }
-.cpLens--warm {
+
+.cpHud__id {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.cpHud__flag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: clamp(2.2rem, 4vw, 2.8rem);
+  aspect-ratio: 4/3;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.cpHud__flag img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  display: block;
+}
+
+.cpHud__idtext {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cpHud__eyebrow {
+  color: var(--c-accent);
+  text-shadow: 0 1px 12px color-mix(in srgb, var(--c-bg) 82%, transparent);
+}
+
+.cpHud__name {
+  margin: 0;
+  font: var(--fw-semi) clamp(1.4rem, 2.6vw, 2.1rem)/1.04 var(--font-display);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  text-shadow: 0 2px 22px color-mix(in srgb, var(--c-bg) 80%, transparent);
+}
+
+/* Lecture du thème : pure typographie, fine barre d'accent à gauche */
+.cpHud__read {
+  --tone: var(--c-accent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--tone);
+}
+.cpHud__read--warm {
   --tone: var(--c-warm);
 }
-.cpLens--positive {
+.cpHud__read--positive {
   --tone: var(--c-positive);
 }
-.cpLens--negative {
+.cpHud__read--negative {
   --tone: var(--c-negative);
 }
-.cpLens--accent {
+.cpHud__read--accent {
   --tone: var(--c-accent);
 }
 
-.cpLens__label {
-  margin: 0;
+.cpHud__label {
   font: var(--fw-med) var(--fs-xs)/1 var(--font-mono);
   text-transform: uppercase;
   letter-spacing: var(--ls-wide);
   color: var(--c-text-mute);
+  text-shadow: 0 1px 10px color-mix(in srgb, var(--c-bg) 82%, transparent);
 }
 
-.cpLens__metric {
-  margin: var(--sp-2) 0 0;
+.cpHud__val {
   display: flex;
   align-items: baseline;
-  gap: var(--sp-1);
-}
-
-.cpLens__val {
-  font: var(--fw-semi) var(--fs-xl)/1 var(--font-display);
+  gap: var(--sp-2);
+  font: var(--fw-semi) clamp(2rem, 4vw, 3rem)/1 var(--font-display);
   color: var(--c-text);
   letter-spacing: var(--ls-tight);
+  text-shadow: 0 2px 24px color-mix(in srgb, var(--c-bg) 78%, transparent);
 }
 
-.cpLens__unit {
-  font: var(--fw-med) var(--fs-xs)/1 var(--font-mono);
+.cpHud__unit {
+  font: var(--fw-med) var(--fs-sm)/1 var(--font-mono);
+  font-style: normal;
   color: var(--c-text-mute);
 }
 
-.cpLens__delta {
-  margin: var(--sp-1) 0 0;
+.cpHud__delta {
   font: var(--fw-med) var(--fs-xs)/1.2 var(--font-mono);
   color: var(--tone);
   letter-spacing: var(--ls-wide);
-}
-
-.cpLens__chart {
-  margin-top: var(--sp-3);
-  height: 6.5rem;
+  text-shadow: 0 1px 10px color-mix(in srgb, var(--c-bg) 82%, transparent);
 }
 
 @media (max-width: 640px) {
-  .cpLens {
-    width: clamp(11rem, 60vw, 15rem);
-    padding: var(--sp-4);
+  .cpHud {
+    max-width: 70vw;
+    gap: var(--sp-4);
   }
-  .cpLens__chart {
-    display: none;
+  .cpLensBar {
+    left: var(--sp-3);
+    right: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    bottom: var(--sp-3);
   }
-  .cpHero__overlay--mini {
-    padding-bottom: calc(var(--sp-8) + 3rem);
+  .cpLensBar .dsw__list {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cpCoast {
+    bottom: calc(var(--sp-3) + 4rem);
+    right: var(--sp-3);
   }
 }
 /* ---------- 2. En bref : bande instrument ---------- */

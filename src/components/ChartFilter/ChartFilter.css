@@ -50,22 +50,4 @@
   pointer-events: none;
   font-size: 0.7em;
   color: var(--c-text-mute);
-}
-
-.chartview {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.chartview__chart {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-}
-
-.chartview__chart > * {
-  height: 100%;
-  width: 100%;
-}/*# sourceMappingURL=Act1Emissions.css.map */
+}/*# sourceMappingURL=ChartFilter.css.map */

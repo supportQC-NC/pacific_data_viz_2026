@@ -620,6 +620,56 @@ export default function CountryPage() {
     }
   }
 
+  // Couche carte par thème : valeur de TOUS les territoires (acte → carte).
+  const THEME_DATASET = {
+    warming: "sst",
+    sea: "seaLevel",
+    rain: "rain",
+    carbon: "emissions",
+    energy: "renewables",
+    people: "population",
+    health: "water",
+    nature: "redList",
+    shocks: "disastersAffected",
+  };
+  const themeDsId = activeLens !== "coast" ? THEME_DATASET[activeLens] : null;
+  let themePoints = null;
+  if (themeDsId) {
+    const ds = datasets[themeDsId];
+    const byArea = ds && ds.data && ds.data.byArea;
+    if (byArea) {
+      const entries = Object.keys(byArea)
+        .filter((a) => isPict(a) && PICT_GEO[a])
+        .map((a) => {
+          const s = (byArea[a] || []).filter(
+            (p) => p && Number.isFinite(p.value),
+          );
+          if (!s.length) return null;
+          const last = s.reduce((x, y) => (y.year > x.year ? y : x));
+          return { area: a, value: last.value };
+        })
+        .filter(Boolean);
+      if (entries.length) {
+        const vals = entries.map((e) => e.value);
+        const mn = Math.min(...vals);
+        const span = Math.max(...vals) - mn || 1;
+        themePoints = {
+          type: "FeatureCollection",
+          features: entries.map((e) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: PICT_GEO[e.area] },
+            properties: {
+              v: (e.value - mn) / span,
+              cur: e.area === code ? 1 : 0,
+            },
+          })),
+        };
+      }
+    }
+  }
+  const themeTone = lensCard ? lensCard.tone : "accent";
+  const showTheme = activeLens !== "coast" && !!themePoints;
+
   return (
     <main className="country">
       <div className="country__glow" aria-hidden="true" />
@@ -629,10 +679,19 @@ export default function CountryPage() {
         <div className="cpHero__map">
           <CountryMiniMap
             coords={PICT_GEO[code]}
-            zoom={ZOOM[code] || 7}
+            zoom={
+              showTheme ? Math.max(3, (ZOOM[code] || 7) - 2.5) : ZOOM[code] || 7
+            }
             controls
-            coast={coast || null}
-            coastlineUrl={`${process.env.PUBLIC_URL || ""}/data/coastline-hotspots.geojson`}
+            coast={activeLens === "coast" ? coast || null : null}
+            coastlineUrl={
+              showTheme
+                ? null
+                : `${process.env.PUBLIC_URL || ""}/data/coastline-hotspots.geojson`
+            }
+            themePoints={showTheme ? themePoints : null}
+            themeTone={themeTone}
+            themeKey={activeLens}
             noTokenMsg={t("country.no_token")}
           />
         </div>
@@ -676,24 +735,46 @@ export default function CountryPage() {
           </div>
         ) : null}
 
-        {/* Lecteur de la donnée sélectionnée, posé sur la carte (sans graphe) */}
-        {lensCard && activeLens !== "coast" ? (
-          <div className={`cpLens cpLens--${lensCard.tone}`}>
-            <p className="cpLens__label">{lensCard.label}</p>
-            <p className="cpLens__metric">
-              <span className="cpLens__val">{lensCard.value}</span>
-              {lensCard.unit ? (
-                <span className="cpLens__unit">{lensCard.unit}</span>
-              ) : null}
-            </p>
-            <p className="cpLens__delta">
-              {lensCard.delta}
-              {lensCard.year ? ` · ${lensCard.year}` : ""}
-            </p>
+        {/* HUD typographique sans cadre : identité + lecture du thème */}
+        <div className="cpHud">
+          <div className="cpHud__id">
+            <span className="cpHud__flag">
+              <img
+                src={flagUrl(code, { format: "svg" })}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </span>
+            <span className="cpHud__idtext">
+              <span className="eyebrow cpHud__eyebrow">
+                {t("country.eyebrow")}
+              </span>
+              <h1 className="cpHud__name">{pictName(code, lang)}</h1>
+            </span>
           </div>
-        ) : null}
 
-        {/* Indicateur littoral permanent */}
+          {lensCard && activeLens !== "coast" ? (
+            <div className={`cpHud__read cpHud__read--${lensCard.tone}`}>
+              <span className="cpHud__label">{lensCard.label}</span>
+              <span className="cpHud__val">
+                {lensCard.value}
+                {lensCard.unit ? (
+                  <i className="cpHud__unit">{lensCard.unit}</i>
+                ) : null}
+              </span>
+              <span className="cpHud__delta">
+                {lensCard.delta}
+                {lensCard.year ? ` · ${lensCard.year}` : ""}
+              </span>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Lecture littoral, sans cadre */}
         {coast ? (
           <div className={`cpCoast cpCoast--${coastTone}`}>
             <span className="cpCoast__dot" aria-hidden="true" />
@@ -705,27 +786,6 @@ export default function CountryPage() {
             </span>
           </div>
         ) : null}
-
-        {/* Identité compacte (nom en petit, sans phrase) */}
-        <div className="cpHero__overlay cpHero__overlay--mini">
-          <p className="eyebrow cpHero__eyebrow">{t("country.eyebrow")}</p>
-          <div className="cpHero__id">
-            <span className="cpHero__flag">
-              <img
-                src={flagUrl(code, { format: "svg" })}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            </span>
-            <h1 className="cpHero__title cpHero__title--sm">
-              {pictName(code, lang)}
-            </h1>
-          </div>
-        </div>
       </header>
 
       {/* 2. En bref : chiffres-clés (bande instrument) */}

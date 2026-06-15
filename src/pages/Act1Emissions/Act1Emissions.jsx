@@ -19,7 +19,14 @@
 //     présente / absente) — les vides montrés, jamais comblés.
 // ============================================================
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
@@ -31,13 +38,19 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import BarRace from "../../components/BarRace/BarRace";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
-import RankChart from "../../components/charts/RankChart";
-import TrendChart from "../../components/charts/TrendChart";
+import FunnelChart from "../../components/charts/FunnelChart";
+import RiverChart from "../../components/charts/RiverChart";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import ScatterChart from "../../components/charts/ScatterChart";
 import ChangeChart from "../../components/charts/ChangeChart";
-import { median, fmt, valAt, paletteOf } from "../../components/charts/echartsBase";
+import {
+  median,
+  fmt,
+  valAt,
+  paletteOf,
+} from "../../components/charts/echartsBase";
 import "./Act1Emissions.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -56,6 +69,10 @@ const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 /* ---------- Contrôles de filtre (globaux à l'acte) ---------- */
 export default function Act1Emissions() {
   const { t, lang } = useLang();
+  const tf = (key, fr, en) => {
+    const v = t(key);
+    return v && v !== key ? v : lang === "en" ? en : fr;
+  };
   const dispatch = useDispatch();
   const tk = useThemeTokens();
 
@@ -63,7 +80,7 @@ export default function Act1Emissions() {
 
   // Filtres GLOBAUX (un seul jeu pour tout l'acte).
   const [region, setRegion] = useState("all");
-  const scale = "lin"; // échelle figée en linéaire (pas de bascule log)
+  const [trendCountry, setTrendCountry] = useState("all"); // filtre propre à la vue Tendance
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
 
@@ -106,12 +123,17 @@ export default function Act1Emissions() {
       .map(([area, series]) => ({
         area,
         name: pictName(area, lang),
-        values: series.filter((p) => Number.isFinite(p.value) && p.value > 0).sort((a, b) => a.year - b.year),
+        values: series
+          .filter((p) => Number.isFinite(p.value) && p.value > 0)
+          .sort((a, b) => a.year - b.year),
       }))
       .filter((s) => s.values.length);
   }, [ready, emissions.data, lang]);
 
-  const inRegion = useCallback((area) => region === "all" || REGION_OF[area] === region, [region]);
+  const inRegion = useCallback(
+    (area) => region === "all" || REGION_OF[area] === region,
+    [region],
+  );
 
   const pointsFor = useCallback(
     (year) =>
@@ -122,14 +144,54 @@ export default function Act1Emissions() {
     [allSeries, inRegion],
   );
 
-  const medianAll = useMemo(() => median(pointsFor(currentYear).map((p) => p.value)) ?? 0, [pointsFor, currentYear]);
+  const medianAll = useMemo(
+    () => median(pointsFor(currentYear).map((p) => p.value)) ?? 0,
+    [pointsFor, currentYear],
+  );
+
+  // Classement en FUNNEL : du plus gros émetteur au plus petit. Couleur
+  // sémantique autour de la médiane (sous = vert, au-dessus = corail).
+  const rankFunnel = useMemo(
+    () =>
+      [...pointsFor(currentYear)]
+        .sort((a, b) => b.value - a.value)
+        .map((p) => ({
+          label: p.name,
+          value: p.value,
+          color: p.value > medianAll ? tk.warm : tk.positive,
+        })),
+    [pointsFor, currentYear, medianAll, tk],
+  );
+
+  // Vue Tendance : aire empilée par territoire. Options du filtre pays
+  // (limitées à la sous-région courante) et séries effectivement tracées.
+  const trendCountryOpts = useMemo(
+    () =>
+      allSeries
+        .filter((s) => inRegion(s.area))
+        .map((s) => ({ value: s.area, label: s.name })),
+    [allSeries, inRegion],
+  );
+  const trendSeries = useMemo(() => {
+    const base = allSeries.filter((s) => inRegion(s.area));
+    if (trendCountry === "all") return base;
+    const one = base.filter((s) => s.area === trendCountry);
+    return one.length ? one : base;
+  }, [allSeries, inRegion, trendCountry]);
 
   const subNames = useMemo(
-    () => ({ melanesia: t("act1.filter.melanesia"), polynesia: t("act1.filter.polynesia"), micronesia: t("act1.filter.micronesia") }),
+    () => ({
+      melanesia: t("act1.filter.melanesia"),
+      polynesia: t("act1.filter.polynesia"),
+      micronesia: t("act1.filter.micronesia"),
+    }),
     [t],
   );
 
-  const regionSeries = useMemo(() => allSeries.filter((s) => inRegion(s.area)), [allSeries, inRegion]);
+  const regionSeries = useMemo(
+    () => allSeries.filter((s) => inRegion(s.area)),
+    [allSeries, inRegion],
+  );
 
   // Nuage niveau × évolution (groupé par sous-région).
   const scatterGroups = useMemo(() => {
@@ -144,15 +206,23 @@ export default function Act1Emissions() {
           .map((s) => {
             const last = valAt(s, lastYear);
             const first = valAt(s, firstYear);
-            if (!Number.isFinite(last) || !Number.isFinite(first) || first <= 0) return null;
-            return { name: s.name, x: Number(last.toFixed(2)), y: Number((((last - first) / first) * 100).toFixed(1)) };
+            if (!Number.isFinite(last) || !Number.isFinite(first) || first <= 0)
+              return null;
+            return {
+              name: s.name,
+              x: Number(last.toFixed(2)),
+              y: Number((((last - first) / first) * 100).toFixed(1)),
+            };
           })
           .filter(Boolean),
       }))
       .filter((g) => g.points.length);
   }, [allSeries, lastYear, firstYear, subNames, inRegion, tk]);
 
-  const scatterMedianX = useMemo(() => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [scatterGroups]);
+  const scatterMedianX = useMemo(
+    () => median(scatterGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
+    [scatterGroups],
+  );
 
   // « L'effet dénominateur, démontré » : niveau médian de la série (X) face
   // à sa volatilité (Y = écart-type / moyenne, en %). Entièrement dérivé de
@@ -170,17 +240,26 @@ export default function Act1Emissions() {
             const vals = s.values.map((p) => p.value);
             const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
             if (!Number.isFinite(mean) || mean <= 0) return null;
-            const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length);
+            const sd = Math.sqrt(
+              vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length,
+            );
             const lvl = median(vals);
             if (!Number.isFinite(sd) || !Number.isFinite(lvl)) return null;
-            return { name: s.name, x: Number(lvl.toFixed(2)), y: Number(((sd / mean) * 100).toFixed(1)) };
+            return {
+              name: s.name,
+              x: Number(lvl.toFixed(2)),
+              y: Number(((sd / mean) * 100).toFixed(1)),
+            };
           })
           .filter(Boolean),
       }))
       .filter((g) => g.points.length);
   }, [allSeries, subNames, inRegion, tk]);
 
-  const volMedianX = useMemo(() => median(volGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0, [volGroups]);
+  const volMedianX = useMemo(
+    () => median(volGroups.flatMap((g) => g.points.map((p) => p.x))) ?? 0,
+    [volGroups],
+  );
 
   // Évolution nette depuis le début des données (dernière − première valeur).
   // delta < 0 = baisse (s'améliore) ; delta > 0 = hausse (empire).
@@ -190,7 +269,11 @@ export default function Act1Emissions() {
         .filter((s) => s.values.length >= 2)
         .map((s) => ({
           name: s.name,
-          delta: Number((s.values[s.values.length - 1].value - s.values[0].value).toFixed(2)),
+          delta: Number(
+            (s.values[s.values.length - 1].value - s.values[0].value).toFixed(
+              2,
+            ),
+          ),
         })),
     [regionSeries],
   );
@@ -203,11 +286,30 @@ export default function Act1Emissions() {
     const sorted = [...pts].sort((a, b) => a.value - b.value);
     const medFirst = median(pointsFor(firstYear).map((p) => p.value));
     const medLast = median(pointsFor(lastYear).map((p) => p.value));
-    const evo = medFirst && medFirst > 0 ? ((medLast - medFirst) / medFirst) * 100 : null;
+    const evo =
+      medFirst && medFirst > 0 ? ((medLast - medFirst) / medFirst) * 100 : null;
     return [
-      { key: "median", value: fmt(med, 1), unit: t("act1.unit"), label: t("act1.stats.median"), tone: "accent" },
-      { key: "high", value: fmt(sorted[sorted.length - 1].value, 1), unit: sorted[sorted.length - 1].name, label: t("act1.stats.highest"), tone: "warm" },
-      { key: "low", value: fmt(sorted[0].value, 1), unit: sorted[0].name, label: t("act1.stats.lowest"), tone: "positive" },
+      {
+        key: "median",
+        value: fmt(med, 1),
+        unit: t("act1.unit"),
+        label: t("act1.stats.median"),
+        tone: "accent",
+      },
+      {
+        key: "high",
+        value: fmt(sorted[sorted.length - 1].value, 1),
+        unit: sorted[sorted.length - 1].name,
+        label: t("act1.stats.highest"),
+        tone: "warm",
+      },
+      {
+        key: "low",
+        value: fmt(sorted[0].value, 1),
+        unit: sorted[0].name,
+        label: t("act1.stats.lowest"),
+        tone: "positive",
+      },
       {
         key: "evo",
         value: evo == null ? "—" : `${evo > 0 ? "+" : ""}${evo.toFixed(0)}%`,
@@ -218,7 +320,10 @@ export default function Act1Emissions() {
     ];
   }, [pointsFor, currentYear, firstYear, lastYear, t]);
 
-  const mapPoints = useMemo(() => pointsFor(currentYear).map((p) => ({ ...p, year: currentYear })), [pointsFor, currentYear]);
+  const mapPoints = useMemo(
+    () => pointsFor(currentYear).map((p) => ({ ...p, year: currentYear })),
+    [pointsFor, currentYear],
+  );
   const mapRange = useMemo(() => {
     if (!mapPoints.length) return { min: 0, max: 1 };
     const vals = mapPoints.map((p) => p.value);
@@ -233,7 +338,10 @@ export default function Act1Emissions() {
     setPlaying(false);
     setYearIdx(i);
   }, []);
-  const retry = useCallback(() => dispatch(loadDataset("emissions")), [dispatch]);
+  const retry = useCallback(
+    () => dispatch(loadDataset("emissions")),
+    [dispatch],
+  );
 
   const regionItems = REGION_KEYS.map((k) => ({
     id: k,
@@ -242,7 +350,13 @@ export default function Act1Emissions() {
     tone: "accent",
   }));
 
-  const status = failed ? "error" : !ready ? "loading" : empty ? "empty" : "ready";
+  const status = failed
+    ? "error"
+    : !ready
+      ? "loading"
+      : empty
+        ? "empty"
+        : "ready";
 
   // Présence de données pour la région/année courante (évite l'axe vide 0–1).
   const noPts = currentYear != null && pointsFor(currentYear).length === 0;
@@ -288,8 +402,16 @@ export default function Act1Emissions() {
             finding: t("act1.board.map_find"),
             takeaway: t("act1.board.map_take"),
             node: (
-              <ErrorBoundary fallback={<div className="board__state board__state--err">{t("scene.error")}</div>}>
-                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
+              <ErrorBoundary
+                fallback={
+                  <div className="board__state board__state--err">
+                    {t("scene.error")}
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={<Loader compact label={t("scene.loading")} />}
+                >
                   <OceanMap
                     data={mapPoints}
                     unit={t("act1.unit")}
@@ -314,12 +436,23 @@ export default function Act1Emissions() {
           {
             id: "race",
             empty: noSeries,
-            signature: true,
             tab: t("act1.board.tab_race"),
             title: t("act1.viz.race_title"),
             finding: t("act1.board.race_find"),
             takeaway: t("act1.board.race_take"),
-            node: <BarRace series={regionSeries} years={years} unit={t("act1.unit")} tk={tk} labels={{ play: t("act1.race.play"), pause: t("act1.race.pause"), restart: t("act1.race.restart") }} />,
+            node: (
+              <BarRace
+                series={regionSeries}
+                years={years}
+                unit={t("act1.unit")}
+                tk={tk}
+                labels={{
+                  play: t("act1.race.play"),
+                  pause: t("act1.race.pause"),
+                  restart: t("act1.race.restart"),
+                }}
+              />
+            ),
           },
           {
             id: "read",
@@ -332,8 +465,14 @@ export default function Act1Emissions() {
               <DataSpotlight
                 rows={spotlightRows}
                 notes={spotlightNotes}
-                example={{ kicker: t("act1.spotlight.ex_kicker"), text: t("act1.spotlight.ex_text") }}
-                link={{ href: "https://data.worldbank.org/indicator/EN.GHG.ALL.PC.CE.AR5", label: t("act1.spotlight.link_label") }}
+                example={{
+                  kicker: t("act1.spotlight.ex_kicker"),
+                  text: t("act1.spotlight.ex_text"),
+                }}
+                link={{
+                  href: "https://data.worldbank.org/indicator/EN.GHG.ALL.PC.CE.AR5",
+                  label: t("act1.spotlight.link_label"),
+                }}
               />
             ),
           },
@@ -344,16 +483,7 @@ export default function Act1Emissions() {
             title: t("act1.viz.rank_title"),
             finding: t("act1.board.rank_find"),
             takeaway: t("act1.board.rank_take"),
-            node: (
-              <RankChart
-                points={pointsFor(currentYear)}
-                unit={t("act1.unit")}
-                median={medianAll}
-                refLabel={t("act1.ref_median")}
-                sort="desc"
-                scale={scale}
-              />
-            ),
+            node: <FunnelChart points={rankFunnel} unit={t("act1.unit")} />,
           },
           {
             id: "trend",
@@ -362,7 +492,33 @@ export default function Act1Emissions() {
             title: t("act1.viz.trend_title"),
             finding: t("act1.board.trend_find"),
             takeaway: t("act1.board.trend_take"),
-            node: <TrendChart series={regionSeries} years={years} unit={t("act1.unit")} scale={scale} />,
+            node: (
+              <div className="chartview">
+                <ChartFilter
+                  label={tf(
+                    "act1.trend.country_label",
+                    "Territoire",
+                    "Territory",
+                  )}
+                  value={trendCountry}
+                  onChange={setTrendCountry}
+                  options={[
+                    {
+                      value: "all",
+                      label: tf(
+                        "act1.trend.country_all",
+                        "Tous les territoires",
+                        "All territories",
+                      ),
+                    },
+                    ...trendCountryOpts,
+                  ]}
+                />
+                <div className="chartview__chart">
+                  <RiverChart subAvg={trendSeries} years={years} />
+                </div>
+              </div>
+            ),
           },
           {
             id: "change",
@@ -371,7 +527,13 @@ export default function Act1Emissions() {
             title: t("act1.board.change_title"),
             finding: t("act1.board.change_find"),
             takeaway: t("act1.board.change_take"),
-            node: <ChangeChart rows={changeRows} unit={t("act1.unit")} direction="all" />,
+            node: (
+              <ChangeChart
+                rows={changeRows}
+                unit={t("act1.unit")}
+                direction="all"
+              />
+            ),
           },
           {
             id: "scatter",
@@ -380,7 +542,13 @@ export default function Act1Emissions() {
             title: t("act1.viz.scatter_title"),
             finding: t("act1.board.scatter_find"),
             takeaway: t("act1.board.scatter_take"),
-            node: <ScatterChart groups={scatterGroups} unit={t("act1.unit")} medianX={scatterMedianX} />,
+            node: (
+              <ScatterChart
+                groups={scatterGroups}
+                unit={t("act1.unit")}
+                medianX={scatterMedianX}
+              />
+            ),
           },
           {
             id: "denom",
@@ -406,7 +574,19 @@ export default function Act1Emissions() {
             title: t("act1.viz.heat_title"),
             finding: t("act1.board.heat_find"),
             takeaway: t("act1.board.heat_take"),
-            node: <HeatmapChart series={regionSeries} years={years} unit={t("act1.unit")} mode="rank" ramp={[tk.positive, tk.warm, tk.negative]} labels={{ low: t("act1.heatmap.low"), high: t("act1.heatmap.high") }} />,
+            node: (
+              <HeatmapChart
+                series={regionSeries}
+                years={years}
+                unit={t("act1.unit")}
+                mode="rank"
+                ramp={[tk.positive, tk.warm, tk.negative]}
+                labels={{
+                  low: t("act1.heatmap.low"),
+                  high: t("act1.heatmap.high"),
+                }}
+              />
+            ),
           },
           {
             id: "coverage",
@@ -419,7 +599,10 @@ export default function Act1Emissions() {
               <CoverageChart
                 series={regionSeries}
                 years={years}
-                labels={{ present: t("act1.coverage.present"), absent: t("act1.coverage.absent") }}
+                labels={{
+                  present: t("act1.coverage.present"),
+                  absent: t("act1.coverage.absent"),
+                }}
               />
             ),
           },
