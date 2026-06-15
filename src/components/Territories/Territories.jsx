@@ -9,7 +9,6 @@
 // ============================================================
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import PICT_NAMES, { pictName } from "../../i18n/pictNames";
 import { flagUrl } from "../../i18n/flagUrl";
@@ -27,7 +26,7 @@ function FlagTile({ code, name }) {
 
   return (
     <li className="territories__item">
-      <Link className="territories__link" to={`/territoire/${code}`} aria-label={name}>
+      <div className="territories__link" aria-label={name}>
         <span className="territories__flag">
           {src ? (
             <img
@@ -44,7 +43,7 @@ function FlagTile({ code, name }) {
           )}
         </span>
         <span className="territories__name">{name}</span>
-      </Link>
+      </div>
     </li>
   );
 }
