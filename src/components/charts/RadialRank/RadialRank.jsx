@@ -4,14 +4,14 @@
 // React Graph Gallery, en SVG pur (sans d3). Un classement [{code,name,value}]
 // devient une couronne de barres rayonnant depuis un moyeu central.
 //
-// • longueur de barre ∝ valeur ; intensité de couleur ∝ valeur ;
-// • la 1re position est mise en avant (teinte « positive ») ;
+// • longueur de barre ∝ valeur ; intensité ∝ valeur ; 1re place mise en avant ;
+// • anneaux de repère concentriques (25 / 50 / 75 / 100 %) ;
 // • étiquette = code territoire (2 lettres, toujours lisible) ;
-// • au survol : la barre s'épaissit et le MOYEU affiche le nom complet
-//   + la valeur ; sinon le moyeu montre le libellé de la mesure.
+// • le MOYEU sert de lecture : libellé de la mesure par défaut, nom complet
+//   + valeur au survol (donc aucun texte hors-cadre à rogner).
 //
-// Réutilisable pour tout classement à une valeur (production électrique,
-// rendements agricoles, bétail, fiscalité…). Libellés via props (i18n parent).
+// Réutilisable pour tout classement à une valeur (production, rendements,
+// bétail, fiscalité…). Libellés via props (i18n parent). Thème via tokens.
 // ============================================================
 
 import React, { useMemo, useState, useCallback } from "react";
@@ -19,10 +19,11 @@ import "./RadialRank.scss";
 
 const VB = 720;
 const C = VB / 2;
-const INNER = 124; // rayon du moyeu
-const BAR_MAX = 150; // longueur de barre maximale
-const LABEL_PAD = 20; // distance code ↔ pointe de barre
-const MAX_ITEMS = 14;
+const INNER = 132; // rayon du moyeu
+const BAR_MAX = 168; // longueur de barre maximale
+const LABEL_PAD = 18; // distance code ↔ pointe de barre
+const MAX_ITEMS = 16;
+const RINGS = [0.25, 0.5, 0.75, 1];
 
 const polar = (r, deg) => {
   const a = (deg * Math.PI) / 180;
@@ -55,7 +56,7 @@ export default function RadialRank({
     const n = clean.length;
     const max = Math.max(...clean.map((r) => r.value), 0.0001);
     const step = n ? 360 / n : 360;
-    const thick = clamp((INNER * (step * Math.PI)) / 180 / 1.7, 7, 22);
+    const thick = clamp((INNER * (step * Math.PI)) / 180 / 1.5, 9, 26);
 
     return clean.map((r, i) => {
       const deg = -90 + i * step;
@@ -74,7 +75,7 @@ export default function RadialRank({
         y2: r1(y2),
         lx: r1(lx),
         ly: r1(ly),
-        intensity: clamp(0.34 + frac * 0.66, 0.34, 1),
+        intensity: clamp(0.36 + frac * 0.64, 0.36, 1),
         top: i === 0,
       };
     });
@@ -98,9 +99,17 @@ export default function RadialRank({
         role="img"
         aria-label={centerLabel}
       >
-        {/* anneau de repère */}
-        <circle className="radial__guide" cx={C} cy={C} r={INNER + BAR_MAX} />
-        <circle className="radial__hub" cx={C} cy={C} r={INNER - 8} />
+        {/* anneaux de repère concentriques */}
+        {RINGS.map((f) => (
+          <circle
+            key={f}
+            className={`radial__ring ${f === 1 ? "is-edge" : ""}`}
+            cx={C}
+            cy={C}
+            r={INNER + f * BAR_MAX}
+          />
+        ))}
+        <circle className="radial__hub" cx={C} cy={C} r={INNER - 6} />
 
         {bars.map((b) => {
           const cls = [
@@ -136,7 +145,12 @@ export default function RadialRank({
                 strokeWidth={b.thick}
                 style={{ "--i": b.intensity }}
               />
-              <circle className="radial__tip" cx={b.x2} cy={b.y2} r={b.thick / 2 + 1.5} />
+              <circle
+                className="radial__tip"
+                cx={b.x2}
+                cy={b.y2}
+                r={b.thick / 2 + 1.5}
+              />
               <text
                 className="radial__code"
                 x={b.lx}
@@ -154,31 +168,32 @@ export default function RadialRank({
         {/* moyeu : libellé de la mesure ou lecture au survol */}
         {active ? (
           <>
-            <text className="radial__hub-name" x={C} y={C - 10} textAnchor="middle">
+            <text className="radial__hub-name" x={C} y={C - 16} textAnchor="middle">
               {active.name}
             </text>
-            <text className="radial__hub-val" x={C} y={C + 24} textAnchor="middle">
+            <text className="radial__hub-val" x={C} y={C + 20} textAnchor="middle">
               {fmtVal(active.value)}
             </text>
-            <text className="radial__hub-unit" x={C} y={C + 48} textAnchor="middle">
+            <text className="radial__hub-unit" x={C} y={C + 46} textAnchor="middle">
               {unit}
             </text>
           </>
         ) : (
           <>
-            <text className="radial__hub-label" x={C} y={C - 4} textAnchor="middle">
+            <text className="radial__hub-label" x={C} y={C - 8} textAnchor="middle">
               {centerLabel}
             </text>
-            <text className="radial__hub-unit" x={C} y={C + 24} textAnchor="middle">
+            <text className="radial__hub-unit" x={C} y={C + 18} textAnchor="middle">
               {unit}
             </text>
+            {hintLabel ? (
+              <text className="radial__hub-hint" x={C} y={C + 44} textAnchor="middle">
+                {hintLabel}
+              </text>
+            ) : null}
           </>
         )}
       </svg>
-
-      <p className="radial__hint" aria-live="polite">
-        {active ? `${active.name} · ${fmtVal(active.value)} ${unit}` : hintLabel}
-      </p>
     </figure>
   );
 }

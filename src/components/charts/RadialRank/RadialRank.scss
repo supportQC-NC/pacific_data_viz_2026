@@ -7,24 +7,27 @@
 
 .radial {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
+  justify-content: center;
   width: 100%;
 
   &__svg {
     width: 100%;
     height: auto;
-    max-width: 560px;
+    max-width: 480px;
     overflow: visible;
   }
 
   /* ---------- repères ---------- */
-  &__guide {
+  &__ring {
     fill: none;
     stroke: var(--c-line);
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
+
+    &.is-edge {
+      stroke: var(--c-line-strong);
+      stroke-dasharray: 2 6;
+    }
   }
 
   &__hub {
@@ -43,7 +46,7 @@
     }
 
     &.is-dim {
-      opacity: 0.28;
+      opacity: 0.26;
     }
 
     &.is-active {
@@ -53,7 +56,7 @@
 
   &__hit {
     stroke: transparent;
-    stroke-width: 24;
+    stroke-width: 26;
     vector-effect: non-scaling-stroke;
     cursor: pointer;
     outline: none;
@@ -71,7 +74,7 @@
 
   &__bar.is-active &__stem {
     opacity: 1;
-    filter: drop-shadow(0 0 6px var(--tone));
+    filter: drop-shadow(0 0 7px var(--tone));
   }
 
   &__tip {
@@ -88,28 +91,29 @@
     pointer-events: none;
   }
 
-  &__bar.is-active &__code {
+  &__bar.is-active &__code,
+  &__bar.is-top &__code {
     fill: var(--c-text);
     font-weight: var(--fw-semi);
   }
 
   /* ---------- moyeu ---------- */
   &__hub-label {
-    fill: var(--c-text-soft);
+    fill: var(--c-text);
     font-family: var(--font-display);
-    font-size: 26px;
+    font-size: 27px;
   }
 
   &__hub-name {
     fill: var(--c-text);
     font-family: var(--font-display);
-    font-size: 24px;
+    font-size: 25px;
   }
 
   &__hub-val {
     fill: var(--c-accent);
     font-family: var(--font-mono);
-    font-size: 34px;
+    font-size: 36px;
     font-weight: var(--fw-semi);
   }
 
@@ -121,12 +125,10 @@
     text-transform: uppercase;
   }
 
-  /* ---------- pied ---------- */
-  &__hint {
-    min-height: 1.4em;
+  &__hub-hint {
+    fill: var(--c-text-mute);
     font-family: var(--font-mono);
-    font-size: var(--fs-sm);
-    color: var(--c-text-mute);
-    text-align: center;
+    font-size: 13px;
+    font-style: italic;
   }
 }

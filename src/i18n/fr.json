@@ -2160,6 +2160,12 @@
     "gauge_label": "vulnérabilité médiane",
     "story": {
       "power_center": "Production électrique",
+      "mix_k": "Synthèse · Mix électrique",
+      "mix_hint": "Survolez une source pour la suivre dans le flux",
+"mix_share": "· part",
+"mix_t": "Comment le courant est produit",
+"mix_x": "Aire empilée du mix électrique du Pacifique au fil des années, source par source : en bas les combustibles fossiles (pétrole, diesel, charbon, gaz…), en haut les renouvelables (hydraulique, solaire, éolien, géothermie, biomasse). On lit d'un coup la dépendance encore massive aux fossiles — et la part renouvelable qui gagne du terrain, trop lentement.",
+"mix_m": "Calcul : production par source (GWh), raccordement « Total » uniquement, agrégée sur l'ensemble des territoires du Pacifique et cumulée par année. Sources fossiles en corail, renouvelables en vert. Source : IRENA via Pacific Data Hub (FMI / changement climatique).",
       "arc_title": "L'entrelacs de l'injustice",
 "arc_text": "Chaque arc relie un territoire de sa responsabilité — son rang d'émissions par habitant — à sa vulnérabilité. Quand l'arc grimpe vers la droite — peu d'émissions, forte exposition — il vire au corail. L'enchevêtrement de ces arcs corail, tous penchés dans le même sens, dessine d'un coup d'œil l'injustice climatique du Pacifique : ceux qui pèsent le moins encaissent le plus.",
 "arc_m": "Calcul : la responsabilité est le rang percentile des émissions de GES par habitant au sein du Pacifique (0 = plus faible, 100 = plus fort) ; la vulnérabilité est l'indice composite de la synthèse (0–100). Deux échelles distinctes ramenées au même rang pour rester comparables. Source : Pacific Data Hub (SPC).",

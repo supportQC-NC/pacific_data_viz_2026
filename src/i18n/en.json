@@ -2150,6 +2150,12 @@
     "gauge_sub": "median composite index of the current selection",
     "gauge_label": "median vulnerability",
     "story": {
+      "mix_hint": "Hover a source to follow it through the flow",
+"mix_share": "· share",
+      "mix_k": "Synthesis · Power mix",
+"mix_t": "How the power is made",
+"mix_x": "Stacked area of the Pacific's electricity mix over the years, source by source: fossil fuels at the bottom (oil, diesel, coal, gas…), renewables on top (hydro, solar, wind, geothermal, biomass). At a glance: a still-heavy reliance on fossil fuels — and a renewable share gaining ground, too slowly.",
+"mix_m": "Method: generation by source (GWh), grid-connected ‘Total’ only, aggregated across all Pacific territories and summed per year. Fossil sources in coral, renewables in green. Source: IRENA via Pacific Data Hub (IMF / climate change).",
       "scatter": "Read left to right: the further left, the fewer emissions per capita. The higher up, the more vulnerable. The vertical line marks the regional emissions median, the horizontal one the median vulnerability. The top-left corner — few emissions, high exposure — gathers the territories most exposed relative to their responsibility.",
       "bubble": "Same plane, but bubble size now adds exposure to sea-level rise. The big bubbles clustered on the left say it plainly: those hit hardest by the sea are not those who loaded the atmosphere.",
       "slope": "Each line starts at a territory's responsibility (left) and reaches its vulnerability (right). An upward slope (coral) = few emissions but high exposure. The thicket of rising slopes sums up the whole act.",

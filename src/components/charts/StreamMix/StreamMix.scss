@@ -1,0 +1,119 @@
+// src/components/charts/StreamMix/StreamMix.scss
+// ============================================================
+// Styles du streamgraph. La couleur de chaque bande (--c) vient des données
+// (source d'énergie) ; toute la structure passe par les tokens du thème.
+// ============================================================
+
+.stream {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- bandes ---------- */
+  &__band {
+    fill: var(--c, var(--c-accent));
+    stroke: var(--c-bg);
+    stroke-width: 0.75;
+    opacity: 0.9;
+    cursor: pointer;
+    outline: none;
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &.is-dim {
+      opacity: 0.2;
+    }
+
+    &.is-active {
+      opacity: 1;
+      stroke: var(--c-text);
+      stroke-width: 1.25;
+    }
+  }
+
+  /* ---------- axe ---------- */
+  &__year {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 14px;
+  }
+
+  /* ---------- lecture au survol ---------- */
+  &__readout {
+    min-height: 1.4em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+  }
+
+  &__readout-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--c, var(--c-accent));
+    flex: none;
+  }
+
+  &__readout-name {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-share {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  /* ---------- légende ---------- */
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &.is-active {
+      opacity: 1;
+      color: var(--c-text);
+    }
+  }
+
+  &__leg-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+    background: var(--c, var(--c-accent));
+    flex: none;
+  }
+}

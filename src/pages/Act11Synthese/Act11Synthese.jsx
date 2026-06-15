@@ -30,6 +30,8 @@ import SlopeChart from "../../components/charts/SlopeChart";
 import RankBars from "../../components/RankBars/RankBars";
 import ArcParadox from "../../components/charts/ArcParadox/ArcParadox";
 import RadialRank from "../../components/charts/RadialRank/RadialRank";
+import StreamMix from "../../components/charts/StreamMix/StreamMix";
+import { fetchPowerMix } from "../../services/powerApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
 
@@ -223,6 +225,7 @@ export default function Act11Synthese() {
   const [state, setState] = useState({ status: "loading", data: null });
   const [idx, setIdx] = useState(0);
   const [focus, setFocus] = useState(null);
+  const [powerMix, setPowerMix] = useState({ status: "idle", data: null });
   // Pondérations interactives : un poids 0..2 par indicateur de vulnérabilité.
   // 1 = poids normal ; 0 = on retire l'indicateur ; 2 = on le double.
   const [weights, setWeights] = useState(() =>
@@ -252,6 +255,22 @@ export default function Act11Synthese() {
       alive = false;
       ctrl.abort();
     };
+  }, [lang]);
+
+  // Mix électrique par source — service dédié (powerApi), isolé : son échec
+  // n'affecte jamais la synthèse principale.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setPowerMix({ status: "loading", data: null });
+    fetchPowerMix({ lang, signal: ctrl.signal })
+      .then((res) =>
+        setPowerMix({
+          status: res.source === "live" ? "ready" : "empty",
+          data: res,
+        }),
+      )
+      .catch(() => setPowerMix({ status: "empty", data: null }));
+    return () => ctrl.abort();
   }, [lang]);
 
   const data = state.data;
@@ -592,6 +611,58 @@ export default function Act11Synthese() {
       .filter((g) => g.points.length);
   }, [areas, latest, data, lang, t, tk]);
 
+  // Anneau de production : on affiche davantage de territoires que les autres
+  // classements (jusqu'à 16), triés par volume décroissant.
+  const powerRadialRows = useMemo(() => {
+    const ind = data && data.power;
+    if (!ind || ind.status !== "live") return [];
+    const last = latestOf(ind);
+    return Object.entries(last)
+      .filter(([area, v]) => isPict(area) && Number.isFinite(v) && v > 0)
+      .map(([area, v]) => ({
+        code: area,
+        area,
+        name: pictName(area, lang),
+        value: Math.round(v * 10) / 10,
+      }))
+      .sort((x, y) => y.value - x.value)
+      .slice(0, 16);
+  }, [data, lang]);
+
+  // Mix électrique du Pacifique dans le temps : aire empilée par source
+  // (fossile en bas, renouvelable en haut), agrégée sur tous les territoires.
+  const powerMixYears = useMemo(
+    () => (powerMix.data && powerMix.data.years) || [],
+    [powerMix],
+  );
+  const powerMixSeries = useMemo(() => {
+    const d = powerMix.data;
+    if (!d || d.source !== "live" || !d.detailSources || !d.detailSources.length)
+      return [];
+    const years = d.years || [];
+    const colorFor = (kind, i, n) => {
+      const hue = kind === "fossil" ? 18 : 162;
+      const sat = kind === "fossil" ? 78 : 52;
+      const light = 44 + (n > 1 ? (i / (n - 1)) * 24 : 0);
+      return `hsl(${hue} ${sat}% ${light}%)`;
+    };
+    const build = (srcs, kind) =>
+      srcs.map((s, i) => ({
+        name: s.label,
+        color: colorFor(kind, i, srcs.length),
+        data: years.map((y) =>
+          Object.values(d.byArea).reduce(
+            (sum, a) =>
+              sum + ((a.detail[s.label] && a.detail[s.label][y]) || 0),
+            0,
+          ),
+        ),
+      }));
+    const fossils = d.detailSources.filter((s) => s.kind === "fossil");
+    const renews = d.detailSources.filter((s) => s.kind === "renew");
+    return [...build(fossils, "fossil"), ...build(renews, "renew")];
+  }, [powerMix]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -854,6 +925,24 @@ export default function Act11Synthese() {
         ),
       });
     }
+    if (powerMixSeries.length) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.mix_k"),
+        title: t("act11.story.mix_t"),
+        text: t("act11.story.mix_x"),
+        method: t("act11.story.mix_m"),
+        visual: (
+          <StreamMix
+            series={powerMixSeries}
+            years={powerMixYears}
+            unit={t("act11.ctx_unit_gwh")}
+            hintLabel={t("act11.story.mix_hint")}
+            shareLabel={t("act11.story.mix_share")}
+          />
+        ),
+      });
+    }
     if (contextRecap) {
       list.push({
         kind: "split",
@@ -915,7 +1004,7 @@ export default function Act11Synthese() {
         method: t("act11.story.power_m"),
         visual: (
           <RadialRank
-            rows={powerRows}
+            rows={powerRadialRows}
             unit={t("act11.ctx_unit_gwh")}
             centerLabel={t("act11.story.power_center")}
             hintLabel={t("act11.radial.hint")}
@@ -979,6 +1068,9 @@ export default function Act11Synthese() {
     powerRows,
     arcRows,
     renewGroups,
+    powerRadialRows,
+    powerMixSeries,
+    powerMixYears,
   ]);
 
   const total = scenes.length;
