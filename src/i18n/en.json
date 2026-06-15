@@ -2056,6 +2056,25 @@
     }
   },
   "act11": {
+    "radial": {
+  "hint": "Hover a bar for details"
+},
+    "mv": {
+  "cause": "Movement 1 · The cause",
+  "conseq": "Movement 2 · The consequence",
+  "injustice": "Movement 3 · The injustice",
+  "reponse": "Movement 4 · The response"
+},
+"arc": {
+  "resp": "Responsibility",
+  "vuln": "Vulnerability",
+  "low": "low",
+  "high": "high",
+  "up": "Exposed, not responsible",
+  "down": "Emits more than exposed",
+  "gap": "gap",
+  "hint": "Hover an arc for details"
+},
     "tag": "Act 11 — Synthesis",
     "title": "Guilty of almost nothing, exposed to almost everything",
     "lead": "Ten acts, one thread. Here we cross everything we've seen: what these islands emit, and what they bear. Responsibility on one side, vulnerability on the other — and the gap that lays bare the Pacific's climate injustice.",
@@ -2460,6 +2479,14 @@
       "meteo": "Weather network"
     },
     "story": {
+      "power_center": "Electricity output",
+      "arc_title": "The threads of injustice",
+"arc_text": "Each arc links a territory from its responsibility — its rank in per-capita emissions — to its vulnerability. When an arc climbs to the right — few emissions, high exposure — it turns coral. The tangle of these coral arcs, all leaning the same way, captures the Pacific's climate injustice at a glance: those who weigh the least bear the most.",
+"arc_m": "Method: responsibility is the percentile rank of per-capita GHG emissions within the Pacific (0 = lowest, 100 = highest); vulnerability is the synthesis composite index (0–100). Two different scales mapped to the same rank to stay comparable. Source: Pacific Data Hub (SPC).",
+"renew2_title": "The effort: footprint vs clean energy",
+"renew2_text": "Here we set footprint — per-capita emissions, horizontal — against effort — share of renewable energy, vertical. Top-left, territories combining a low footprint with largely renewable power are leading the way; bottom-right, those where the transition still lies ahead.",
+"renew2_m": "Method: per-capita GHG emissions (latest year) on X; share of renewables in final energy consumption (%) on Y. One point per territory, grouped by sub-region. Source: SDG 7 and climate change, Pacific Data Hub (SPC).",
+"renew2_y": "Renewable share (%)",
       "eyebrow": "The power of data",
       "title": "When a number changes a decision",
       "lead": "I don't build charts for decoration. I look for the moment a single number changes a decision — when a pattern invisible to the eye becomes a concrete action. One story sums up that conviction better than any pitch.",

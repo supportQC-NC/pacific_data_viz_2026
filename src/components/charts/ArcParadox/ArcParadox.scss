@@ -1,0 +1,225 @@
+// src/components/charts/ArcParadox/ArcParadox.scss
+// ============================================================
+// Styles de l'arc du paradoxe. Aucune couleur en dur : tout passe par les
+// tokens globaux (var(--c-*)), donc la bascule light/dark est automatique.
+// Les positions et l'intensité (--i) viennent du JS (data-dépendantes).
+// ============================================================
+
+.arcp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- axe ---------- */
+  &__axis {
+    stroke: var(--c-line-strong);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__tick {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__ticklabel {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  &__axisend {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+  }
+
+  /* ---------- arcs ---------- */
+  &__band {
+    --tone: var(--c-accent);
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &--up {
+      --tone: var(--c-warm);
+    }
+
+    &--down {
+      --tone: var(--c-accent);
+    }
+
+    &.is-dim {
+      opacity: 0.18;
+    }
+
+    &.is-active {
+      opacity: 1;
+    }
+  }
+
+  &__hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 18;
+    vector-effect: non-scaling-stroke;
+    cursor: pointer;
+    outline: none;
+  }
+
+  &__arc {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: var(--i, 0.6);
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+    transition:
+      stroke-width var(--t-fast) var(--ease-out),
+      opacity var(--t-fast) var(--ease-out);
+  }
+
+  &__band.is-active &__arc {
+    stroke-width: 3.5;
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--tone));
+  }
+
+  &__cap {
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+    transition: r var(--t-fast) var(--ease-out);
+
+    &--resp {
+      fill: var(--c-bg);
+      stroke: var(--c-text-soft);
+      stroke-width: 1.75;
+    }
+
+    &--vuln {
+      fill: var(--tone);
+      stroke: var(--c-bg);
+      stroke-width: 1.25;
+    }
+  }
+
+  &__band.is-active &__cap--vuln {
+    filter: drop-shadow(0 0 5px var(--tone));
+  }
+
+  /* ---------- annotations ---------- */
+  &__label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: var(--fw-med);
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--c-bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+
+    &.is-up {
+      fill: var(--c-warm);
+    }
+
+    &.is-down {
+      fill: var(--c-accent);
+    }
+  }
+
+  /* ---------- lecture au survol ---------- */
+  &__readout {
+    min-height: 1.4em;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-2);
+  }
+
+  &__readout-name {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-gap {
+    font-weight: var(--fw-semi);
+
+    &.is-up {
+      color: var(--c-warm);
+    }
+
+    &.is-down {
+      color: var(--c-accent);
+    }
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  /* ---------- légende ---------- */
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__leg-mark {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    flex: none;
+
+    &--resp {
+      background: var(--c-bg);
+      border: 1.75px solid var(--c-text-soft);
+    }
+
+    &--vuln {
+      background: var(--c-text-soft);
+    }
+
+    &--up {
+      width: 1.4rem;
+      height: 0;
+      border-radius: 0;
+      border-top: 3px solid var(--c-warm);
+    }
+
+    &--down {
+      width: 1.4rem;
+      height: 0;
+      border-radius: 0;
+      border-top: 3px solid var(--c-accent);
+    }
+  }
+}

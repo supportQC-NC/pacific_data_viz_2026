@@ -1,0 +1,132 @@
+// src/components/charts/RadialRank/RadialRank.scss
+// ============================================================
+// Styles du circular barplot. Couleurs via tokens globaux (bascule
+// light/dark automatique). Seules les valeurs DATA-dépendantes (intensité,
+// épaisseur) viennent du JS.
+// ============================================================
+
+.radial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    max-width: 560px;
+    overflow: visible;
+  }
+
+  /* ---------- repères ---------- */
+  &__guide {
+    fill: none;
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__hub {
+    fill: var(--c-surface);
+    stroke: var(--c-line);
+    stroke-width: 1;
+  }
+
+  /* ---------- barres ---------- */
+  &__bar {
+    --tone: var(--c-accent);
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &.is-top {
+      --tone: var(--c-positive);
+    }
+
+    &.is-dim {
+      opacity: 0.28;
+    }
+
+    &.is-active {
+      opacity: 1;
+    }
+  }
+
+  &__hit {
+    stroke: transparent;
+    stroke-width: 24;
+    vector-effect: non-scaling-stroke;
+    cursor: pointer;
+    outline: none;
+  }
+
+  &__stem {
+    stroke: var(--tone);
+    stroke-linecap: round;
+    opacity: var(--i, 0.7);
+    pointer-events: none;
+    transition:
+      stroke-width var(--t-fast) var(--ease-out),
+      opacity var(--t-fast) var(--ease-out);
+  }
+
+  &__bar.is-active &__stem {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--tone));
+  }
+
+  &__tip {
+    fill: var(--tone);
+    stroke: var(--c-bg);
+    stroke-width: 1.25;
+    pointer-events: none;
+  }
+
+  &__code {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  &__bar.is-active &__code {
+    fill: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  /* ---------- moyeu ---------- */
+  &__hub-label {
+    fill: var(--c-text-soft);
+    font-family: var(--font-display);
+    font-size: 26px;
+  }
+
+  &__hub-name {
+    fill: var(--c-text);
+    font-family: var(--font-display);
+    font-size: 24px;
+  }
+
+  &__hub-val {
+    fill: var(--c-accent);
+    font-family: var(--font-mono);
+    font-size: 34px;
+    font-weight: var(--fw-semi);
+  }
+
+  &__hub-unit {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+  }
+
+  /* ---------- pied ---------- */
+  &__hint {
+    min-height: 1.4em;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-mute);
+    text-align: center;
+  }
+}

@@ -28,6 +28,8 @@ import TrendChart from "../../components/charts/TrendChart";
 import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
 import SlopeChart from "../../components/charts/SlopeChart";
 import RankBars from "../../components/RankBars/RankBars";
+import ArcParadox from "../../components/charts/ArcParadox/ArcParadox";
+import RadialRank from "../../components/charts/RadialRank/RadialRank";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
 
@@ -534,6 +536,62 @@ export default function Act11Synthese() {
   const envtaxRows = useMemo(() => ctxRows("envtax"), [ctxRows]);
   const powerRows = useMemo(() => ctxRows("power"), [ctxRows]);
 
+
+  // Rang d'émissions (0-100) sur l'ensemble des territoires notés — sert à
+  // l'arc du paradoxe (responsabilité) et au renversement.
+  const emiRank = useMemo(() => {
+    const emi = latest.emissions || {};
+    const pts = areas.filter((a) => Number.isFinite(emi[a]));
+    return normalizeMap(pts.reduce((o, a) => ({ ...o, [a]: emi[a] }), {}));
+  }, [areas, latest]);
+
+  // L'arc du paradoxe : responsabilité (rang d'émissions) → vulnérabilité.
+  const arcRows = useMemo(
+    () =>
+      areas
+        .filter(
+          (a) => Number.isFinite(emiRank[a]) && Number.isFinite(composite[a]),
+        )
+        .map((a) => ({
+          code: a,
+          name: pictName(a, lang),
+          resp: Math.round(emiRank[a]),
+          vuln: Math.round(composite[a]),
+        })),
+    [areas, emiRank, composite, lang],
+  );
+
+  // Croisement « effort vs empreinte » : émissions (X) × renouvelable (Y, %).
+  const renewGroups = useMemo(() => {
+    const emi = latest.emissions || {};
+    const ren = latestOf(data && data.renew);
+    const pal = {
+      melanesia: tk.accent,
+      polynesia: tk.warm,
+      micronesia: tk.positive,
+      other: tk.secondary,
+    };
+    return Object.keys(SUBREGIONS)
+      .map((reg) => ({
+        name: t(`act1.filter.${reg}`),
+        color: pal[reg],
+        points: areas
+          .filter(
+            (a) =>
+              REGION_OF[a] === reg &&
+              Number.isFinite(emi[a]) &&
+              Number.isFinite(ren[a]),
+          )
+          .map((a) => ({
+            x: Number(emi[a].toFixed(2)),
+            y: Math.round(ren[a]),
+            name: pictName(a, lang),
+            code: a,
+          })),
+      }))
+      .filter((g) => g.points.length);
+  }, [areas, latest, data, lang, t, tk]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -571,6 +629,8 @@ export default function Act11Synthese() {
   const scenes = useMemo(() => {
     if (state.status !== "ready") return [];
     const list = [];
+
+    // ── Ouverture ────────────────────────────────────────────────
     list.push({
       kind: "hero",
       eyebrow: t("act11.tag"),
@@ -583,80 +643,11 @@ export default function Act11Synthese() {
       title: t("act11.story.voyage_title"),
       text: t("act11.story.voyage_text"),
     });
-    if (contextRecap) {
-      list.push({
-        kind: "split",
-        eyebrow: t(contextRecap.eyebrowKey),
-        title: t(contextRecap.titleKey),
-        text: t(contextRecap.textKey),
-        method: t("act11.calc.context"),
-        method: t(contextRecap.methodKey),
-        visual: (
-          <RankBars
-            data={contextRecap.rows}
-            unit={t(contextRecap.unitKey)}
-            betterWhen={contextRecap.better}
-          />
-        ),
-      });
-    }
-    // --- Éclairages de synthèse : cultures, bétail, fiscalité, électricité ---
-    if (cropsRows.length >= 3) {
-      list.push({
-        kind: "split",
-        eyebrow: t("act11.story.crops_k"),
-        method: t("act11.calc.crops"),
-        title: t("act11.story.crops_t"),
-        text: t("act11.story.crops_x"),
-        method: t("act11.story.crops_m"),
-        visual: (
-          <RankBars data={cropsRows} unit={t("act11.ctx_unit_kgha")} betterWhen="high" />
-        ),
-      });
-    }
-    if (livestockRows.length >= 3) {
-      list.push({
-        kind: "split",
-        eyebrow: t("act11.story.stock_k"),
-        method: t("act11.calc.stock"),
-        title: t("act11.story.stock_t"),
-        text: t("act11.story.stock_x"),
-        method: t("act11.story.stock_m"),
-        visual: (
-          <RankBars data={livestockRows} unit={t("act11.ctx_unit_kganim")} betterWhen="high" />
-        ),
-      });
-    }
-    if (envtaxRows.length >= 3) {
-      list.push({
-        kind: "split",
-        eyebrow: t("act11.story.envtax2_k"),
-        method: t("act11.calc.envtax"),
-        title: t("act11.story.envtax2_t"),
-        text: t("act11.story.envtax2_x"),
-        method: t("act11.story.envtax2_m"),
-        visual: (
-          <RankBars data={envtaxRows} unit={t("act11.ctx_unit_gdp")} betterWhen="high" />
-        ),
-      });
-    }
-    if (powerRows.length >= 3) {
-      list.push({
-        kind: "split",
-        eyebrow: t("act11.story.power_k"),
-        method: t("act11.calc.power"),
-        title: t("act11.story.power_t"),
-        text: t("act11.story.power_x"),
-        method: t("act11.story.power_m"),
-        visual: (
-          <RankBars data={powerRows} unit={t("act11.ctx_unit_gwh")} betterWhen="high" />
-        ),
-      });
-    }
+
+    // ── Mouvement 1 · LA CAUSE ───────────────────────────────────
     list.push({
       kind: "split",
-      eyebrow: t("act11.story.resp_k"),
-        method: t("act11.calc.resp"),
+      eyebrow: t("act11.mv.cause"),
       title: t("act11.story.resp_title"),
       text: t("act11.story.resp_text"),
       method: t("act11.story.resp_m"),
@@ -686,10 +677,11 @@ export default function Act11Synthese() {
         />
       ),
     });
+
+    // ── Mouvement 2 · LA CONSÉQUENCE ─────────────────────────────
     list.push({
       kind: "split",
-      eyebrow: t("act11.story.ocean_k"),
-        method: t("act11.calc.ocean"),
+      eyebrow: t("act11.mv.conseq"),
       title: t("act11.story.ocean_title"),
       text: t("act11.story.ocean_text"),
       method: t("act11.story.ocean_m"),
@@ -705,7 +697,6 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.atlas_k"),
-        method: t("act11.calc.atlas"),
       title: t("act11.story.atlas_title"),
       text: t("act11.story.atlas_text"),
       method: t("act11.story.atlas_m"),
@@ -725,39 +716,33 @@ export default function Act11Synthese() {
         />
       ),
     });
-    list.push({
-      kind: "split",
-      eyebrow: t("act11.story.radar_k"),
-        method: t("act11.calc.radar"),
-      title: t("act11.story.radar_title"),
-      text: t("act11.story.radar_text"),
-      method: t("act11.story.radar_m"),
-      visual: (
-        <ProfileRadar indicators={radarIndicators} series={radarSeries} />
-      ),
-    });
-    list.push({
-      kind: "split",
-      eyebrow: t("act11.story.matrix_k"),
-        method: t("act11.calc.matrix"),
-      title: t("act11.story.matrix_title"),
-      text: t("act11.story.matrix_text"),
-      method: t("act11.story.matrix_m"),
-      hint: t("act11.story.focus_hint"),
-      visual: (
-        <VulnMatrix
-          rows={matrixRows}
-          inds={indLabels}
-          selected={focus}
-          onSelect={(c) => setFocus((s) => (s === c ? null : c))}
-          unit={t("act11.index_unit")}
-        />
-      ),
-    });
+
+    // ── Mouvement 3 · L'INJUSTICE ────────────────────────────────
+    if (arcRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.mv.injustice"),
+        title: t("act11.story.arc_title"),
+        text: t("act11.story.arc_text"),
+        method: t("act11.story.arc_m"),
+        visual: (
+          <ArcParadox
+            rows={arcRows}
+            respLabel={t("act11.arc.resp")}
+            vulnLabel={t("act11.arc.vuln")}
+            lowLabel={t("act11.arc.low")}
+            highLabel={t("act11.arc.high")}
+            upLabel={t("act11.arc.up")}
+            downLabel={t("act11.arc.down")}
+            gapLabel={t("act11.arc.gap")}
+            hintLabel={t("act11.arc.hint")}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.paradox_k"),
-        method: t("act11.calc.paradox"),
       title: t("act11.story.paradox_title"),
       text: t("act11.story.paradox_text"),
       method: t("act11.story.paradox_m"),
@@ -777,7 +762,6 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.reversal_k"),
-        method: t("act11.calc.reversal"),
       title: t("act11.story.reversal_title"),
       text: t("act11.story.reversal_text"),
       method: t("act11.story.reversal_m"),
@@ -794,8 +778,34 @@ export default function Act11Synthese() {
     });
     list.push({
       kind: "split",
+      eyebrow: t("act11.story.radar_k"),
+      title: t("act11.story.radar_title"),
+      text: t("act11.story.radar_text"),
+      method: t("act11.story.radar_m"),
+      visual: (
+        <ProfileRadar indicators={radarIndicators} series={radarSeries} />
+      ),
+    });
+    list.push({
+      kind: "split",
+      eyebrow: t("act11.story.matrix_k"),
+      title: t("act11.story.matrix_title"),
+      text: t("act11.story.matrix_text"),
+      method: t("act11.story.matrix_m"),
+      hint: t("act11.story.focus_hint"),
+      visual: (
+        <VulnMatrix
+          rows={matrixRows}
+          inds={indLabels}
+          selected={focus}
+          onSelect={(c) => setFocus((s) => (s === c ? null : c))}
+          unit={t("act11.index_unit")}
+        />
+      ),
+    });
+    list.push({
+      kind: "split",
       eyebrow: t("act11.story.swarm_k"),
-        method: t("act11.calc.swarm"),
       title: t("act11.story.swarm_title"),
       text: t("act11.story.swarm_text"),
       method: t("act11.story.swarm_m"),
@@ -816,16 +826,106 @@ export default function Act11Synthese() {
     list.push({
       kind: "split",
       eyebrow: t("act11.story.top_k"),
-        method: t("act11.calc.top"),
       title: t("act11.story.top_title"),
       text: t("act11.story.top_text"),
       method: t("act11.story.top_m"),
-      visual: <RankBars data={topExposed} unit={t("act11.index_unit")} betterWhen="low" />,
+      visual: (
+        <RankBars data={topExposed} unit={t("act11.index_unit")} betterWhen="low" />
+      ),
     });
+
+    // ── Mouvement 4 · LA RÉPONSE ─────────────────────────────────
+    if (renewGroups.length) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.mv.reponse"),
+        title: t("act11.story.renew2_title"),
+        text: t("act11.story.renew2_text"),
+        method: t("act11.story.renew2_m"),
+        visual: (
+          <ParadoxScatterLive
+            groups={renewGroups}
+            medianX={medianX}
+            medianY={50}
+            worldRef={null}
+            xName={t("act11.scatter_x_unit")}
+            yName={t("act11.story.renew2_y")}
+          />
+        ),
+      });
+    }
+    if (contextRecap) {
+      list.push({
+        kind: "split",
+        eyebrow: t(contextRecap.eyebrowKey),
+        title: t(contextRecap.titleKey),
+        text: t(contextRecap.textKey),
+        method: t(contextRecap.methodKey),
+        visual: (
+          <RankBars
+            data={contextRecap.rows}
+            unit={t(contextRecap.unitKey)}
+            betterWhen={contextRecap.better}
+          />
+        ),
+      });
+    }
+    if (cropsRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.crops_k"),
+        title: t("act11.story.crops_t"),
+        text: t("act11.story.crops_x"),
+        method: t("act11.story.crops_m"),
+        visual: (
+          <RankBars data={cropsRows} unit={t("act11.ctx_unit_kgha")} betterWhen="high" />
+        ),
+      });
+    }
+    if (livestockRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.stock_k"),
+        title: t("act11.story.stock_t"),
+        text: t("act11.story.stock_x"),
+        method: t("act11.story.stock_m"),
+        visual: (
+          <RankBars data={livestockRows} unit={t("act11.ctx_unit_kganim")} betterWhen="high" />
+        ),
+      });
+    }
+    if (envtaxRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.envtax2_k"),
+        title: t("act11.story.envtax2_t"),
+        text: t("act11.story.envtax2_x"),
+        method: t("act11.story.envtax2_m"),
+        visual: (
+          <RankBars data={envtaxRows} unit={t("act11.ctx_unit_gdp")} betterWhen="high" />
+        ),
+      });
+    }
+    if (powerRows.length >= 3) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.power_k"),
+        title: t("act11.story.power_t"),
+        text: t("act11.story.power_x"),
+        method: t("act11.story.power_m"),
+        visual: (
+          <RadialRank
+            rows={powerRows}
+            unit={t("act11.ctx_unit_gwh")}
+            centerLabel={t("act11.story.power_center")}
+            hintLabel={t("act11.radial.hint")}
+          />
+        ),
+      });
+    }
     list.push({
       kind: "split",
       eyebrow: t("act11.story.studio_k"),
-        method: t("act11.calc.studio"),
       title: t("act11.story.studio_title"),
       text: t("act11.story.studio_text"),
       method: t("act11.story.studio_m"),
@@ -840,6 +940,8 @@ export default function Act11Synthese() {
         />
       ),
     });
+
+    // ── Verdict ──────────────────────────────────────────────────
     list.push({
       kind: "verdict",
       eyebrow: t("act11.outro.kicker"),
@@ -875,6 +977,8 @@ export default function Act11Synthese() {
     livestockRows,
     envtaxRows,
     powerRows,
+    arcRows,
+    renewGroups,
   ]);
 
   const total = scenes.length;

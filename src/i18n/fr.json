@@ -2064,6 +2064,26 @@
     }
   },
   "act11": {
+    "radial": {
+  "hint": "Survolez une barre pour le détail"
+},
+
+    "mv": {
+  "cause": "Mouvement 1 · La cause",
+  "conseq": "Mouvement 2 · La conséquence",
+  "injustice": "Mouvement 3 · L'injustice",
+  "reponse": "Mouvement 4 · La réponse"
+},
+"arc": {
+  "resp": "Responsabilité",
+  "vuln": "Vulnérabilité",
+  "low": "faible",
+  "high": "élevé",
+  "up": "Exposé sans l'avoir causé",
+  "down": "Plus émetteur qu'exposé",
+  "gap": "écart",
+  "hint": "Survolez un arc pour le détail"
+},
     "tag": "Acte 11 — Synthèse",
     "title": "Coupables de presque rien, exposés à presque tout",
     "lead": "Dix actes, un même fil. On croise ici tout ce qu'on a vu : ce que ces îles émettent, et ce qu'elles encaissent. La responsabilité d'un côté, la vulnérabilité de l'autre — et l'écart qui crie l'injustice climatique du Pacifique.",
@@ -2139,6 +2159,14 @@
     "gauge_sub": "indice composite médian de la sélection courante",
     "gauge_label": "vulnérabilité médiane",
     "story": {
+      "power_center": "Production électrique",
+      "arc_title": "L'entrelacs de l'injustice",
+"arc_text": "Chaque arc relie un territoire de sa responsabilité — son rang d'émissions par habitant — à sa vulnérabilité. Quand l'arc grimpe vers la droite — peu d'émissions, forte exposition — il vire au corail. L'enchevêtrement de ces arcs corail, tous penchés dans le même sens, dessine d'un coup d'œil l'injustice climatique du Pacifique : ceux qui pèsent le moins encaissent le plus.",
+"arc_m": "Calcul : la responsabilité est le rang percentile des émissions de GES par habitant au sein du Pacifique (0 = plus faible, 100 = plus fort) ; la vulnérabilité est l'indice composite de la synthèse (0–100). Deux échelles distinctes ramenées au même rang pour rester comparables. Source : Pacific Data Hub (SPC).",
+"renew2_title": "L'effort : empreinte contre énergie propre",
+"renew2_text": "On confronte ici l'empreinte — émissions par habitant, en abscisse — à l'effort — part d'énergie renouvelable, en ordonnée. En haut à gauche, les territoires qui cumulent faible empreinte et électricité largement renouvelable montrent la voie ; en bas à droite, ceux pour qui la transition reste à mener.",
+"renew2_m": "Calcul : émissions de GES par habitant (dernière année) en X ; part des renouvelables dans la consommation finale d'énergie (%) en Y. Un point par territoire, regroupés par sous-région. Source : ODD 7 et changement climatique, Pacific Data Hub (SPC).",
+"renew2_y": "Part renouvelable (%)",
       "scatter": "Lisez de gauche à droite : plus un territoire est à gauche, moins il émet par habitant. Plus il est haut, plus il est vulnérable. La verticale marque la médiane régionale des émissions, l'horizontale la vulnérabilité médiane. Le coin haut-gauche — peu d'émissions, forte exposition — concentre les territoires les plus exposés au regard de leur responsabilité.",
       "bubble": "On reprend le même plan, et la taille des bulles ajoute l'exposition à la montée des eaux. Les grosses bulles massées à gauche le disent sans détour : ceux qui subissent le plus la mer ne sont pas ceux qui ont chargé l'atmosphère.",
       "slope": "Chaque trait part de la responsabilité d'un territoire (gauche) et rejoint sa vulnérabilité (droite). Une pente qui monte (corail) = peu d'émissions mais forte exposition. La forêt de pentes montantes résume tout l'acte.",
