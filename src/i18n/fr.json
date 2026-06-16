@@ -467,6 +467,41 @@
       "loading": "Chargement des données de tourisme…",
       "unavailable": "Donnée d'arrivées touristiques momentanément indisponible.",
       "source": "Source : ONU Tourisme · via Pacific Data Hub"
+    },
+    "pop": {
+      "kicker": "Démographie",
+      "title": "Le ballon : la croissance démographique",
+      "lead": "Choisissez un territoire : le ballon gonfle quand la population croît, se dégonfle quand elle décline. Taux de croissance annuel.",
+      "select_label": "Territoire",
+      "highest": "La plus forte",
+      "lowest": "La plus faible",
+      "unit": "%",
+      "value_caption": "taux de croissance démographique annuel",
+      "size_caption": "Taille relative au Pacifique",
+      "year_label": "Donnée {year}",
+      "trend_up": "▲ +{n} pt depuis {year}",
+      "trend_down": "▼ {n} pt depuis {year}",
+      "trend_flat": "stable depuis {year}",
+      "median_label": "Médiane du Pacifique · {n} %",
+      "aria": "{area} : croissance démographique {n} % ({year}).",
+      "loading": "Chargement des données démographiques…",
+      "unavailable": "Donnée de croissance démographique momentanément indisponible.",
+      "source": "Source : CPS · via Pacific Data Hub"
+    },
+    "power": {
+      "kicker": "Énergie",
+      "title": "L'anneau : le mix électrique",
+      "lead": "Choisissez un territoire : l'anneau se recompose selon les sources de production électrique. Le chiffre clé est la part renouvelable réelle.",
+      "select_label": "Territoire",
+      "greenest": "Le plus renouvelable",
+      "fossilest": "Le plus fossile",
+      "value_caption": "part renouvelable de la production",
+      "mix_caption": "Mix de production réel · {year}",
+      "year_label": "Mix {year} · {total} GWh",
+      "aria": "{area} : {n} % d'électricité renouvelable ({year}).",
+      "loading": "Chargement du mix électrique…",
+      "unavailable": "Donnée de production électrique momentanément indisponible.",
+      "source": "Source : IRENA · via Pacific Data Hub"
     }
   },
   "footer": {

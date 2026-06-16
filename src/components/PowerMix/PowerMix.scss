@@ -1,0 +1,395 @@
+/* src/components/PowerMix/PowerMix.scss
+   ============================================================
+   Section signature « L'anneau : le mix électrique ». Donut par source,
+   chiffre = part renouvelable. 100 % tokens.
+   ============================================================ */
+
+.power {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.power__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.power__head {
+  max-width: var(--maxw-text);
+}
+.power__kicker {
+  color: var(--c-positive);
+  margin-bottom: var(--sp-3);
+}
+.power__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.power__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.power__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.power__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.power__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.power__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.power__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.power__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.power__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition: border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-positive);
+    box-shadow: 0 0 0 3px var(--c-positive-glow);
+  }
+}
+.power__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.power__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.power__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.power__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.power__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-positive);
+  }
+  &:hover {
+    border-color: var(--c-positive);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-positive);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : l'anneau ---- */
+.power__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+}
+.power__svg {
+  display: block;
+  width: clamp(200px, 26vw, 280px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 22px 40px var(--c-positive-glow));
+}
+.power__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.power__glow {
+  stroke: var(--c-positive);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 8;
+  opacity: 0.35;
+}
+.power__segs {
+  animation: powerFade 0.5s var(--ease-out);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes powerFade {
+  from {
+    opacity: 0.2;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.power__seg {
+  stroke: var(--c-bg);
+  stroke-width: 1.5;
+}
+.power__bolt {
+  fill: var(--c-text);
+  opacity: 0.7;
+}
+
+/* palette des sources (renouvelable / fossile) — fill SVG + fond pastille */
+.power__c-r0 {
+  fill: var(--c-positive);
+  background: var(--c-positive);
+}
+.power__c-r1 {
+  fill: var(--c-accent);
+  background: var(--c-accent);
+}
+.power__c-r2 {
+  fill: var(--c-positive-soft);
+  background: var(--c-positive-soft);
+}
+.power__c-r3 {
+  fill: var(--c-accent-deep);
+  background: var(--c-accent-deep);
+}
+.power__c-f0 {
+  fill: var(--c-warm);
+  background: var(--c-warm);
+}
+.power__c-f1 {
+  fill: var(--c-warm-soft);
+  background: var(--c-warm-soft);
+}
+
+/* ---- Colonne 3 : lecture + légende ---- */
+.power__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.power__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.power__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-positive);
+}
+.power__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.power__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.power__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.power__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.power__year {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.power__legend {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.power__legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-soft);
+}
+.power__sw {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.power__legend-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.power__legend-share {
+  font-style: normal;
+  font-weight: var(--fw-bold);
+  color: var(--c-text);
+  flex: 0 0 auto;
+}
+
+/* ---------------- Source ---------------- */
+.power__source {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .power {
+    padding: var(--sp-16) 0;
+  }
+  .power__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .power__controls,
+  .power__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .power__chips {
+    justify-content: center;
+  }
+  .power__val,
+  .power__name {
+    justify-content: center;
+  }
+  .power__legend-row {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .power__segs {
+    animation: none;
+  }
+}

@@ -467,6 +467,41 @@
       "loading": "Loading tourism data…",
       "unavailable": "Tourist arrivals data is temporarily unavailable.",
       "source": "Source: UN Tourism · via Pacific Data Hub"
+    },
+    "pop": {
+      "kicker": "Demographics",
+      "title": "The balloon: population growth",
+      "lead": "Pick a territory: the balloon inflates when population grows, deflates when it declines. Annual growth rate.",
+      "select_label": "Territory",
+      "highest": "Highest",
+      "lowest": "Lowest",
+      "unit": "%",
+      "value_caption": "annual population growth rate",
+      "size_caption": "Size relative to the Pacific",
+      "year_label": "{year} data",
+      "trend_up": "▲ +{n} pt since {year}",
+      "trend_down": "▼ {n} pt since {year}",
+      "trend_flat": "stable since {year}",
+      "median_label": "Pacific median · {n}%",
+      "aria": "{area}: population growth {n}% ({year}).",
+      "loading": "Loading demographic data…",
+      "unavailable": "Population growth data is temporarily unavailable.",
+      "source": "Source: SPC · via Pacific Data Hub"
+    },
+    "power": {
+      "kicker": "Energy",
+      "title": "The ring: electricity mix",
+      "lead": "Pick a territory: the ring recomposes by electricity source. The key figure is the real renewable share.",
+      "select_label": "Territory",
+      "greenest": "Greenest",
+      "fossilest": "Most fossil",
+      "value_caption": "renewable share of generation",
+      "mix_caption": "Real generation mix · {year}",
+      "year_label": "Mix {year} · {total} GWh",
+      "aria": "{area}: {n}% renewable electricity ({year}).",
+      "loading": "Loading electricity mix…",
+      "unavailable": "Electricity generation data is temporarily unavailable.",
+      "source": "Source: IRENA · via Pacific Data Hub"
     }
   },
   "footer": {

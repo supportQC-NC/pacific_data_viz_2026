@@ -31,6 +31,8 @@ import StiltHouse from "../../components/StiltHouse/StiltHouse";
 import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
 import LossStack from "../../components/LossStack/LossStack";
 import TourismBeach from "../../components/TourismBeach/TourismBeach";
+import PopGrowth from "../../components/PopGrowth/PopGrowth";
+import PowerMix from "../../components/PowerMix/PowerMix";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -183,6 +185,10 @@ export default function Home() {
       <LossStack />
 
       <TourismBeach />
+
+      <PopGrowth />
+
+      <PowerMix />
 
       <HomeIntro />
 
