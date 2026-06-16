@@ -470,14 +470,14 @@
     },
     "pop": {
       "kicker": "Démographie",
-      "title": "Le ballon : la croissance démographique",
-      "lead": "Choisissez un territoire : le ballon gonfle quand la population croît, se dégonfle quand elle décline. Taux de croissance annuel.",
+      "title": "La colonne : la croissance démographique",
+      "lead": "Choisissez un territoire : la colonne de silhouettes s'élève au-dessus de la ligne quand la population croît, s'enfonce en-dessous quand elle décline. Taux annuel.",
       "select_label": "Territoire",
       "highest": "La plus forte",
       "lowest": "La plus faible",
       "unit": "%",
       "value_caption": "taux de croissance démographique annuel",
-      "size_caption": "Taille relative au Pacifique",
+      "size_caption": "Hauteur relative au Pacifique",
       "year_label": "Donnée {year}",
       "trend_up": "▲ +{n} pt depuis {year}",
       "trend_down": "▼ {n} pt depuis {year}",
@@ -486,7 +486,8 @@
       "aria": "{area} : croissance démographique {n} % ({year}).",
       "loading": "Chargement des données démographiques…",
       "unavailable": "Donnée de croissance démographique momentanément indisponible.",
-      "source": "Source : CPS · via Pacific Data Hub"
+      "source": "Source : CPS · via Pacific Data Hub",
+      "baseline_label": "0 %"
     },
     "power": {
       "kicker": "Énergie",

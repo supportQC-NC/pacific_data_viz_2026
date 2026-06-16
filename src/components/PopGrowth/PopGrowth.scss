@@ -1,7 +1,8 @@
 /* src/components/PopGrowth/PopGrowth.scss
    ============================================================
-   Section signature « Le ballon : la croissance démographique » (taux %, signé).
-   Polarité NEUTRE (accent cyan, tendance neutre). 100 % tokens.
+   Section signature « La colonne : la croissance démographique » (taux %, signé).
+   Silhouettes pleines au-dessus (croissance) / évidées en-dessous (déclin).
+   Polarité NEUTRE (accent cyan). 100 % tokens.
    ============================================================ */
 
 .pop {
@@ -173,7 +174,7 @@
   }
 }
 
-/* ---- Colonne 2 : le ballon ---- */
+/* ---- Colonne 2 : la colonne ---- */
 .pop__viz {
   margin: 0;
   justify-self: center;
@@ -181,11 +182,11 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 320px;
+  max-width: 300px;
 }
 .pop__svg {
   display: block;
-  width: clamp(200px, 26vw, 280px);
+  width: clamp(190px, 24vw, 260px);
   height: auto;
   overflow: visible;
   filter: drop-shadow(0 22px 40px var(--c-accent-glow));
@@ -199,26 +200,24 @@
   color: var(--c-text-mute);
 }
 
-.pop__string {
+.pop__fig--up circle,
+.pop__fig--up path {
+  fill: var(--c-accent);
+}
+.pop__fig--down circle,
+.pop__fig--down path {
+  fill: var(--c-warm);
+}
+.pop__baseline {
   stroke: var(--c-text-mute);
   stroke-width: 1.6;
-  stroke-linecap: round;
+  stroke-dasharray: 4 5;
 }
-.pop__knot {
-  fill: var(--c-accent-deep);
-}
-.pop__body {
-  fill: var(--c-accent);
-  opacity: 0.32;
-  stroke: var(--c-accent);
-  stroke-width: 2;
-}
-.pop__shine {
-  fill: var(--c-bg);
-  opacity: 0.4;
-}
-.pop__people circle {
-  fill: var(--c-accent);
+.pop__zero {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-anchor: end;
 }
 
 /* ---- Colonne 3 : lecture ---- */
@@ -236,6 +235,9 @@
   gap: var(--sp-2);
   margin: 0;
   line-height: 1;
+}
+.pop__val--neg .pop__val-num {
+  color: var(--c-warm);
 }
 .pop__val-num {
   font-family: var(--font-display);

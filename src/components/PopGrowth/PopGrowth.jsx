@@ -1,16 +1,17 @@
 // src/components/PopGrowth/PopGrowth.jsx
 // ============================================================
-// SECTION SIGNATURE — « Le ballon : la croissance démographique » (Home). Un
-// ballon GONFLE (croissance +) ou se DÉGONFLE (déclin −) selon le TAUX DE
-// CROISSANCE DÉMOGRAPHIQUE réel du territoire (% annuel, signé), via le dataset
-// live `population` (CPS — DF_NMDI_POP · NMDI0002).
+// SECTION SIGNATURE — « La colonne : la croissance démographique » (Home). Une
+// COLONNE DE SILHOUETTES s'élève au-dessus d'une ligne de base quand la
+// population CROÎT (+), s'enfonce en-dessous quand elle DÉCLINE (−), selon le
+// TAUX DE CROISSANCE DÉMOGRAPHIQUE réel du territoire (% annuel, signé), via le
+// dataset live `population` (CPS — DF_NMDI_POP · NMDI0002).
 //
-// Honnête : grand nombre = taux RÉEL (%, signé, dernière année) ; la TAILLE du
-// ballon encode ce taux normalisé sur l'amplitude du Pacifique (dit sous le
-// visuel) ; lecture NEUTRE (ni bien ni mal) ; tendance « depuis {année} » en ton
-// neutre. Ballon qui flotte (rAF) ; taille animée par GSAP.
-// prefers-reduced-motion respecté. <section>/ref toujours montés. Tokens, FR/EN,
-// zéro inline.
+// Honnête : grand nombre = taux RÉEL (%, signé, dernière année) ; la HAUTEUR de
+// la colonne encode ce taux normalisé sur l'amplitude du Pacifique (dit sous le
+// visuel) ; lecture NEUTRE (croissance pleine / déclin évidé, sans jugement) ;
+// tendance « depuis {année} » en ton neutre. Léger souffle (rAF) ; montée animée
+// par GSAP. prefers-reduced-motion respecté. <section>/ref toujours montés.
+// Tokens, FR/EN, zéro inline.
 // ============================================================
 
 import React, {
@@ -29,19 +30,15 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./PopGrowth.scss";
 
-const CX = 130;
-const CY = 106;
-const R_MID = 60;
-const R_AMP = 28;
-const DOTS = [
-  [0, -10],
-  [-16, 0],
-  [16, 0],
-  [-8, 12],
-  [8, 12],
-  [0, 2],
-  [0, 24],
-];
+const N = 5;
+const COL_X = 120;
+const BASE_Y = 128;
+const GAP = 22;
+const HEAD_R = 5.6;
+const HEAD_CY = -8;
+const BODY = "M-7.2,11 C-7.2,0 -4.3,-2.6 0,-2.6 C4.3,-2.6 7.2,0 7.2,11 Z";
+const ABOVE = Array.from({ length: N }, (_, i) => BASE_Y - 16 - i * GAP);
+const BELOW = Array.from({ length: N }, (_, i) => BASE_Y + 20 + i * GAP);
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -65,6 +62,7 @@ function fillTpl(str, map) {
     String(str),
   );
 }
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
 export default function PopGrowth() {
   const dispatch = useDispatch();
@@ -152,8 +150,9 @@ export default function PopGrowth() {
 
   const sel = selected ? byCode[selected] : null;
 
-  /* ----------- Ballon ----------- */
-  const balloonRef = useRef(null);
+  /* ----------- Colonne ----------- */
+  const aboveRefs = useRef([]);
+  const belowRefs = useRef([]);
   const numberRef = useRef(null);
   const animObj = useRef({ w: 0, val: 0 });
   const startedRef = useRef(false);
@@ -164,14 +163,23 @@ export default function PopGrowth() {
       if (numberRef.current)
         numberRef.current.textContent = signed(animObj.current.val);
 
-      const sc = (R_MID + w * R_AMP) / R_MID;
-      const bob = reduced ? 0 : 3 * Math.sin(phase * 1.1);
-      const sway = reduced ? 0 : 2 * Math.sin(phase * 0.8 + 1);
-      if (balloonRef.current)
-        balloonRef.current.setAttribute(
-          "transform",
-          `translate(${sway.toFixed(2)} ${bob.toFixed(2)}) translate(${CX} ${CY}) scale(${sc.toFixed(4)}) translate(${-CX} ${-CY})`,
-        );
+      const up = clamp01(w) * N;
+      const down = clamp01(-w) * N;
+
+      aboveRefs.current.forEach((node, i) => {
+        if (!node) return;
+        const aff = clamp01(up - i);
+        const bob = reduced ? 0 : 1.1 * Math.sin(phase * 1.4 + i);
+        node.setAttribute("opacity", aff.toFixed(3));
+        node.setAttribute("transform", `translate(0 ${bob.toFixed(2)})`);
+      });
+      belowRefs.current.forEach((node, i) => {
+        if (!node) return;
+        const aff = clamp01(down - i);
+        const bob = reduced ? 0 : 1.1 * Math.sin(phase * 1.4 + i + 3);
+        node.setAttribute("opacity", aff.toFixed(3));
+        node.setAttribute("transform", `translate(0 ${bob.toFixed(2)})`);
+      });
     },
     [reduced, signed],
   );
@@ -320,49 +328,57 @@ export default function PopGrowth() {
               )}
             </div>
 
-            {/* Colonne 2 — le ballon */}
+            {/* Colonne 2 — la colonne de silhouettes */}
             <figure className="pop__viz">
               <svg
                 className="pop__svg"
-                viewBox="0 0 260 230"
+                viewBox="0 0 240 256"
                 role="img"
                 aria-label={svgLabel}
               >
-                <g ref={balloonRef}>
-                  {/* ficelle */}
-                  <path
-                    className="pop__string"
-                    d={`M${CX},${CY + R_MID} C${CX - 8},${CY + R_MID + 14} ${CX + 8},${CY + R_MID + 26} ${CX},${CY + R_MID + 40}`}
-                    fill="none"
-                  />
-                  {/* nœud */}
-                  <path
-                    className="pop__knot"
-                    d={`M${CX - 6},${CY + R_MID} L${CX + 6},${CY + R_MID} L${CX},${CY + R_MID + 9} Z`}
-                  />
-                  {/* corps */}
-                  <ellipse
-                    className="pop__body"
-                    cx={CX}
-                    cy={CY}
-                    rx={R_MID}
-                    ry={R_MID + 6}
-                  />
-                  {/* reflet */}
-                  <ellipse
-                    className="pop__shine"
-                    cx={CX - 20}
-                    cy={CY - 22}
-                    rx="12"
-                    ry="18"
-                  />
-                  {/* petite foule à l'intérieur */}
-                  <g className="pop__people">
-                    {DOTS.map(([dx, dy], i) => (
-                      <circle key={i} cx={CX + dx} cy={CY + dy} r="4.2" />
-                    ))}
+                {/* silhouettes au-dessus (croissance) */}
+                {ABOVE.map((y, i) => (
+                  <g key={`a${i}`} transform={`translate(${COL_X} ${y})`}>
+                    <g
+                      ref={(n) => {
+                        aboveRefs.current[i] = n;
+                      }}
+                      className="pop__fig pop__fig--up"
+                      opacity="0"
+                    >
+                      <circle cx="0" cy={HEAD_CY} r={HEAD_R} />
+                      <path d={BODY} />
+                    </g>
                   </g>
-                </g>
+                ))}
+
+                {/* silhouettes en-dessous (déclin, évidées) */}
+                {BELOW.map((y, i) => (
+                  <g key={`b${i}`} transform={`translate(${COL_X} ${y})`}>
+                    <g
+                      ref={(n) => {
+                        belowRefs.current[i] = n;
+                      }}
+                      className="pop__fig pop__fig--down"
+                      opacity="0"
+                    >
+                      <circle cx="0" cy={HEAD_CY} r={HEAD_R} />
+                      <path d={BODY} />
+                    </g>
+                  </g>
+                ))}
+
+                {/* ligne de base (zéro) */}
+                <line
+                  className="pop__baseline"
+                  x1="44"
+                  y1={BASE_Y}
+                  x2="196"
+                  y2={BASE_Y}
+                />
+                <text className="pop__zero" x="40" y={BASE_Y + 4}>
+                  {t("home.pop.baseline_label")}
+                </text>
               </svg>
               <figcaption className="pop__viz-cap">
                 {t("home.pop.size_caption")}
@@ -371,7 +387,7 @@ export default function PopGrowth() {
 
             {/* Colonne 3 — lecture */}
             <div className="pop__readout">
-              <p className="pop__val">
+              <p className={`pop__val ${sel.val < 0 ? "pop__val--neg" : ""}`}>
                 <span ref={numberRef} className="pop__val-num">
                   {valText}
                 </span>

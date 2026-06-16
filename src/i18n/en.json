@@ -470,14 +470,14 @@
     },
     "pop": {
       "kicker": "Demographics",
-      "title": "The balloon: population growth",
-      "lead": "Pick a territory: the balloon inflates when population grows, deflates when it declines. Annual growth rate.",
+      "title": "The column: population growth",
+      "lead": "Pick a territory: the column of figures rises above the line when population grows, sinks below it when it declines. Annual rate.",
       "select_label": "Territory",
       "highest": "Highest",
       "lowest": "Lowest",
       "unit": "%",
       "value_caption": "annual population growth rate",
-      "size_caption": "Size relative to the Pacific",
+      "size_caption": "Height relative to the Pacific",
       "year_label": "{year} data",
       "trend_up": "▲ +{n} pt since {year}",
       "trend_down": "▼ {n} pt since {year}",
@@ -486,7 +486,8 @@
       "aria": "{area}: population growth {n}% ({year}).",
       "loading": "Loading demographic data…",
       "unavailable": "Population growth data is temporarily unavailable.",
-      "source": "Source: SPC · via Pacific Data Hub"
+      "source": "Source: SPC · via Pacific Data Hub",
+      "baseline_label": "0%"
     },
     "power": {
       "kicker": "Energy",
