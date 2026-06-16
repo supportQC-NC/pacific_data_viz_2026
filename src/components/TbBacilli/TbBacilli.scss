@@ -1,0 +1,342 @@
+/* src/components/TbBacilli/TbBacilli.scss
+   ============================================================
+   Section signature « Le bacille : la tuberculose ». Champ de microscope froid,
+   bacilles corail (Ziehl-Neelsen). Incidence pour 100 000. 100 % tokens.
+   ============================================================ */
+
+.bac {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.bac__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.bac__head {
+  max-width: var(--maxw-text);
+}
+.bac__kicker {
+  color: var(--c-warm);
+  margin-bottom: var(--sp-3);
+}
+.bac__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.bac__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.bac__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.bac__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.bac__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.bac__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.bac__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.bac__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.bac__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition: border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-warm);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.bac__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.bac__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.bac__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.bac__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.bac__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-warm);
+  }
+  &:hover {
+    border-color: var(--c-warm);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : le champ de microscope ---- */
+.bac__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 340px;
+}
+.bac__svg {
+  display: block;
+  width: clamp(220px, 28vw, 300px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 22px 40px var(--c-accent-glow));
+}
+.bac__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* champ coloré (bleu froid Ziehl-Neelsen) */
+.bac-field-in {
+  stop-color: var(--c-accent-deep);
+  stop-opacity: 0.32;
+}
+.bac-field-out {
+  stop-color: var(--c-bg);
+  stop-opacity: 0.92;
+}
+.bac__reticle line,
+.bac__reticle circle {
+  stroke: var(--c-accent);
+  stroke-width: 1;
+  opacity: 0.16;
+}
+.bac__rod rect {
+  fill: var(--c-warm);
+}
+.bac__eyepiece {
+  stroke: var(--c-line-strong);
+  stroke-width: 3;
+}
+.bac__eyepiece-glow {
+  stroke: var(--c-accent);
+  stroke-width: 1.5;
+  opacity: 0.22;
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.bac__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.bac__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.bac__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-warm);
+}
+.bac__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.bac__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.bac__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.bac__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.bac__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.bac__trend {
+  font-weight: var(--fw-bold);
+}
+.bac__trend--up {
+  color: var(--c-warm);
+}
+.bac__trend--down {
+  color: var(--c-positive);
+}
+.bac__trend--flat {
+  color: var(--c-text-mute);
+}
+.bac__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Source ---------------- */
+.bac__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .bac {
+    padding: var(--sp-16) 0;
+  }
+  .bac__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .bac__controls,
+  .bac__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .bac__chips {
+    justify-content: center;
+  }
+  .bac__val,
+  .bac__name {
+    justify-content: center;
+  }
+}

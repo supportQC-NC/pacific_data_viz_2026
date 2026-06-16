@@ -17,8 +17,10 @@ import HomeIntro from "../../components/HomeIntro/HomeIntro";
 import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
+import TbBacilli from "../../components/TbBacilli/TbBacilli";
 import EnergyCell from "../../components/EnergyCell/EnergyCell";
 import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
+import ForestCover from "../../components/ForestCover/ForestCover";
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
 import CattleThrive from "../../components/CattleThrive/CattleThrive";
@@ -122,7 +124,10 @@ export default function Home() {
             >
               {t("home.begin")} <span aria-hidden="true">✦</span>
             </button>
-            <button className="home__cta home__cta--ghost" onClick={scrollDown}>
+            <button
+              className="home__cta home__cta--ghost"
+              onClick={scrollDown}
+            >
               {t("home.cta")} <span aria-hidden="true">↓</span>
             </button>
             <button
@@ -147,9 +152,13 @@ export default function Home() {
 
       <WaterGlass />
 
+      <TbBacilli />
+
       <EnergyCell />
 
       <BiodiversityReef />
+
+      <ForestCover />
 
       <CoastlineShift />
 
