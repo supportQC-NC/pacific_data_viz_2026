@@ -192,6 +192,23 @@
       "loading": "Loading water-access data…",
       "unavailable": "Water-access data is temporarily unavailable.",
       "source": "Source: WHO/UNICEF (JMP) · SDG 6.1.1 · via Pacific Data Hub"
+    },
+    "energy": {
+      "kicker": "Clean energy",
+      "title": "How much energy is already renewable",
+      "lead": "Pick a territory: the cell charges to the share of renewable energy in its final consumption.",
+      "select_label": "Territory",
+      "highest": "Greenest",
+      "lowest": "Least green",
+      "year_label": "{year} data",
+      "have_line": "{n}% of energy already comes from renewable sources.",
+      "gap_line": "{n}% still relies on fossil fuels.",
+      "gap_short": "fossil",
+      "median_label": "Pacific median · {n}%",
+      "aria": "{area}: {n}% renewable energy in final consumption ({year}).",
+      "loading": "Loading energy data…",
+      "unavailable": "Energy data is temporarily unavailable.",
+      "source": "Source: UN (energy balances) · SDG 7.2.1 · via Pacific Data Hub"
     }
   },
   "footer": {

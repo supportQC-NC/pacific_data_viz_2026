@@ -1,0 +1,413 @@
+/* src/components/EnergyCell/EnergyCell.scss
+   ============================================================
+   Section signature #2 « La cellule d'énergie » (pendant du verre d'eau).
+   100 % custom properties de thème. Palette VERTE = renouvelable (propre),
+   déficit FOSSILE en corail. Aucune couleur en dur.
+   ============================================================ */
+
+.energycell {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.energycell__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.energycell__head {
+  max-width: var(--maxw-text);
+}
+
+.energycell__kicker {
+  color: var(--c-positive);
+  margin-bottom: var(--sp-3);
+}
+
+.energycell__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+
+.energycell__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.energycell__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.energycell__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.energycell__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+/* ---- Colonne 1 : contrôles ---- */
+.energycell__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+
+.energycell__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.energycell__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.energycell__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition: border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-positive);
+    box-shadow: 0 0 0 3px var(--c-positive-glow);
+  }
+}
+
+.energycell__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+
+.energycell__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+
+.energycell__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+
+.energycell__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.energycell__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-positive);
+  }
+
+  &:hover {
+    border-color: var(--c-positive);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-positive);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : la cellule ---- */
+.energycell__viz {
+  margin: 0;
+  justify-self: center;
+}
+
+.energycell__svg {
+  display: block;
+  width: clamp(220px, 28vw, 320px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 26px 46px var(--c-positive-glow));
+}
+
+.energycell__cavity {
+  fill: var(--c-surface);
+  fill-opacity: 0.22;
+}
+
+.energycell__tick {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+
+.energycell__charge {
+  transition: none;
+}
+
+.energycell__surface {
+  stroke: var(--c-positive);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.95;
+}
+
+.energycell__spark {
+  fill: var(--c-positive-soft);
+}
+
+.energycell__median {
+  stroke: var(--c-text-mute);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 5;
+  opacity: 0.7;
+}
+
+/* Déficit fossile inscrit dans le vide. */
+.energycell__deficit-num {
+  fill: var(--c-warm);
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: 34px;
+  letter-spacing: var(--ls-tight);
+}
+.energycell__deficit-cap {
+  fill: var(--c-warm-soft);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Corps + borne de la cellule. */
+.energycell__cell {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 2.6;
+}
+.energycell__cap {
+  fill: var(--c-line);
+  stroke: var(--c-line-strong);
+  stroke-width: 2.6;
+}
+
+/* Dégradé de la charge (profondeur) — stops verts pilotés par les tokens. */
+.energycell__stop-top {
+  stop-color: var(--c-positive);
+  stop-opacity: 0.95;
+}
+.energycell__stop-mid {
+  stop-color: var(--c-positive);
+  stop-opacity: 0.78;
+}
+.energycell__stop-bot {
+  stop-color: var(--c-positive);
+  stop-opacity: 0.99;
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.energycell__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+
+.energycell__pct {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  margin: 0;
+  line-height: 1;
+}
+
+.energycell__pct-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(3.5rem, 9vw, 6rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-positive);
+}
+
+.energycell__pct-unit {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  color: var(--c-positive);
+  opacity: 0.7;
+}
+
+.energycell__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+
+.energycell__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+
+.energycell__year {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+
+.energycell__note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+}
+.energycell__note--have {
+  color: var(--c-text-soft);
+}
+.energycell__note--gap {
+  color: var(--c-text-mute);
+}
+
+.energycell__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.energycell__legend-dash {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 1.5px dashed var(--c-text-mute);
+  flex: 0 0 auto;
+}
+
+/* ---------------- Source ---------------- */
+.energycell__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .energycell {
+    padding: var(--sp-16) 0;
+  }
+  .energycell__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .energycell__controls,
+  .energycell__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .energycell__chips {
+    justify-content: center;
+  }
+  .energycell__pct,
+  .energycell__name,
+  .energycell__legend {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .energycell__svg {
+    filter: none;
+  }
+}

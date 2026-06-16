@@ -192,6 +192,23 @@
       "loading": "Chargement des données d'accès à l'eau…",
       "unavailable": "Donnée d'accès à l'eau momentanément indisponible.",
       "source": "Source : OMS/UNICEF (JMP) · ODD 6.1.1 · via Pacific Data Hub"
+    },
+    "energy": {
+      "kicker": "Énergie propre",
+      "title": "La part d'énergie déjà renouvelable",
+      "lead": "Choisissez un territoire : la cellule se charge jusqu'à la part d'énergie renouvelable dans sa consommation finale.",
+      "select_label": "Territoire",
+      "highest": "Le plus vert",
+      "lowest": "Le moins vert",
+      "year_label": "Donnée {year}",
+      "have_line": "{n} % de l'énergie provient déjà de sources renouvelables.",
+      "gap_line": "{n} % repose encore sur les énergies fossiles.",
+      "gap_short": "fossile",
+      "median_label": "Médiane du Pacifique · {n}%",
+      "aria": "{area} : {n} % d'énergie renouvelable dans la consommation finale ({year}).",
+      "loading": "Chargement des données d'énergie…",
+      "unavailable": "Donnée d'énergie momentanément indisponible.",
+      "source": "Source : ONU (bilans énergétiques) · ODD 7.2.1 · via Pacific Data Hub"
     }
   },
   "footer": {
