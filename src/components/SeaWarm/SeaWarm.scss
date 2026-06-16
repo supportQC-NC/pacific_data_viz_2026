@@ -1,0 +1,384 @@
+/* src/components/SeaWarm/SeaWarm.scss
+   ============================================================
+   Section signature #9 « La mer qui chauffe ». Océan à houle (couleur fixe) +
+   thermomètre = cœur. Mercure corail (chaud) / cyan (froid). 100 % tokens.
+   ============================================================ */
+
+.sea {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--c-bg-2) 0%,
+    var(--c-bg) 60%
+  );
+  overflow: hidden;
+}
+
+.sea__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.sea__head {
+  max-width: var(--maxw-text);
+}
+.sea__kicker {
+  color: var(--c-accent);
+  margin-bottom: var(--sp-3);
+}
+.sea__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.sea__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.sea__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.sea__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.sea__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.sea__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.sea__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sea__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.sea__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.sea__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.sea__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.sea__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.sea__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.sea__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-accent);
+  }
+  &:hover {
+    border-color: var(--c-accent);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : l'océan + thermomètre ---- */
+.sea__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
+}
+.sea__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 22px 40px var(--c-accent-glow));
+}
+.sea__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.sea__sky {
+  fill: var(--c-bg-2);
+}
+.sea__water {
+  fill: var(--c-accent-deep);
+}
+.sea__crest {
+  stroke: var(--c-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+.sea__bubble {
+  fill: var(--c-accent);
+}
+.sea__frame {
+  stroke: var(--c-line);
+  stroke-width: 1.5;
+}
+
+/* Thermomètre */
+.sea__glass-fill {
+  fill: var(--c-surface);
+  fill-opacity: 0.55;
+}
+.sea__glass {
+  stroke: var(--c-text-soft);
+  stroke-width: 2.4;
+}
+.sea__shine {
+  stroke: var(--c-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.25;
+}
+.sea__merc--warm {
+  fill: var(--c-warm);
+}
+.sea__merc--cool {
+  fill: var(--c-accent);
+}
+.sea__ticks line {
+  stroke: var(--c-text-soft);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.sea__zero {
+  stroke: var(--c-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.sea__zero-tag {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.sea__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.sea__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.sea__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+}
+.sea__val--warm .sea__val-num {
+  color: var(--c-warm);
+}
+.sea__val--cool .sea__val-num {
+  color: var(--c-accent);
+}
+.sea__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.sea__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.sea__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.sea__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.sea__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.sea__trend {
+  font-weight: var(--fw-bold);
+}
+.sea__trend--up {
+  color: var(--c-warm);
+}
+.sea__trend--down {
+  color: var(--c-accent);
+}
+.sea__trend--flat {
+  color: var(--c-text-mute);
+}
+.sea__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Source ---------------- */
+.sea__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .sea {
+    padding: var(--sp-16) 0;
+  }
+  .sea__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .sea__controls,
+  .sea__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .sea__chips {
+    justify-content: center;
+  }
+  .sea__val,
+  .sea__name {
+    justify-content: center;
+  }
+}

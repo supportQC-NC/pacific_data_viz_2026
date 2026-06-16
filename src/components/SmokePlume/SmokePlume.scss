@@ -1,0 +1,356 @@
+/* src/components/SmokePlume/SmokePlume.scss
+   ============================================================
+   Section signature #8 « Le panache : ce que l'on rejette ». Émissions GES
+   par habitant. Fumée neutre, voile & accent warm. 100 % tokens.
+   ============================================================ */
+
+.smoke {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--c-bg-2) 0%,
+    var(--c-bg) 60%
+  );
+  overflow: hidden;
+}
+
+.smoke__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.smoke__head {
+  max-width: var(--maxw-text);
+}
+.smoke__kicker {
+  color: var(--c-warm);
+  margin-bottom: var(--sp-3);
+}
+.smoke__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.smoke__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.smoke__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.smoke__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.smoke__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.smoke__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.smoke__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.smoke__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.smoke__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-warm);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.smoke__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.smoke__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.smoke__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.smoke__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.smoke__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-warm);
+  }
+  &:hover {
+    border-color: var(--c-warm);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : le panache ---- */
+.smoke__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
+}
+.smoke__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 22px 40px var(--c-accent-glow));
+}
+.smoke__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.smoke__bg {
+  fill: var(--c-bg-2);
+}
+.smoke__haze {
+  fill: var(--c-warm);
+}
+.smoke__frame {
+  stroke: var(--c-line);
+  stroke-width: 1.5;
+}
+.smoke__puff {
+  fill: var(--c-text-soft);
+}
+.smoke__ground {
+  fill: var(--c-bg);
+  opacity: 0.5;
+}
+.smoke__base {
+  fill: var(--c-bg-2);
+  stroke: var(--c-text-soft);
+  stroke-width: 1.6;
+}
+.smoke__chimney {
+  fill: var(--c-bg-2);
+  stroke: var(--c-text-soft);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.smoke__band {
+  fill: var(--c-warm);
+  opacity: 0.85;
+}
+.smoke__mouth {
+  fill: var(--c-bg);
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.smoke__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.smoke__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.smoke__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-warm);
+}
+.smoke__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.smoke__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.smoke__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.smoke__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.smoke__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.smoke__trend {
+  font-weight: var(--fw-bold);
+}
+.smoke__trend--up {
+  color: var(--c-warm);
+}
+.smoke__trend--down {
+  color: var(--c-positive);
+}
+.smoke__trend--flat {
+  color: var(--c-text-mute);
+}
+.smoke__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Source ---------------- */
+.smoke__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .smoke {
+    padding: var(--sp-16) 0;
+  }
+  .smoke__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .smoke__controls,
+  .smoke__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .smoke__chips {
+    justify-content: center;
+  }
+  .smoke__val,
+  .smoke__name {
+    justify-content: center;
+  }
+}

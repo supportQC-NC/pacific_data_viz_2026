@@ -22,6 +22,9 @@ import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
 import CattleThrive from "../../components/CattleThrive/CattleThrive";
+import SkyRain from "../../components/SkyRain/SkyRain";
+import SmokePlume from "../../components/SmokePlume/SmokePlume";
+import SeaWarm from "../../components/SeaWarm/SeaWarm";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -153,6 +156,12 @@ export default function Home() {
       <PlantGrowth />
 
       <CattleThrive />
+
+      <SkyRain />
+
+      <SmokePlume />
+
+      <SeaWarm />
 
       <HomeIntro />
 
