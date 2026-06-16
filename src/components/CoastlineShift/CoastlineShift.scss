@@ -1,0 +1,368 @@
+/* src/components/CoastlineShift/CoastlineShift.scss
+   ============================================================
+   Section signature #4 « Le trait de côte ». Vue de dessus : mer (cyan) à
+   gauche, sable (corail doux) à droite, trait de côte qui glisse. 100 %
+   tokens de thème, aucune couleur en dur.
+   ============================================================ */
+
+.coast {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--c-bg-2) 0%,
+    var(--c-bg) 60%
+  );
+  overflow: hidden;
+}
+
+.coast__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.coast__head {
+  max-width: var(--maxw-text);
+}
+.coast__kicker {
+  color: var(--c-accent);
+  margin-bottom: var(--sp-3);
+}
+.coast__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.coast__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- Scène (texte | plage) ---------------- */
+.coast__stage {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.coast__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* ---- Contrôles ---- */
+.coast__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.coast__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.coast__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.coast__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.coast__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.coast__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.coast__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.coast__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.coast__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-accent);
+  }
+  &:hover {
+    border-color: var(--c-accent);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Lecture ---- */
+.coast__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.coast__rate {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.coast__rate-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+}
+.coast__rate-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.coast__rate--loss .coast__rate-num {
+  color: var(--c-warm);
+}
+.coast__rate--gain .coast__rate-num {
+  color: var(--c-positive);
+}
+.coast__rate--flat .coast__rate-num {
+  color: var(--c-text-soft);
+}
+.coast__rate-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.coast__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.coast__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.coast__note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+}
+.coast__note--loss {
+  color: var(--c-text-soft);
+}
+.coast__note--gain {
+  color: var(--c-text-mute);
+}
+.coast__proj {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+}
+.coast__proj--loss {
+  color: var(--c-warm);
+}
+.coast__proj--gain {
+  color: var(--c-positive);
+}
+.coast__proj--flat {
+  color: var(--c-text-mute);
+}
+.coast__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---- La plage (SVG) ---- */
+.coast__viz {
+  margin: 0;
+  justify-self: center;
+  width: 100%;
+  max-width: 580px;
+}
+.coast__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.coast__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* Mer / sable. */
+.coast__sea-deep {
+  stop-color: var(--c-accent-deep);
+}
+.coast__sea-shallow {
+  stop-color: var(--c-accent);
+}
+.coast__sand-wet {
+  stop-color: var(--c-warm);
+}
+.coast__sand-dry {
+  stop-color: var(--c-warm-soft);
+}
+.coast__sea {
+  opacity: 0.92;
+}
+.coast__sand {
+  opacity: 0.55;
+}
+
+/* Écume + vagues. */
+.coast__foam {
+  stroke: var(--c-bg);
+  stroke-width: 2.4;
+  opacity: 0.55;
+}
+.coast__crest {
+  fill: var(--c-bg);
+}
+
+/* Repère « sans changement ». */
+.coast__ref {
+  stroke: var(--c-text);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+  opacity: 0.4;
+}
+
+/* Étiquettes mer / terre. */
+.coast__tag {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------------- Source ---------------- */
+.coast__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .coast {
+    padding: var(--sp-16) 0;
+  }
+  .coast__stage {
+    grid-template-columns: 1fr;
+    gap: var(--sp-8);
+  }
+  .coast__viz {
+    order: -1;
+  }
+  .coast__aside {
+    align-items: center;
+    text-align: center;
+  }
+  .coast__name,
+  .coast__rate {
+    justify-content: center;
+  }
+  .coast__chips {
+    justify-content: center;
+  }
+}

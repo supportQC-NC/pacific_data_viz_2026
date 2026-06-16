@@ -1,0 +1,345 @@
+/* src/components/PlantGrowth/PlantGrowth.scss
+   ============================================================
+   Section signature #5 « La plante qui pousse ». Croissance = rendement
+   agricole. Vert (positif, comme la convention du projet pour cropYield),
+   fruit en corail pour la touche « récolte ». 100 % tokens.
+   ============================================================ */
+
+.plant {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--c-bg-2) 0%,
+    var(--c-bg) 60%
+  );
+  overflow: hidden;
+}
+
+.plant__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.plant__head {
+  max-width: var(--maxw-text);
+}
+.plant__kicker {
+  color: var(--c-positive);
+  margin-bottom: var(--sp-3);
+}
+.plant__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.plant__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.plant__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.plant__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.plant__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.plant__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.plant__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.plant__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.plant__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-positive);
+    box-shadow: 0 0 0 3px var(--c-positive-glow);
+  }
+}
+.plant__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.plant__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.plant__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.plant__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.plant__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-positive);
+  }
+  &:hover {
+    border-color: var(--c-positive);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-positive);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : la plante ---- */
+.plant__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.plant__svg {
+  display: block;
+  width: clamp(200px, 26vw, 300px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 24px 40px var(--c-positive-glow));
+}
+.plant__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.plant__soil {
+  fill: var(--c-bg-2);
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+.plant__stem {
+  stroke: var(--c-positive);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.plant__leaf {
+  stroke: none;
+}
+.plant__leaf-a {
+  fill: var(--c-positive);
+}
+.plant__leaf-b {
+  fill: var(--c-positive-soft);
+}
+.plant__petal {
+  fill: var(--c-warm-soft);
+}
+.plant__core {
+  fill: var(--c-warm);
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.plant__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.plant__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.plant__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-positive);
+}
+.plant__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.plant__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.plant__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.plant__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.plant__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.plant__trend {
+  font-weight: var(--fw-bold);
+}
+.plant__trend--up {
+  color: var(--c-positive);
+}
+.plant__trend--down {
+  color: var(--c-warm);
+}
+.plant__trend--flat {
+  color: var(--c-text-mute);
+}
+.plant__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Source ---------------- */
+.plant__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .plant {
+    padding: var(--sp-16) 0;
+  }
+  .plant__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .plant__controls,
+  .plant__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .plant__chips {
+    justify-content: center;
+  }
+  .plant__val,
+  .plant__name {
+    justify-content: center;
+  }
+}
