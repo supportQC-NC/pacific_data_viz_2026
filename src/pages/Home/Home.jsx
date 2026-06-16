@@ -27,6 +27,10 @@ import CattleThrive from "../../components/CattleThrive/CattleThrive";
 import SkyRain from "../../components/SkyRain/SkyRain";
 import SmokePlume from "../../components/SmokePlume/SmokePlume";
 import SeaWarm from "../../components/SeaWarm/SeaWarm";
+import StiltHouse from "../../components/StiltHouse/StiltHouse";
+import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
+import LossStack from "../../components/LossStack/LossStack";
+import TourismBeach from "../../components/TourismBeach/TourismBeach";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -171,6 +175,14 @@ export default function Home() {
       <SmokePlume />
 
       <SeaWarm />
+
+      <StiltHouse />
+
+      <CrowdAffected />
+
+      <LossStack />
+
+      <TourismBeach />
 
       <HomeIntro />
 

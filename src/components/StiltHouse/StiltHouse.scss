@@ -1,0 +1,366 @@
+/* src/components/StiltHouse/StiltHouse.scss
+   ============================================================
+   Section signature « La maison sur pilotis : le niveau de la mer ».
+   Eau cyan semi-transparente qui monte le long des pilotis. 100 % tokens.
+   ============================================================ */
+
+.stilt {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.stilt__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.stilt__head {
+  max-width: var(--maxw-text);
+}
+.stilt__kicker {
+  color: var(--c-accent);
+  margin-bottom: var(--sp-3);
+}
+.stilt__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.stilt__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.stilt__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.stilt__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (3 colonnes) ---------------- */
+.stilt__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.stilt__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  justify-self: end;
+  width: 100%;
+  max-width: 320px;
+}
+.stilt__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.stilt__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.stilt__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition: border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.stilt__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.stilt__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.stilt__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.stilt__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.stilt__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-accent);
+  }
+  &:hover {
+    border-color: var(--c-accent);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Colonne 2 : la maison ---- */
+.stilt__viz {
+  margin: 0;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+}
+.stilt__svg {
+  display: block;
+  width: clamp(240px, 30vw, 340px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 22px 40px var(--c-accent-glow));
+}
+.stilt__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+.stilt__sky {
+  fill: var(--c-bg-2);
+}
+.stilt__posts line,
+.stilt__ladder line {
+  stroke: var(--c-text-mute);
+  stroke-linecap: round;
+}
+.stilt__posts line {
+  stroke-width: 7;
+}
+.stilt__ladder line {
+  stroke-width: 2.4;
+  opacity: 0.7;
+}
+.stilt__water-back {
+  fill: var(--c-accent-deep);
+  opacity: 0.42;
+}
+.stilt__water-front {
+  fill: var(--c-accent);
+  opacity: 0.52;
+}
+.stilt__bubble {
+  fill: var(--c-bg);
+  opacity: 0.5;
+}
+.stilt__floor {
+  fill: var(--c-text-soft);
+}
+.stilt__wall {
+  fill: var(--c-surface);
+  stroke: var(--c-text-soft);
+  stroke-width: 2.4;
+}
+.stilt__door {
+  fill: var(--c-bg-2);
+  stroke: var(--c-text-mute);
+  stroke-width: 1.5;
+}
+.stilt__window {
+  fill: var(--c-accent);
+  opacity: 0.45;
+}
+.stilt__roof {
+  fill: var(--c-warm-soft);
+  stroke: var(--c-warm);
+  stroke-width: 2;
+}
+.stilt__roof-ridge {
+  stroke: var(--c-warm);
+  stroke-width: 1.6;
+  opacity: 0.5;
+}
+.stilt__frame {
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+
+/* ---- Colonne 3 : lecture ---- */
+.stilt__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  justify-self: start;
+  width: 100%;
+  max-width: 340px;
+}
+.stilt__val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  line-height: 1;
+}
+.stilt__val-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-accent);
+}
+.stilt__val-unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+.stilt__val-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.stilt__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.stilt__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.stilt__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.stilt__trend {
+  font-weight: var(--fw-bold);
+}
+.stilt__trend--up {
+  color: var(--c-warm);
+}
+.stilt__trend--down {
+  color: var(--c-positive);
+}
+.stilt__trend--flat {
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Source ---------------- */
+.stilt__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .stilt {
+    padding: var(--sp-16) 0;
+  }
+  .stilt__stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-8);
+    text-align: center;
+  }
+  .stilt__controls,
+  .stilt__readout {
+    justify-self: center;
+    max-width: 420px;
+    align-items: center;
+  }
+  .stilt__chips {
+    justify-content: center;
+  }
+  .stilt__val,
+  .stilt__name {
+    justify-content: center;
+  }
+}
