@@ -8,17 +8,18 @@
 //
 // Lecture honnête :
 //   • grand nombre = indice réel (0 → 1 ; 1 = aucun risque) ;
-//   • le récif encode la VITALITÉ relative au Pacifique : coraux colorés +
-//     poissons quand l'indice est haut, squelettes blanchis + récif désert
-//     quand il baisse (le « blanchissement » rendu visible) ;
+//   • le récif encode la VITALITÉ relative au Pacifique, NORMALISÉE sur
+//     l'amplitude observée : le territoire le plus préservé = récif pleinement
+//     vivant, le plus menacé = totalement blanchi — l'écart est maximal et
+//     lisible. Coraux + poissons quand l'indice est haut ; squelettes blanchis
+//     et coraux rabougris quand il baisse (blanchissement rendu visible) ;
 //   • une tendance « depuis {année} » montre le sens réel de l'évolution.
 //
 // Aucune valeur inventée : seuls les territoires AYANT une donnée (dernière
-// année connue) sont proposés ; la vitalité et la tendance sont dérivées de la
-// série officielle. Houle des coraux + dérive des poissons pilotées par rAF
-// (attributs SVG + une seule custom property --v pour l'opacité) ; transition
-// par GSAP. prefers-reduced-motion respecté. Tokens uniquement, FR/EN, zéro
-// style inline.
+// année connue) sont proposés ; vitalité et tendance dérivées de la série
+// officielle. Houle + taille des coraux + dérive des poissons pilotées par rAF
+// (attributs SVG + une custom property --v pour l'opacité) ; transition GSAP.
+// prefers-reduced-motion respecté. Tokens uniquement, FR/EN, zéro inline.
 // ============================================================
 
 import React, {
@@ -37,17 +38,16 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./BiodiversityReef.scss";
 
-/* Coraux : silhouette + classe de couleur + base x (pivot de houle). */
+/* Coraux : silhouette + classe de couleur + base x (pivot houle/échelle). */
 const CORALS = [
   { d: "M38,196 Q33,166 50,154 Q67,166 62,196 Z", cls: "reef__c1", x: 50 },
-  { d: "M100,196 L100,170 M100,178 L88,160 M100,176 L113,158 M88,160 L84,148 M113,158 L117,148", cls: "reef__c2", x: 100, stroke: true },
+  { d: "M100,196 L100,170 M100,178 L88,160 M100,176 L113,158 M88,160 L84,148 M113,158 L117,148", cls: "reef__c2", x: 100 },
   { d: "M132,196 Q129,170 150,168 Q171,170 168,196 Z", cls: "reef__c3", x: 150 },
-  { d: "M200,196 L200,166 M210,196 L210,154 M220,196 L220,164", cls: "reef__c4", x: 210, stroke: true },
+  { d: "M200,196 L200,166 M210,196 L210,154 M220,196 L220,164", cls: "reef__c4", x: 210 },
   { d: "M256,196 Q249,164 270,150 Q291,164 284,196 Z", cls: "reef__c5", x: 270 },
-  { d: "M320,196 L320,174 M320,182 L309,166 M320,182 L331,166 M320,178 L323,160", cls: "reef__c6", x: 320, stroke: true },
+  { d: "M320,196 L320,174 M320,182 L309,166 M320,182 L331,166 M320,178 L323,160", cls: "reef__c6", x: 320 },
 ];
 
-/* Poissons : silhouette (face droite) + position + cadence. */
 const FISH_D = "M9,0 Q3,-6 -6,-4 L-14,-8 L-11,0 L-14,8 L-6,4 Q3,6 9,0 Z";
 const FISH = [
   { x: 96, y: 88, cls: "reef__f1", sp: 0.5, off: 0.0 },
@@ -57,6 +57,8 @@ const FISH = [
   { x: 126, y: 120, cls: "reef__f2", sp: 0.6, off: 1.7 },
   { x: 250, y: 128, cls: "reef__f3", sp: 0.5, off: 2.6 },
 ];
+
+const BASE_Y = 196;
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -101,7 +103,7 @@ export default function BiodiversityReef() {
   const status = bio.status;
   const ready = status === "succeeded" && bio.data;
 
-  /* Échelle : l'Indice Liste Rouge est 0–1 ; on tolère un flux en %. */
+  /* L'Indice Liste Rouge est 0–1 ; on tolère un flux en %. */
   const indexMode = useMemo(() => {
     if (!ready) return true;
     let max = 0;
@@ -117,16 +119,12 @@ export default function BiodiversityReef() {
     (value) => clamp01(indexMode ? value : value / 100),
     [indexMode],
   );
-  // Vitalité visuelle : on étire l'écart au-dessus de 0,5 (les indices du
-  // Pacifique sont hauts) pour rendre les différences lisibles. Le NOMBRE
-  // affiché reste l'indice réel.
-  const vitality = useCallback((value) => clamp01((norm(value) - 0.5) / 0.5), [
-    norm,
-  ]);
 
+  /* Liste : index réel + tendance, puis VITALITÉ normalisée sur l'amplitude
+     observée (min..max du Pacifique) → écart maximal entre préservé et menacé. */
   const list = useMemo(() => {
     if (!ready) return [];
-    return Object.entries(bio.data.byArea)
+    const raw = Object.entries(bio.data.byArea)
       .filter(([code]) => isPict(code))
       .map(([code, serie]) => {
         const pt = lastFinite(serie);
@@ -137,14 +135,20 @@ export default function BiodiversityReef() {
           name: pictName(code, lang),
           index: norm(pt.value),
           year: pt.year,
-          v: vitality(pt.value),
           delta: f ? norm(pt.value) - norm(f.value) : null,
           fromYear: f ? f.year : null,
         };
       })
-      .filter(Boolean)
+      .filter(Boolean);
+    if (!raw.length) return [];
+    const idxs = raw.map((o) => o.index);
+    const vMin = Math.min(...idxs);
+    const vMax = Math.max(...idxs);
+    const span = vMax - vMin || 1;
+    return raw
+      .map((o) => ({ ...o, v: clamp01((o.index - vMin) / span) }))
       .sort((a, b) => a.name.localeCompare(b.name, lang));
-  }, [ready, bio.data, lang, norm, vitality]);
+  }, [ready, bio.data, lang, norm]);
 
   const byCode = useMemo(() => {
     const m = {};
@@ -192,12 +196,20 @@ export default function BiodiversityReef() {
         numberRef.current.textContent = animObj.current.idx.toFixed(2);
 
       const swing = reduced ? 0 : 1;
+      // Coraux : houle (rotation) + TAILLE selon la vitalité (rabougris si bas).
+      const sy = 0.4 + 0.6 * v;
+      const sx = 0.72 + 0.28 * v;
       coralRefs.current.forEach((node, i) => {
         if (!node) return;
-        const a = 3.4 * v * swing * Math.sin(phase * 0.9 + i * 1.3);
-        node.setAttribute("transform", `rotate(${a.toFixed(2)} ${CORALS[i].x} 196)`);
+        const x = CORALS[i].x;
+        const a = 3.6 * v * swing * Math.sin(phase * 0.9 + i * 1.3);
+        node.setAttribute(
+          "transform",
+          `translate(${x} ${BASE_Y}) rotate(${a.toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(${-x} ${-BASE_Y})`,
+        );
       });
 
+      // Poissons : dérive + apparition progressive selon la vitalité.
       fishRefs.current.forEach((node, i) => {
         if (!node) return;
         const f = FISH[i];
@@ -208,7 +220,7 @@ export default function BiodiversityReef() {
           "transform",
           `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) scale(${dir} 1)`,
         );
-        const appear = clamp01((v - i / FISH.length) * 3);
+        const appear = clamp01((v - i / FISH.length) * 2.2);
         node.setAttribute("opacity", appear.toFixed(3));
       });
     },
@@ -292,11 +304,7 @@ export default function BiodiversityReef() {
     : t("home.biodiv.title");
 
   return (
-    <section
-      className="reef"
-      ref={ref}
-      data-inview={inView ? "true" : "false"}
-    >
+    <section className="reef" ref={ref} data-inview={inView ? "true" : "false"}>
       <div className="reef__inner container">
         <header className="reef__head">
           <p className="eyebrow reef__kicker">{t("home.biodiv.kicker")}</p>
@@ -422,7 +430,7 @@ export default function BiodiversityReef() {
                   d="M0,200 Q90,188 180,198 T360,196 L360,240 L0,240 Z"
                 />
 
-                {/* Coraux : squelette (blanchi) + version vivante (colorée) */}
+                {/* Coraux : squelette blanchi + version vivante colorée */}
                 {CORALS.map((c, i) => (
                   <g
                     key={i}

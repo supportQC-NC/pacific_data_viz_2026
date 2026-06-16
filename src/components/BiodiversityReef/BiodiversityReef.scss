@@ -1,8 +1,8 @@
 /* src/components/BiodiversityReef/BiodiversityReef.scss
    ============================================================
    Section signature #3 « Le récif ». La vitalité passe par UNE custom
-   property --v (0..1) posée sur le SVG : les coraux vivants (colorés) et
-   les squelettes blanchis se fondent l'un dans l'autre. Accent CORAIL pour
+   property --v (0..1) posée sur le SVG : coraux vivants (colorés) et
+   squelettes blanchis se fondent l'un dans l'autre. Accent CORAIL pour
    distinguer du verre (cyan) et de l'énergie (vert). 100 % tokens.
    ============================================================ */
 
@@ -280,15 +280,17 @@
   stroke-width: 1;
 }
 
-/* Coraux : vivant (coloré) vs squelette blanchi, fondu par --v. */
+/* Coraux : vivant (coloré) vs squelette blanchi, fondu par --v.
+   Le squelette est volontairement bien lisible : un récif blanchi doit se
+   VOIR (sinon l'écart préservé / menacé ne se lit pas). */
 .reef__alive {
   opacity: var(--v, 0);
 }
 .reef__ghost {
-  opacity: calc((1 - var(--v, 0)) * 0.8);
+  opacity: calc((1 - var(--v, 0)) * 0.95);
   fill: none;
-  stroke: var(--c-text-mute);
-  stroke-width: 1.4;
+  stroke: var(--c-text-soft);
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
