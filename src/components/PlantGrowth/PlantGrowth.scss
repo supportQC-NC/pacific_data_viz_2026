@@ -1,8 +1,8 @@
 /* src/components/PlantGrowth/PlantGrowth.scss
    ============================================================
    Section signature #5 « La plante qui pousse ». Croissance = rendement
-   agricole. Vert (positif, comme la convention du projet pour cropYield),
-   fruit en corail pour la touche « récolte ». 100 % tokens.
+   agricole. Vert (convention projet pour cropYield), fleur en corail.
+   100 % tokens.
    ============================================================ */
 
 .plant {
@@ -190,10 +190,10 @@
 }
 .plant__svg {
   display: block;
-  width: clamp(200px, 26vw, 300px);
+  width: clamp(220px, 28vw, 320px);
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 24px 40px var(--c-positive-glow));
+  filter: drop-shadow(0 24px 42px var(--c-positive-glow));
 }
 .plant__viz-cap {
   margin: var(--sp-3) 0 0;
@@ -209,6 +209,13 @@
   stroke: var(--c-line);
   stroke-width: 1;
 }
+.plant__grass path {
+  fill: none;
+  stroke: var(--c-positive-soft);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
 .plant__stem {
   stroke: var(--c-positive);
   stroke-width: 6;
@@ -222,6 +229,12 @@
 }
 .plant__leaf-b {
   fill: var(--c-positive-soft);
+}
+.plant__vein {
+  stroke: var(--c-bg);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.35;
 }
 .plant__petal {
   fill: var(--c-warm-soft);
