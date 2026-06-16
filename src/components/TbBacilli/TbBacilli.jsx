@@ -74,7 +74,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export default function TbBacilli() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
     () => new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US"),
     [lang],
@@ -188,18 +188,18 @@ export default function TbBacilli() {
   );
 
   useEffect(() => {
+    if (!sel) return undefined;
     if (inView) startedRef.current = true;
-    const tv = startedRef.current && sel ? sel.v : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
-    if (reduced) {
-      animObj.current.v = tv;
-      animObj.current.val = tval;
+
+    if (reduced || !startedRef.current) {
+      animObj.current.v = sel.v;
+      animObj.current.val = sel.val;
       draw(0);
       return undefined;
     }
     const tw = gsap.to(animObj.current, {
-      v: tv,
-      val: tval,
+      v: sel.v,
+      val: sel.val,
       duration: 1.2,
       ease: "power2.out",
     });
@@ -211,6 +211,7 @@ export default function TbBacilli() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -222,7 +223,7 @@ export default function TbBacilli() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";

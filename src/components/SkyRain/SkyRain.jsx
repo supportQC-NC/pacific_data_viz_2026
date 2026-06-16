@@ -2,17 +2,14 @@
 // ============================================================
 // SECTION SIGNATURE #7 — « Le ciel : pluie ou sécheresse » (Home). Une scène
 // météo réagit à l'ANOMALIE DE PRÉCIPITATIONS réelle du territoire (mm vs
-// normale 1991–2020), via le dataset live `rain` (NOAA GPCP v2.3 — jeu
-// officiel du Challenge, DF_CLIMATE_CHANGE · RAIN_ANOM).
+// normale 1991–2020), via le service dédié `cielApi` (NOAA GPCP v2.3 — jeu
+// officiel du Challenge, DF_CLIMATE_CHANGE · RAIN_ANOM). On passe par cielApi
+// (sonde de clé + repli proxy) car le fetch générique à clé fixe échoue dessus.
 //
-// Signé : + = plus humide → il PLEUT (gouttes denses, nuages) ; − = plus sec
-// → SÉCHERESSE (soleil dur, sol qui se craquèle, air qui tremble).
-//
-// Honnête : grand nombre = anomalie RÉELLE (mm, signée, dernière année) ;
-// l'INTENSITÉ visuelle (densité de pluie / sévérité de sécheresse) est
-// normalisée sur l'amplitude |anomalie| du Pacifique (dit sous le visuel) ;
-// tendance « depuis {année} » réelle. Pluie/soleil animés (rAF) ; bascule
-// animée par GSAP. prefers-reduced-motion respecté. <section>/ref toujours
+// Signé : + = plus humide → il PLEUT ; − = plus sec → SÉCHERESSE.
+// Honnête : grand nombre = anomalie RÉELLE (mm signée) ; intensité normalisée
+// sur |anomalie| du Pacifique (dit sous le visuel) ; tendance « depuis {année} »
+// réelle. rAF + GSAP, prefers-reduced-motion respecté. <section>/ref toujours
 // montés. Tokens, FR/EN, zéro inline.
 // ============================================================
 
@@ -23,13 +20,12 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
-import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
 import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
+import useCiel from "../../hooks/UseCiel";
 import "./SkyRain.scss";
 
 const SKY_TOP = 8;
@@ -84,9 +80,8 @@ function fillTpl(str, map) {
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
 export default function SkyRain() {
-  const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
     () => new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US"),
     [lang],
@@ -101,18 +96,17 @@ export default function SkyRain() {
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const rain = useSelector(selectDataset("rain"));
-
-  useEffect(() => {
-    dispatch(loadDataset("rain"));
-  }, [dispatch]);
-
-  const status = rain.status;
-  const ready = status === "succeeded" && rain.data;
+  const ciel = useCiel(lang);
+  const rainDs = ciel.data && ciel.data.rain;
+  const ready =
+    ciel.status === "done" &&
+    rainDs &&
+    rainDs.status === "live" &&
+    rainDs.byArea;
 
   const list = useMemo(() => {
     if (!ready) return [];
-    const raw = Object.entries(rain.data.byArea)
+    const raw = Object.entries(rainDs.byArea)
       .filter(([code]) => isPict(code))
       .map(([code, serie]) => {
         const pt = lastFinite(serie);
@@ -133,7 +127,7 @@ export default function SkyRain() {
     return raw
       .map((o) => ({ ...o, w: Math.max(-1, Math.min(1, o.val / amp)) }))
       .sort((a, b) => a.name.localeCompare(b.name, lang));
-  }, [ready, rain.data, lang]);
+  }, [ready, rainDs, lang]);
 
   const byCode = useMemo(() => {
     const m = {};
@@ -155,7 +149,6 @@ export default function SkyRain() {
     return { wet, dry };
   }, [list]);
 
-  // Défaut : l'anomalie la plus marquée (|val| max).
   const [selected, setSelected] = useState(null);
   useEffect(() => {
     if (!list.length) return;
@@ -205,7 +198,6 @@ export default function SkyRain() {
       if (cracksRef.current)
         cracksRef.current.setAttribute("opacity", dryI.toFixed(3));
 
-      // Pluie
       rainRefs.current.forEach((node, i) => {
         if (!node) return;
         const op = clamp01((rainI - i / N_DROPS) * 3);
@@ -224,7 +216,6 @@ export default function SkyRain() {
         node.setAttribute("opacity", (op * 0.85).toFixed(3));
       });
 
-      // Soleil
       if (sunRef.current) {
         sunRef.current.setAttribute("opacity", dryI.toFixed(3));
         const a = reduced ? 0 : phase * 10;
@@ -234,7 +225,6 @@ export default function SkyRain() {
         );
       }
 
-      // Air qui tremble (sécheresse)
       shimmerRefs.current.forEach((node, i) => {
         if (!node) return;
         const baseY = 188 + i * 7;
@@ -253,18 +243,18 @@ export default function SkyRain() {
   );
 
   useEffect(() => {
+    if (!sel) return undefined;
     if (inView) startedRef.current = true;
-    const tw = startedRef.current && sel ? sel.w : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
-    if (reduced) {
-      animObj.current.w = tw;
-      animObj.current.val = tval;
+
+    if (reduced || !startedRef.current) {
+      animObj.current.w = sel.w;
+      animObj.current.val = sel.val;
       draw(0);
       return undefined;
     }
     const tween = gsap.to(animObj.current, {
-      w: tw,
-      val: tval,
+      w: sel.w,
+      val: sel.val,
       duration: 1.2,
       ease: "power2.out",
     });
@@ -276,6 +266,7 @@ export default function SkyRain() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -287,10 +278,12 @@ export default function SkyRain() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
-  const loading = status === "loading" || status === "idle";
-  const failed = status === "failed";
+  const loading = ciel.status === "loading";
+  const failed =
+    ciel.status === "error" ||
+    (ciel.status === "done" && (!rainDs || rainDs.status !== "live"));
   const empty = ready && list.length === 0;
 
   const valText = sel ? signed(sel.val) : "0";
@@ -325,11 +318,7 @@ export default function SkyRain() {
   })();
 
   const svgLabel = sel
-    ? fillTpl(t("home.sky.aria"), {
-        area: sel.name,
-        n: valText,
-        year: sel.year,
-      })
+    ? fillTpl(t("home.sky.aria"), { area: sel.name, n: valText, year: sel.year })
     : t("home.sky.title");
 
   return (
@@ -418,13 +407,7 @@ export default function SkyRain() {
                 </defs>
 
                 <g clipPath="url(#sky-frame)">
-                  <rect
-                    className="sky__bg"
-                    x="0"
-                    y="0"
-                    width="360"
-                    height="280"
-                  />
+                  <rect className="sky__bg" x="0" y="0" width="360" height="280" />
                   <rect
                     ref={skyWetRef}
                     className="sky__wash sky__wash--wet"
@@ -444,7 +427,6 @@ export default function SkyRain() {
                     opacity="0"
                   />
 
-                  {/* Soleil */}
                   <g ref={sunRef} className="sky__sun" opacity="0">
                     {RAYS.map(([x1, y1, x2, y2], i) => (
                       <line
@@ -456,15 +438,9 @@ export default function SkyRain() {
                         y2={y2}
                       />
                     ))}
-                    <circle
-                      cx={SUN[0]}
-                      cy={SUN[1]}
-                      r={SUN[2]}
-                      className="sky__sun-core"
-                    />
+                    <circle cx={SUN[0]} cy={SUN[1]} r={SUN[2]} className="sky__sun-core" />
                   </g>
 
-                  {/* Nuages */}
                   <g ref={cloudRef} className="sky__clouds">
                     <g className="sky__cloud">
                       <ellipse cx="80" cy="56" rx="34" ry="20" />
@@ -477,7 +453,6 @@ export default function SkyRain() {
                     </g>
                   </g>
 
-                  {/* Pluie */}
                   <g className="sky__rain">
                     {DROPS.map((d, i) => (
                       <line
@@ -495,7 +470,6 @@ export default function SkyRain() {
                     ))}
                   </g>
 
-                  {/* Air qui tremble (sécheresse) */}
                   {[0, 1, 2].map((i) => (
                     <path
                       key={i}
@@ -509,14 +483,7 @@ export default function SkyRain() {
                     />
                   ))}
 
-                  {/* Sol */}
-                  <rect
-                    className="sky__ground"
-                    x="0"
-                    y={GROUND_Y}
-                    width="360"
-                    height="70"
-                  />
+                  <rect className="sky__ground" x="0" y={GROUND_Y} width="360" height="70" />
                   <g ref={cracksRef} className="sky__cracks" opacity="0">
                     {CRACKS.map((d, i) => (
                       <path key={i} d={d} fill="none" />
@@ -525,14 +492,8 @@ export default function SkyRain() {
                   <g ref={grassRef} className="sky__grass" opacity="0">
                     {GRASS.map((x, i) => (
                       <g key={i}>
-                        <path
-                          d={`M${x},${GROUND_Y + 2} Q${x - 3},${GROUND_Y - 8} ${x - 6},${GROUND_Y - 12}`}
-                          fill="none"
-                        />
-                        <path
-                          d={`M${x},${GROUND_Y + 2} Q${x + 3},${GROUND_Y - 8} ${x + 6},${GROUND_Y - 12}`}
-                          fill="none"
-                        />
+                        <path d={`M${x},${GROUND_Y + 2} Q${x - 3},${GROUND_Y - 8} ${x - 6},${GROUND_Y - 12}`} fill="none" />
+                        <path d={`M${x},${GROUND_Y + 2} Q${x + 3},${GROUND_Y - 8} ${x + 6},${GROUND_Y - 12}`} fill="none" />
                       </g>
                     ))}
                   </g>
@@ -555,9 +516,7 @@ export default function SkyRain() {
 
             {/* Colonne 3 — lecture */}
             <div className="sky__readout">
-              <p
-                className={`sky__val ${wet ? "sky__val--wet" : "sky__val--dry"}`}
-              >
+              <p className={`sky__val ${wet ? "sky__val--wet" : "sky__val--dry"}`}>
                 <span ref={numberRef} className="sky__val-num">
                   {valText}
                 </span>
@@ -580,9 +539,7 @@ export default function SkyRain() {
 
               {medianVal != null && (
                 <p className="sky__legend">
-                  {fillTpl(t("home.sky.median_label"), {
-                    n: signed(medianVal),
-                  })}
+                  {fillTpl(t("home.sky.median_label"), { n: signed(medianVal) })}
                 </p>
               )}
             </div>

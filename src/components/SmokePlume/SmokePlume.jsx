@@ -71,7 +71,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export default function SmokePlume() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
     () =>
       new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
@@ -179,8 +179,7 @@ export default function SmokePlume() {
         const p = PUFFS[i];
         const tt = reduced ? p.off : (phase * p.sp + p.off) % 1;
         const y = MOUTH_Y - tt * RISE;
-        const x =
-          MOUTH_X + p.amp * Math.sin(tt * p.fr + p.off * 6) * (0.35 + tt);
+        const x = MOUTH_X + p.amp * Math.sin(tt * p.fr + p.off * 6) * (0.35 + tt);
         const r = 3 + tt * 9 + p.rj;
         const op = (1 - tt) * (0.22 + 0.5 * v) * gate;
         node.setAttribute("cx", x.toFixed(1));
@@ -194,8 +193,8 @@ export default function SmokePlume() {
 
   useEffect(() => {
     if (inView) startedRef.current = true;
-    const tv = startedRef.current && sel ? sel.v : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
+    const tv = sel ? sel.v : 0;
+    const tval = sel ? sel.val : 0;
     if (reduced) {
       animObj.current.v = tv;
       animObj.current.val = tval;
@@ -216,6 +215,7 @@ export default function SmokePlume() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -227,7 +227,7 @@ export default function SmokePlume() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";
@@ -272,11 +272,7 @@ export default function SmokePlume() {
     : t("home.smoke.title");
 
   return (
-    <section
-      className="smoke"
-      ref={ref}
-      data-inview={inView ? "true" : "false"}
-    >
+    <section className="smoke" ref={ref} data-inview={inView ? "true" : "false"}>
       <div className="smoke__inner container">
         <header className="smoke__head">
           <p className="eyebrow smoke__kicker">{t("home.smoke.kicker")}</p>
@@ -361,13 +357,7 @@ export default function SmokePlume() {
                 </defs>
 
                 <g clipPath="url(#smoke-frame)">
-                  <rect
-                    className="smoke__bg"
-                    x="0"
-                    y="0"
-                    width="320"
-                    height="300"
-                  />
+                  <rect className="smoke__bg" x="0" y="0" width="320" height="300" />
                   <rect
                     ref={hazeRef}
                     className="smoke__haze"
@@ -406,39 +396,11 @@ export default function SmokePlume() {
 
                   {/* Cheminée */}
                   <g className="smoke__stack">
-                    <rect
-                      className="smoke__base"
-                      x="118"
-                      y="226"
-                      width="84"
-                      height="34"
-                      rx="3"
-                    />
-                    <polygon
-                      className="smoke__chimney"
-                      points="150,176 170,176 176,236 144,236"
-                    />
-                    <rect
-                      className="smoke__band"
-                      x="146"
-                      y="186"
-                      width="28"
-                      height="6"
-                    />
-                    <rect
-                      className="smoke__band"
-                      x="145"
-                      y="200"
-                      width="30"
-                      height="6"
-                    />
-                    <ellipse
-                      className="smoke__mouth"
-                      cx="160"
-                      cy="176"
-                      rx="10"
-                      ry="3.4"
-                    />
+                    <rect className="smoke__base" x="118" y="226" width="84" height="34" rx="3" />
+                    <polygon className="smoke__chimney" points="150,176 170,176 176,236 144,236" />
+                    <rect className="smoke__band" x="146" y="186" width="28" height="6" />
+                    <rect className="smoke__band" x="145" y="200" width="30" height="6" />
+                    <ellipse className="smoke__mouth" cx="160" cy="176" rx="10" ry="3.4" />
                   </g>
                 </g>
 

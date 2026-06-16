@@ -2,19 +2,19 @@
 // ============================================================
 // SECTION SIGNATURE #9 — « La mer qui chauffe » (Home). Un océan à HOULE
 // animée (couleur constante) dans lequel est planté un THERMOMÈTRE — le cœur
-// du visuel. Le mercure MONTE / DESCEND selon l'ANOMALIE DE TEMPÉRATURE DE LA
-// MER réelle du territoire (°C vs normale 1971–2000), via le dataset live
-// `sst` (NOAA — DF_CLIMATE_CHANGE · SST_ANOM).
+// du visuel. Le mercure MONTE / DESCEND selon l'ANOMALIE DE TEMPÉRATURE réelle
+// du territoire (°C vs normale), via le service dédié `cielApi` (NOAA · via
+// Pacific Data Hub). On passe par cielApi (sonde de clé + repli proxy) car le
+// fetch générique à clé fixe échoue sur cette série.
 //
-// Le « 0 » du thermomètre = la normale ; au-dessus = plus chaud (mercure
-// corail), en-dessous = plus frais (mercure cyan). L'EAU NE CHANGE PAS DE
-// COULEUR.
+// Le « 0 » = la normale ; au-dessus = plus chaud (mercure corail), en-dessous
+// = plus frais (mercure cyan). L'EAU NE CHANGE PAS DE COULEUR.
 //
-// Honnête : grand nombre = anomalie RÉELLE (°C, signée) ; la hauteur du mercure
-// encode l'anomalie sur une échelle symétrique relative à l'amplitude du
-// Pacifique (dit sous le visuel) ; tendance « depuis {année} » réelle. Houle
-// animée (rAF) ; mercure animé par GSAP. prefers-reduced-motion respecté.
-// <section>/ref toujours montés. Tokens, FR/EN, zéro inline.
+// Honnête : grand nombre = anomalie RÉELLE (°C, signée) ; hauteur du mercure =
+// échelle symétrique relative à l'amplitude du Pacifique (dit sous le visuel) ;
+// tendance « depuis {année} » réelle. Houle animée (rAF) ; mercure animé par
+// GSAP. prefers-reduced-motion respecté. <section>/ref toujours montés.
+// Tokens, FR/EN, zéro inline.
 // ============================================================
 
 import React, {
@@ -24,18 +24,17 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
-import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
 import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
+import useCiel from "../../hooks/UseCiel";
 import "./SeaWarm.scss";
 
 const SURFACE_Y = 138;
-const HIGH_Y = 58; // mercure au plus haut
-const LOW_Y = 232; // mercure au plus bas
+const HIGH_Y = 58;
+const LOW_Y = 232;
 const BULB_Y = 252;
 const TICKS = [72, 100, 128, 156, 184, 212];
 const BUBBLES = [120, 142, 178, 198, 150];
@@ -65,9 +64,8 @@ function fillTpl(str, map) {
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
 export default function SeaWarm() {
-  const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
     () =>
       new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
@@ -86,18 +84,17 @@ export default function SeaWarm() {
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const sst = useSelector(selectDataset("sst"));
-
-  useEffect(() => {
-    dispatch(loadDataset("sst"));
-  }, [dispatch]);
-
-  const status = sst.status;
-  const ready = status === "succeeded" && sst.data;
+  const ciel = useCiel(lang);
+  const tempDs = ciel.data && ciel.data.landTemp;
+  const ready =
+    ciel.status === "done" &&
+    tempDs &&
+    tempDs.status === "live" &&
+    tempDs.byArea;
 
   const list = useMemo(() => {
     if (!ready) return [];
-    const raw = Object.entries(sst.data.byArea)
+    const raw = Object.entries(tempDs.byArea)
       .filter(([code]) => isPict(code))
       .map(([code, serie]) => {
         const pt = lastFinite(serie);
@@ -118,7 +115,7 @@ export default function SeaWarm() {
     return raw
       .map((o) => ({ ...o, w: Math.max(-1, Math.min(1, o.val / amp)) }))
       .sort((a, b) => a.name.localeCompare(b.name, lang));
-  }, [ready, sst.data, lang]);
+  }, [ready, tempDs, lang]);
 
   const byCode = useMemo(() => {
     const m = {};
@@ -165,7 +162,6 @@ export default function SeaWarm() {
       if (numberRef.current)
         numberRef.current.textContent = signed(animObj.current.val);
 
-      // Mercure : 0 (normale) au milieu, + monte, − descend.
       const f = 0.5 + 0.5 * w;
       const my = LOW_Y + (HIGH_Y - LOW_Y) * f;
       if (mercuryRef.current) {
@@ -173,7 +169,6 @@ export default function SeaWarm() {
         mercuryRef.current.setAttribute("height", (BULB_Y + 6 - my).toFixed(1));
       }
 
-      // Houle (surface ondulante, couleur constante)
       const build = (amp, k, sp, off) => {
         let d = `M-10,${SURFACE_Y}`;
         for (let x = -10; x <= 330; x += 16) {
@@ -192,11 +187,12 @@ export default function SeaWarm() {
       if (crestRef.current)
         crestRef.current.setAttribute("d", build(4, 0.06, 1.7, 1.2));
 
-      // Bulles qui montent
       bubbleRefs.current.forEach((node, i) => {
         if (!node) return;
         const sp = 26 + (i % 3) * 9;
-        const yb = reduced ? 220 - i * 14 : 272 - ((phase * sp + i * 30) % 130);
+        const yb = reduced
+          ? 220 - i * 14
+          : 272 - ((phase * sp + i * 30) % 130);
         const op = clamp01((yb - SURFACE_Y) / 60) * 0.5;
         node.setAttribute("cy", yb.toFixed(1));
         node.setAttribute("opacity", op.toFixed(3));
@@ -206,18 +202,18 @@ export default function SeaWarm() {
   );
 
   useEffect(() => {
+    if (!sel) return undefined;
     if (inView) startedRef.current = true;
-    const tw = startedRef.current && sel ? sel.w : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
-    if (reduced) {
-      animObj.current.w = tw;
-      animObj.current.val = tval;
+
+    if (reduced || !startedRef.current) {
+      animObj.current.w = sel.w;
+      animObj.current.val = sel.val;
       draw(0);
       return undefined;
     }
     const tween = gsap.to(animObj.current, {
-      w: tw,
-      val: tval,
+      w: sel.w,
+      val: sel.val,
       duration: 1.3,
       ease: "power2.out",
     });
@@ -229,6 +225,7 @@ export default function SeaWarm() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -240,10 +237,12 @@ export default function SeaWarm() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
-  const loading = status === "loading" || status === "idle";
-  const failed = status === "failed";
+  const loading = ciel.status === "loading";
+  const failed =
+    ciel.status === "error" ||
+    (ciel.status === "done" && (!tempDs || tempDs.status !== "live"));
   const empty = ready && list.length === 0;
 
   const valText = sel ? signed(sel.val) : "0";
@@ -278,11 +277,7 @@ export default function SeaWarm() {
   })();
 
   const svgLabel = sel
-    ? fillTpl(t("home.sea.aria"), {
-        area: sel.name,
-        n: valText,
-        year: sel.year,
-      })
+    ? fillTpl(t("home.sea.aria"), { area: sel.name, n: valText, year: sel.year })
     : t("home.sea.title");
 
   return (
@@ -371,22 +366,9 @@ export default function SeaWarm() {
                 </defs>
 
                 <g clipPath="url(#sea-frame)">
-                  <rect
-                    className="sea__sky"
-                    x="0"
-                    y="0"
-                    width="320"
-                    height="300"
-                  />
-                  {/* Mer (houle, couleur constante) */}
+                  <rect className="sea__sky" x="0" y="0" width="320" height="300" />
                   <path ref={seaRef} className="sea__water" d="" />
-                  <path
-                    ref={crestRef}
-                    className="sea__crest"
-                    d=""
-                    fill="none"
-                  />
-                  {/* Bulles */}
+                  <path ref={crestRef} className="sea__crest" d="" fill="none" />
                   {BUBBLES.map((x, i) => (
                     <circle
                       key={i}
@@ -403,80 +385,24 @@ export default function SeaWarm() {
 
                   {/* Thermomètre — cœur du visuel */}
                   <g className="sea__thermo">
-                    {/* Verre (fond) */}
-                    <rect
-                      className="sea__glass-fill"
-                      x="150"
-                      y="50"
-                      width="20"
-                      height="208"
-                      rx="10"
-                    />
-                    <circle
-                      className="sea__glass-fill"
-                      cx="160"
-                      cy={BULB_Y}
-                      r="20"
-                    />
+                    <rect className="sea__glass-fill" x="150" y="50" width="20" height="208" rx="10" />
+                    <circle className="sea__glass-fill" cx="160" cy={BULB_Y} r="20" />
 
-                    {/* Mercure */}
-                    <g
-                      className={
-                        warm
-                          ? "sea__merc sea__merc--warm"
-                          : "sea__merc sea__merc--cool"
-                      }
-                    >
-                      <rect
-                        ref={mercuryRef}
-                        x="153"
-                        y="150"
-                        width="14"
-                        height="100"
-                        rx="7"
-                      />
+                    <g className={warm ? "sea__merc sea__merc--warm" : "sea__merc sea__merc--cool"}>
+                      <rect ref={mercuryRef} x="153" y="150" width="14" height="100" rx="7" />
                       <circle cx="160" cy={BULB_Y} r="16" />
                     </g>
 
-                    {/* Verre (contour) */}
-                    <rect
-                      className="sea__glass"
-                      x="150"
-                      y="50"
-                      width="20"
-                      height="208"
-                      rx="10"
-                      fill="none"
-                    />
-                    <circle
-                      className="sea__glass"
-                      cx="160"
-                      cy={BULB_Y}
-                      r="20"
-                      fill="none"
-                    />
-                    <line
-                      className="sea__shine"
-                      x1="156"
-                      y1="60"
-                      x2="156"
-                      y2="232"
-                    />
+                    <rect className="sea__glass" x="150" y="50" width="20" height="208" rx="10" fill="none" />
+                    <circle className="sea__glass" cx="160" cy={BULB_Y} r="20" fill="none" />
+                    <line className="sea__shine" x1="156" y1="60" x2="156" y2="232" />
 
-                    {/* Graduations */}
                     <g className="sea__ticks">
                       {TICKS.map((y, i) => (
                         <line key={i} x1="171" y1={y} x2="178" y2={y} />
                       ))}
                     </g>
-                    {/* Repère 0 = normale */}
-                    <line
-                      className="sea__zero"
-                      x1="171"
-                      y1="145"
-                      x2="184"
-                      y2="145"
-                    />
+                    <line className="sea__zero" x1="171" y1="145" x2="184" y2="145" />
                     <text className="sea__zero-tag" x="188" y="149">
                       {t("home.sea.normal_tag")}
                     </text>
@@ -500,9 +426,7 @@ export default function SeaWarm() {
 
             {/* Colonne 3 — lecture */}
             <div className="sea__readout">
-              <p
-                className={`sea__val ${warm ? "sea__val--warm" : "sea__val--cool"}`}
-              >
+              <p className={`sea__val ${warm ? "sea__val--warm" : "sea__val--cool"}`}>
                 <span ref={numberRef} className="sea__val-num">
                   {valText}
                 </span>
@@ -525,9 +449,7 @@ export default function SeaWarm() {
 
               {medianVal != null && (
                 <p className="sea__legend">
-                  {fillTpl(t("home.sea.median_label"), {
-                    n: signed(medianVal),
-                  })}
+                  {fillTpl(t("home.sea.median_label"), { n: signed(medianVal) })}
                 </p>
               )}
             </div>

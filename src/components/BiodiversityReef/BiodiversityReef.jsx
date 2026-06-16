@@ -87,7 +87,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export default function BiodiversityReef() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
 
   const reduced =
     typeof window !== "undefined" &&
@@ -229,8 +229,8 @@ export default function BiodiversityReef() {
 
   useEffect(() => {
     if (inView) startedRef.current = true;
-    const tv = startedRef.current && sel ? sel.v : 0;
-    const ti = startedRef.current && sel ? sel.index : 0;
+    const tv = sel ? sel.v : 0;
+    const ti = sel ? sel.index : 0;
     if (reduced) {
       animObj.current.v = tv;
       animObj.current.idx = ti;
@@ -248,6 +248,7 @@ export default function BiodiversityReef() {
 
   useEffect(() => {
     if (reduced) return undefined;
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -259,7 +260,7 @@ export default function BiodiversityReef() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";

@@ -104,7 +104,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export default function PlantGrowth() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
     () => new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US"),
     [lang],
@@ -237,8 +237,8 @@ export default function PlantGrowth() {
 
   useEffect(() => {
     if (inView) startedRef.current = true;
-    const tv = startedRef.current && sel ? sel.v : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
+    const tv = sel ? sel.v : 0;
+    const tval = sel ? sel.val : 0;
     if (reduced) {
       animObj.current.v = tv;
       animObj.current.val = tval;
@@ -256,6 +256,7 @@ export default function PlantGrowth() {
 
   useEffect(() => {
     if (reduced) return undefined;
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -267,7 +268,7 @@ export default function PlantGrowth() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";
@@ -312,11 +313,7 @@ export default function PlantGrowth() {
     : t("home.plant.title");
 
   return (
-    <section
-      className="plant"
-      ref={ref}
-      data-inview={inView ? "true" : "false"}
-    >
+    <section className="plant" ref={ref} data-inview={inView ? "true" : "false"}>
       <div className="plant__inner container">
         <header className="plant__head">
           <p className="eyebrow plant__kicker">{t("home.plant.kicker")}</p>
@@ -424,15 +421,8 @@ export default function PlantGrowth() {
                       }}
                       opacity="0"
                     >
-                      <path
-                        className={`plant__leaf ${lf.cls}`}
-                        d={leafPath(lf)}
-                      />
-                      <path
-                        className="plant__vein"
-                        d={veinPath(lf)}
-                        fill="none"
-                      />
+                      <path className={`plant__leaf ${lf.cls}`} d={leafPath(lf)} />
+                      <path className="plant__vein" d={veinPath(lf)} fill="none" />
                     </g>
                   ))}
 

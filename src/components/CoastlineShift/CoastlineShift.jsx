@@ -61,7 +61,7 @@ const signed = (x, d = 2) => `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(d)}`;
 
 export default function CoastlineShift() {
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
 
   const reduced =
     typeof window !== "undefined" &&
@@ -193,7 +193,7 @@ export default function CoastlineShift() {
   useEffect(() => {
     if (inView) startedRef.current = true;
     const toff = startedRef.current ? targetOff : 0;
-    const tmed = startedRef.current && sel ? sel.med : 0;
+    const tmed = sel ? sel.med : 0;
     if (reduced) {
       animObj.current.off = toff;
       animObj.current.med = tmed;
@@ -211,6 +211,7 @@ export default function CoastlineShift() {
 
   useEffect(() => {
     if (reduced) return undefined;
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -222,7 +223,7 @@ export default function CoastlineShift() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const medText = sel ? signed(sel.med, 2) : "+0.00";
   const projText = sel ? signed(sel.med * PROJ_YEARS, 1) : "+0.0";
@@ -235,11 +236,7 @@ export default function CoastlineShift() {
         : "gain";
 
   return (
-    <section
-      className="coast"
-      ref={ref}
-      data-inview={inView ? "true" : "false"}
-    >
+    <section className="coast" ref={ref} data-inview={inView ? "true" : "false"}>
       <div className="coast__inner container">
         <header className="coast__head">
           <p className="eyebrow coast__kicker">{t("home.coast.kicker")}</p>
@@ -310,9 +307,7 @@ export default function CoastlineShift() {
                   </span>
                   <span className="coast__rate-unit">m/an</span>
                 </p>
-                <p className="coast__rate-cap">
-                  {t("home.coast.rate_caption")}
-                </p>
+                <p className="coast__rate-cap">{t("home.coast.rate_caption")}</p>
                 <p className="coast__name">
                   <img
                     className="coast__name-flag"

@@ -76,7 +76,7 @@ function fillTpl(str, map) {
 export default function WaterGlass() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
 
   const reduced =
     typeof window !== "undefined" &&
@@ -251,6 +251,7 @@ export default function WaterGlass() {
   /* Boucle d'animation de la surface (désactivée si reduced motion). */
   useEffect(() => {
     if (reduced) return undefined;
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -262,7 +263,7 @@ export default function WaterGlass() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   /* Repères de mesure (statiques) + médiane. */
   const ticks = [0.25, 0.5, 0.75];

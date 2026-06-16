@@ -79,7 +79,7 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export default function CrowdAffected() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.2 });
+  const [ref, inView, visible] = useInView({ threshold: 0.2 });
   const nf = useMemo(
     () => new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US"),
     [lang],
@@ -223,6 +223,7 @@ export default function CrowdAffected() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -234,7 +235,7 @@ export default function CrowdAffected() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";

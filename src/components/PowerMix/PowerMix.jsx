@@ -59,7 +59,7 @@ function fillTpl(str, map) {
 
 export default function PowerMix() {
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.2 });
+  const [ref, inView, visible] = useInView({ threshold: 0.2 });
   const nf0 = useMemo(
     () =>
       new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
@@ -238,6 +238,7 @@ export default function PowerMix() {
       draw(0);
       return undefined;
     }
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -249,7 +250,7 @@ export default function PowerMix() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const loading = power.status === "loading";
   const failed = power.status === "error";

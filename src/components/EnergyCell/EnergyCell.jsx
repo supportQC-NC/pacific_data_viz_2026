@@ -71,7 +71,7 @@ function fillTpl(str, map) {
 export default function EnergyCell() {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
-  const [ref, inView] = useInView({ threshold: 0.25 });
+  const [ref, inView, visible] = useInView({ threshold: 0.25 });
 
   const reduced =
     typeof window !== "undefined" &&
@@ -241,6 +241,7 @@ export default function EnergyCell() {
 
   useEffect(() => {
     if (reduced) return undefined;
+    if (!visible) return undefined;
     let raf = 0;
     let phase = 0;
     let last = performance.now();
@@ -252,7 +253,7 @@ export default function EnergyCell() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, draw]);
+  }, [reduced, visible, draw]);
 
   const ticks = [0.25, 0.5, 0.75];
   const medianY = medianValue != null ? yForPct(medianValue / 100) : null;

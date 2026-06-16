@@ -1,8 +1,13 @@
-// src/hooks/useInView.js
+// src/hooks/UseInView.js
 // ============================================================
-// Petit hook de révélation au scroll : renvoie [ref, inView].
-// inView passe à true une seule fois quand l'élément entre dans le viewport.
-// Sert à harmoniser les apparitions des sections de l'accueil.
+// Hook de visibilité au scroll : renvoie [ref, inView, visible].
+//   • inView  : passe à true UNE fois (révélation), reste true → pour déclencher
+//               les apparitions/animations d'entrée.
+//   • visible : LIVE, true tant que l'élément est à l'écran, false sinon →
+//               sert à METTRE EN PAUSE les boucles d'animation hors écran
+//               (économie CPU/batterie, surtout sur mobile).
+// Rétro-compatible : les appelants qui font `const [ref, inView] = useInView()`
+// continuent de fonctionner.
 // ============================================================
 
 import { useEffect, useRef, useState } from "react";
@@ -10,21 +15,21 @@ import { useEffect, useRef, useState } from "react";
 export default function useInView({ threshold = 0.18, rootMargin = "0px" } = {}) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
     if (typeof IntersectionObserver === "undefined") {
       setInView(true);
+      setVisible(true);
       return undefined;
     }
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) {
-            setInView(true);
-            obs.unobserve(e.target);
-          }
+          setVisible(e.isIntersecting);
+          if (e.isIntersecting) setInView(true);
         });
       },
       { threshold, rootMargin },
@@ -33,5 +38,5 @@ export default function useInView({ threshold = 0.18, rootMargin = "0px" } = {})
     return () => obs.disconnect();
   }, [threshold, rootMargin]);
 
-  return [ref, inView];
+  return [ref, inView, visible];
 }
