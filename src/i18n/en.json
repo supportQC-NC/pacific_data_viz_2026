@@ -175,6 +175,22 @@
       "kicker": "The region",
       "title": "The 22 Pacific territories",
       "subtitle": "Every figure in Datamoana relates to one of these 22 island countries and territories — from Papua New Guinea to Pitcairn."
+    },
+    "water": {
+      "kicker": "Access to water",
+      "title": "Not everyone has a safe glass of water",
+      "lead": "Pick a territory: the glass fills to the share of its population with safely managed drinking water.",
+      "select_label": "Territory",
+      "highest": "Best served",
+      "lowest": "Least served",
+      "year_label": "{year} data",
+      "have_line": "{n} in 100 people have safely managed drinking water.",
+      "gap_line": "{n} in 100 still go without.",
+      "median_label": "Pacific median · {n}%",
+      "aria": "{area}: {n}% of the population with safely managed drinking water ({year}).",
+      "loading": "Loading water-access data…",
+      "unavailable": "Water-access data is temporarily unavailable.",
+      "source": "Source: WHO/UNICEF (JMP) · SDG 6.1.1 · via Pacific Data Hub"
     }
   },
   "footer": {
@@ -693,7 +709,10 @@
     }
   },
   "act3": {
-    "dataset": { "sea": "Sea", "pop": "Population" },
+    "dataset": {
+      "sea": "Sea",
+      "pop": "Population"
+    },
     "lead": "While the sea departs from its reference, the human map is being redrawn. Reading both together — where the water rises, where people live and arrive — turns two official series into a tool for anticipation.",
     "value_label": "Annual growth",
     "unit": "%",
@@ -1049,7 +1068,10 @@
   "act5": {
     "value_label": "Renewable share",
     "unit": "%",
-    "dataset": { "renew": "Renewable share", "mix": "Electricity mix" },
+    "dataset": {
+      "renew": "Renewable share",
+      "mix": "Electricity mix"
+    },
     "baseline": "0 %",
     "mean_label": "avg",
     "ren_title": "Renewable share — final energy",
@@ -1228,7 +1250,9 @@
     }
   },
   "act6": {
-    "dataset": { "soil": "Soil" },
+    "dataset": {
+      "soil": "Soil"
+    },
     "tag": "Act 06 — The plate",
     "title": "The nourishing land",
     "lead": "How much does the land give back, crop by crop, animal by animal? FAOSTAT has measured it since 1961 — and the IMF's CALCI index tells, alongside, how land cover has shifted around its 2015 baseline. Two official datasets, two precise definitions, and many singular stories.",
@@ -2057,20 +2081,20 @@
   },
   "act11": {
     "gap": {
-  "cell": "1 square = 1 t CO₂e per capita",
-  "ratio_cap": "the gap between the Pacific's biggest per-capita emitter and the regional median"
-},
+      "cell": "1 square = 1 t CO₂e per capita",
+      "ratio_cap": "the gap between the Pacific's biggest per-capita emitter and the regional median"
+    },
     "agri": {
-  "crop": "Crop",
-  "stock": "Livestock",
-  "size": "territories",
-  "yield": "median yield",
-  "hint": "Hover a tile for details"
-},
+      "crop": "Crop",
+      "stock": "Livestock",
+      "size": "territories",
+      "yield": "median yield",
+      "hint": "Hover a tile for details"
+    },
     "swarm": {
-  "search": "Chercher une île…",
-  "hint": "Survolez un point ou cherchez une île"
-},
+      "search": "Chercher une île…",
+      "hint": "Survolez un point ou cherchez une île"
+    },
     "bubble": {
       "size": "Coastline",
       "hint": "Hover a bubble for details"
@@ -2180,18 +2204,18 @@
     "gauge_label": "median vulnerability",
     "story": {
       "agri_k": "Synthesis · Agriculture",
-"agri_t": "The Pacific's agricultural portfolio",
-"agri_x": "Each tile is a product. Its area shows how many territories grow it — the regional food staples fill the space, niche production shrinks to a corner. Green is plant, coral is animal; the brighter the hue, the higher the median yield. At a glance you read what Pacific food security rests on — and how much it hangs on a handful of crops.",
-"agri_m": "Method: one tile per product. Size ∝ ubiquity (number of territories reporting it — a unit-free measure, honest to aggregate); colour = type (crop / livestock); intensity = median yield (latest year), normalised by rank WITHIN its category, since kg/ha are never compared to kg/animal. Source: agricultural production, Pacific Data Hub (SPC).",
-      "swarm_title": "La dispersion de chaque stress",
-"swarm_text": "Six essaims, un par stress. Chaque point est un territoire, posé selon son intensité (0 = le moins touché, 100 = le plus). Survolez un point — ou cherchez une île — et elle s'allume sur les six lignes à la fois : on voit aussitôt si elle est partout en tête, ou seulement sur un front. Les points isolés à droite sont les cas extrêmes ; les codes des minima et maxima sont affichés par défaut.",
-"swarm_m": "Calcul : chaque indicateur est normalisé par rang percentile (0–100) au sein du Pacifique. Un point = un territoire ; la dispersion verticale (jitter) n'a aucune signification, elle évite seulement les superpositions. Source : Pacific Data Hub (SPC).",
+      "agri_t": "The Pacific's agricultural portfolio",
+      "agri_x": "Each tile is a product. Its area shows how many territories grow it — the regional food staples fill the space, niche production shrinks to a corner. Green is plant, coral is animal; the brighter the hue, the higher the median yield. At a glance you read what Pacific food security rests on — and how much it hangs on a handful of crops.",
+      "agri_m": "Method: one tile per product. Size ∝ ubiquity (number of territories reporting it — a unit-free measure, honest to aggregate); colour = type (crop / livestock); intensity = median yield (latest year), normalised by rank WITHIN its category, since kg/ha are never compared to kg/animal. Source: agricultural production, Pacific Data Hub (SPC).",
+      "swarm_title": "Where each territory sits",
+      "swarm_text": "An average hides everything: it says “the Pacific is doing fine” even if a few territories suffer enormously. Here, each circle is a territory, placed on the vulnerability scale. You see at once the pack — where most cluster — and the few that break away, downward or upward. It's the picture single numbers erase.",
+      "swarm_m": "Method: each circle is a territory, placed on the composite index axis (0–100). No averaging: you see the real distribution — the pack and the outliers. Same scored territories as the other views.",
       "bubble_k": "Synthesis · The stakes",
       "bubble_title": "And how much coast at stake",
       "bubble_text": "The same paradox, but each bubble is sized by the extent of its coastline. Left, the low emitters; top, the most vulnerable. The large bubbles in the shaded quadrant say it all: not abstract points but kilometres of inhabited coast, exposed by territories that emitted almost nothing.",
       "bubble_m": "Method: X = per-capita GHG emissions (t CO₂e), Y = composite vulnerability index (0–100), size ∝ coastline extent (number of tracked coast segments, an approximate proxy). Shaded quadrant = low emissions and high vulnerability. Colour by sub-region. Sources: Pacific Data Hub (SPC); coastline from Digital Earth Pacific.",
       "mix_hint": "Hover a source to follow it through the flow",
-      "top_m": "Method: the 8 territories with the highest composite index (0–100), shown as a lollipop to stay readable despite long names. This isn't the full list — it's the top of the ranking. The index combines 6 stresses with equal weights, normalised by rank within the Pacific.",
+      "top_m": "Method: the 6 territories with the highest composite index (0–100), shown as rings to stay legible. This is not the full list: it is the top of the ranking. The index combines 6 stresses at equal weight, normalised by rank within the Pacific.",
       "mix_share": "· share",
       "mix_k": "Synthesis · Power mix",
       "mix_t": "How the power is made",
@@ -2264,8 +2288,6 @@
       "reversal_left": "Emissions rank",
       "reversal_right": "Vulnerability rank",
       "swarm_k": "The distribution",
-      "swarm_title": "Where each territory sits",
-      "swarm_text": "An average hides everything: it says “the Pacific is doing fine” even if a few territories suffer enormously. Here, each circle is a territory, placed on the vulnerability scale. You see at once the pack — where most cluster — and the few that break away, downward or upward. It's the picture single numbers erase.",
       "swarm_log": "Linear scale",
       "swarm_lin": "Tightened scale",
       "top_k": "The most exposed",
@@ -2315,8 +2337,6 @@
       "matrix_m": "Method: each cell is a territory's normalised score on one dimension (0 = the most spared in the Pacific, 100 = the most exposed). Rows are sorted by descending composite index. An empty cell = dimension unavailable for that territory.",
       "paradox_m": "Method: X axis = per-capita GHG emissions (responsibility), Y axis = composite vulnerability index (0–100). The median lines split territories in two. Each dot is a scored territory; reading relative to the Pacific.",
       "reversal_m": "Method: on the left, the per-capita emissions rank (1 = biggest emitter); on the right, the vulnerability rank. Both ranks are computed on the same scored territories. A rising line = few emissions but high exposure.",
-      "swarm_m": "Method: each circle is a territory, placed on the composite index axis (0–100). No averaging: you see the real distribution — the pack and the outliers. Same scored territories as the other views.",
-      "top_m": "Method: the 6 territories with the highest composite index (0–100), shown as rings to stay legible. This is not the full list: it is the top of the ranking. The index combines 6 stresses at equal weight, normalised by rank within the Pacific.",
       "studio_m": "Method: you adjust each dimension's weight (0 = removed, 1 = normal, 2 = doubled); the composite index is recomputed live as the weighted average of available dimensions, then re-normalised. No weighting is neutral — that is the point of this view.",
       "parallel_k": "Synthesis · Profiles",
       "parallel_title": "Each island's fingerprint",
@@ -2753,8 +2773,15 @@
   },
   "country": {
     "keys_title": "At a glance",
-    "coast": { "label": "Coastline", "eroding": "eroding" },
-    "nav": { "prev": "Previous", "next": "Next", "group": "Chapter" },
+    "coast": {
+      "label": "Coastline",
+      "eroding": "eroding"
+    },
+    "nav": {
+      "prev": "Previous",
+      "next": "Next",
+      "group": "Chapter"
+    },
     "back": "Home",
     "eyebrow": "Territory profile",
     "lead": "All of Datamoana's open indicators, for this single territory (excluding cyclones, specific to New Caledonia).",

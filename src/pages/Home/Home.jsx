@@ -16,6 +16,7 @@ import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
 import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
+import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -138,6 +139,8 @@ export default function Home() {
       </section>
 
       <KeyFigures />
+
+      <WaterGlass />
 
       <HomeIntro />
 

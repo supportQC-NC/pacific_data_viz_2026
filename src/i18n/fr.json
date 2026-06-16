@@ -175,6 +175,22 @@
       "kicker": "La région",
       "title": "Les 22 territoires du Pacifique",
       "subtitle": "Chaque chiffre de Datamoana se rapporte à l'un de ces 22 pays et territoires insulaires — de la Papouasie-Nouvelle-Guinée à Pitcairn."
+    },
+    "water": {
+      "kicker": "Accès à l'eau",
+      "title": "Tout le monde n'a pas un verre d'eau sûr",
+      "lead": "Choisissez un territoire : le verre se remplit jusqu'à la part de sa population disposant d'une eau potable gérée en toute sécurité.",
+      "select_label": "Territoire",
+      "highest": "Le mieux desservi",
+      "lowest": "Le moins desservi",
+      "year_label": "Donnée {year}",
+      "have_line": "{n} personnes sur 100 disposent d'une eau potable gérée en sécurité.",
+      "gap_line": "{n} sur 100 n'y ont pas encore accès.",
+      "median_label": "Médiane du Pacifique · {n}%",
+      "aria": "{area} : {n} % de la population avec une eau potable gérée en sécurité ({year}).",
+      "loading": "Chargement des données d'accès à l'eau…",
+      "unavailable": "Donnée d'accès à l'eau momentanément indisponible.",
+      "source": "Source : OMS/UNICEF (JMP) · ODD 6.1.1 · via Pacific Data Hub"
     }
   },
   "footer": {
@@ -693,7 +709,10 @@
     }
   },
   "act3": {
-    "dataset": { "sea": "Mer", "pop": "Population" },
+    "dataset": {
+      "sea": "Mer",
+      "pop": "Population"
+    },
     "lead": "Pendant que la mer s'écarte de sa référence, la carte humaine se redessine. Lire les deux ensemble — où l'eau monte, où les habitants vivent et arrivent — c'est transformer deux séries officielles en outil d'anticipation.",
     "value_label": "Croissance annuelle",
     "unit": "%",
@@ -1047,7 +1066,10 @@
     }
   },
   "act5": {
-    "dataset": { "renew": "Part renouvelable", "mix": "Mix électrique" },
+    "dataset": {
+      "renew": "Part renouvelable",
+      "mix": "Mix électrique"
+    },
     "value_label": "Part renouvelable",
     "unit": "%",
     "baseline": "0 %",
@@ -1352,8 +1374,6 @@
     },
     "thesis": "Rendements (kg/ha, kg/animal) et couverture des sols (indice CALCI, 2015 = 100) : deux mesures officielles à lire chacune pour ce qu'elle est — la productivité d'un côté, un indice d'usage des sols de l'autre. Les rendements bougent rarement pour une seule raison : ici, on apprend d'abord à les lire.",
     "board": {
-      "group_view": "View",
-      "dataset_label": "Dataset",
       "group_view": "Vue",
       "dataset_label": "Données",
       "switch_hint": "← → pour changer de vue",
@@ -2065,16 +2085,16 @@
   },
   "act11": {
     "gap": {
-  "cell": "1 carré = 1 t éq. CO₂ par habitant",
-  "ratio_cap": "l'écart entre le plus gros émetteur par habitant du Pacifique et la médiane régionale"
-},
+      "cell": "1 carré = 1 t éq. CO₂ par habitant",
+      "ratio_cap": "l'écart entre le plus gros émetteur par habitant du Pacifique et la médiane régionale"
+    },
     "agri": {
-  "crop": "Culture",
-  "stock": "Bétail",
-  "size": "territoires",
-  "yield": "rendement méd.",
-  "hint": "Survolez une tuile pour le détail"
-},
+      "crop": "Culture",
+      "stock": "Bétail",
+      "size": "territoires",
+      "yield": "rendement méd.",
+      "hint": "Survolez une tuile pour le détail"
+    },
     "swarm": {
       "search": "Search an island…",
       "hint": "Hover a dot or search an island"
@@ -2092,7 +2112,6 @@
     "radial": {
       "hint": "Survolez une barre pour le détail"
     },
-
     "mv": {
       "cause": "Mouvement 1 · La cause",
       "conseq": "Mouvement 2 · La conséquence",
@@ -2189,12 +2208,12 @@
     },
     "story": {
       "agri_k": "Synthèse · Agriculture",
-"agri_t": "Le portefeuille agricole du Pacifique",
-"agri_x": "Chaque tuile est un produit. Sa surface dit dans combien de territoires il est cultivé — les grands piliers alimentaires occupent l'espace, les productions de niche se réduisent à un coin. Le vert est végétal, le corail animal ; plus la teinte est vive, plus le rendement médian est élevé. On lit d'un coup ce sur quoi repose la sécurité alimentaire du Pacifique — et combien elle tient à une poignée de cultures.",
-"agri_m": "Calcul : une tuile par produit. Taille ∝ ubiquité (nombre de territoires qui le déclarent — mesure sans unité, donc honnête à agréger) ; couleur = nature (culture / bétail) ; intensité = rendement médian (dernière année) normalisé par rang AU SEIN de sa catégorie, car on ne compare jamais des kg/ha à des kg/animal. Source : production agricole, Pacific Data Hub (SPC).",
-      "swarm_title": "The spread of each stress",
-      "swarm_text": "Six swarms, one per stress. Each dot is a territory, placed by its intensity (0 = least affected, 100 = most). Hover a dot — or search an island — and it lights up across all six rows at once: you instantly see whether it leads everywhere, or only on one front. The isolated dots on the right are the extremes; the codes of each row's min and max are shown by default.",
-      "swarm_m": "Method: each indicator is normalised by percentile rank (0–100) within the Pacific. One dot = one territory; the vertical scatter (jitter) carries no meaning, it only avoids overlaps. Source: Pacific Data Hub (SPC).",
+      "agri_t": "Le portefeuille agricole du Pacifique",
+      "agri_x": "Chaque tuile est un produit. Sa surface dit dans combien de territoires il est cultivé — les grands piliers alimentaires occupent l'espace, les productions de niche se réduisent à un coin. Le vert est végétal, le corail animal ; plus la teinte est vive, plus le rendement médian est élevé. On lit d'un coup ce sur quoi repose la sécurité alimentaire du Pacifique — et combien elle tient à une poignée de cultures.",
+      "agri_m": "Calcul : une tuile par produit. Taille ∝ ubiquité (nombre de territoires qui le déclarent — mesure sans unité, donc honnête à agréger) ; couleur = nature (culture / bétail) ; intensité = rendement médian (dernière année) normalisé par rang AU SEIN de sa catégorie, car on ne compare jamais des kg/ha à des kg/animal. Source : production agricole, Pacific Data Hub (SPC).",
+      "swarm_title": "Où se situe chaque territoire",
+      "swarm_text": "Une moyenne cache tout : elle dit « le Pacifique va plutôt bien » même si quelques territoires souffrent énormément. Ici, chaque cercle est un territoire, posé sur l'échelle de vulnérabilité. On voit d'un coup le peloton — là où se masse la majorité — et les quelques-uns qui s'en détachent, vers le bas comme vers le haut. C'est la photo que les chiffres uniques effacent.",
+      "swarm_m": "Calcul : chaque cercle est un territoire, posé sur l'axe de l'indice composite (0–100). Aucune moyenne : on voit la distribution réelle — le peloton et les cas isolés. Mêmes territoires notés que les autres vues.",
       "bubble_k": "Synthèse · L'enjeu",
       "bubble_title": "Et combien de littoral en jeu",
       "bubble_text": "Le même paradoxe, mais chaque bulle est dimensionnée par l'ampleur de son littoral. À gauche, les faibles émetteurs ; en haut, les plus vulnérables. Les grosses bulles posées dans le cadran ombré disent l'essentiel : ce ne sont pas des points abstraits, ce sont des kilomètres de côtes habitées, exposées par des territoires qui n'ont presque rien émis.",
@@ -2206,7 +2225,7 @@
       "power_center": "Production électrique",
       "mix_k": "Synthèse · Mix électrique",
       "mix_hint": "Survolez une source pour la suivre dans le flux",
-      "top_m": "Calcul : les 8 territoires au plus haut indice composite (0–100), en lollipop pour rester lisibles malgré les noms longs. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
+      "top_m": "Calcul : les 6 territoires au plus haut indice composite (0–100), affichés en anneaux pour rester lisibles. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
       "mix_share": "· part",
       "mix_t": "Comment le courant est produit",
       "mix_x": "Aire empilée du mix électrique du Pacifique au fil des années, source par source : en bas les combustibles fossiles (pétrole, diesel, charbon, gaz…), en haut les renouvelables (hydraulique, solaire, éolien, géothermie, biomasse). On lit d'un coup la dépendance encore massive aux fossiles — et la part renouvelable qui gagne du terrain, trop lentement.",
@@ -2285,8 +2304,6 @@
       "reversal_left": "Rang émissions",
       "reversal_right": "Rang vulnérabilité",
       "swarm_k": "La distribution",
-      "swarm_title": "Où se situe chaque territoire",
-      "swarm_text": "Une moyenne cache tout : elle dit « le Pacifique va plutôt bien » même si quelques territoires souffrent énormément. Ici, chaque cercle est un territoire, posé sur l'échelle de vulnérabilité. On voit d'un coup le peloton — là où se masse la majorité — et les quelques-uns qui s'en détachent, vers le bas comme vers le haut. C'est la photo que les chiffres uniques effacent.",
       "swarm_log": "Échelle linéaire",
       "swarm_lin": "Échelle resserrée",
       "top_k": "Les plus exposés",
@@ -2336,8 +2353,6 @@
       "matrix_m": "Calcul : chaque cellule est le score normalisé d'un territoire sur une dimension (0 = le plus épargné du Pacifique, 100 = le plus exposé). Les lignes sont triées par indice composite décroissant. Une case vide = dimension non disponible pour ce territoire.",
       "paradox_m": "Calcul : axe X = émissions de GES par habitant (responsabilité), axe Y = indice composite de vulnérabilité (0–100). Les lignes médianes partagent les territoires en deux. Chaque point est un territoire noté ; lecture relative au Pacifique.",
       "reversal_m": "Calcul : à gauche, le rang d'émissions par habitant (1 = plus gros émetteur) ; à droite, le rang de vulnérabilité. Les deux rangs sont calculés sur les mêmes territoires notés. Une ligne qui monte = peu d'émissions mais forte exposition.",
-      "swarm_m": "Calcul : chaque cercle est un territoire, posé sur l'axe de l'indice composite (0–100). Aucune moyenne : on voit la distribution réelle — le peloton et les cas isolés. Mêmes territoires notés que les autres vues.",
-      "top_m": "Calcul : les 6 territoires au plus haut indice composite (0–100), affichés en anneaux pour rester lisibles. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
       "studio_m": "Calcul : vous ajustez le poids de chaque dimension (0 = retirée, 1 = normale, 2 = doublée) ; l'indice composite est recalculé en direct comme moyenne pondérée des dimensions disponibles, puis re-normalisé. Aucune pondération n'est neutre — c'est le but de cette vue.",
       "parallel_k": "Synthèse · Profils",
       "parallel_title": "Le portrait de chaque île",
@@ -2762,8 +2777,15 @@
   },
   "country": {
     "keys_title": "En bref",
-    "coast": { "label": "Trait de côte", "eroding": "en recul" },
-    "nav": { "prev": "Précédent", "next": "Suivant", "group": "Chapitre" },
+    "coast": {
+      "label": "Trait de côte",
+      "eroding": "en recul"
+    },
+    "nav": {
+      "prev": "Précédent",
+      "next": "Suivant",
+      "group": "Chapitre"
+    },
     "back": "Accueil",
     "eyebrow": "Profil territoire",
     "lead": "Tous les indicateurs ouverts de Datamoana, pour ce seul territoire (hors cyclones, propres à la Nouvelle-Calédonie).",
