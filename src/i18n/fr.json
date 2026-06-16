@@ -19,7 +19,7 @@
     "acts_intro": "Douze actes pour comprendre. Une région déjà en mouvement.",
     "acts": {
       "a1_tag": "Acte 01",
-     "a1_title": "Une empreinte si légère",
+      "a1_title": "Une empreinte si légère",
       "a1_text": "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cet acte la mesure territoire par territoire — le socle du récit.",
       "a2_tag": "Acte 02",
       "a2_title": "Un océan suivi de près",
@@ -2064,36 +2064,51 @@
     }
   },
   "act11": {
+    "gap": {
+  "cell": "1 carré = 1 t éq. CO₂ par habitant",
+  "ratio_cap": "l'écart entre le plus gros émetteur par habitant du Pacifique et la médiane régionale"
+},
+    "agri": {
+  "crop": "Culture",
+  "stock": "Bétail",
+  "size": "territoires",
+  "yield": "rendement méd.",
+  "hint": "Survolez une tuile pour le détail"
+},
+    "swarm": {
+      "search": "Search an island…",
+      "hint": "Hover a dot or search an island"
+    },
     "corr": {
-  "pos": "Frappent ensemble (+)",
-  "neg": "S'opposent (−)",
-  "hint": "Survolez une case pour r et n"
-},
+      "pos": "Frappent ensemble (+)",
+      "neg": "S'opposent (−)",
+      "hint": "Survolez une case pour r et n"
+    },
     "parallel": {
-  "hi": "Stress moyen élevé",
-  "lo": "Stress plus faible",
-  "hint": "Survolez un territoire pour suivre son profil"
-},
+      "hi": "Stress moyen élevé",
+      "lo": "Stress plus faible",
+      "hint": "Survolez un territoire pour suivre son profil"
+    },
     "radial": {
-  "hint": "Survolez une barre pour le détail"
-},
+      "hint": "Survolez une barre pour le détail"
+    },
 
     "mv": {
-  "cause": "Mouvement 1 · La cause",
-  "conseq": "Mouvement 2 · La conséquence",
-  "injustice": "Mouvement 3 · L'injustice",
-  "reponse": "Mouvement 4 · La réponse"
-},
-"arc": {
-  "resp": "Responsabilité",
-  "vuln": "Vulnérabilité",
-  "low": "faible",
-  "high": "élevé",
-  "up": "Exposé sans l'avoir causé",
-  "down": "Plus émetteur qu'exposé",
-  "gap": "écart",
-  "hint": "Survolez un arc pour le détail"
-},
+      "cause": "Mouvement 1 · La cause",
+      "conseq": "Mouvement 2 · La conséquence",
+      "injustice": "Mouvement 3 · L'injustice",
+      "reponse": "Mouvement 4 · La réponse"
+    },
+    "arc": {
+      "resp": "Responsabilité",
+      "vuln": "Vulnérabilité",
+      "low": "faible",
+      "high": "élevé",
+      "up": "Exposé sans l'avoir causé",
+      "down": "Plus émetteur qu'exposé",
+      "gap": "écart",
+      "hint": "Survolez un arc pour le détail"
+    },
     "tag": "Acte 11 — Synthèse",
     "title": "Coupables de presque rien, exposés à presque tout",
     "lead": "Dix actes, un même fil. On croise ici tout ce qu'on a vu : ce que ces îles émettent, et ce qu'elles encaissent. La responsabilité d'un côté, la vulnérabilité de l'autre — et l'écart qui crie l'injustice climatique du Pacifique.",
@@ -2169,33 +2184,40 @@
     "gauge_sub": "indice composite médian de la sélection courante",
     "gauge_label": "vulnérabilité médiane",
     "bubble": {
-  "size": "Littoral",
-  "hint": "Survolez une bulle pour le détail"
+      "size": "Littoral",
+      "hint": "Survolez une bulle pour le détail"
     },
     "story": {
+      "agri_k": "Synthèse · Agriculture",
+"agri_t": "Le portefeuille agricole du Pacifique",
+"agri_x": "Chaque tuile est un produit. Sa surface dit dans combien de territoires il est cultivé — les grands piliers alimentaires occupent l'espace, les productions de niche se réduisent à un coin. Le vert est végétal, le corail animal ; plus la teinte est vive, plus le rendement médian est élevé. On lit d'un coup ce sur quoi repose la sécurité alimentaire du Pacifique — et combien elle tient à une poignée de cultures.",
+"agri_m": "Calcul : une tuile par produit. Taille ∝ ubiquité (nombre de territoires qui le déclarent — mesure sans unité, donc honnête à agréger) ; couleur = nature (culture / bétail) ; intensité = rendement médian (dernière année) normalisé par rang AU SEIN de sa catégorie, car on ne compare jamais des kg/ha à des kg/animal. Source : production agricole, Pacific Data Hub (SPC).",
+      "swarm_title": "The spread of each stress",
+      "swarm_text": "Six swarms, one per stress. Each dot is a territory, placed by its intensity (0 = least affected, 100 = most). Hover a dot — or search an island — and it lights up across all six rows at once: you instantly see whether it leads everywhere, or only on one front. The isolated dots on the right are the extremes; the codes of each row's min and max are shown by default.",
+      "swarm_m": "Method: each indicator is normalised by percentile rank (0–100) within the Pacific. One dot = one territory; the vertical scatter (jitter) carries no meaning, it only avoids overlaps. Source: Pacific Data Hub (SPC).",
       "bubble_k": "Synthèse · L'enjeu",
-"bubble_title": "Et combien de littoral en jeu",
-"bubble_text": "Le même paradoxe, mais chaque bulle est dimensionnée par l'ampleur de son littoral. À gauche, les faibles émetteurs ; en haut, les plus vulnérables. Les grosses bulles posées dans le cadran ombré disent l'essentiel : ce ne sont pas des points abstraits, ce sont des kilomètres de côtes habitées, exposées par des territoires qui n'ont presque rien émis.",
-"bubble_m": "Calcul : X = émissions de GES par habitant (t éq. CO₂), Y = indice composite de vulnérabilité (0–100), taille ∝ ampleur du littoral (nombre de segments de côte suivis, proxy approché). Cadran ombré = faibles émissions et forte vulnérabilité. Couleur par sous-région. Sources : Pacific Data Hub (SPC) ; trait de côte Digital Earth Pacific.",
+      "bubble_title": "Et combien de littoral en jeu",
+      "bubble_text": "Le même paradoxe, mais chaque bulle est dimensionnée par l'ampleur de son littoral. À gauche, les faibles émetteurs ; en haut, les plus vulnérables. Les grosses bulles posées dans le cadran ombré disent l'essentiel : ce ne sont pas des points abstraits, ce sont des kilomètres de côtes habitées, exposées par des territoires qui n'ont presque rien émis.",
+      "bubble_m": "Calcul : X = émissions de GES par habitant (t éq. CO₂), Y = indice composite de vulnérabilité (0–100), taille ∝ ampleur du littoral (nombre de segments de côte suivis, proxy approché). Cadran ombré = faibles émissions et forte vulnérabilité. Couleur par sous-région. Sources : Pacific Data Hub (SPC) ; trait de côte Digital Earth Pacific.",
       "corr_k": "Synthèse · Corrélations",
-"corr_title": "Quels stress frappent ensemble",
-"corr_text": "Chaque case croise deux stress et mesure s'ils vont de pair à travers le Pacifique. En corail, deux pressions qui montent ensemble : les territoires durement touchés par l'une le sont souvent par l'autre. En cyan, deux pressions qui s'opposent. Plus la couleur est franche, plus le lien est net. À l'échelle d'une quinzaine de territoires, c'est une lecture indicative — mais elle révèle la structure cachée de la vulnérabilité.",
-"corr_m": "Calcul : corrélation de Pearson entre les rangs percentiles (≈ corrélation de Spearman), pour chaque paire d'indicateurs, sur les territoires où les deux sont renseignés (n affiché au survol). Diagonale neutralisée. La couleur va du cyan (−1) au corail (+1) en passant par le neutre. Échantillon réduit : à lire comme un signal, pas comme une preuve. Source : Pacific Data Hub (SPC).",
+      "corr_title": "Quels stress frappent ensemble",
+      "corr_text": "Chaque case croise deux stress et mesure s'ils vont de pair à travers le Pacifique. En corail, deux pressions qui montent ensemble : les territoires durement touchés par l'une le sont souvent par l'autre. En cyan, deux pressions qui s'opposent. Plus la couleur est franche, plus le lien est net. À l'échelle d'une quinzaine de territoires, c'est une lecture indicative — mais elle révèle la structure cachée de la vulnérabilité.",
+      "corr_m": "Calcul : corrélation de Pearson entre les rangs percentiles (≈ corrélation de Spearman), pour chaque paire d'indicateurs, sur les territoires où les deux sont renseignés (n affiché au survol). Diagonale neutralisée. La couleur va du cyan (−1) au corail (+1) en passant par le neutre. Échantillon réduit : à lire comme un signal, pas comme une preuve. Source : Pacific Data Hub (SPC).",
       "power_center": "Production électrique",
       "mix_k": "Synthèse · Mix électrique",
       "mix_hint": "Survolez une source pour la suivre dans le flux",
       "top_m": "Calcul : les 8 territoires au plus haut indice composite (0–100), en lollipop pour rester lisibles malgré les noms longs. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
-"mix_share": "· part",
-"mix_t": "Comment le courant est produit",
-"mix_x": "Aire empilée du mix électrique du Pacifique au fil des années, source par source : en bas les combustibles fossiles (pétrole, diesel, charbon, gaz…), en haut les renouvelables (hydraulique, solaire, éolien, géothermie, biomasse). On lit d'un coup la dépendance encore massive aux fossiles — et la part renouvelable qui gagne du terrain, trop lentement.",
-"mix_m": "Calcul : production par source (GWh), raccordement « Total » uniquement, agrégée sur l'ensemble des territoires du Pacifique et cumulée par année. Sources fossiles en corail, renouvelables en vert. Source : IRENA via Pacific Data Hub (FMI / changement climatique).",
+      "mix_share": "· part",
+      "mix_t": "Comment le courant est produit",
+      "mix_x": "Aire empilée du mix électrique du Pacifique au fil des années, source par source : en bas les combustibles fossiles (pétrole, diesel, charbon, gaz…), en haut les renouvelables (hydraulique, solaire, éolien, géothermie, biomasse). On lit d'un coup la dépendance encore massive aux fossiles — et la part renouvelable qui gagne du terrain, trop lentement.",
+      "mix_m": "Calcul : production par source (GWh), raccordement « Total » uniquement, agrégée sur l'ensemble des territoires du Pacifique et cumulée par année. Sources fossiles en corail, renouvelables en vert. Source : IRENA via Pacific Data Hub (FMI / changement climatique).",
       "arc_title": "L'entrelacs de l'injustice",
-"arc_text": "Chaque arc relie un territoire de sa responsabilité — son rang d'émissions par habitant — à sa vulnérabilité. Quand l'arc grimpe vers la droite — peu d'émissions, forte exposition — il vire au corail. L'enchevêtrement de ces arcs corail, tous penchés dans le même sens, dessine d'un coup d'œil l'injustice climatique du Pacifique : ceux qui pèsent le moins encaissent le plus.",
-"arc_m": "Calcul : la responsabilité est le rang percentile des émissions de GES par habitant au sein du Pacifique (0 = plus faible, 100 = plus fort) ; la vulnérabilité est l'indice composite de la synthèse (0–100). Deux échelles distinctes ramenées au même rang pour rester comparables. Source : Pacific Data Hub (SPC).",
-"renew2_title": "L'effort : empreinte contre énergie propre",
-"renew2_text": "On confronte ici l'empreinte — émissions par habitant, en abscisse — à l'effort — part d'énergie renouvelable, en ordonnée. En haut à gauche, les territoires qui cumulent faible empreinte et électricité largement renouvelable montrent la voie ; en bas à droite, ceux pour qui la transition reste à mener.",
-"renew2_m": "Calcul : émissions de GES par habitant (dernière année) en X ; part des renouvelables dans la consommation finale d'énergie (%) en Y. Un point par territoire, regroupés par sous-région. Source : ODD 7 et changement climatique, Pacific Data Hub (SPC).",
-"renew2_y": "Part renouvelable (%)",
+      "arc_text": "Chaque arc relie un territoire de sa responsabilité — son rang d'émissions par habitant — à sa vulnérabilité. Quand l'arc grimpe vers la droite — peu d'émissions, forte exposition — il vire au corail. L'enchevêtrement de ces arcs corail, tous penchés dans le même sens, dessine d'un coup d'œil l'injustice climatique du Pacifique : ceux qui pèsent le moins encaissent le plus.",
+      "arc_m": "Calcul : la responsabilité est le rang percentile des émissions de GES par habitant au sein du Pacifique (0 = plus faible, 100 = plus fort) ; la vulnérabilité est l'indice composite de la synthèse (0–100). Deux échelles distinctes ramenées au même rang pour rester comparables. Source : Pacific Data Hub (SPC).",
+      "renew2_title": "L'effort : empreinte contre énergie propre",
+      "renew2_text": "On confronte ici l'empreinte — émissions par habitant, en abscisse — à l'effort — part d'énergie renouvelable, en ordonnée. En haut à gauche, les territoires qui cumulent faible empreinte et électricité largement renouvelable montrent la voie ; en bas à droite, ceux pour qui la transition reste à mener.",
+      "renew2_m": "Calcul : émissions de GES par habitant (dernière année) en X ; part des renouvelables dans la consommation finale d'énergie (%) en Y. Un point par territoire, regroupés par sous-région. Source : ODD 7 et changement climatique, Pacific Data Hub (SPC).",
+      "renew2_y": "Part renouvelable (%)",
       "scatter": "Lisez de gauche à droite : plus un territoire est à gauche, moins il émet par habitant. Plus il est haut, plus il est vulnérable. La verticale marque la médiane régionale des émissions, l'horizontale la vulnérabilité médiane. Le coin haut-gauche — peu d'émissions, forte exposition — concentre les territoires les plus exposés au regard de leur responsabilité.",
       "bubble": "On reprend le même plan, et la taille des bulles ajoute l'exposition à la montée des eaux. Les grosses bulles massées à gauche le disent sans détour : ceux qui subissent le plus la mer ne sont pas ceux qui ont chargé l'atmosphère.",
       "slope": "Chaque trait part de la responsabilité d'un territoire (gauche) et rejoint sa vulnérabilité (droite). Une pente qui monte (corail) = peu d'émissions mais forte exposition. La forêt de pentes montantes résume tout l'acte.",
@@ -2318,10 +2340,9 @@
       "top_m": "Calcul : les 6 territoires au plus haut indice composite (0–100), affichés en anneaux pour rester lisibles. Ce n'est pas la liste complète : c'est le sommet du classement. L'indice combine 6 stress à poids égaux, normalisés par rang au sein du Pacifique.",
       "studio_m": "Calcul : vous ajustez le poids de chaque dimension (0 = retirée, 1 = normale, 2 = doublée) ; l'indice composite est recalculé en direct comme moyenne pondérée des dimensions disponibles, puis re-normalisé. Aucune pondération n'est neutre — c'est le but de cette vue.",
       "parallel_k": "Synthèse · Profils",
-"parallel_title": "Le portrait de chaque île",
-"parallel_text": "Chaque ligne est un territoire qui traverse les six stress climatiques, du plus bas au plus haut. Suivez-en une : on voit aussitôt si l'île est touchée sur tous les fronts à la fois — la ligne reste en haut d'un axe à l'autre — ou seulement sur un ou deux. Les lignes corail cumulent les stress ; les cyan s'en sortent mieux. Quand plusieurs lignes montent et descendent ensemble, c'est que deux stress vont de pair.",
-"parallel_m": "Calcul : chaque indicateur est normalisé par rang percentile (0–100) au sein du Pacifique, puis tracé sur son propre axe. La couleur reflète le stress moyen du territoire sur les axes renseignés ; un segment manquant signale une donnée indisponible. Source : Pacific Data Hub (SPC)."
-
+      "parallel_title": "Le portrait de chaque île",
+      "parallel_text": "Chaque ligne est un territoire qui traverse les six stress climatiques, du plus bas au plus haut. Suivez-en une : on voit aussitôt si l'île est touchée sur tous les fronts à la fois — la ligne reste en haut d'un axe à l'autre — ou seulement sur un ou deux. Les lignes corail cumulent les stress ; les cyan s'en sortent mieux. Quand plusieurs lignes montent et descendent ensemble, c'est que deux stress vont de pair.",
+      "parallel_m": "Calcul : chaque indicateur est normalisé par rang percentile (0–100) au sein du Pacifique, puis tracé sur son propre axe. La couleur reflète le stress moyen du territoire sur les axes renseignés ; un segment manquant signale une donnée indisponible. Source : Pacific Data Hub (SPC)."
     },
     "outro": {
       "kicker": "Fin du voyage",

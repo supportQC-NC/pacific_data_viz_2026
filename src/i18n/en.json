@@ -2056,6 +2056,21 @@
     }
   },
   "act11": {
+    "gap": {
+  "cell": "1 square = 1 t CO₂e per capita",
+  "ratio_cap": "the gap between the Pacific's biggest per-capita emitter and the regional median"
+},
+    "agri": {
+  "crop": "Crop",
+  "stock": "Livestock",
+  "size": "territories",
+  "yield": "median yield",
+  "hint": "Hover a tile for details"
+},
+    "swarm": {
+  "search": "Chercher une île…",
+  "hint": "Survolez un point ou cherchez une île"
+},
     "bubble": {
       "size": "Coastline",
       "hint": "Hover a bubble for details"
@@ -2164,6 +2179,13 @@
     "gauge_sub": "median composite index of the current selection",
     "gauge_label": "median vulnerability",
     "story": {
+      "agri_k": "Synthesis · Agriculture",
+"agri_t": "The Pacific's agricultural portfolio",
+"agri_x": "Each tile is a product. Its area shows how many territories grow it — the regional food staples fill the space, niche production shrinks to a corner. Green is plant, coral is animal; the brighter the hue, the higher the median yield. At a glance you read what Pacific food security rests on — and how much it hangs on a handful of crops.",
+"agri_m": "Method: one tile per product. Size ∝ ubiquity (number of territories reporting it — a unit-free measure, honest to aggregate); colour = type (crop / livestock); intensity = median yield (latest year), normalised by rank WITHIN its category, since kg/ha are never compared to kg/animal. Source: agricultural production, Pacific Data Hub (SPC).",
+      "swarm_title": "La dispersion de chaque stress",
+"swarm_text": "Six essaims, un par stress. Chaque point est un territoire, posé selon son intensité (0 = le moins touché, 100 = le plus). Survolez un point — ou cherchez une île — et elle s'allume sur les six lignes à la fois : on voit aussitôt si elle est partout en tête, ou seulement sur un front. Les points isolés à droite sont les cas extrêmes ; les codes des minima et maxima sont affichés par défaut.",
+"swarm_m": "Calcul : chaque indicateur est normalisé par rang percentile (0–100) au sein du Pacifique. Un point = un territoire ; la dispersion verticale (jitter) n'a aucune signification, elle évite seulement les superpositions. Source : Pacific Data Hub (SPC).",
       "bubble_k": "Synthesis · The stakes",
       "bubble_title": "And how much coast at stake",
       "bubble_text": "The same paradox, but each bubble is sized by the extent of its coastline. Left, the low emitters; top, the most vulnerable. The large bubbles in the shaded quadrant say it all: not abstract points but kilometres of inhabited coast, exposed by territories that emitted almost nothing.",

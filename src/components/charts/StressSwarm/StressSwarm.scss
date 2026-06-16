@@ -1,0 +1,129 @@
+// src/components/charts/StressSwarm/StressSwarm.scss
+// ============================================================
+// Styles de l'essaim multi-lignes. Sélection en corail (--c-warm), base en
+// cyan (--c-accent). Tout via tokens → bascule light/dark automatique.
+// ============================================================
+
+.swarm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  /* ---------- en-tête : recherche ---------- */
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  &__search {
+    padding: var(--sp-2) var(--sp-3);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    min-width: 200px;
+    outline: none;
+    transition: border-color var(--t-fast) var(--ease-out);
+
+    &:focus {
+      border-color: var(--c-accent);
+    }
+
+    &::placeholder {
+      color: var(--c-text-mute);
+    }
+  }
+
+  &__hint {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ---------- repères ---------- */
+  &__grid {
+    stroke: var(--c-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__tick {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  &__range {
+    stroke: var(--c-line-strong);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  &__rowlabel {
+    fill: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: 14px;
+  }
+
+  /* ---------- points ---------- */
+  &__dots {
+    transition: opacity var(--t-fast) var(--ease-out);
+
+    &.is-faded {
+      opacity: 0.16;
+    }
+  }
+
+  &__dot {
+    fill: var(--c-accent);
+    fill-opacity: 0.72;
+    stroke: var(--c-bg);
+    stroke-width: 0.5;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* ---------- mise en avant ---------- */
+  &__hl {
+    pointer-events: none;
+
+    circle {
+      fill: var(--c-warm);
+      stroke: var(--c-bg);
+      stroke-width: 1.5;
+      filter: drop-shadow(0 0 5px var(--c-warm));
+    }
+
+    text {
+      fill: var(--c-text);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: var(--fw-semi);
+      paint-order: stroke;
+      stroke: var(--c-bg);
+      stroke-width: 3.5px;
+      stroke-linejoin: round;
+    }
+  }
+
+  /* ---------- codes des extrêmes ---------- */
+  &__extreme {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: var(--fw-med);
+    pointer-events: none;
+  }
+}

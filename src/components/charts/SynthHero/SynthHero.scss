@@ -1,0 +1,138 @@
+// src/components/charts/SynthHero/SynthHero.scss
+// ============================================================
+// Hero d'ouverture de la synthèse. Espacements valides (1·2·3·4·6·8·12·16·24).
+// Halo ambiant cyan, trait d'accent, titre serif, CTA inversé fléché.
+// ============================================================
+
+.synthhero {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+  text-align: center;
+  z-index: 0;
+
+  /* ---------- halo ambiant ---------- */
+  &__glow {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    width: min(820px, 96%);
+    height: 460px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, var(--c-accent) 22%, transparent) 0%,
+      color-mix(in srgb, var(--c-accent) 8%, transparent) 42%,
+      transparent 72%
+    );
+    filter: blur(38px);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: -1;
+    animation: synthhero-pulse 7s var(--ease-out, ease) infinite;
+  }
+
+  /* ---------- trait d'accent ---------- */
+  &__mark {
+    display: block;
+    width: 40px;
+    height: 2px;
+    margin: 0 auto var(--sp-6);
+    border-radius: 1px;
+    background: var(--c-accent);
+  }
+
+  /* ---------- en-tête ---------- */
+  &__eyebrow {
+    margin: 0 0 var(--sp-6);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+  }
+
+  &__title {
+    margin: 0 0 var(--sp-8);
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi, 600);
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+    text-wrap: balance;
+  }
+
+  &__intro {
+    margin: 0 auto;
+    max-width: 720px;
+    font-size: var(--fs-md);
+    line-height: 1.75;
+    color: var(--c-text-soft);
+    text-wrap: balance;
+  }
+
+  /* ---------- CTA ---------- */
+  &__cta {
+    margin-top: var(--sp-12);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-8);
+    border: var(--border-hair) solid var(--c-text);
+    border-radius: var(--r-pill);
+    background: var(--c-text);
+    color: var(--c-bg);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semi, 600);
+    cursor: pointer;
+    transition:
+      opacity var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    &:hover .synthhero__cta-arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  &__cta-arrow {
+    display: inline-block;
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+
+  @media (max-width: 560px) {
+    &__title {
+      margin-bottom: var(--sp-6);
+    }
+    &__cta {
+      margin-top: var(--sp-8);
+    }
+  }
+}
+
+@keyframes synthhero-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.62;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .synthhero__glow {
+    animation: none;
+  }
+}

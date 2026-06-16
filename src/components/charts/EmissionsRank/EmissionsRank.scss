@@ -1,0 +1,85 @@
+// src/components/charts/EmissionsRank/EmissionsRank.scss
+// ============================================================
+// Classement des émissions/hab. Remplit la carte (centré). Barres animées,
+// ligne de médiane en pointillé accent. Tokens du thème.
+// ============================================================
+
+.erank {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  &__unit {
+    fill: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- médiane ---------- */
+  &__median {
+    line {
+      stroke: var(--c-accent);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+      opacity: 0.85;
+      vector-effect: non-scaling-stroke;
+    }
+    text {
+      fill: var(--c-accent);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: var(--fw-semi, 600);
+    }
+  }
+
+  /* ---------- barres ---------- */
+  &__bar {
+    fill: var(--c-positive);
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: erank-grow 0.7s var(--ease-out) backwards;
+    animation-delay: var(--d, 0ms);
+
+    &.is-top {
+      fill: var(--c-warm);
+    }
+  }
+
+  &__name {
+    fill: var(--c-text-soft);
+    font-family: var(--font-body);
+    font-size: 15px;
+  }
+
+  &__val {
+    fill: var(--c-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: var(--fw-semi, 600);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes erank-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erank__bar {
+    animation: none;
+  }
+}

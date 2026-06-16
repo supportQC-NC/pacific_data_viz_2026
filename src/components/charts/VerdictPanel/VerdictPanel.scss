@@ -1,0 +1,275 @@
+// src/components/charts/VerdictPanel/VerdictPanel.scss
+// ============================================================
+// Final de la synthèse — version moderne.
+// Échelle d'espacement du projet : 1·2·3·4·6·8·12·16·24 (PAS de 5/7/9).
+// KPI à hauteurs égales (libellés alignés en bas, barre d'accent qui
+// s'allonge au survol, légère profondeur), panneau limites aéré avec filet
+// central, CTA monochromes inversés. Responsive 4→2→1. Entrée en cascade via
+// .scene__anim (GSAP de l'acte).
+// ============================================================
+
+.verdict {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+  text-align: center;
+
+  /* ---------- en-tête ---------- */
+  &__eyebrow {
+    margin: 0 0 var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+  }
+
+  &__title {
+    margin: 0 0 var(--sp-6);
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi, 600);
+    font-size: clamp(2.2rem, 4.4vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--c-text);
+  }
+
+  &__intro {
+    margin: 0 auto;
+    max-width: 780px;
+    font-size: var(--fs-md);
+    line-height: 1.7;
+    color: var(--c-text-soft);
+    text-wrap: balance;
+  }
+
+  /* ---------- KPI ---------- */
+  &__kpis {
+    margin-top: var(--sp-12);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-4);
+    align-items: stretch;
+  }
+
+  &__kpi {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-6);
+    text-align: left;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--c-text) 5%, var(--card)) 0%,
+      var(--card) 58%
+    );
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: 16px;
+    transition:
+      transform var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out);
+
+    &:hover {
+      transform: translateY(-3px);
+      border-color: color-mix(in srgb, var(--c-text-mute) 50%, transparent);
+    }
+  }
+
+  &__kpi-bar {
+    width: 30px;
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: var(--sp-3);
+    transition: width var(--t-fast) var(--ease-out);
+
+    &.is-positive {
+      background: var(--c-positive);
+    }
+    &.is-negative {
+      background: var(--c-negative);
+    }
+    &.is-accent {
+      background: var(--c-accent);
+    }
+    &.is-warm {
+      background: var(--c-warm);
+    }
+  }
+
+  &__kpi:hover &__kpi-bar {
+    width: 48px;
+  }
+
+  &__kpi-value {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi, 600);
+    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    color: var(--c-text);
+  }
+
+  &__kpi-suffix {
+    font-size: 0.46em;
+    font-weight: var(--fw-reg, 400);
+    color: var(--c-text-soft);
+    margin-left: 0.18em;
+    letter-spacing: 0;
+  }
+
+  &__kpi-label {
+    margin-top: auto;
+    padding-top: var(--sp-4);
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    color: var(--c-text-mute);
+  }
+
+  /* ---------- limites ---------- */
+  &__limits {
+    margin-top: var(--sp-8);
+    padding: var(--sp-8);
+    text-align: left;
+    background: var(--c-bg-2);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: 16px;
+  }
+
+  &__limits-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin: 0 0 var(--sp-6);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+
+    &::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--c-accent);
+    }
+  }
+
+  &__limits-list {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--sp-12);
+    row-gap: var(--sp-6);
+
+    /* filet vertical central */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: var(--border-hair, 1px);
+      background: var(--c-line);
+    }
+
+    li {
+      position: relative;
+      padding-left: var(--sp-4);
+      font-size: var(--fs-sm);
+      line-height: 1.6;
+      color: var(--c-text-soft);
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.66em;
+        width: 0.72rem;
+        height: 2px;
+        border-radius: 1px;
+        background: var(--c-accent);
+      }
+    }
+  }
+
+  /* ---------- CTA ---------- */
+  &__cta-row {
+    margin-top: var(--sp-12);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-3);
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-pill);
+    border: var(--border-hair) solid var(--c-line);
+    background: transparent;
+    color: var(--c-text-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      background var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out),
+      opacity var(--t-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--c-text);
+      border-color: color-mix(in srgb, var(--c-text-mute) 55%, transparent);
+      transform: translateY(-1px);
+    }
+
+    &--primary {
+      background: var(--c-text);
+      border-color: var(--c-text);
+      color: var(--c-bg);
+      font-weight: var(--fw-semi, 600);
+
+      &:hover {
+        color: var(--c-bg);
+        background: var(--c-text);
+        border-color: var(--c-text);
+        opacity: 0.88;
+      }
+    }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 920px) {
+    &__kpis {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    &__limits-list {
+      column-gap: var(--sp-8);
+    }
+  }
+
+  @media (max-width: 560px) {
+    &__kpis {
+      grid-template-columns: 1fr;
+    }
+    &__limits {
+      padding: var(--sp-6);
+    }
+    &__limits-list {
+      grid-template-columns: 1fr;
+      row-gap: var(--sp-4);
+
+      &::before {
+        display: none;
+      }
+    }
+  }
+}

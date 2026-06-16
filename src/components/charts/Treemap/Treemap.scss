@@ -1,0 +1,149 @@
+// src/components/charts/Treemap/Treemap.scss
+// ============================================================
+// Styles du treemap. Nature via is-crop / is-stock (tokens), intensité de
+// rendement via --fo (fill-opacity, data-dépendante). Tokens du thème.
+// ============================================================
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1000 / 520;
+    overflow: visible;
+  }
+
+  /* ---------- tuiles ---------- */
+  &__tile {
+    stroke: var(--c-bg);
+    stroke-width: 2;
+    fill-opacity: var(--fo, 0.7);
+    cursor: pointer;
+    outline: none;
+    transition:
+      fill-opacity var(--t-fast) var(--ease-out),
+      opacity var(--t-fast) var(--ease-out);
+
+    &.is-crop {
+      fill: var(--c-positive);
+    }
+
+    &.is-stock {
+      fill: var(--c-warm);
+    }
+
+    &.is-dim {
+      opacity: 0.4;
+    }
+
+    &.is-active {
+      fill-opacity: 1;
+      stroke: var(--c-text);
+      stroke-width: 2.5;
+    }
+  }
+
+  &__label {
+    fill: var(--c-bg);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: var(--fw-semi);
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.18);
+    stroke-width: 2.5px;
+    stroke-linejoin: round;
+  }
+
+  &__sub {
+    fill: var(--c-bg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+
+  /* ---------- lecture ---------- */
+  &__readout {
+    min-height: 1.4em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+  }
+
+  &__readout-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+    flex: none;
+
+    &.is-crop {
+      background: var(--c-positive);
+    }
+
+    &.is-stock {
+      background: var(--c-warm);
+    }
+  }
+
+  &__readout-name {
+    color: var(--c-text);
+    font-weight: var(--fw-semi);
+  }
+
+  &__readout-sep,
+  &__readout-y {
+    color: var(--c-text-mute);
+  }
+
+  &__readout-hint {
+    color: var(--c-text-mute);
+    font-style: italic;
+  }
+
+  /* ---------- légende ---------- */
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+
+  &__leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+
+    &--size {
+      color: var(--c-text-mute);
+    }
+  }
+
+  &__leg-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    flex: none;
+
+    &.is-crop {
+      background: var(--c-positive);
+    }
+
+    &.is-stock {
+      background: var(--c-warm);
+    }
+  }
+}

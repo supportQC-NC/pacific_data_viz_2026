@@ -13,7 +13,6 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
@@ -26,7 +25,7 @@ import ParadoxScatterLive from "../../components/charts/PardoxScatterLive";
 import VulnMatrix from "../../components/charts/VulnMatrix";
 import ProfileRadar from "../../components/charts/ProfileRadar";
 import TrendChart from "../../components/charts/TrendChart";
-import BeeswarmChart from "../../components/BeeswarmChart/BeeswarmChart";
+import StressSwarm from "../../components/charts/StressSwarm/StressSwarm";
 import SlopeChart from "../../components/charts/SlopeChart";
 import ArcParadox from "../../components/charts/ArcParadox/ArcParadox";
 import RadialRank from "../../components/charts/RadialRank/RadialRank";
@@ -35,7 +34,13 @@ import Lollipop from "../../components/charts/Lollipop/Lollipop";
 import ParallelPlot from "../../components/charts/ParallelPlot/ParallelPlot";
 import Correlogram from "../../components/charts/Correlogram/Correlogram";
 import BubblePlot from "../../components/charts/BubblePlot/BubblePlot";
+import Treemap from "../../components/charts/Treemap/Treemap";
+import VerdictPanel from "../../components/charts/VerdictPanel/VerdictPanel";
+import SynthHero from "../../components/charts/SynthHero/SynthHero";
+import ActsRecap from "../../components/charts/ActsRecap/ActsRecap";
+import EmissionsRank from "../../components/charts/EmissionsRank/EmissionsRank";
 import { fetchPowerMix } from "../../services/powerApi";
+import { fetchAgriProduction } from "../../services/agriApi";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act11Synthese.scss";
 
@@ -130,31 +135,6 @@ function medianLinesBySub(ind, t) {
 }
 
 /* ---------- Barre comparative (DOM pur) ---------- */
-function VersusBar({ rows = [], unit = "" }) {
-  const max = Math.max(...rows.map((r) => r.value), 0.0001);
-  return (
-    <div className="vbar">
-      {rows.map((r) => (
-        <div key={r.label} className="vbar__row">
-          <span className="vbar__label">{r.label}</span>
-          <div className="vbar__track">
-            <span
-              className="vbar__fill"
-              style={{
-                "--vbar-w": `${Math.max((r.value / max) * 100, 2)}%`,
-                "--vbar-bg": r.color,
-              }}
-            />
-          </div>
-          <span className="vbar__val">
-            {r.value.toFixed(2)} {unit}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ---------- Studio de pondérations (curseurs interactifs) ---------- */
 function WeightStudio({ inds = [], weights = {}, onChange, onReset, labels = {} }) {
   return (
@@ -257,6 +237,7 @@ export default function Act11Synthese() {
   const [idx, setIdx] = useState(0);
   const [focus, setFocus] = useState(null);
   const [powerMix, setPowerMix] = useState({ status: "idle", data: null });
+  const [agriProd, setAgriProd] = useState({ status: "idle", data: null });
   // Pondérations interactives : un poids 0..2 par indicateur de vulnérabilité.
   // 1 = poids normal ; 0 = on retire l'indicateur ; 2 = on le double.
   const [weights, setWeights] = useState(() =>
@@ -301,6 +282,22 @@ export default function Act11Synthese() {
         }),
       )
       .catch(() => setPowerMix({ status: "empty", data: null }));
+    return () => ctrl.abort();
+  }, [lang]);
+
+  // Production agricole détaillée par produit — service dédié (agriApi),
+  // isolé : son échec n'affecte jamais la synthèse principale.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setAgriProd({ status: "loading", data: null });
+    fetchAgriProduction({ start: 2015, lang, signal: ctrl.signal })
+      .then((res) =>
+        setAgriProd({
+          status: res.source === "live" ? "ready" : "empty",
+          data: res,
+        }),
+      )
+      .catch(() => setAgriProd({ status: "empty", data: null }));
     return () => ctrl.abort();
   }, [lang]);
 
@@ -462,19 +459,6 @@ export default function Act11Synthese() {
 
   // --- Bouquet final : 3 vues de synthèse ---
   // 1) Essaim : tous les territoires sur l'axe de vulnérabilité composite.
-  const beeData = useMemo(
-    () =>
-      areas
-        .map((a) => ({
-          area: a,
-          code: a,
-          name: pictName(a, lang),
-          value: composite[a],
-        }))
-        .filter((d) => Number.isFinite(d.value)),
-    [areas, composite, lang],
-  );
-
   // 2) Top des plus exposés (indice composite), barres radiales.
   const topExposed = useMemo(
     () =>
@@ -779,6 +763,64 @@ export default function Act11Synthese() {
       .filter((g) => g.points.length);
   }, [areas, latest, composite, coastOf, lang, t, tk]);
 
+  // Portefeuille agricole : une entrée par produit. Taille = ubiquité (nb de
+  // territoires qui le cultivent, mesure SANS unité, donc additionnable) ;
+  // intensité = rendement médian normalisé par rang DANS sa catégorie (on ne
+  // compare jamais des kg/ha à des kg/animal). Honnête par construction.
+  const agriItems = useMemo(() => {
+    const d = agriProd.data;
+    if (!d || d.source !== "live" || !d.commodities) return [];
+    const med = (arr) => {
+      const a = arr.filter(Number.isFinite).sort((x, y) => x - y);
+      if (!a.length) return NaN;
+      const m = Math.floor(a.length / 2);
+      return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+    };
+    const raw = d.commodities
+      .map((c) => {
+        const cd = d.byCommodity[c.code];
+        if (!cd || !cd.areas) return null;
+        const picts = cd.areas.filter((a) => isPict(a));
+        const latestVals = picts
+          .map((a) => {
+            const sArr = cd.byArea[a];
+            return sArr && sArr.length ? sArr[sArr.length - 1].value : NaN;
+          })
+          .filter(Number.isFinite);
+        return {
+          code: c.code,
+          label: c.label,
+          kind: c.kind,
+          unit: c.unit,
+          value: picts.length,
+          yield: med(latestVals),
+        };
+      })
+      .filter((it) => it && it.value > 0);
+    // intensité = rang du rendement au sein de la même catégorie
+    ["crop", "livestock"].forEach((k) => {
+      const grp = raw
+        .filter((it) => it.kind === k && Number.isFinite(it.yield))
+        .sort((a, b) => a.yield - b.yield);
+      const n = grp.length;
+      grp.forEach((it, idx) => {
+        it.intensity = n > 1 ? idx / (n - 1) : 0.6;
+      });
+    });
+    raw.forEach((it) => {
+      if (!Number.isFinite(it.intensity)) it.intensity = 0.5;
+    });
+    return raw.sort((a, b) => b.value - a.value).slice(0, 28);
+  }, [agriProd]);
+
+  // Classement des émissions/hab. par territoire (distribution réelle).
+  const emiRankRows = useMemo(() => {
+    const emi = latest.emissions || {};
+    return areas
+      .filter((a) => isPict(a) && Number.isFinite(emi[a]))
+      .map((a) => ({ code: a, name: pictName(a, lang), value: emi[a] }));
+  }, [areas, latest, lang]);
+
   const stats = useMemo(() => {
     const emi = latest.emissions || {};
     const pts = areas.filter((a) => Number.isFinite(emi[a]));
@@ -847,20 +889,11 @@ export default function Act11Synthese() {
           }
         : null,
       visual: (
-        <VersusBar
+        <EmissionsRank
+          rows={emiRankRows}
+          median={pacMed}
           unit={t("act11.scatter_x_unit")}
-          rows={[
-            {
-              label: t("act11.story.resp_pac"),
-              value: pacMed,
-              color: tk.positive,
-            },
-            {
-              label: stats ? stats.topName : "",
-              value: stats ? stats.topEmi : 0,
-              color: tk.warm,
-            },
-          ]}
+          medianLabel={t("act11.story.resp_pac")}
         />
       ),
     });
@@ -1056,15 +1089,11 @@ export default function Act11Synthese() {
       method: t("act11.story.swarm_m"),
       hint: t("act11.story.focus_hint"),
       visual: (
-        <BeeswarmChart
-          data={beeData}
-          unit={t("act11.index_unit")}
-          worldAvg={null}
-          defaultLog={false}
-          scaleLabels={{
-            log: t("act11.story.swarm_log"),
-            lin: t("act11.story.swarm_lin"),
-          }}
+        <StressSwarm
+          rows={matrixRows}
+          axes={indLabels}
+          searchLabel={t("act11.swarm.search")}
+          hintLabel={t("act11.swarm.hint")}
         />
       ),
     });
@@ -1134,6 +1163,25 @@ export default function Act11Synthese() {
             rows={contextRecap.rows}
             unit={t(contextRecap.unitKey)}
             betterWhen={contextRecap.better}
+          />
+        ),
+      });
+    }
+    if (agriItems.length >= 4) {
+      list.push({
+        kind: "split",
+        eyebrow: t("act11.story.agri_k"),
+        title: t("act11.story.agri_t"),
+        text: t("act11.story.agri_x"),
+        method: t("act11.story.agri_m"),
+        visual: (
+          <Treemap
+            items={agriItems}
+            cropLabel={t("act11.agri.crop")}
+            stockLabel={t("act11.agri.stock")}
+            sizeLabel={t("act11.agri.size")}
+            yieldLabel={t("act11.agri.yield")}
+            hintLabel={t("act11.agri.hint")}
           />
         ),
       });
@@ -1222,6 +1270,7 @@ export default function Act11Synthese() {
     t,
     stats,
     pacMed,
+    emiRankRows,
     tk,
     seaTrend,
     atlasPoints,
@@ -1238,7 +1287,6 @@ export default function Act11Synthese() {
     setWeight,
     resetWeights,
     slopeRows,
-    beeData,
     topExposed,
     contextRecap,
     cropsRows,
@@ -1252,6 +1300,7 @@ export default function Act11Synthese() {
     powerMixYears,
     corr,
     bubbleGroups,
+    agriItems,
   ]);
 
   const total = scenes.length;
@@ -1325,46 +1374,28 @@ export default function Act11Synthese() {
 
       <section className={`scene scene--${sc.kind}`} ref={animRef} key={idx}>
         {sc.kind === "hero" && (
-          <div className="scene__hero">
-            <p className="scene__eyebrow scene__anim">{sc.eyebrow}</p>
-            <h1 className="scene__hero-title scene__anim">{sc.title}</h1>
-            <p className="scene__hero-text scene__anim">{sc.text}</p>
-            <button
-              type="button"
-              className="scene__start scene__anim"
-              onClick={() => go(1)}
-            >
-              {t("act11.story.start")}
-            </button>
-          </div>
+          <SynthHero
+            eyebrow={sc.eyebrow}
+            title={sc.title}
+            text={sc.text}
+            ctaLabel={t("act11.story.start")}
+            onStart={() => go(1)}
+          />
         )}
 
         {sc.kind === "recap" && (
-          <div className="scene__recap">
-            <header className="scene__recap-head scene__anim">
-              <p className="scene__eyebrow">{sc.eyebrow}</p>
-              <h2 className="scene__title">{sc.title}</h2>
-              <p className="scene__text">{sc.text}</p>
-            </header>
-            <ol className="scene__acts">
-              {ACTS.map((n) => (
-                <li key={n} className="scene__act scene__anim">
-                  <span className="scene__act-num">
-                    {String(n).padStart(2, "0")}
-                  </span>
-                  <span className="scene__act-name">
-                    {t(`act11.story.recap_a${n}`)}
-                  </span>
-                </li>
-              ))}
-              <li className="scene__act scene__act--final scene__anim">
-                <span className="scene__act-num">11</span>
-                <span className="scene__act-name">
-                  {t("act11.story.recap_a11")}
-                </span>
-              </li>
-            </ol>
-          </div>
+          <ActsRecap
+            eyebrow={sc.eyebrow}
+            title={sc.title}
+            text={sc.text}
+            items={[
+              ...ACTS.map((n) => ({
+                num: String(n).padStart(2, "0"),
+                name: t(`act11.story.recap_a${n}`),
+              })),
+              { num: "11", name: t("act11.story.recap_a11"), current: true },
+            ]}
+          />
         )}
 
         {sc.kind === "split" && (
@@ -1398,54 +1429,48 @@ export default function Act11Synthese() {
         )}
 
         {sc.kind === "verdict" && (
-          <div className="scene__verdict">
-            <p className="scene__eyebrow scene__anim">{sc.eyebrow}</p>
-            <h2 className="scene__verdict-title scene__anim">{sc.title}</h2>
-            <p className="scene__hero-text scene__anim">{sc.text}</p>
-            {stats ? (
-              <div className="scene__kpis scene__anim">
-                <Kpi
-                  value={stats.pacMed}
-                  suffix={` ${t("act11.story.resp_unit")}`}
-                  label={t("act11.stat_emi_label")}
-                  tone="positive"
-                />
-                <Kpi
-                  value={stats.mostScore}
-                  suffix="/100"
-                  label={`${t("act11.stat_vuln_label")} · ${stats.mostName}`}
-                  tone="negative"
-                />
-                <Kpi
-                  value={stats.below}
-                  label={`${t("act11.stat_inj_label")} (${t("act11.studio.on")} ${stats.total})`}
-                  tone="accent"
-                />
-                <Kpi
-                  value={activeVuln.length + 1}
-                  label={t("act11.studio.kpi_ds")}
-                  tone="positive"
-                />
-              </div>
-            ) : null}
-            <div className="scene__limits scene__anim">
-              <p className="scene__limits-kicker">{t("act11.story.limits_k")}</p>
-              <ul className="scene__limits-list">
-                <li>{t("act11.story.limits_1")}</li>
-                <li>{t("act11.story.limits_2")}</li>
-                <li>{t("act11.story.limits_3")}</li>
-                <li>{t("act11.story.limits_4")}</li>
-              </ul>
-            </div>
-            <div className="scene__links scene__anim">
-              <Link to="/" className="scene__cta scene__cta--primary">
-                {t("act11.outro.next")}
-              </Link>
-              <Link to="/emissions" className="scene__cta">
-                {t("act11.outro.home")}
-              </Link>
-            </div>
-          </div>
+          <VerdictPanel
+            eyebrow={sc.eyebrow}
+            title={sc.title}
+            text={sc.text}
+            stats={
+              stats
+                ? [
+                    {
+                      value: stats.pacMed,
+                      suffix: ` ${t("act11.story.resp_unit")}`,
+                      label: t("act11.stat_emi_label"),
+                      tone: "positive",
+                    },
+                    {
+                      value: stats.mostScore,
+                      suffix: "/100",
+                      label: `${t("act11.stat_vuln_label")} · ${stats.mostName}`,
+                      tone: "negative",
+                    },
+                    {
+                      value: stats.below,
+                      label: `${t("act11.stat_inj_label")} (${t("act11.studio.on")} ${stats.total})`,
+                      tone: "accent",
+                    },
+                    {
+                      value: activeVuln.length + 1,
+                      label: t("act11.studio.kpi_ds"),
+                      tone: "positive",
+                    },
+                  ]
+                : []
+            }
+            limitsKicker={t("act11.story.limits_k")}
+            limits={[
+              t("act11.story.limits_1"),
+              t("act11.story.limits_2"),
+              t("act11.story.limits_3"),
+              t("act11.story.limits_4"),
+            ]}
+            primary={{ to: "/", label: t("act11.outro.next") }}
+            secondary={{ to: "/emissions", label: t("act11.outro.home") }}
+          />
         )}
       </section>
 

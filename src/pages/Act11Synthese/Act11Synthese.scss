@@ -611,3 +611,36 @@
     }
   }
 }
+
+
+/* ===== Ajustements synthèse — à coller à la fin de Act11Synthese.scss ===== */
+
+/* 1) Visuel : on retire le cadre sombre et on ne coupe plus les graphiques */
+.scene .scene__visual {
+  height: clamp(380px, 64vh, 680px);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* 2) Colonne de gauche : plus d'air (padding) */
+.scene .scene__narr {
+  max-width: 50ch;
+  padding-right: var(--sp-8);
+}
+
+/* 3) Titre des scènes split : moins gros */
+.scene__split .scene__title {
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+/* 4) Texte explicatif : plus discret */
+.scene__split .scene__text {
+  font-size: clamp(0.9rem, 1vw, 1rem);
+  line-height: 1.65;
+}

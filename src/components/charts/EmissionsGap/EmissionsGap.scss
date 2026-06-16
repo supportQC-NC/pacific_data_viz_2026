@@ -1,0 +1,134 @@
+// src/components/charts/EmissionsGap/EmissionsGap.scss
+// ============================================================
+// Comparaison en damier. Espacements valides (1·2·3·4·6·8·12·16·24).
+// Remplit la hauteur de la carte (centré), carrés en cascade.
+// ============================================================
+
+.gap {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-6);
+
+  &__legend {
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.04em;
+    color: var(--c-text-mute);
+  }
+
+  &__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-8);
+    align-items: start;
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-soft);
+  }
+
+  &__value {
+    margin: 0 0 var(--sp-2);
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi, 600);
+    font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+    line-height: 1;
+    color: var(--c, var(--c-text));
+    letter-spacing: -0.01em;
+  }
+
+  &__unit {
+    font-size: 0.5em;
+    font-weight: var(--fw-reg, 400);
+    color: var(--c-text-mute);
+    letter-spacing: 0;
+  }
+
+  /* ---------- damier ---------- */
+  &__waffle {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 4px;
+  }
+
+  &__cell {
+    aspect-ratio: 1 / 1;
+    border-radius: 2px;
+    background: var(--c-line);
+
+    &.is-on {
+      background: var(--c);
+      animation: gap-pop 0.42s var(--ease-out) backwards;
+      animation-delay: var(--d, 0ms);
+      box-shadow: 0 0 6px color-mix(in srgb, var(--c) 45%, transparent);
+    }
+  }
+
+  /* ---------- écart ---------- */
+  &__ratio {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    text-align: center;
+  }
+
+  &__ratio-num {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semi, 600);
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    line-height: 1;
+    color: var(--c-warm);
+    letter-spacing: -0.02em;
+  }
+
+  &__ratio-cap {
+    max-width: 36ch;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    color: var(--c-text-soft);
+    text-align: left;
+  }
+
+  @media (max-width: 560px) {
+    &__cols {
+      gap: var(--sp-4);
+    }
+  }
+}
+
+@keyframes gap-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gap__cell.is-on {
+    animation: none;
+  }
+}
