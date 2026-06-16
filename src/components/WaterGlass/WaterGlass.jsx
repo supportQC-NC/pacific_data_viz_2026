@@ -6,9 +6,13 @@
 // SÉCURITÉ (ODD 6.1.1, indicateur SH_H2O_SAFE, OMS/UNICEF JMP), via le
 // dataset live `water` du Pacific Data Hub.
 //
-// Cadrage « acquis » : le niveau d'eau = ce qui EST acquis. Le vide au-dessus
-// = ce qui manque encore. Une ligne pointillée marque la MÉDIANE du Pacifique
-// pour situer chaque territoire dans l'ensemble.
+// Lecture « plus parlante » :
+//   • niveau d'eau = ce qui EST acquis (grand % à droite) ;
+//   • le VIDE au-dessus porte le manque : le nombre de personnes SANS accès
+//     s'inscrit dans la partie vide du verre (« à moitié vide » rendu réel),
+//     et s'efface quand l'espace devient trop petit ;
+//   • repères 25/50/75 gravés sur la paroi → le niveau se lit comme une
+//     mesure ; une ligne pointillée marque la MÉDIANE du Pacifique.
 //
 // Aucune valeur inventée : on n'affiche que les territoires qui ONT une donnée
 // (dernière année connue). Surface d'eau vivante (vague + bulles) pilotée par
@@ -33,13 +37,17 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./WaterGlass.scss";
 
-/* ---- Géométrie du verre (repère SVG, viewBox 0 0 220 320) ---- */
-const TOP = 50; // y du bord intérieur haut (eau pleine)
-const BOT = 280; // y du fond intérieur (eau vide)
-const WX0 = 44; // bornes x de l'eau (plus large que le verre : rognée par le clip)
-const WX1 = 176;
-const WBOT = 296; // fond du tracé d'eau
+/* ---- Géométrie du verre (repère SVG, viewBox 0 0 240 300) ---- */
+const TOP = 54; // y du bord intérieur haut (eau pleine)
+const BOT = 260; // y du fond intérieur (eau vide)
+const SPAN = BOT - TOP;
+const WX0 = 28; // bornes x de l'eau (plus large que le verre : rognée par le clip)
+const WX1 = 212;
+const WBOT = 280; // fond du tracé d'eau
 const STEP = 8; // pas d'échantillonnage de la vague
+const GAP_MIN_PX = 50; // espace vide minimal pour afficher le déficit
+
+const yForPct = (pct) => BOT - pct * SPAN;
 
 /* Médiane d'un tableau de nombres. */
 function median(arr) {
@@ -111,10 +119,7 @@ export default function WaterGlass() {
     return m;
   }, [list]);
 
-  const medianValue = useMemo(
-    () => median(list.map((o) => o.value)),
-    [list],
-  );
+  const medianValue = useMemo(() => median(list.map((o) => o.value)), [list]);
   const extremes = useMemo(() => {
     if (!list.length) return null;
     let best = list[0];
@@ -138,34 +143,36 @@ export default function WaterGlass() {
   const sel = selected ? byCode[selected] : null;
   const selPct = sel ? sel.value / 100 : 0;
 
-  /* ----------- Animation : eau vivante (vague + bulles) ----------- */
-  const waterRef = useRef(null); // <path> corps de l'eau
-  const surfaceRef = useRef(null); // <path> ligne de surface (méniscus)
-  const numberRef = useRef(null); // <span> grand %
-  const levelObj = useRef({ p: 0 }); // niveau courant (0..1), muté par GSAP
+  /* ----------- Animation : eau vivante (vague + bulles + déficit) ----------- */
+  const waterRef = useRef(null);
+  const surfaceRef = useRef(null);
+  const numberRef = useRef(null); // grand % (acquis)
+  const deficitGroupRef = useRef(null); // groupe « manque » dans le vide
+  const deficitNumRef = useRef(null);
+  const levelObj = useRef({ p: 0 });
   const startedRef = useRef(false);
 
   const bubbles = useMemo(
     () => [
-      { x: 92, r: 2.6, speed: 0.26, off: 0.0 },
-      { x: 120, r: 1.8, speed: 0.34, off: 0.35 },
-      { x: 104, r: 3.1, speed: 0.2, off: 0.62 },
-      { x: 134, r: 2.0, speed: 0.3, off: 0.18 },
-      { x: 80, r: 1.6, speed: 0.4, off: 0.8 },
+      { x: 100, r: 2.8, speed: 0.26, off: 0.0 },
+      { x: 132, r: 1.9, speed: 0.34, off: 0.35 },
+      { x: 114, r: 3.3, speed: 0.2, off: 0.62 },
+      { x: 150, r: 2.1, speed: 0.3, off: 0.18 },
+      { x: 88, r: 1.7, speed: 0.4, off: 0.8 },
     ],
     [],
   );
   const bubbleRefs = useRef([]);
 
   const wavePath = useCallback((levelY, phase, close) => {
-    const amp = 3.6;
-    const amp2 = 2.1;
+    const amp = 4;
+    const amp2 = 2.4;
     let d = "";
     for (let x = WX0; x <= WX1; x += STEP) {
       const y =
         levelY +
-        amp * Math.sin(x * 0.06 + phase * 1.6) +
-        amp2 * Math.sin(x * 0.11 - phase * 1.1);
+        amp * Math.sin(x * 0.05 + phase * 1.6) +
+        amp2 * Math.sin(x * 0.1 - phase * 1.1);
       d += `${d ? " L" : "M"}${x.toFixed(1)},${y.toFixed(2)}`;
     }
     if (close) d += ` L${WX1},${WBOT} L${WX0},${WBOT} Z`;
@@ -175,13 +182,36 @@ export default function WaterGlass() {
   const draw = useCallback(
     (phase) => {
       const p = levelObj.current.p;
-      const levelY = BOT - p * (BOT - TOP);
+      const levelY = yForPct(p);
+
       if (waterRef.current)
         waterRef.current.setAttribute("d", wavePath(levelY, phase, true));
       if (surfaceRef.current)
         surfaceRef.current.setAttribute("d", wavePath(levelY, phase, false));
       if (numberRef.current)
         numberRef.current.textContent = String(Math.round(p * 100));
+
+      // Déficit dans la partie vide (« à moitié vide » rendu réel).
+      const emptyPx = levelY - TOP;
+      if (deficitGroupRef.current) {
+        if (emptyPx < GAP_MIN_PX) {
+          deficitGroupRef.current.setAttribute("opacity", "0");
+        } else {
+          const midY = (TOP + levelY) / 2;
+          deficitGroupRef.current.setAttribute(
+            "transform",
+            `translate(120 ${midY.toFixed(1)})`,
+          );
+          const op = Math.min(1, (emptyPx - GAP_MIN_PX) / 26) * 0.96;
+          deficitGroupRef.current.setAttribute("opacity", op.toFixed(3));
+          if (deficitNumRef.current)
+            deficitNumRef.current.textContent = String(
+              100 - Math.round(p * 100),
+            );
+        }
+      }
+
+      // Bulles.
       bubbleRefs.current.forEach((node, i) => {
         if (!node) return;
         const b = bubbles[i];
@@ -189,16 +219,13 @@ export default function WaterGlass() {
           node.setAttribute("opacity", "0");
           return;
         }
-        const span = BOT - levelY; // hauteur de la colonne d'eau
-        const prog = (phase * b.speed + b.off) % 1; // 0 (fond) → 1 (surface)
+        const span = BOT - levelY;
+        const prog = (phase * b.speed + b.off) % 1;
         const cy = BOT - prog * span;
         node.setAttribute("cx", b.x.toFixed(1));
         node.setAttribute("cy", cy.toFixed(1));
         node.setAttribute("r", (b.r * (0.6 + 0.4 * (1 - prog))).toFixed(2));
-        node.setAttribute(
-          "opacity",
-          (0.5 * Math.sin(Math.PI * prog)).toFixed(3),
-        );
+        node.setAttribute("opacity", (0.5 * Math.sin(Math.PI * prog)).toFixed(3));
       });
     },
     [wavePath, bubbles, reduced],
@@ -237,9 +264,9 @@ export default function WaterGlass() {
     return () => cancelAnimationFrame(raf);
   }, [reduced, draw]);
 
-  /* Position de la médiane (statique, dépend du jeu de données). */
-  const medianY =
-    medianValue != null ? BOT - (medianValue / 100) * (BOT - TOP) : null;
+  /* Repères de mesure (statiques) + médiane. */
+  const ticks = [0.25, 0.5, 0.75];
+  const medianY = medianValue != null ? yForPct(medianValue / 100) : null;
 
   const loading = status === "loading" || status === "idle";
   const failed = status === "failed";
@@ -249,11 +276,7 @@ export default function WaterGlass() {
   const gap = 100 - have;
 
   const svgLabel = sel
-    ? fillTpl(t("home.water.aria"), {
-        area: sel.name,
-        n: have,
-        year: sel.year,
-      })
+    ? fillTpl(t("home.water.aria"), { area: sel.name, n: have, year: sel.year })
     : t("home.water.title");
 
   return (
@@ -337,29 +360,43 @@ export default function WaterGlass() {
             <figure className="waterglass__viz">
               <svg
                 className="waterglass__svg"
-                viewBox="0 0 220 320"
+                viewBox="0 0 240 300"
                 role="img"
                 aria-label={svgLabel}
               >
                 <defs>
                   <clipPath id="wg-inner">
-                    <path d="M61,50 L159,50 L147,278 Q146,286 138,286 L82,286 Q74,286 73,278 Z" />
+                    <path d="M42,52 L198,52 L182,250 Q180,260 170,260 L70,260 Q60,260 58,250 Z" />
                   </clipPath>
                   <linearGradient id="wg-fill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" className="waterglass__stop-top" />
+                    <stop offset="0.55" className="waterglass__stop-mid" />
                     <stop offset="1" className="waterglass__stop-bot" />
                   </linearGradient>
                 </defs>
 
-                {/* Corps du verre (vide) */}
                 <g clipPath="url(#wg-inner)">
+                  {/* Cavité (verre vide) */}
                   <rect
                     className="waterglass__cavity"
-                    x="40"
-                    y="44"
-                    width="140"
-                    height="252"
+                    x="30"
+                    y="46"
+                    width="180"
+                    height="230"
                   />
+
+                  {/* Repères de mesure gravés (25/50/75) */}
+                  {ticks.map((tk) => (
+                    <line
+                      key={tk}
+                      className="waterglass__tick"
+                      x1="46"
+                      x2="64"
+                      y1={yForPct(tk)}
+                      y2={yForPct(tk)}
+                    />
+                  ))}
+
                   {/* Eau */}
                   <path
                     ref={waterRef}
@@ -373,6 +410,7 @@ export default function WaterGlass() {
                     fill="none"
                     d=""
                   />
+
                   {/* Bulles */}
                   {bubbles.map((b, i) => (
                     <circle
@@ -387,29 +425,55 @@ export default function WaterGlass() {
                       opacity="0"
                     />
                   ))}
+
                   {/* Médiane du Pacifique */}
                   {medianY != null && (
                     <line
                       className="waterglass__median"
-                      x1="58"
-                      x2="162"
+                      x1="52"
+                      x2="188"
                       y1={medianY}
                       y2={medianY}
                     />
                   )}
+
+                  {/* Déficit, inscrit dans le vide */}
+                  <g
+                    ref={deficitGroupRef}
+                    className="waterglass__deficit"
+                    opacity="0"
+                  >
+                    <text
+                      ref={deficitNumRef}
+                      className="waterglass__deficit-num"
+                      x="0"
+                      y="0"
+                      textAnchor="middle"
+                    >
+                      {gap}
+                    </text>
+                    <text
+                      className="waterglass__deficit-cap"
+                      x="0"
+                      y="18"
+                      textAnchor="middle"
+                    >
+                      {t("home.water.gap_short")}
+                    </text>
+                  </g>
                 </g>
 
                 {/* Contour + ouverture du verre */}
                 <path
                   className="waterglass__glass"
-                  d="M54,44 L166,44 L152,282 Q150,294 138,294 L82,294 Q70,294 68,282 Z"
+                  d="M34,46 L206,46 L188,258 Q186,270 174,270 L66,270 Q54,270 52,258 Z"
                 />
                 <ellipse
                   className="waterglass__rim"
-                  cx="110"
-                  cy="44"
-                  rx="56"
-                  ry="8"
+                  cx="120"
+                  cy="46"
+                  rx="86"
+                  ry="9"
                 />
               </svg>
             </figure>
@@ -444,10 +508,7 @@ export default function WaterGlass() {
 
               {medianValue != null && (
                 <p className="waterglass__legend">
-                  <span
-                    className="waterglass__legend-dash"
-                    aria-hidden="true"
-                  />
+                  <span className="waterglass__legend-dash" aria-hidden="true" />
                   {fillTpl(t("home.water.median_label"), {
                     n: Math.round(medianValue),
                   })}

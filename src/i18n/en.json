@@ -186,6 +186,7 @@
       "year_label": "{year} data",
       "have_line": "{n} in 100 people have safely managed drinking water.",
       "gap_line": "{n} in 100 still go without.",
+      "gap_short": "no safe access",
       "median_label": "Pacific median · {n}%",
       "aria": "{area}: {n}% of the population with safely managed drinking water ({year}).",
       "loading": "Loading water-access data…",

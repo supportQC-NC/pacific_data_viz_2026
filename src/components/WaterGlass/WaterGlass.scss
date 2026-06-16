@@ -10,12 +10,7 @@
   padding: var(--sp-24) 0;
   border-top: var(--border-hair) solid var(--c-line);
   border-bottom: var(--border-hair) solid var(--c-line);
-  background:
-    radial-gradient(
-      120% 80% at 50% 0%,
-      var(--c-bg-2) 0%,
-      var(--c-bg) 60%
-    );
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
   overflow: hidden;
 }
 
@@ -203,16 +198,23 @@
 
 .waterglass__svg {
   display: block;
-  width: clamp(180px, 22vw, 248px);
+  width: clamp(240px, 30vw, 360px);
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 24px 40px var(--c-accent-glow));
+  filter: drop-shadow(0 26px 46px var(--c-accent-glow));
 }
 
 /* Cavité (verre vide) : voile très léger pour lire le volume. */
 .waterglass__cavity {
   fill: var(--c-surface);
   fill-opacity: 0.22;
+}
+
+/* Repères de mesure gravés sur la paroi. */
+.waterglass__tick {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.5;
+  opacity: 0.4;
 }
 
 .waterglass__water {
@@ -222,9 +224,9 @@
 /* Méniscus : ligne de surface lumineuse. */
 .waterglass__surface {
   stroke: var(--c-accent);
-  stroke-width: 2.2;
+  stroke-width: 2.4;
   stroke-linecap: round;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .waterglass__bubble {
@@ -235,31 +237,51 @@
 .waterglass__median {
   stroke: var(--c-text-mute);
   stroke-width: 1.4;
-  stroke-dasharray: 4 5;
-  opacity: 0.65;
+  stroke-dasharray: 5 5;
+  opacity: 0.7;
+}
+
+/* Déficit inscrit dans le vide (« à moitié vide »). */
+.waterglass__deficit-num {
+  fill: var(--c-warm);
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: 34px;
+  letter-spacing: var(--ls-tight);
+}
+.waterglass__deficit-cap {
+  fill: var(--c-warm-soft);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 /* Verre : contour + ouverture. */
 .waterglass__glass {
   fill: none;
   stroke: var(--c-line-strong);
-  stroke-width: 2.4;
+  stroke-width: 2.6;
 }
 .waterglass__rim {
   fill: none;
   stroke: var(--c-line-strong);
-  stroke-width: 2.4;
+  stroke-width: 2.6;
   opacity: 0.7;
 }
 
 /* Dégradé de l'eau (profondeur) — stops pilotés par les tokens. */
 .waterglass__stop-top {
   stop-color: var(--c-accent);
-  stop-opacity: 0.9;
+  stop-opacity: 0.95;
+}
+.waterglass__stop-mid {
+  stop-color: var(--c-accent-deep);
+  stop-opacity: 0.92;
 }
 .waterglass__stop-bot {
   stop-color: var(--c-accent-deep);
-  stop-opacity: 0.96;
+  stop-opacity: 0.99;
 }
 
 /* ---- Colonne 3 : lecture ---- */
@@ -390,7 +412,7 @@
   }
 }
 
-/* Reduced motion : aucune transition de filtre, l'eau est posée par le JS. */
+/* Reduced motion : pas de glow animé ; l'eau est posée par le JS. */
 @media (prefers-reduced-motion: reduce) {
   .waterglass__svg {
     filter: none;

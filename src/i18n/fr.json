@@ -186,6 +186,7 @@
       "year_label": "Donnée {year}",
       "have_line": "{n} personnes sur 100 disposent d'une eau potable gérée en sécurité.",
       "gap_line": "{n} sur 100 n'y ont pas encore accès.",
+      "gap_short": "sans accès",
       "median_label": "Médiane du Pacifique · {n}%",
       "aria": "{area} : {n} % de la population avec une eau potable gérée en sécurité ({year}).",
       "loading": "Chargement des données d'accès à l'eau…",
