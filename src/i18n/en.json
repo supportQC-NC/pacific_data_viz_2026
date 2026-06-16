@@ -266,6 +266,26 @@
       "loading": "Loading agriculture data…",
       "unavailable": "Agriculture data is temporarily unavailable.",
       "source": "Source: SPC — Climate Change indicators · via Pacific Data Hub"
+    },
+    "cattle": {
+      "kicker": "Livestock",
+      "title": "The beef that fills up",
+      "lead": "Pick a territory: the ox fills in, cut by cut, with the real yield per animal. The more livestock produces, the more it fills.",
+      "select_label": "Territory",
+      "highest": "Most productive",
+      "lowest": "Least productive",
+      "unit": "kg/animal",
+      "value_caption": "yield (kg per animal)",
+      "vitality_caption": "Fill by yield, relative to the Pacific",
+      "year_label": "{year} data",
+      "trend_up": "▲ +{n} kg/animal since {year}",
+      "trend_down": "▼ {n} kg/animal since {year}",
+      "trend_flat": "stable since {year}",
+      "median_label": "Pacific median · {n} kg/animal",
+      "aria": "{area}: livestock yield {n} kg/animal ({year}).",
+      "loading": "Loading livestock data…",
+      "unavailable": "Livestock data is temporarily unavailable.",
+      "source": "Source: FAO (FAOSTAT) · via Pacific Data Hub"
     }
   },
   "footer": {

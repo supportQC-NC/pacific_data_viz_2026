@@ -21,6 +21,7 @@ import EnergyCell from "../../components/EnergyCell/EnergyCell";
 import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
+import CattleThrive from "../../components/CattleThrive/CattleThrive";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -150,6 +151,8 @@ export default function Home() {
       <CoastlineShift />
 
       <PlantGrowth />
+
+      <CattleThrive />
 
       <HomeIntro />
 

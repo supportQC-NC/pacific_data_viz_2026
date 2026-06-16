@@ -266,6 +266,26 @@
       "loading": "Chargement des données agricoles…",
       "unavailable": "Donnée agricole momentanément indisponible.",
       "source": "Source : CPS — Indicateurs changement climatique · via Pacific Data Hub"
+    },
+    "cattle": {
+      "kicker": "Élevage",
+      "title": "Le bœuf qui se remplit",
+      "lead": "Choisissez un territoire : le bœuf se garnit, morceau par morceau, selon le rendement réel par animal. Plus l'élevage produit, plus la bête se remplit.",
+      "select_label": "Territoire",
+      "highest": "Le plus productif",
+      "lowest": "Le moins productif",
+      "unit": "kg/animal",
+      "value_caption": "rendement (kg par animal)",
+      "vitality_caption": "Remplissage selon le rendement, relatif au Pacifique",
+      "year_label": "Donnée {year}",
+      "trend_up": "▲ +{n} kg/animal depuis {year}",
+      "trend_down": "▼ {n} kg/animal depuis {year}",
+      "trend_flat": "stable depuis {year}",
+      "median_label": "Médiane du Pacifique · {n} kg/animal",
+      "aria": "{area} : rendement d'élevage {n} kg/animal ({year}).",
+      "loading": "Chargement des données d'élevage…",
+      "unavailable": "Donnée d'élevage momentanément indisponible.",
+      "source": "Source : FAO (FAOSTAT) · via Pacific Data Hub"
     }
   },
   "footer": {
