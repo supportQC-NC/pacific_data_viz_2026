@@ -269,8 +269,8 @@
     },
     "cattle": {
       "kicker": "Élevage",
-      "title": "Le bœuf qui se remplit",
-      "lead": "Choisissez un territoire : le bœuf se garnit, morceau par morceau, selon le rendement réel par animal. Plus l'élevage produit, plus la bête se remplit.",
+      "title": "La vache qui se remplit",
+      "lead": "Choisissez un territoire : la vache se remplit selon le rendement réel par animal. Plus l'élevage produit, plus la bête se garnit.",
       "select_label": "Territoire",
       "highest": "Le plus productif",
       "lowest": "Le moins productif",
@@ -285,7 +285,8 @@
       "aria": "{area} : rendement d'élevage {n} kg/animal ({year}).",
       "loading": "Chargement des données d'élevage…",
       "unavailable": "Donnée d'élevage momentanément indisponible.",
-      "source": "Source : FAO (FAOSTAT) · via Pacific Data Hub"
+      "source": "Source : FAO (FAOSTAT) · via Pacific Data Hub",
+      "median_short": "médiane"
     }
   },
   "footer": {

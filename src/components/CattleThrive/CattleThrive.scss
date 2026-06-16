@@ -1,8 +1,9 @@
 /* src/components/CattleThrive/CattleThrive.scss
    ============================================================
-   Section signature #6 « Le bœuf qui se remplit ». Schéma de boucher :
-   contour + découpes pointillées (sans les noms), remplies en corail selon
-   le rendement. 100 % tokens.
+   Section signature #6 « La vache qui se remplit ». Robe Holstein : corps =
+   var(--c-text), taches DÉCORATIVES = var(--c-bg) (inversion auto light/dark).
+   Remplissage gauche→droite (= la donnée). Médiane = pointillé discret.
+   100 % tokens.
    ============================================================ */
 
 .cattle {
@@ -180,7 +181,7 @@
   }
 }
 
-/* ---- Colonne 2 : le bœuf ---- */
+/* ---- Colonne 2 : la vache ---- */
 .cattle__viz {
   margin: 0;
   justify-self: center;
@@ -188,7 +189,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
 }
 .cattle__svg {
   display: block;
@@ -212,50 +213,55 @@
   stroke-width: 1;
 }
 
-/* Contour général (tête, pattes, queue, torse). */
-.cattle__line {
-  fill: none;
-  stroke: var(--c-text-soft);
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.cattle__hoof rect {
-  fill: var(--c-text-soft);
-}
+/* Contour + détails (cornes, oreilles, queue). */
 .cattle__outline {
   stroke: var(--c-text-soft);
   stroke-width: 2.6;
   stroke-linejoin: round;
 }
-
-/* Fond du torse (bœuf vide). */
-.cattle__bodyfill {
-  fill: var(--c-surface);
-  fill-opacity: 0.25;
+.cattle__decor {
+  stroke: var(--c-text-soft);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-
-/* Découpes qui se remplissent. */
-.cattle__cut {
-  stroke: none;
-}
-.cattle__cut--a {
-  fill: var(--c-warm);
-}
-.cattle__cut--b {
-  fill: var(--c-warm-soft);
-}
-
-/* Lignes de découpe (pointillés du schéma de boucher). */
-.cattle__cutlines line {
-  stroke: var(--c-text-mute);
-  stroke-width: 1.4;
-  stroke-dasharray: 5 5;
-  opacity: 0.7;
-}
-
 .cattle__eye {
   fill: var(--c-text-soft);
+}
+.cattle__nostril2 {
+  fill: var(--c-text-soft);
+}
+
+/* Mamelle (déco). */
+.cattle__udder {
+  fill: var(--c-warm-soft);
+}
+.cattle__teat {
+  stroke: var(--c-warm-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* Vache vide (fond léger). */
+.cattle__bodyfill {
+  fill: var(--c-surface);
+  fill-opacity: 0.16;
+}
+
+/* Robe Holstein (révélée par le remplissage). */
+.cattle__coat {
+  fill: var(--c-text);
+}
+.cattle__spot {
+  fill: var(--c-bg);
+}
+
+/* Médiane du Pacifique (discrète). */
+.cattle__median {
+  stroke: var(--c-text-mute);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+  opacity: 0.5;
 }
 
 /* ---- Colonne 3 : lecture ---- */
@@ -330,11 +336,21 @@
   color: var(--c-text-mute);
 }
 .cattle__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   margin: var(--sp-4) 0 0;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: 0.03em;
   color: var(--c-text-mute);
+}
+.cattle__legend-dash {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 1.4px dashed var(--c-text-mute);
+  flex: 0 0 auto;
 }
 
 /* ---------------- Source ---------------- */

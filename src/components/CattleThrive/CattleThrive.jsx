@@ -1,17 +1,18 @@
 // src/components/CattleThrive/CattleThrive.jsx
 // ============================================================
-// SECTION SIGNATURE #6 — « Le bœuf qui se remplit » (Home), pendant ÉLEVAGE.
-// Un BŒUF en schéma de boucher (silhouette + découpes pointillées, SANS les
-// noms) se REMPLIT morceau par morceau selon le RENDEMENT par animal réel
-// (kg/animal), via le dataset live `livestockYield`
+// SECTION SIGNATURE #6 — « La vache qui se remplit » (Home), pendant ÉLEVAGE.
+// Une vache Holstein se REMPLIT de GAUCHE À DROITE selon le RENDEMENT par
+// animal réel (kg/animal), via le dataset live `livestockYield`
 // (FAO/FAOSTAT — DF_CLIMATE_CHANGE, LVST_YIELD).
 //
-// Lecture : bœuf presque vide = rendement faible ; bœuf entièrement garni de
-// rouge = rendement élevé. Le grand nombre = rendement RÉEL ; la part remplie
-// encode le rendement NORMALISÉ sur l'amplitude du Pacifique (dit sous le
-// visuel) ; tendance « depuis {année} » réelle.
+// • La PART REMPLIE = la donnée (rendement normalisé sur l'amplitude du
+//   Pacifique). Vide = faible, pleine = élevé.
+// • Les TACHES sont purement décoratives (elles n'encodent rien).
+// • La MÉDIANE du Pacifique = trait pointillé vertical discret.
+// • Robe automatique selon le thème : corps = var(--c-text), taches =
+//   var(--c-bg) → blanche à taches noires en sombre, inversée en clair.
 //
-// Remplissage animé par GSAP (onUpdate → draw), pas de boucle permanente.
+// Remplissage à bord net (pas d'effet « eau »), animé par GSAP (onUpdate).
 // prefers-reduced-motion respecté. <section>/ref toujours montés. Tokens,
 // FR/EN, zéro inline.
 // ============================================================
@@ -32,28 +33,24 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./CattleThrive.scss";
 
-/* Découpes (grille 6×2 sur le torse, rognée par la silhouette).
-   Remplissage du bas vers le haut, de l'arrière vers l'avant. */
-const COL_X = [66, 106, 146, 186, 226, 266, 306];
-const ROW_Y = [96, 153, 210];
-const CUTS = [];
-for (let c = 0; c < 6; c += 1) {
-  for (let r = 0; r < 2; r += 1) {
-    CUTS.push({
-      x: COL_X[c],
-      y: ROW_Y[r],
-      w: COL_X[c + 1] - COL_X[c],
-      h: ROW_Y[r + 1] - ROW_Y[r],
-      order: c * 2 + (r === 1 ? 0 : 1), // bas (r=1) avant haut (r=0)
-      alt: (c + r) % 2 === 0,
-    });
-  }
-}
-const N_CUTS = CUTS.length;
+/* Silhouette Holstein (viewBox 0 0 380 250), tête à droite. */
+const COW_D =
+  "M70,86 C74,70 100,64 150,62 C200,60 240,62 268,74 C276,62 292,56 308,62 C320,58 334,64 338,80 C342,96 336,112 322,118 C328,126 322,138 308,136 C300,142 288,138 284,128 C276,134 268,138 262,140 L262,150 L262,218 L250,218 L250,150 L228,150 L228,218 L218,218 L218,150 L120,150 L120,218 L110,218 L110,150 L92,150 L92,218 L82,218 L82,150 L66,150 C56,144 52,108 70,86 Z";
 
-/* Silhouette du torse (sert de masque pour la grille). */
-const BODY_D =
-  "M70,100 C150,92 210,92 252,96 C278,98 296,104 304,120 L308,150 L306,196 C306,205 300,208 290,208 L120,210 C95,210 78,206 72,198 L66,150 Z";
+/* Taches décoratives (n'encodent rien). */
+const SPOTS = [
+  [115, 96, 22, 16],
+  [176, 112, 26, 18],
+  [150, 80, 16, 11],
+  [206, 102, 20, 14],
+  [96, 128, 15, 11],
+  [246, 92, 16, 12],
+];
+
+/* Domaine horizontal du remplissage (gauche → droite). */
+const FX0 = 52;
+const FX1 = 338;
+const fillX = (v) => FX0 + v * (FX1 - FX0);
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -139,6 +136,7 @@ export default function CattleThrive() {
   }, [list]);
 
   const medianVal = useMemo(() => median(list.map((o) => o.val)), [list]);
+  const medianV = useMemo(() => median(list.map((o) => o.v)) ?? 0.5, [list]);
   const extremes = useMemo(() => {
     if (!list.length) return null;
     let best = list[0];
@@ -160,8 +158,8 @@ export default function CattleThrive() {
 
   const sel = selected ? byCode[selected] : null;
 
-  /* ----------- Remplissage ----------- */
-  const cutRefs = useRef([]);
+  /* ----------- Remplissage gauche → droite ----------- */
+  const fillRectRef = useRef(null);
   const numberRef = useRef(null);
   const animObj = useRef({ v: 0, val: 0 });
   const startedRef = useRef(false);
@@ -172,12 +170,8 @@ export default function CattleThrive() {
       numberRef.current.textContent = nf.format(
         Math.round(animObj.current.val),
       );
-    const filled = v * N_CUTS;
-    cutRefs.current.forEach((node, i) => {
-      if (!node) return;
-      const op = clamp01(filled - CUTS[i].order);
-      node.setAttribute("fill-opacity", op.toFixed(3));
-    });
+    if (fillRectRef.current)
+      fillRectRef.current.setAttribute("width", fillX(v).toFixed(2));
   }, [nf]);
 
   useEffect(() => {
@@ -193,7 +187,7 @@ export default function CattleThrive() {
     const tw = gsap.to(animObj.current, {
       v: tv,
       val: tval,
-      duration: 1.25,
+      duration: 1.2,
       ease: "power2.out",
       onUpdate: draw,
     });
@@ -206,6 +200,7 @@ export default function CattleThrive() {
   const empty = ready && list.length === 0;
 
   const valText = sel ? nf.format(Math.round(sel.val)) : "0";
+  const medX = fillX(medianV);
 
   const trendEl = (() => {
     if (!sel || sel.delta == null || sel.fromYear == null) return null;
@@ -318,91 +313,123 @@ export default function CattleThrive() {
               )}
             </div>
 
-            {/* Colonne 2 — le bœuf de boucher */}
+            {/* Colonne 2 — la vache */}
             <figure className="cattle__viz">
               <svg
                 className="cattle__svg"
-                viewBox="0 0 420 300"
+                viewBox="0 0 380 250"
                 role="img"
                 aria-label={svgLabel}
               >
                 <defs>
-                  <clipPath id="ox-body">
-                    <path d={BODY_D} />
+                  <clipPath id="cow-body">
+                    <path d={COW_D} />
+                  </clipPath>
+                  <clipPath id="cow-fill">
+                    <rect
+                      ref={fillRectRef}
+                      x="0"
+                      y="0"
+                      width="0"
+                      height="250"
+                    />
                   </clipPath>
                 </defs>
 
                 {/* Sol */}
                 <ellipse
                   className="cattle__soil"
-                  cx="210"
-                  cy="270"
-                  rx="190"
+                  cx="185"
+                  cy="230"
+                  rx="160"
                   ry="12"
                 />
 
-                {/* Queue */}
+                {/* Queue (déco) */}
                 <path
-                  className="cattle__line"
-                  d="M70,104 C44,120 40,170 52,200 M52,200 C46,206 48,214 54,214"
+                  className="cattle__decor"
+                  d="M66,92 C48,108 46,150 58,176 M58,176 C52,182 54,190 60,190"
                   fill="none"
                 />
 
-                {/* Pattes */}
-                <g className="cattle__line">
-                  <path d="M96,206 L88,260" fill="none" />
-                  <path d="M132,208 L130,260" fill="none" />
-                  <path d="M276,206 L284,260" fill="none" />
-                  <path d="M300,202 L312,258" fill="none" />
-                </g>
-                <g className="cattle__hoof">
-                  <rect x="82" y="258" width="14" height="8" rx="2" />
-                  <rect x="124" y="258" width="14" height="8" rx="2" />
-                  <rect x="278" y="258" width="14" height="8" rx="2" />
-                  <rect x="306" y="256" width="14" height="8" rx="2" />
-                </g>
+                {/* Vache « vide » (fond léger) */}
+                <path className="cattle__bodyfill" d={COW_D} />
 
-                {/* Fond du torse (bœuf « vide ») */}
-                <path className="cattle__bodyfill" d={BODY_D} />
-
-                {/* Découpes qui se remplissent (rognées par la silhouette) */}
-                <g clipPath="url(#ox-body)">
-                  {CUTS.map((c, i) => (
+                {/* Robe qui se remplit (silhouette ∩ niveau gauche→droite) */}
+                <g clipPath="url(#cow-body)">
+                  <g clipPath="url(#cow-fill)">
                     <rect
-                      key={i}
-                      ref={(n) => {
-                        cutRefs.current[i] = n;
-                      }}
-                      className={`cattle__cut ${c.alt ? "cattle__cut--a" : "cattle__cut--b"}`}
-                      x={c.x}
-                      y={c.y}
-                      width={c.w}
-                      height={c.h}
-                      fillOpacity="0"
+                      className="cattle__coat"
+                      x="0"
+                      y="0"
+                      width="380"
+                      height="250"
                     />
-                  ))}
+                    {SPOTS.map(([cx, cy, rx, ry], i) => (
+                      <ellipse
+                        key={i}
+                        className="cattle__spot"
+                        cx={cx}
+                        cy={cy}
+                        rx={rx}
+                        ry={ry}
+                      />
+                    ))}
+                  </g>
                 </g>
 
-                {/* Contour du torse + découpes (schéma de boucher) */}
-                <path className="cattle__outline" d={BODY_D} fill="none" />
-                <g className="cattle__cutlines" clipPath="url(#ox-body)">
-                  <line x1="106" y1="96" x2="106" y2="210" />
-                  <line x1="146" y1="96" x2="146" y2="210" />
-                  <line x1="186" y1="96" x2="186" y2="210" />
-                  <line x1="226" y1="96" x2="226" y2="210" />
-                  <line x1="266" y1="96" x2="266" y2="210" />
-                  <line x1="66" y1="153" x2="306" y2="153" />
+                {/* Mamelle (déco, toujours visible) */}
+                <g className="cattle__udder-g">
+                  <ellipse
+                    className="cattle__udder"
+                    cx="150"
+                    cy="160"
+                    rx="16"
+                    ry="12"
+                  />
+                  <line
+                    className="cattle__teat"
+                    x1="143"
+                    y1="170"
+                    x2="143"
+                    y2="176"
+                  />
+                  <line
+                    className="cattle__teat"
+                    x1="157"
+                    y1="170"
+                    x2="157"
+                    y2="176"
+                  />
                 </g>
 
-                {/* Tête + cou + corne + oreille (contour) */}
-                <g className="cattle__line" fill="none">
-                  <path d="M304,120 C326,108 348,104 366,112 C384,104 398,108 402,124 C406,142 398,158 382,162 C376,176 358,182 346,174 C332,180 316,172 308,156" />
-                  <path d="M352,112 Q356,98 366,98" />
-                  <path d="M372,110 Q382,98 392,102" />
-                  <path d="M340,118 Q330,112 326,120" />
+                {/* Médiane du Pacifique (trait pointillé discret) */}
+                <g clipPath="url(#cow-body)">
+                  <line
+                    className="cattle__median"
+                    x1={medX}
+                    x2={medX}
+                    y1="48"
+                    y2="220"
+                  />
                 </g>
-                <circle className="cattle__eye" cx="372" cy="138" r="3" />
-                <circle className="cattle__eye" cx="392" cy="156" r="1.6" />
+
+                {/* Contour */}
+                <path className="cattle__outline" d={COW_D} fill="none" />
+
+                {/* Cornes + oreilles + œil + naseau (déco) */}
+                <g className="cattle__decor" fill="none">
+                  <path d="M300,56 Q298,46 306,46" />
+                  <path d="M316,58 Q324,48 330,54" />
+                  <path d="M288,60 Q278,56 274,64" />
+                </g>
+                <circle className="cattle__eye" cx="318" cy="92" r="3" />
+                <circle
+                  className="cattle__nostril2"
+                  cx="320"
+                  cy="120"
+                  r="2.4"
+                />
               </svg>
               <figcaption className="cattle__viz-cap">
                 {t("home.cattle.vitality_caption")}
@@ -438,6 +465,7 @@ export default function CattleThrive() {
 
               {medianVal != null && (
                 <p className="cattle__legend">
+                  <span className="cattle__legend-dash" aria-hidden="true" />
                   {fillTpl(t("home.cattle.median_label"), {
                     n: nf.format(Math.round(medianVal)),
                   })}
