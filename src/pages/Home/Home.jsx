@@ -18,6 +18,7 @@ import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import EnergyCell from "../../components/EnergyCell/EnergyCell";
+import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -144,6 +145,8 @@ export default function Home() {
       <WaterGlass />
 
       <EnergyCell />
+
+      <BiodiversityReef />
 
       <HomeIntro />
 

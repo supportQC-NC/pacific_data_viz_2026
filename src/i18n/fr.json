@@ -209,6 +209,25 @@
       "loading": "Chargement des données d'énergie…",
       "unavailable": "Donnée d'énergie momentanément indisponible.",
       "source": "Source : ONU (bilans énergétiques) · ODD 7.2.1 · via Pacific Data Hub"
+    },
+    "biodiv": {
+      "kicker": "Biodiversité",
+      "title": "Quand le récif perd ses couleurs",
+      "lead": "Choisissez un territoire : le récif s'anime selon l'Indice Liste Rouge, qui mesure le risque d'extinction des espèces (1 = aucun risque).",
+      "select_label": "Territoire",
+      "highest": "Le plus préservé",
+      "lowest": "Le plus menacé",
+      "index_caption": "Indice Liste Rouge · 1 = aucun risque d'extinction",
+      "vitality_caption": "Vitalité du récif, relative au Pacifique",
+      "year_label": "Donnée {year}",
+      "trend_down": "▼ {n} depuis {year}",
+      "trend_up": "▲ +{n} depuis {year}",
+      "trend_flat": "stable depuis {year}",
+      "median_label": "Médiane du Pacifique · {n}",
+      "aria": "{area} : Indice Liste Rouge {n} ({year}).",
+      "loading": "Chargement des données de biodiversité…",
+      "unavailable": "Donnée de biodiversité momentanément indisponible.",
+      "source": "Source : UICN (Liste Rouge) · ODD 15.5.1 · via Pacific Data Hub"
     }
   },
   "footer": {

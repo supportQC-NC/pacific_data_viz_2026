@@ -209,6 +209,25 @@
       "loading": "Loading energy data…",
       "unavailable": "Energy data is temporarily unavailable.",
       "source": "Source: UN (energy balances) · SDG 7.2.1 · via Pacific Data Hub"
+    },
+    "biodiv": {
+      "kicker": "Biodiversity",
+      "title": "When the reef loses its colour",
+      "lead": "Pick a territory: the reef comes to life with the Red List Index, which tracks species' extinction risk (1 = no risk).",
+      "select_label": "Territory",
+      "highest": "Most intact",
+      "lowest": "Most at risk",
+      "index_caption": "Red List Index · 1 = no extinction risk",
+      "vitality_caption": "Reef vitality, relative to the Pacific",
+      "year_label": "{year} data",
+      "trend_down": "▼ {n} since {year}",
+      "trend_up": "▲ +{n} since {year}",
+      "trend_flat": "stable since {year}",
+      "median_label": "Pacific median · {n}",
+      "aria": "{area}: Red List Index {n} ({year}).",
+      "loading": "Loading biodiversity data…",
+      "unavailable": "Biodiversity data is temporarily unavailable.",
+      "source": "Source: IUCN (Red List) · SDG 15.5.1 · via Pacific Data Hub"
     }
   },
   "footer": {

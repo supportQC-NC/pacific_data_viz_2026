@@ -1,0 +1,368 @@
+/* src/components/BiodiversityReef/BiodiversityReef.scss
+   ============================================================
+   Section signature #3 « Le récif ». La vitalité passe par UNE custom
+   property --v (0..1) posée sur le SVG : les coraux vivants (colorés) et
+   les squelettes blanchis se fondent l'un dans l'autre. Accent CORAIL pour
+   distinguer du verre (cyan) et de l'énergie (vert). 100 % tokens.
+   ============================================================ */
+
+.reef {
+  position: relative;
+  padding: var(--sp-24) 0;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.reef__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* ---------------- En-tête ---------------- */
+.reef__head {
+  max-width: var(--maxw-text);
+}
+.reef__kicker {
+  color: var(--c-warm);
+  margin-bottom: var(--sp-3);
+}
+.reef__title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+  margin: 0 0 var(--sp-4);
+}
+.reef__lead {
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+/* ---------------- États ---------------- */
+.reef__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding: var(--sp-8) 0;
+}
+.reef__state--err {
+  color: var(--c-warm);
+}
+
+/* ---------------- Scène (texte | récif) ---------------- */
+.reef__stage {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.reef__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* ---- Contrôles ---- */
+.reef__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.reef__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.reef__field-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.reef__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition: border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-warm);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.reef__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.reef__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  option {
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+}
+.reef__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+.reef__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.reef__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  em {
+    font-style: normal;
+    font-weight: var(--fw-bold);
+    color: var(--c-warm);
+  }
+  &:hover {
+    border-color: var(--c-warm);
+    color: var(--c-text);
+    background: var(--c-bg-2);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Lecture ---- */
+.reef__readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.reef__index {
+  margin: 0;
+  line-height: 1;
+}
+.reef__index-num {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-warm);
+}
+.reef__index-cap {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.reef__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.reef__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.reef__year {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+.reef__trend {
+  font-weight: var(--fw-bold);
+}
+.reef__trend--down {
+  color: var(--c-warm);
+}
+.reef__trend--up {
+  color: var(--c-positive);
+}
+.reef__trend--flat {
+  color: var(--c-text-mute);
+}
+.reef__legend {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* ---- Le récif (SVG) ---- */
+.reef__viz {
+  margin: 0;
+  justify-self: center;
+  width: 100%;
+  max-width: 580px;
+}
+.reef__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.reef__viz-cap {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+}
+
+/* Rais de lumière + sol. */
+.reef__rays polygon {
+  fill: var(--c-accent);
+  opacity: 0.05;
+}
+.reef__bed {
+  fill: var(--c-bg-2);
+  stroke: var(--c-line);
+  stroke-width: 1;
+}
+
+/* Coraux : vivant (coloré) vs squelette blanchi, fondu par --v. */
+.reef__alive {
+  opacity: var(--v, 0);
+}
+.reef__ghost {
+  opacity: calc((1 - var(--v, 0)) * 0.8);
+  fill: none;
+  stroke: var(--c-text-mute);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.reef__c1 {
+  fill: var(--c-warm);
+}
+.reef__c3 {
+  fill: var(--c-positive);
+}
+.reef__c5 {
+  fill: var(--c-accent);
+}
+.reef__c2 {
+  fill: none;
+  stroke: var(--c-warm-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.reef__c4 {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.reef__c6 {
+  fill: none;
+  stroke: var(--c-positive-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* Poissons. */
+.reef__f1 {
+  fill: var(--c-warm-soft);
+}
+.reef__f2 {
+  fill: var(--c-accent);
+}
+.reef__f3 {
+  fill: var(--c-positive-soft);
+}
+
+/* ---------------- Source ---------------- */
+.reef__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .reef {
+    padding: var(--sp-16) 0;
+  }
+  .reef__stage {
+    grid-template-columns: 1fr;
+    gap: var(--sp-8);
+  }
+  .reef__viz {
+    order: -1;
+  }
+  .reef__aside {
+    align-items: center;
+    text-align: center;
+  }
+  .reef__name,
+  .reef__index {
+    justify-content: center;
+  }
+  .reef__chips {
+    justify-content: center;
+  }
+}
