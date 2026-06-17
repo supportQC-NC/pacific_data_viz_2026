@@ -23,7 +23,7 @@
 /* ---------------- Barre filtre commune ---------------- */
 .ttrack__bar {
   flex: 0 0 auto;
-  padding: calc(var(--nav-h) + var(--sp-5)) clamp(var(--sp-5), 4vw, 56px)
+  padding: calc(var(--nav-h) + var(--sp-6)) clamp(var(--sp-6), 4vw, 56px)
     var(--sp-3);
   border-bottom: var(--border-hair) solid var(--c-line);
   background: var(--c-bg);
@@ -103,12 +103,46 @@
   }
 }
 
+.ttrack__chipsnav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+}
+.ttrack__arrow {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color var(--t-fast),
+    border-color var(--t-fast),
+    background var(--t-fast),
+    transform var(--t-fast);
+}
+.ttrack__arrow:hover {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
+}
+.ttrack__arrow:active {
+  transform: translateY(0);
+}
 .ttrack__chips {
   display: flex;
   flex-wrap: nowrap;
   justify-content: flex-start;
   gap: var(--sp-2);
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 2px 0 6px;
@@ -210,9 +244,9 @@
   width: 100vw;
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: var(--sp-4) clamp(var(--sp-4), 4vw, 48px);
+  padding: var(--sp-6) clamp(var(--sp-6), 5vw, 72px) var(--sp-8);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -234,76 +268,110 @@
   user-select: none;
 }
 
+/* Grille éditoriale : en-tête EN HAUT, scène qui remplit le reste. */
 .ttrack__panel-in {
   position: relative;
   z-index: 1;
-}
-.ttrack__panel-in {
   width: 100%;
   max-width: var(--maxw);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(var(--sp-6), 4vh, var(--sp-12));
+  margin: 0 auto;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: clamp(var(--sp-4), 3vh, var(--sp-8));
 }
+
+/* En-tête : un court filet d'accent puis le titre, calés EN HAUT À GAUCHE.
+   (Plus de gros numéro bleu : il mangeait de la place.) */
 .ttrack__panel-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--sp-4);
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
 }
-.ttrack__panel-idx {
-  position: relative;
-  display: inline-block;
-  padding-bottom: var(--sp-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  letter-spacing: 0.42em;
-  color: var(--c-accent);
-}
-.ttrack__panel-idx::after {
+.ttrack__panel-head::before {
   content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 26px;
+  width: 32px;
   height: 2px;
-  transform: translateX(-50%);
+  margin-bottom: var(--sp-3);
   background: var(--c-accent);
-  opacity: 0.55;
+  opacity: 0.6;
 }
 .ttrack__panel-title {
   margin: 0;
+  max-width: 24ch;
   font-family: var(--font-display);
   font-weight: var(--fw-light);
-  font-size: clamp(1.9rem, 3.4vw, 3.1rem);
-  line-height: var(--lh-tight);
+  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+  line-height: 1.12;
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
 }
+
+/* Révélation du titre mot à mot (effet "mask reveal" premium). */
+.ttrack__word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  margin-right: 0.28em;
+}
+.ttrack__word-in {
+  display: inline-block;
+  will-change: transform;
+  transition: transform 0.7s var(--ease-out);
+}
+.ttrack--reveal .ttrack__panel:not(.is-active) .ttrack__word-in {
+  transform: translateY(110%);
+}
+@for $i from 1 through 12 {
+  .ttrack__panel.is-active
+    .ttrack__word:nth-child(#{$i})
+    .ttrack__word-in {
+    transition-delay: #{0.03 * $i}s;
+  }
+}
+
+/* Scène : visuel + données, centrée dans l'espace restant + halo de profondeur. */
 .ttrack__panel-body {
-  width: 100%;
+  position: relative;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-/* On agrandit la scène intégrée pour occuper l'espace (le hors-contenu vide
-   se fait simplement rogner par le panneau, le contenu reste centré). */
+.ttrack__panel-body::before {
+  content: "";
+  position: absolute;
+  left: 27%;
+  top: 50%;
+  width: 54vmin;
+  height: 54vmin;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    var(--c-accent-glow) 0%,
+    transparent 66%
+  );
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
 .ttrack__panel-body > section {
-  transform: scale(1.15);
-  transform-origin: center top;
+  position: relative;
+  z-index: 1;
+  transform: scale(1.12);
+  transform-origin: center center;
 }
 @media (max-width: 1400px) {
   .ttrack__panel-body > section {
-    transform: scale(1.07);
+    transform: scale(1.04);
   }
 }
 
-/* Respiration premium : on écarte le visuel des données, et on aère la lecture.
-   Sélecteurs d'attribut → s'appliquent quel que soit le préfixe du composant. */
+/* Respiration : on écarte le visuel des données et on aère la lecture.
+   Sélecteurs d'attribut -> valables quel que soit le préfixe du composant. */
 .ttrack [class*="__stage"] {
-  gap: clamp(var(--sp-10), 7vw, 112px);
+  gap: clamp(var(--sp-12), 7vw, 112px);
   align-items: center;
 }
 .ttrack [class*="__readout"] {
@@ -431,4 +499,35 @@
 .power--embed .power__stage {
   grid-template-columns: auto auto;
   justify-content: center;
+}
+
+/* ============================================================
+   Révélation cinématique : titre + scène montent en fondu quand le
+   panneau arrive au centre (classe .is-active posée par l'observer).
+   Gated par .ttrack--reveal : si le JS n'installe pas l'observer,
+   rien n'est masqué -> contenu toujours visible.
+   ============================================================ */
+.ttrack__panel-head,
+.ttrack__panel-body {
+  transition:
+    opacity 0.75s var(--ease-out),
+    transform 0.75s var(--ease-out);
+}
+.ttrack__panel-body {
+  transition-delay: 0.1s;
+}
+.ttrack--reveal .ttrack__panel:not(.is-active) .ttrack__panel-head {
+  opacity: 0;
+}
+.ttrack--reveal .ttrack__panel:not(.is-active) .ttrack__panel-body {
+  opacity: 0;
+  transform: translateY(38px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ttrack__panel-head,
+  .ttrack__panel-body {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none;
+  }
 }

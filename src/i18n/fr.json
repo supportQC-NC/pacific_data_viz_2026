@@ -562,7 +562,9 @@
       "renew_unit": "%",
       "pop_title": "Croissance démographique",
       "pop_sub": "taux annuel — CPS (NMDI)",
-      "pop_unit": "%"
+      "pop_unit": "%",
+      "prev": "Territoires précédents",
+      "next": "Territoires suivants"
     }
   },
   "footer": {

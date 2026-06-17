@@ -562,7 +562,9 @@
       "renew_unit": "%",
       "pop_title": "Population growth",
       "pop_sub": "annual rate — SPC (NMDI)",
-      "pop_unit": "%"
+      "pop_unit": "%",
+      "prev": "Previous territories",
+      "next": "Next territories"
     }
   },
   "footer": {

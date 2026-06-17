@@ -125,6 +125,18 @@ export default function TerritoryTrack() {
   /* ----- Pin + translation horizontale ----- */
   const sectionRef = useRef(null);
   const trackRef = useRef(null);
+  const panelsRef = useRef([]);
+  const chipsRef = useRef(null);
+  const [reveal, setReveal] = useState(false);
+
+  const scrollChips = (dir) => {
+    const el = chipsRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: dir * Math.min(el.clientWidth * 0.7, 360),
+      behavior: "smooth",
+    });
+  };
 
   useLayoutEffect(() => {
     if (!ready || reduced) return undefined;
@@ -160,8 +172,37 @@ export default function TerritoryTrack() {
     };
   }, [ready, reduced]);
 
+  /* ----- Révélation cinématique : chaque panneau s'anime quand il arrive
+     au centre. Fallback sûr : la classe `ttrack--reveal` n'est posée que
+     si l'observer s'installe, sinon le contenu reste visible. ----- */
+  useEffect(() => {
+    if (!ready || reduced) return undefined;
+    const els = panelsRef.current.filter(Boolean);
+    if (!els.length || typeof IntersectionObserver === "undefined")
+      return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+            e.target.classList.add("is-active");
+          }
+        });
+      },
+      { threshold: [0, 0.5, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    setReveal(true);
+    return () => {
+      io.disconnect();
+      setReveal(false);
+    };
+  }, [ready, reduced]);
+
   return (
-    <section className="ttrack" ref={sectionRef}>
+    <section
+      className={`ttrack ${reveal ? "ttrack--reveal" : ""}`}
+      ref={sectionRef}
+    >
       <div className="ttrack__viewport">
         {/* Filtre territoire commun (reste fixe pendant le défilement) */}
         <div className="ttrack__bar">
@@ -195,24 +236,42 @@ export default function TerritoryTrack() {
                 </button>
               ))}
             </div>
-            <div className="ttrack__chips">
-              {visibleList.map((o) => (
-                <button
-                  key={o.code}
-                  type="button"
-                  className={`ttrack__chip ${code === o.code ? "is-on" : ""}`}
-                  aria-pressed={code === o.code}
-                  onClick={() => setCode(o.code)}
-                >
-                  <img
-                    className="ttrack__chip-flag"
-                    src={flagUrl(o.code)}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <span className="ttrack__chip-name">{o.name}</span>
-                </button>
-              ))}
+            <div className="ttrack__chipsnav">
+              <button
+                type="button"
+                className="ttrack__arrow"
+                onClick={() => scrollChips(-1)}
+                aria-label={t("home.track.prev")}
+              >
+                <span aria-hidden="true">‹</span>
+              </button>
+              <div className="ttrack__chips" ref={chipsRef}>
+                {visibleList.map((o) => (
+                  <button
+                    key={o.code}
+                    type="button"
+                    className={`ttrack__chip ${code === o.code ? "is-on" : ""}`}
+                    aria-pressed={code === o.code}
+                    onClick={() => setCode(o.code)}
+                  >
+                    <img
+                      className="ttrack__chip-flag"
+                      src={flagUrl(o.code)}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <span className="ttrack__chip-name">{o.name}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="ttrack__arrow"
+                onClick={() => scrollChips(1)}
+                aria-label={t("home.track.next")}
+              >
+                <span aria-hidden="true">›</span>
+              </button>
             </div>
           </div>
 
@@ -225,15 +284,26 @@ export default function TerritoryTrack() {
           <p className="ttrack__state">{t("home.track.loading")}</p>
         ) : (
           <div className="ttrack__track" ref={trackRef}>
-            {PANELS.map(({ idx, titleKey, Comp }) => (
-              <article className="ttrack__panel" key={idx}>
+            {PANELS.map(({ idx, titleKey, Comp }, i) => (
+              <article
+                className="ttrack__panel"
+                key={idx}
+                ref={(el) => (panelsRef.current[i] = el)}
+              >
                 <span className="ttrack__panel-ghost" aria-hidden="true">
                   {idx}
                 </span>
                 <div className="ttrack__panel-in">
                   <header className="ttrack__panel-head">
-                    <span className="ttrack__panel-idx">{idx}</span>
-                    <h3 className="ttrack__panel-title">{t(titleKey)}</h3>
+                    <h3 className="ttrack__panel-title">
+                      {t(titleKey)
+                        .split(" ")
+                        .map((w, wi) => (
+                          <span className="ttrack__word" key={wi}>
+                            <span className="ttrack__word-in">{w}</span>
+                          </span>
+                        ))}
+                    </h3>
                   </header>
                   <div className="ttrack__panel-body">
                     <Comp embed code={code} />
