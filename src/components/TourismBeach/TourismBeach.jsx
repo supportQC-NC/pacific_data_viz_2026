@@ -75,7 +75,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function TourismBeach() {
+export default function TourismBeach({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.2 });
@@ -166,6 +166,9 @@ export default function TourismBeach() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Parasols ----------- */
   const paraRefs = useRef([]);
@@ -280,7 +283,11 @@ export default function TourismBeach() {
     : t("home.tourism.title");
 
   return (
-    <section className="beach" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`beach ${embed ? "beach--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="beach__inner container">
         <header className="beach__head">
           <p className="eyebrow beach__kicker">{t("home.tourism.kicker")}</p>

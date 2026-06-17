@@ -76,7 +76,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function CattleThrive() {
+export default function CattleThrive({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView] = useInView({ threshold: 0.25 });
@@ -157,6 +157,9 @@ export default function CattleThrive() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Remplissage gauche → droite ----------- */
   const fillRectRef = useRef(null);
@@ -176,8 +179,8 @@ export default function CattleThrive() {
 
   useEffect(() => {
     if (inView) startedRef.current = true;
-    const tv = startedRef.current && sel ? sel.v : 0;
-    const tval = startedRef.current && sel ? sel.val : 0;
+    const tv = sel ? sel.v : 0;
+    const tval = sel ? sel.val : 0;
     if (reduced) {
       animObj.current.v = tv;
       animObj.current.val = tval;
@@ -240,7 +243,7 @@ export default function CattleThrive() {
 
   return (
     <section
-      className="cattle"
+      className={`cattle ${embed ? "cattle--embed" : ""}`}
       ref={ref}
       data-inview={inView ? "true" : "false"}
     >
@@ -326,13 +329,7 @@ export default function CattleThrive() {
                     <path d={COW_D} />
                   </clipPath>
                   <clipPath id="cow-fill">
-                    <rect
-                      ref={fillRectRef}
-                      x="0"
-                      y="0"
-                      width="0"
-                      height="250"
-                    />
+                    <rect ref={fillRectRef} x="0" y="0" width="0" height="250" />
                   </clipPath>
                 </defs>
 
@@ -358,13 +355,7 @@ export default function CattleThrive() {
                 {/* Robe qui se remplit (silhouette ∩ niveau gauche→droite) */}
                 <g clipPath="url(#cow-body)">
                   <g clipPath="url(#cow-fill)">
-                    <rect
-                      className="cattle__coat"
-                      x="0"
-                      y="0"
-                      width="380"
-                      height="250"
-                    />
+                    <rect className="cattle__coat" x="0" y="0" width="380" height="250" />
                     {SPOTS.map(([cx, cy, rx, ry], i) => (
                       <ellipse
                         key={i}
@@ -380,27 +371,9 @@ export default function CattleThrive() {
 
                 {/* Mamelle (déco, toujours visible) */}
                 <g className="cattle__udder-g">
-                  <ellipse
-                    className="cattle__udder"
-                    cx="150"
-                    cy="160"
-                    rx="16"
-                    ry="12"
-                  />
-                  <line
-                    className="cattle__teat"
-                    x1="143"
-                    y1="170"
-                    x2="143"
-                    y2="176"
-                  />
-                  <line
-                    className="cattle__teat"
-                    x1="157"
-                    y1="170"
-                    x2="157"
-                    y2="176"
-                  />
+                  <ellipse className="cattle__udder" cx="150" cy="160" rx="16" ry="12" />
+                  <line className="cattle__teat" x1="143" y1="170" x2="143" y2="176" />
+                  <line className="cattle__teat" x1="157" y1="170" x2="157" y2="176" />
                 </g>
 
                 {/* Médiane du Pacifique (trait pointillé discret) */}
@@ -424,12 +397,7 @@ export default function CattleThrive() {
                   <path d="M288,60 Q278,56 274,64" />
                 </g>
                 <circle className="cattle__eye" cx="318" cy="92" r="3" />
-                <circle
-                  className="cattle__nostril2"
-                  cx="320"
-                  cy="120"
-                  r="2.4"
-                />
+                <circle className="cattle__nostril2" cx="320" cy="120" r="2.4" />
               </svg>
               <figcaption className="cattle__viz-cap">
                 {t("home.cattle.vitality_caption")}
@@ -442,13 +410,9 @@ export default function CattleThrive() {
                 <span ref={numberRef} className="cattle__val-num">
                   {valText}
                 </span>
-                <span className="cattle__val-unit">
-                  {t("home.cattle.unit")}
-                </span>
+                <span className="cattle__val-unit">{t("home.cattle.unit")}</span>
               </p>
-              <p className="cattle__val-cap">
-                {t("home.cattle.value_caption")}
-              </p>
+              <p className="cattle__val-cap">{t("home.cattle.value_caption")}</p>
               <p className="cattle__name">
                 <img
                   className="cattle__name-flag"

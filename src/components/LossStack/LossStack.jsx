@@ -65,7 +65,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function LossStack() {
+export default function LossStack({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.2 });
@@ -155,6 +155,9 @@ export default function LossStack() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Empilement ----------- */
   const stackRef = useRef(null);
@@ -270,7 +273,11 @@ export default function LossStack() {
     : t("home.loss.title");
 
   return (
-    <section className="loss" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`loss ${embed ? "loss--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="loss__inner container">
         <header className="loss__head">
           <p className="eyebrow loss__kicker">{t("home.loss.kicker")}</p>

@@ -55,7 +55,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function StiltHouse() {
+export default function StiltHouse({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -146,6 +146,9 @@ export default function StiltHouse() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Houle + montée ----------- */
   const backRef = useRef(null);
@@ -280,7 +283,11 @@ export default function StiltHouse() {
     : t("home.stilt.title");
 
   return (
-    <section className="stilt" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`stilt ${embed ? "stilt--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="stilt__inner container">
         <header className="stilt__head">
           <p className="eyebrow stilt__kicker">{t("home.stilt.kicker")}</p>

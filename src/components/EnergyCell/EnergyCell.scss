@@ -411,3 +411,18 @@
     filter: none;
   }
 }
+
+/* ---- Mode intégré (track) ---- */
+.energycell--embed {
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+.energycell--embed .energycell__inner {
+  gap: var(--sp-6);
+}
+.energycell__stage--embed {
+  grid-template-columns: auto auto;
+  justify-content: center;
+}

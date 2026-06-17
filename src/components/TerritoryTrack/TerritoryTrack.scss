@@ -1,0 +1,434 @@
+/* src/components/TerritoryTrack/TerritoryTrack.scss
+   ============================================================
+   Track horizontal « par territoire » qui rend les VRAIS composants signatures
+   en mode embed. Section pinnée, barre filtre fixe, panneaux 100vw. 100 % tokens.
+   ============================================================ */
+
+.ttrack {
+  position: relative;
+  height: 100vh;
+  border-top: var(--border-hair) solid var(--c-line);
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 90% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  overflow: hidden;
+}
+
+.ttrack__viewport {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------------- Barre filtre commune ---------------- */
+.ttrack__bar {
+  flex: 0 0 auto;
+  padding: calc(var(--nav-h) + var(--sp-5)) clamp(var(--sp-5), 4vw, 56px)
+    var(--sp-3);
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: var(--c-bg);
+}
+.ttrack__bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+.ttrack__kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.ttrack__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.ttrack__name-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+
+.ttrack__filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ttrack__regions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+.ttrack__region {
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--c-line-strong);
+    color: var(--c-text);
+  }
+  &.is-on {
+    border-color: var(--c-accent);
+    color: var(--c-bg);
+    background: var(--c-accent);
+    font-weight: var(--fw-semi);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+.ttrack__chips {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: var(--sp-2);
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0 6px;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 4%,
+    #000 96%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 4%,
+    #000 96%,
+    transparent 100%
+  );
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+.ttrack__chip {
+  flex: 0 0 auto;
+}
+.ttrack__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--c-line-strong);
+    color: var(--c-text);
+  }
+  &.is-on {
+    border-color: var(--c-accent);
+    color: var(--c-text);
+    box-shadow: 0 0 0 1px var(--c-accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+.ttrack__chip-flag {
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.ttrack__chip-name {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  white-space: nowrap;
+}
+
+.ttrack__hint {
+  margin: var(--sp-2) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+  opacity: 0.7;
+}
+
+.ttrack__state {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+/* ---------------- Piste horizontale ---------------- */
+.ttrack__track {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  will-change: transform;
+}
+.ttrack__panel {
+  position: relative;
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4) clamp(var(--sp-4), 4vw, 48px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Index fantôme géant : repère typographique premium, en filigrane. */
+.ttrack__panel-ghost {
+  position: absolute;
+  top: clamp(-10vh, -6vh, -3vh);
+  right: clamp(-3vw, 0vw, 3vw);
+  z-index: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: clamp(13rem, 22vw, 26rem);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: var(--c-text);
+  opacity: 0.022;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ttrack__panel-in {
+  position: relative;
+  z-index: 1;
+}
+.ttrack__panel-in {
+  width: 100%;
+  max-width: var(--maxw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--sp-6), 4vh, var(--sp-12));
+}
+.ttrack__panel-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  text-align: center;
+}
+.ttrack__panel-idx {
+  position: relative;
+  display: inline-block;
+  padding-bottom: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.42em;
+  color: var(--c-accent);
+}
+.ttrack__panel-idx::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 26px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--c-accent);
+  opacity: 0.55;
+}
+.ttrack__panel-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(1.9rem, 3.4vw, 3.1rem);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+.ttrack__panel-body {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* On agrandit la scène intégrée pour occuper l'espace (le hors-contenu vide
+   se fait simplement rogner par le panneau, le contenu reste centré). */
+.ttrack__panel-body > section {
+  transform: scale(1.15);
+  transform-origin: center top;
+}
+@media (max-width: 1400px) {
+  .ttrack__panel-body > section {
+    transform: scale(1.07);
+  }
+}
+
+/* Respiration premium : on écarte le visuel des données, et on aère la lecture.
+   Sélecteurs d'attribut → s'appliquent quel que soit le préfixe du composant. */
+.ttrack [class*="__stage"] {
+  gap: clamp(var(--sp-10), 7vw, 112px);
+  align-items: center;
+}
+.ttrack [class*="__readout"] {
+  gap: var(--sp-3);
+}
+
+/* ---------------- Reduced-motion : pas de pin, panneaux empilés ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .ttrack,
+  .ttrack__viewport {
+    height: auto;
+  }
+  .ttrack__track {
+    flex-direction: column;
+  }
+  .ttrack__panel {
+    flex: none;
+    width: 100%;
+    min-height: 80vh;
+  }
+}
+
+/* ---------------- Mobile ---------------- */
+@media (max-width: 900px) {
+  .ttrack,
+  .ttrack__viewport {
+    height: auto;
+  }
+  .ttrack__track {
+    flex-direction: column;
+  }
+  .ttrack__panel {
+    flex: none;
+    width: 100%;
+    min-height: 80vh;
+    padding: var(--sp-8) var(--sp-4);
+  }
+}
+
+
+/* ============================================================
+   Mode intégré (embed) des composants signatures rendus dans le track.
+   On masque le chrome (en-tête, contrôles, source) et on recentre la scène,
+   sans toucher au .scss de chaque composant. Double-classe = spécificité
+   suffisante pour battre les styles de base quel que soit l'ordre de bundle.
+   ============================================================ */
+.reef.reef--embed,
+.forest.forest--embed,
+.coast.coast--embed,
+.plant.plant--embed,
+.cattle.cattle--embed,
+.sky.sky--embed,
+.smoke.smoke--embed,
+.sea.sea--embed,
+.stilt.stilt--embed,
+.crowd.crowd--embed,
+.loss.loss--embed,
+.beach.beach--embed,
+.pop.pop--embed,
+.power.power--embed {
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+
+.reef--embed .reef__head,
+.reef--embed .reef__controls,
+.reef--embed .reef__source,
+.forest--embed .forest__head,
+.forest--embed .forest__controls,
+.forest--embed .forest__source,
+.coast--embed .coast__head,
+.coast--embed .coast__controls,
+.coast--embed .coast__source,
+.plant--embed .plant__head,
+.plant--embed .plant__controls,
+.plant--embed .plant__source,
+.cattle--embed .cattle__head,
+.cattle--embed .cattle__controls,
+.cattle--embed .cattle__source,
+.sky--embed .sky__head,
+.sky--embed .sky__controls,
+.sky--embed .sky__source,
+.smoke--embed .smoke__head,
+.smoke--embed .smoke__controls,
+.smoke--embed .smoke__source,
+.sea--embed .sea__head,
+.sea--embed .sea__controls,
+.sea--embed .sea__source,
+.stilt--embed .stilt__head,
+.stilt--embed .stilt__controls,
+.stilt--embed .stilt__source,
+.crowd--embed .crowd__head,
+.crowd--embed .crowd__controls,
+.crowd--embed .crowd__source,
+.loss--embed .loss__head,
+.loss--embed .loss__controls,
+.loss--embed .loss__source,
+.beach--embed .beach__head,
+.beach--embed .beach__controls,
+.beach--embed .beach__source,
+.pop--embed .pop__head,
+.pop--embed .pop__controls,
+.pop--embed .pop__source,
+.power--embed .power__head,
+.power--embed .power__controls,
+.power--embed .power__source {
+  display: none;
+}
+
+.reef--embed .reef__stage,
+.forest--embed .forest__stage,
+.coast--embed .coast__stage,
+.plant--embed .plant__stage,
+.cattle--embed .cattle__stage,
+.sky--embed .sky__stage,
+.smoke--embed .smoke__stage,
+.sea--embed .sea__stage,
+.stilt--embed .stilt__stage,
+.crowd--embed .crowd__stage,
+.loss--embed .loss__stage,
+.beach--embed .beach__stage,
+.pop--embed .pop__stage,
+.power--embed .power__stage {
+  grid-template-columns: auto auto;
+  justify-content: center;
+}

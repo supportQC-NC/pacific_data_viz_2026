@@ -373,7 +373,13 @@
       "aria": "{area} : incidence de la tuberculose {n} pour 100 000 ({year}).",
       "loading": "Chargement des données de santé…",
       "unavailable": "Donnée de tuberculose momentanément indisponible.",
-      "source": "Source : OMS · ODD 3.3.2 · via Pacific Data Hub"
+      "source": "Source : OMS · ODD 3.3.2 · via Pacific Data Hub",
+      "region_all": "Toutes",
+      "region_melanesia": "Mélanésie",
+      "region_polynesia": "Polynésie",
+      "region_micronesia": "Micronésie",
+      "region_pacific": "Pacifique",
+      "region_avg": "moyenne · {n} territoires"
     },
     "forest": {
       "kicker": "Couverture des sols",
@@ -534,6 +540,29 @@
       "region_melanesia": "Mélanésie",
       "region_polynesia": "Polynésie",
       "region_micronesia": "Micronésie"
+    },
+    "track": {
+      "kicker": "Comparer les territoires",
+      "hint": "Faites défiler →  les 3 indicateurs changent ensemble",
+      "loading": "Chargement des indicateurs…",
+      "region_all": "Toutes",
+      "region_melanesia": "Mélanésie",
+      "region_polynesia": "Polynésie",
+      "region_micronesia": "Micronésie",
+      "region_pacific": "Pacifique",
+      "region_avg": "moyenne · {n} territoires",
+      "water_title": "Eau potable sûre",
+      "water_sub": "part de la population — OMS/UNICEF (JMP)",
+      "water_unit": "%",
+      "tb_title": "Tuberculose",
+      "tb_sub": "incidence, cas pour 100 000 hab. — OMS",
+      "tb_unit": "/ 100 000",
+      "renew_title": "Énergie renouvelable",
+      "renew_sub": "part de la consommation finale — ODD 7",
+      "renew_unit": "%",
+      "pop_title": "Croissance démographique",
+      "pop_sub": "taux annuel — CPS (NMDI)",
+      "pop_unit": "%"
     }
   },
   "footer": {

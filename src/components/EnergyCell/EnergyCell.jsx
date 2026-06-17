@@ -68,7 +68,7 @@ function fillTpl(str, map) {
   );
 }
 
-export default function EnergyCell() {
+export default function EnergyCell({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -127,11 +127,15 @@ export default function EnergyCell() {
 
   const [selected, setSelected] = useState(null);
   useEffect(() => {
+    if (embed) return;
     if (!list.length) return;
     if (!selected || !byCode[selected]) {
       setSelected(byCode.FJ ? "FJ" : list[0].code);
     }
-  }, [list, selected, byCode]);
+  }, [list, selected, byCode, embed]);
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   const sel = selected ? byCode[selected] : null;
   const selPct = sel ? sel.value / 100 : 0;
@@ -271,18 +275,20 @@ export default function EnergyCell() {
 
   return (
     <section
-      className="energycell"
+      className={`energycell ${embed ? "energycell--embed" : ""}`}
       ref={ref}
       data-inview={inView ? "true" : "false"}
     >
       <div className="energycell__inner container">
-        <header className="energycell__head">
-          <p className="eyebrow energycell__kicker">
-            {t("home.energy.kicker")}
-          </p>
-          <h2 className="energycell__title">{t("home.energy.title")}</h2>
-          <p className="energycell__lead">{t("home.energy.lead")}</p>
-        </header>
+        {!embed && (
+          <header className="energycell__head">
+            <p className="eyebrow energycell__kicker">
+              {t("home.energy.kicker")}
+            </p>
+            <h2 className="energycell__title">{t("home.energy.title")}</h2>
+            <p className="energycell__lead">{t("home.energy.lead")}</p>
+          </header>
+        )}
 
         {loading && (
           <p className="energycell__state">{t("home.energy.loading")}</p>
@@ -294,8 +300,8 @@ export default function EnergyCell() {
         )}
 
         {ready && sel && (
-          <div className="energycell__stage">
-            {/* Colonne 1 — contrôles */}
+          <div className={`energycell__stage ${embed ? "energycell__stage--embed" : ""}`}>
+            {!embed && (
             <div className="energycell__controls">
               <label className="energycell__field">
                 <span className="energycell__field-label">
@@ -347,6 +353,7 @@ export default function EnergyCell() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Colonne 2 — la cellule */}
             <figure className="energycell__viz">
@@ -518,7 +525,9 @@ export default function EnergyCell() {
           </div>
         )}
 
-        <p className="energycell__source">{t("home.energy.source")}</p>
+        {!embed && (
+          <p className="energycell__source">{t("home.energy.source")}</p>
+        )}
       </div>
     </section>
   );

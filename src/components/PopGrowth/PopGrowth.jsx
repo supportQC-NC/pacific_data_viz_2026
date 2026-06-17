@@ -64,7 +64,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function PopGrowth() {
+export default function PopGrowth({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.2 });
@@ -149,6 +149,9 @@ export default function PopGrowth() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Colonne ----------- */
   const aboveRefs = useRef([]);
@@ -261,7 +264,11 @@ export default function PopGrowth() {
     : t("home.pop.title");
 
   return (
-    <section className="pop" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`pop ${embed ? "pop--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="pop__inner container">
         <header className="pop__head">
           <p className="eyebrow pop__kicker">{t("home.pop.kicker")}</p>

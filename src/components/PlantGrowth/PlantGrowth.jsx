@@ -101,7 +101,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function PlantGrowth() {
+export default function PlantGrowth({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -181,6 +181,9 @@ export default function PlantGrowth() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Animation : croissance ----------- */
   const plantRef = useRef(null);
@@ -313,7 +316,11 @@ export default function PlantGrowth() {
     : t("home.plant.title");
 
   return (
-    <section className="plant" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`plant ${embed ? "plant--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="plant__inner container">
         <header className="plant__head">
           <p className="eyebrow plant__kicker">{t("home.plant.kicker")}</p>

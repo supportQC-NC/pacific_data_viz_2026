@@ -63,7 +63,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function SeaWarm() {
+export default function SeaWarm({ embed = false, code = null } = {}) {
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
@@ -146,6 +146,9 @@ export default function SeaWarm() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Houle + mercure ----------- */
   const seaRef = useRef(null);
@@ -281,7 +284,11 @@ export default function SeaWarm() {
     : t("home.sea.title");
 
   return (
-    <section className="sea" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`sea ${embed ? "sea--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="sea__inner container">
         <header className="sea__head">
           <p className="eyebrow sea__kicker">{t("home.sea.kicker")}</p>

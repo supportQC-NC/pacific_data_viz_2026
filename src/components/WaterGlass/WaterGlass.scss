@@ -566,3 +566,14 @@
     filter: none;
   }
 }
+
+/* ---- Mode intégré (dans le track horizontal) ---- */
+.waterglass--embed {
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+.waterglass--embed .waterglass__inner {
+  gap: var(--sp-6);
+}

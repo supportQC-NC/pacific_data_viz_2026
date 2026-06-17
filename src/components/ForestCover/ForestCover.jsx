@@ -69,7 +69,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function ForestCover() {
+export default function ForestCover({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -149,6 +149,9 @@ export default function ForestCover() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Feuillage ----------- */
   const canopyRefs = useRef([]);
@@ -260,7 +263,11 @@ export default function ForestCover() {
     : t("home.forest.title");
 
   return (
-    <section className="forest" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`forest ${embed ? "forest--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="forest__inner container">
         <header className="forest__head">
           <p className="eyebrow forest__kicker">{t("home.forest.kicker")}</p>

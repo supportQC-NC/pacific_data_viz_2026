@@ -79,7 +79,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function SkyRain() {
+export default function SkyRain({ embed = false, code = null } = {}) {
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
   const nf = useMemo(
@@ -162,6 +162,9 @@ export default function SkyRain() {
   }, [list, selected, byCode]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Animation météo ----------- */
   const rainRefs = useRef([]);
@@ -322,7 +325,11 @@ export default function SkyRain() {
     : t("home.sky.title");
 
   return (
-    <section className="sky" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`sky ${embed ? "sky--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="sky__inner container">
         <header className="sky__head">
           <p className="eyebrow sky__kicker">{t("home.sky.kicker")}</p>

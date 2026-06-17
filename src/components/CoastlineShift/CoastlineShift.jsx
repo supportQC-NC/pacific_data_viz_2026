@@ -59,7 +59,7 @@ function fillTpl(str, map) {
 }
 const signed = (x, d = 2) => `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(d)}`;
 
-export default function CoastlineShift() {
+export default function CoastlineShift({ embed = false, code = null } = {}) {
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
 
@@ -116,6 +116,9 @@ export default function CoastlineShift() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
   const targetOff = sel ? -(sel.med / maxMag) * RANGE : 0;
 
   /* ----------- Animation : vagues + glissement du trait ----------- */
@@ -236,7 +239,11 @@ export default function CoastlineShift() {
         : "gain";
 
   return (
-    <section className="coast" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`coast ${embed ? "coast--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="coast__inner container">
         <header className="coast__head">
           <p className="eyebrow coast__kicker">{t("home.coast.kicker")}</p>

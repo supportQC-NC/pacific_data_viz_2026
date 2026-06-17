@@ -373,7 +373,13 @@
       "aria": "{area}: tuberculosis incidence {n} per 100,000 ({year}).",
       "loading": "Loading health data…",
       "unavailable": "Tuberculosis data is temporarily unavailable.",
-      "source": "Source: WHO · SDG 3.3.2 · via Pacific Data Hub"
+      "source": "Source: WHO · SDG 3.3.2 · via Pacific Data Hub",
+      "region_all": "All",
+      "region_melanesia": "Melanesia",
+      "region_polynesia": "Polynesia",
+      "region_micronesia": "Micronesia",
+      "region_pacific": "Pacific",
+      "region_avg": "average · {n} territories"
     },
     "forest": {
       "kicker": "Land cover",
@@ -534,6 +540,29 @@
       "region_melanesia": "Melanesia",
       "region_polynesia": "Polynesia",
       "region_micronesia": "Micronesia"
+    },
+    "track": {
+      "kicker": "Compare territories",
+      "hint": "Scroll →  all three indicators change together",
+      "loading": "Loading indicators…",
+      "region_all": "All",
+      "region_melanesia": "Melanesia",
+      "region_polynesia": "Polynesia",
+      "region_micronesia": "Micronesia",
+      "region_pacific": "Pacific",
+      "region_avg": "average · {n} territories",
+      "water_title": "Safe drinking water",
+      "water_sub": "share of population — WHO/UNICEF (JMP)",
+      "water_unit": "%",
+      "tb_title": "Tuberculosis",
+      "tb_sub": "incidence, cases per 100,000 — WHO",
+      "tb_unit": "/ 100,000",
+      "renew_title": "Renewable energy",
+      "renew_sub": "share of final consumption — SDG 7",
+      "renew_unit": "%",
+      "pop_title": "Population growth",
+      "pop_sub": "annual rate — SPC (NMDI)",
+      "pop_unit": "%"
     }
   },
   "footer": {

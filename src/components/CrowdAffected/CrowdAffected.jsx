@@ -76,7 +76,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function CrowdAffected() {
+export default function CrowdAffected({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.2 });
@@ -168,6 +168,9 @@ export default function CrowdAffected() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Illumination de la foule ----------- */
   const crowdRef = useRef(null);
@@ -280,7 +283,11 @@ export default function CrowdAffected() {
     : t("home.crowd.title");
 
   return (
-    <section className="crowd" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`crowd ${embed ? "crowd--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="crowd__inner container">
         <header className="crowd__head">
           <p className="eyebrow crowd__kicker">{t("home.crowd.kicker")}</p>

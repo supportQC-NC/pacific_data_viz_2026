@@ -6,7 +6,7 @@
 
 .bac {
   position: relative;
-  padding: var(--sp-24) 0;
+  padding: var(--sp-20) 0;
   border-bottom: var(--border-hair) solid var(--c-line);
   background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
   overflow: hidden;
@@ -15,31 +15,30 @@
 .bac__inner {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-12);
+  gap: var(--sp-10);
 }
 
-/* ---------------- En-tête ---------------- */
+/* ---------------- En-tête (pleine largeur) ---------------- */
 .bac__head {
-  max-width: var(--maxw-text);
-}
-.bac__kicker {
-  color: var(--c-warm);
-  margin-bottom: var(--sp-3);
+  max-width: none;
+  width: 100%;
 }
 .bac__title {
   font-family: var(--font-display);
   font-weight: var(--fw-light);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
   line-height: var(--lh-tight);
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
-  margin: 0 0 var(--sp-4);
+  margin: 0 0 var(--sp-3);
 }
 .bac__lead {
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
   margin: 0;
+  max-width: none;
+  width: 100%;
 }
 
 /* ---------------- États ---------------- */
@@ -53,26 +52,14 @@
   color: var(--c-warm);
 }
 
-/* ---------------- Scène (3 colonnes) ---------------- */
-.bac__stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: var(--sp-12);
+/* ---------------- Barre de filtres (centrée, au-dessus) ---------------- */
+.bac__toolbar {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-}
-
-.bac__controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-6);
-  justify-self: end;
-  width: 100%;
-  max-width: 320px;
-}
-.bac__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
+  justify-content: center;
+  gap: var(--sp-3);
+  margin: 0 auto var(--sp-10);
 }
 .bac__field-label {
   font-family: var(--font-mono);
@@ -81,63 +68,48 @@
   text-transform: uppercase;
   color: var(--c-text-mute);
 }
-.bac__select {
-  position: relative;
+
+.bac__regions {
   display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: 0 var(--sp-4);
-  height: 52px;
-  border: var(--border-hair) solid var(--c-line-strong);
-  border-radius: var(--r-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+.bac__region {
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
   background: var(--c-surface);
-  transition: border-color var(--t-fast) var(--ease-out),
-    box-shadow var(--t-fast) var(--ease-out);
-
-  &:focus-within {
-    border-color: var(--c-warm);
-    box-shadow: 0 0 0 3px var(--c-accent-glow);
-  }
-}
-.bac__flag {
-  width: 26px;
-  height: 18px;
-  object-fit: cover;
-  border-radius: var(--r-sm);
-  flex: 0 0 auto;
-  box-shadow: 0 0 0 1px var(--c-line);
-}
-.bac__native {
-  appearance: none;
-  -webkit-appearance: none;
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--c-text);
-  font-family: var(--font-body);
-  font-size: var(--fs-base);
-  font-weight: var(--fw-med);
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-  }
-  option {
-    color: var(--c-text);
-    background: var(--c-surface);
-  }
-}
-.bac__chevron {
-  flex: 0 0 auto;
   color: var(--c-text-soft);
-  font-size: var(--fs-sm);
-  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--c-line-strong);
+    color: var(--c-text);
+  }
+  &.is-on {
+    border-color: var(--c-accent);
+    color: var(--c-bg);
+    background: var(--c-accent);
+    font-weight: var(--fw-semi);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
 }
+
+/* raccourcis extrêmes — vert = mieux (faible), rouge = pire (forte) */
 .bac__chips {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--sp-2);
 }
 .bac__chip {
@@ -160,35 +132,62 @@
   em {
     font-style: normal;
     font-weight: var(--fw-bold);
+    color: var(--c-text);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+.bac__chip--bad {
+  border-color: var(--c-warm-soft);
+  color: var(--c-warm);
+  em {
     color: var(--c-warm);
   }
   &:hover {
     border-color: var(--c-warm);
-    color: var(--c-text);
+    color: var(--c-warm);
     background: var(--c-bg-2);
   }
-  &:focus-visible {
-    outline: 2px solid var(--c-warm);
-    outline-offset: 2px;
+}
+.bac__chip--good {
+  border-color: var(--c-positive-soft);
+  color: var(--c-positive);
+  em {
+    color: var(--c-positive);
+  }
+  &:hover {
+    border-color: var(--c-positive);
+    color: var(--c-positive);
+    background: var(--c-bg-2);
   }
 }
 
-/* ---- Colonne 2 : le champ de microscope ---- */
+/* ---------------- Scène (2 colonnes : microscope + lecture) ---------------- */
+.bac__stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(var(--sp-8), 6vw, var(--sp-16));
+  align-items: center;
+}
+
+/* ---- Le champ de microscope ---- */
 .bac__viz {
   margin: 0;
-  justify-self: center;
+  justify-self: end;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 340px;
+  max-width: 360px;
 }
 .bac__svg {
   display: block;
-  width: clamp(220px, 28vw, 300px);
+  width: clamp(220px, 26vw, 320px);
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 22px 40px var(--c-accent-glow));
+  filter: drop-shadow(0 22px 42px var(--c-accent-glow));
 }
 .bac__viz-cap {
   margin: var(--sp-3) 0 0;
@@ -199,27 +198,76 @@
   color: var(--c-text-mute);
 }
 
-/* champ coloré (bleu froid Ziehl-Neelsen) */
+/* champ coloré (bleu froid Ziehl-Neelsen), centre plus clair */
 .bac-field-in {
   stop-color: var(--c-accent-deep);
-  stop-opacity: 0.32;
+  stop-opacity: 0.42;
+}
+.bac-field-mid {
+  stop-color: var(--c-accent-deep);
+  stop-opacity: 0.2;
 }
 .bac-field-out {
   stop-color: var(--c-bg);
-  stop-opacity: 0.92;
+  stop-opacity: 0.96;
 }
+/* vignette interne (assombrit le pourtour → effet objectif) */
+.bac-vig-0 {
+  stop-color: var(--c-bg);
+  stop-opacity: 0;
+}
+.bac-vig-1 {
+  stop-color: var(--c-bg);
+  stop-opacity: 0.5;
+}
+
+/* anneaux de mise au point */
+.bac__focus-ring {
+  stroke: var(--c-accent);
+  stroke-width: 1;
+  opacity: 0.1;
+  stroke-dasharray: 2 7;
+}
+.bac__focus-ring--soft {
+  opacity: 0.07;
+  stroke-dasharray: 1 9;
+}
+
+/* réticule + graduations */
 .bac__reticle line,
 .bac__reticle circle {
   stroke: var(--c-accent);
   stroke-width: 1;
   opacity: 0.16;
 }
-.bac__rod rect {
-  fill: var(--c-warm);
+
+/* poussières (profondeur) */
+.bac__dust {
+  fill: var(--c-text-mute);
+  opacity: 0.18;
 }
+
+/* bacilles (corail, dégradé + reflet) */
+.bac-rod-a {
+  stop-color: var(--c-warm-soft);
+}
+.bac-rod-b {
+  stop-color: var(--c-warm);
+}
+.bac__rod-hi {
+  fill: var(--c-warm-soft);
+  opacity: 0.55;
+}
+
+/* oculaire (anneaux) */
 .bac__eyepiece {
   stroke: var(--c-line-strong);
   stroke-width: 3;
+}
+.bac__eyepiece-inner {
+  stroke: var(--c-accent);
+  stroke-width: 1;
+  opacity: 0.3;
 }
 .bac__eyepiece-glow {
   stroke: var(--c-accent);
@@ -227,14 +275,14 @@
   opacity: 0.22;
 }
 
-/* ---- Colonne 3 : lecture ---- */
+/* ---- Lecture ---- */
 .bac__readout {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   justify-self: start;
   width: 100%;
-  max-width: 340px;
+  max-width: 360px;
 }
 .bac__val {
   display: flex;
@@ -279,6 +327,14 @@
   border-radius: var(--r-sm);
   box-shadow: 0 0 0 1px var(--c-line);
 }
+.bac__name-tag {
+  margin-left: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-reg);
+  color: var(--c-text-mute);
+  letter-spacing: 0.03em;
+}
 .bac__year {
   margin: 0;
   font-family: var(--font-mono);
@@ -306,6 +362,73 @@
   color: var(--c-text-mute);
 }
 
+/* ---------------- Chips territoires (pleine largeur écran) ---------------- */
+.bac__countrybar {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  margin-top: var(--sp-8);
+  padding: var(--sp-8) clamp(var(--sp-6), 4vw, 72px) 0;
+  border-top: var(--border-hair) solid var(--c-line);
+  box-sizing: border-box;
+}
+.bac__countries {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+  width: 100%;
+}
+.bac__country {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--c-line-strong);
+    color: var(--c-text);
+  }
+  &.is-on {
+    border-color: var(--c-warm);
+    color: var(--c-text);
+    box-shadow: 0 0 0 1px var(--c-warm);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 2px;
+  }
+}
+.bac__country-flag {
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.bac__country-name {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  white-space: nowrap;
+}
+.bac__country-val {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--c-warm);
+}
+
 /* ---------------- Source ---------------- */
 .bac__source {
   margin: 0;
@@ -326,17 +449,25 @@
     gap: var(--sp-8);
     text-align: center;
   }
-  .bac__controls,
+  .bac__viz,
   .bac__readout {
     justify-self: center;
     max-width: 420px;
     align-items: center;
   }
-  .bac__chips {
-    justify-content: center;
-  }
   .bac__val,
   .bac__name {
     justify-content: center;
   }
+}
+
+/* ---- Mode intégré (track) ---- */
+.bac--embed {
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+.bac--embed .bac__inner {
+  gap: var(--sp-6);
 }

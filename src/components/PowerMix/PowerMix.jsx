@@ -57,7 +57,7 @@ function fillTpl(str, map) {
   );
 }
 
-export default function PowerMix() {
+export default function PowerMix({ embed = false, code = null } = {}) {
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.2 });
   const nf0 = useMemo(
@@ -180,6 +180,9 @@ export default function PowerMix() {
   }, [list, selected, byCode, extremes]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   // Segments du donut pour la sélection.
   const segs = useMemo(() => {
@@ -267,7 +270,11 @@ export default function PowerMix() {
     : t("home.power.title");
 
   return (
-    <section className="power" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`power ${embed ? "power--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="power__inner container">
         <header className="power__head">
           <p className="eyebrow power__kicker">{t("home.power.kicker")}</p>

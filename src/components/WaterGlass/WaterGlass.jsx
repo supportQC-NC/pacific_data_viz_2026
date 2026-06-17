@@ -86,7 +86,7 @@ function fillTpl(str, map) {
   );
 }
 
-export default function WaterGlass() {
+export default function WaterGlass({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -161,11 +161,15 @@ export default function WaterGlass() {
   const [region, setRegion] = useState("all");
   const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
+    if (embed) return;
     if (!list.length) return;
     if (!view || (view.kind === "country" && !byCode[view.code])) {
       setView({ kind: "country", code: byCode.FJ ? "FJ" : list[0].code });
     }
-  }, [list, view, byCode]);
+  }, [list, view, byCode, embed]);
+  useEffect(() => {
+    if (embed && code) setView({ kind: "country", code });
+  }, [embed, code]);
 
   const selectCountry = (code) => setView({ kind: "country", code });
   const selectRegion = (key) => {
@@ -349,15 +353,17 @@ export default function WaterGlass() {
 
   return (
     <section
-      className="waterglass"
+      className={`waterglass ${embed ? "waterglass--embed" : ""}`}
       ref={ref}
       data-inview={inView ? "true" : "false"}
     >
       <div className="waterglass__inner container">
-        <header className="waterglass__head">
-          <h2 className="waterglass__title">{t("home.water.title")}</h2>
-          <p className="waterglass__lead">{t("home.water.lead")}</p>
-        </header>
+        {!embed && (
+          <header className="waterglass__head">
+            <h2 className="waterglass__title">{t("home.water.title")}</h2>
+            <p className="waterglass__lead">{t("home.water.lead")}</p>
+          </header>
+        )}
 
         {loading && (
           <p className="waterglass__state">{t("home.water.loading")}</p>
@@ -370,6 +376,7 @@ export default function WaterGlass() {
 
         {ready && sel && (
           <>
+          {!embed && (
           <div className="waterglass__toolbar">
             <span className="waterglass__field-label">
               {t("home.water.select_label")}
@@ -409,8 +416,9 @@ export default function WaterGlass() {
               </div>
             )}
           </div>
+          )}
 
-          <div className="waterglass__stage">
+          <div className={`waterglass__stage ${embed ? "waterglass__stage--embed" : ""}`}>
 
             {/* Colonne 2 — le verre */}
             <figure className="waterglass__viz">
@@ -580,6 +588,7 @@ export default function WaterGlass() {
             </div>
           </div>
 
+          {!embed && (
           <div className="waterglass__countrybar">
             <div className="waterglass__countries">
               {visibleList.map((o) => (
@@ -608,10 +617,13 @@ export default function WaterGlass() {
               ))}
             </div>
           </div>
+          )}
           </>
         )}
 
-        <p className="waterglass__source">{t("home.water.source")}</p>
+        {!embed && (
+          <p className="waterglass__source">{t("home.water.source")}</p>
+        )}
       </div>
     </section>
   );

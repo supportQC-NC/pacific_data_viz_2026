@@ -84,7 +84,7 @@ function fillTpl(str, map) {
 }
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-export default function BiodiversityReef() {
+export default function BiodiversityReef({ embed = false, code = null } = {}) {
   const dispatch = useDispatch();
   const { t, lang } = useLang();
   const [ref, inView, visible] = useInView({ threshold: 0.25 });
@@ -179,6 +179,9 @@ export default function BiodiversityReef() {
   }, [list, selected, byCode]);
 
   const sel = selected ? byCode[selected] : null;
+  useEffect(() => {
+    if (embed && code) setSelected(code);
+  }, [embed, code]);
 
   /* ----------- Animation : vitalité du récif ----------- */
   const svgRef = useRef(null);
@@ -305,7 +308,11 @@ export default function BiodiversityReef() {
     : t("home.biodiv.title");
 
   return (
-    <section className="reef" ref={ref} data-inview={inView ? "true" : "false"}>
+    <section
+      className={`reef ${embed ? "reef--embed" : ""}`}
+      ref={ref}
+      data-inview={inView ? "true" : "false"}
+    >
       <div className="reef__inner container">
         <header className="reef__head">
           <p className="eyebrow reef__kicker">{t("home.biodiv.kicker")}</p>
