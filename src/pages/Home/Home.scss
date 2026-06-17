@@ -652,3 +652,36 @@
     min-height: auto;
   }
 }
+
+/* ============================================================
+   Galerie de signatures : chaque section occupe tout l'écran.
+   min-height (pas height) → le contenu plus haut peut grandir.
+   ============================================================ */
+.home__signatures > section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .home__signatures > section {
+    min-height: auto;
+  }
+}
+
+/* ============================================================
+   Immersion Lenis : les grandes valeurs (chiffres-clés) s'inclinent
+   légèrement au scroll rapide, via la vélocité globale --scroll-vel
+   exposée par <SmoothScroll>. On cible la VALEUR (pas la carte) pour
+   ne pas interférer avec la révélation au défilement.
+   ============================================================ */
+.home .keyfig__value {
+  display: inline-block;
+  transform: skewY(var(--scroll-vel, 0deg));
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home .keyfig__value {
+    transform: none;
+  }
+}

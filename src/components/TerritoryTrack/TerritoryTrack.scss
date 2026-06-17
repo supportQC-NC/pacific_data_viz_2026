@@ -14,6 +14,7 @@
 }
 
 .ttrack__viewport {
+  position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -364,12 +365,12 @@
 .ttrack__panel-body > section {
   position: relative;
   z-index: 1;
-  transform: scale(1.12);
+  transform: scale(1.12) scaleY(var(--vstretch, 1));
   transform-origin: center center;
 }
 @media (max-width: 1400px) {
   .ttrack__panel-body > section {
-    transform: scale(1.04);
+    transform: scale(1.04) scaleY(var(--vstretch, 1));
   }
 }
 
@@ -535,4 +536,54 @@
     transform: none !important;
     transition: none;
   }
+}
+
+
+/* ============================================================
+   Barre de progression 01 -> 17 : se remplit pendant le défilement
+   horizontal (pilotée par onUpdate de ScrollTrigger).
+   ============================================================ */
+.ttrack__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) clamp(var(--sp-6), 5vw, 72px) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+}
+.ttrack__progress-idx {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.ttrack__progress-count {
+  color: var(--c-accent);
+  font-size: var(--fs-sm);
+}
+.ttrack__progress-bar {
+  flex: 1 1 auto;
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  overflow: hidden;
+}
+.ttrack__progress-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    var(--c-accent),
+    var(--c-accent-deep)
+  );
 }

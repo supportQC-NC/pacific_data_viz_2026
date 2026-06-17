@@ -128,6 +128,8 @@ export default function TerritoryTrack() {
   const trackRef = useRef(null);
   const panelsRef = useRef([]);
   const chipsRef = useRef(null);
+  const fillRef = useRef(null);
+  const countRef = useRef(null);
   const [reveal, setReveal] = useState(false);
 
   const scrollChips = (dir) => {
@@ -160,6 +162,20 @@ export default function TerritoryTrack() {
           scrub: 1,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            if (fillRef.current) {
+              fillRef.current.style.transform = `scaleX(${p})`;
+            }
+            if (countRef.current) {
+              const total = PANELS.length;
+              const n = Math.min(
+                total,
+                Math.max(1, Math.round(p * (total - 1)) + 1),
+              );
+              countRef.current.textContent = String(n).padStart(2, "0");
+            }
+          },
         },
       });
     }, sectionEl);
@@ -218,12 +234,16 @@ export default function TerritoryTrack() {
       if (Math.abs(skew) < 0.001) skew = 0;
       trackEl.style.setProperty("--vskew", skew.toFixed(3) + "deg");
       sectionEl.style.setProperty("--vshift", (skew * 5).toFixed(2) + "px");
+      // Étirement vertical subtil du visuel selon la vitesse (effet matière).
+      const stretch = 1 + clamp(Math.abs(v) * 0.0016, 0, 0.05);
+      sectionEl.style.setProperty("--vstretch", stretch.toFixed(3));
     };
     gsap.ticker.add(tick);
     return () => {
       gsap.ticker.remove(tick);
       trackEl.style.removeProperty("--vskew");
       sectionEl.style.removeProperty("--vshift");
+      sectionEl.style.removeProperty("--vstretch");
     };
   }, [ready, reduced]);
 
@@ -340,6 +360,23 @@ export default function TerritoryTrack() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {ready && (
+          <div className="ttrack__progress" aria-hidden="true">
+            <span className="ttrack__progress-idx">
+              <span className="ttrack__progress-count" ref={countRef}>
+                01
+              </span>
+              <span className="ttrack__progress-total">
+                {" / "}
+                {String(PANELS.length).padStart(2, "0")}
+              </span>
+            </span>
+            <span className="ttrack__progress-bar">
+              <span className="ttrack__progress-fill" ref={fillRef} />
+            </span>
           </div>
         )}
       </div>

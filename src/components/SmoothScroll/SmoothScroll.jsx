@@ -46,8 +46,21 @@ export default function SmoothScroll({ children }) {
     // Lenis -> ScrollTrigger : à chaque frame de scroll, on met à jour les triggers.
     lenis.on("scroll", ScrollTrigger.update);
 
-    // GSAP pilote la boucle rAF de Lenis (une seule horloge pour tout).
-    const onRaf = (time) => lenis.raf(time * 1000);
+    // GSAP pilote la boucle rAF de Lenis (une seule horloge pour tout) et,
+    // au passage, expose une vélocité LISSÉE en variable CSS globale
+    // (--scroll-vel, en degrés) : n'importe quel élément peut s'incliner
+    // au scroll rapide pour l'immersion (cartes, titres, visuels…).
+    const root = document.documentElement;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    let vskew = 0;
+    const onRaf = (time) => {
+      lenis.raf(time * 1000);
+      const v = typeof lenis.velocity === "number" ? lenis.velocity : 0;
+      const target = clamp(v * 0.05, -2, 2); // subtil, global
+      vskew += (target - vskew) * 0.08;
+      if (Math.abs(vskew) < 0.001) vskew = 0;
+      root.style.setProperty("--scroll-vel", vskew.toFixed(3) + "deg");
+    };
     gsap.ticker.add(onRaf);
     gsap.ticker.lagSmoothing(0);
 
@@ -56,6 +69,7 @@ export default function SmoothScroll({ children }) {
 
     return () => {
       gsap.ticker.remove(onRaf);
+      root.style.removeProperty("--scroll-vel");
       lenis.destroy();
       if (lenisInstance === lenis) lenisInstance = null;
     };
