@@ -1,0 +1,361 @@
+/* src/components/WaterScroll/WaterScroll.scss
+   ============================================================
+   Chapitre « Accès à l'eau » — scroll horizontal. Murs de verres par
+   sous-région + évolution TrendLines. Fond neutre. 100 % tokens.
+   ============================================================ */
+
+.wscroll {
+  position: relative;
+  background: radial-gradient(120% 90% at 60% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.wscroll--state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+.wscroll__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+/* ---------- Zone pin ---------- */
+.wscroll__pin {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 clamp(var(--sp-8), 5vw, 96px);
+  box-sizing: border-box;
+}
+.wscroll__chapter {
+  position: absolute;
+  top: clamp(var(--sp-8), 5vh, var(--sp-16));
+  left: clamp(var(--sp-8), 5vw, 96px);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+/* ---------- Grand verre (persistant sur 0/1) ---------- */
+.wscroll__glass {
+  flex: 0 0 clamp(190px, 26%, 300px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-right: clamp(var(--sp-6), 4vw, var(--sp-14));
+  transition: flex-basis 0.6s var(--ease-out), opacity 0.5s var(--ease-out),
+    margin 0.6s var(--ease-out);
+  overflow: hidden;
+}
+.wscroll__glass.is-hidden {
+  flex-basis: 0;
+  width: 0;
+  margin-right: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.wscroll__glass-wrap {
+  width: clamp(160px, 19vw, 230px);
+}
+.wscroll__glass-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.wscroll__glass-flag {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.wscroll__glass-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+.wscroll__glass-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--c-accent);
+}
+
+/* ---------- Stage + panneaux ---------- */
+.wscroll__stage {
+  position: relative;
+  flex: 1 1 auto;
+  align-self: stretch;
+  overflow: hidden;
+}
+.wscroll__panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform, opacity;
+}
+.wscroll__pane {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.wscroll__pane--wide {
+  max-width: 1120px;
+}
+.wscroll__kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.wscroll__kicker--warm {
+  color: var(--c-warm);
+}
+.wscroll__title {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+.wscroll__chart {
+  width: 100%;
+}
+.wscroll__trend {
+  width: 100%;
+}
+
+/* entrée chorégraphiée */
+.wscroll__pane .wscroll__kicker,
+.wscroll__pane .wscroll__title,
+.wscroll__pane .wscroll__chart {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.wscroll__pane.is-active .wscroll__kicker {
+  animation: wsRise 0.5s var(--ease-out) forwards;
+}
+.wscroll__pane.is-active .wscroll__title {
+  animation: wsRise 0.6s 0.08s var(--ease-out) forwards;
+}
+.wscroll__pane.is-active .wscroll__chart {
+  animation: wsRise 0.7s 0.16s var(--ease-out) forwards;
+}
+@keyframes wsRise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Mur de verres par sous-région ---------- */
+.rwall {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  width: 100%;
+}
+.rwall__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.rwall__region {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  border-left: 2px solid var(--c-line-strong);
+  padding-left: var(--sp-2);
+}
+.rwall__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-3);
+}
+
+/* ---------- Mini-verre ---------- */
+.mglass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 56px;
+  opacity: 0.6;
+  transition: opacity 0.35s var(--ease-out);
+}
+.mglass.is-emph {
+  opacity: 1;
+}
+.mglass__svg {
+  width: 40px;
+  height: auto;
+  overflow: visible;
+}
+.mglass__water {
+  fill: var(--c-accent);
+  opacity: 0.5;
+}
+.mglass.is-emph .mglass__water {
+  opacity: 0.9;
+}
+.mglass.is-emph.is-warm .mglass__water {
+  fill: var(--c-warm);
+}
+.mglass.is-emph:not(.is-warm) .mglass__svg {
+  filter: drop-shadow(0 0 9px var(--c-accent-glow));
+}
+.mglass.is-emph.is-warm .mglass__svg {
+  filter: drop-shadow(0 0 9px var(--c-warm-soft));
+}
+.mglass__body {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+.mglass.is-emph .mglass__body {
+  stroke: var(--c-text-soft);
+}
+.mglass__name {
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--c-text-mute);
+  text-align: center;
+}
+.mglass.is-emph .mglass__name {
+  color: var(--c-text);
+}
+.mglass__val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  color: var(--c-text-soft);
+}
+.mglass.is-emph.is-warm .mglass__val {
+  color: var(--c-warm);
+}
+.mglass.is-emph:not(.is-warm) .mglass__val {
+  color: var(--c-accent);
+}
+
+/* ---------- HUD ---------- */
+.wscroll__hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(var(--sp-4), 3vh, var(--sp-10));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  pointer-events: none;
+}
+.wscroll__caption {
+  margin: 0;
+  max-width: 600px;
+  text-align: center;
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  animation: wsCap 0.5s var(--ease-out);
+}
+@keyframes wsCap {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.wscroll__dots {
+  display: flex;
+  gap: var(--sp-2);
+}
+.wscroll__dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-line-strong);
+  transition: background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.wscroll__dots span.is-on {
+  background: var(--c-accent);
+  transform: scale(1.35);
+}
+.wscroll__hint {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  animation: wsHint 1.8s ease-in-out infinite;
+}
+@keyframes wsHint {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ---------- Source ---------- */
+.wscroll__source {
+  margin: 0;
+  padding: var(--sp-6) var(--sp-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+}
+
+/* ---------- Repli vertical (mobile / reduced-motion) ---------- */
+.wscroll--simple {
+  padding: var(--sp-16) clamp(var(--sp-6), 6vw, var(--sp-16));
+}
+.wscroll--simple .wscroll__chapter {
+  position: static;
+  margin-bottom: var(--sp-8);
+}
+.wscroll--simple .wscroll__glass {
+  margin: 0 auto var(--sp-12);
+}
+.wscroll__simple-panel {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--sp-12) 0;
+  border-top: var(--border-hair) solid var(--c-line);
+}
+.wscroll__simple-cap {
+  margin: var(--sp-6) 0 0;
+  text-align: center;
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wscroll__pane .wscroll__kicker,
+  .wscroll__pane .wscroll__title,
+  .wscroll__pane .wscroll__chart {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

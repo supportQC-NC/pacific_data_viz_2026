@@ -1,0 +1,127 @@
+/* src/components/ScrollStory/ScrollStory.scss
+   ============================================================
+   Scrollytelling horizontal : viewport pin 100vh + piste flex + HUD.
+   Repli vertical (.story--simple) sur petit écran / reduced-motion. Tokens.
+   ============================================================ */
+
+.story {
+  position: relative;
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.story__viewport {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.story__track {
+  display: flex;
+  height: 100%;
+  width: max-content;
+  will-change: transform;
+}
+
+.story__panel {
+  flex: 0 0 100vw;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(var(--sp-12), 6vh, var(--sp-20)) clamp(var(--sp-8), 6vw, 120px);
+  box-sizing: border-box;
+}
+
+/* ---- HUD (phrase + points) ---- */
+.story__hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(var(--sp-6), 4vh, var(--sp-12));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-8);
+  pointer-events: none;
+}
+.story__caption {
+  margin: 0;
+  max-width: 720px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+  animation: storyCaptionIn 0.5s var(--ease-out);
+}
+@keyframes storyCaptionIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.story__dots {
+  display: flex;
+  gap: var(--sp-2);
+}
+.story__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-line-strong);
+  transition: background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.story__dot.is-on {
+  background: var(--c-accent);
+  transform: scale(1.35);
+}
+.story__hint {
+  margin: var(--sp-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  animation: storyHint 1.8s ease-in-out infinite;
+}
+@keyframes storyHint {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- Repli vertical (mobile / reduced-motion) ---- */
+.story--simple {
+  padding: var(--sp-12) 0;
+}
+.story__simple-panel {
+  padding: var(--sp-12) clamp(var(--sp-6), 6vw, var(--sp-16));
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+.story__simple-panel:last-child {
+  border-bottom: 0;
+}
+.story__simple-content {
+  display: flex;
+  justify-content: center;
+}
+.story__simple-caption {
+  margin: var(--sp-6) auto 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}

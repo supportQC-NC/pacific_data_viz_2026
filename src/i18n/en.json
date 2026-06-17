@@ -178,7 +178,7 @@
     },
     "water": {
       "kicker": "Access to water",
-      "title": "Not everyone has a safe glass of water",
+      "title": "Safe drinking water, territory by territory",
       "lead": "Pick a territory: the glass fills to the share of its population with safely managed drinking water.",
       "select_label": "Territory",
       "highest": "Best served",
@@ -191,7 +191,13 @@
       "aria": "{area}: {n}% of the population with safely managed drinking water ({year}).",
       "loading": "Loading water-access data…",
       "unavailable": "Water-access data is temporarily unavailable.",
-      "source": "Source: WHO/UNICEF (JMP) · SDG 6.1.1 · via Pacific Data Hub"
+      "source": "Source: WHO/UNICEF (JMP) · SDG 6.1.1 · via Pacific Data Hub",
+      "region_all": "All",
+      "region_melanesia": "Melanesia",
+      "region_polynesia": "Polynesia",
+      "region_micronesia": "Micronesia",
+      "region_pacific": "Pacific",
+      "region_avg": "average · {n} territories"
     },
     "energy": {
       "kicker": "Clean energy",
@@ -503,6 +509,31 @@
       "loading": "Loading electricity mix…",
       "unavailable": "Electricity generation data is temporarily unavailable.",
       "source": "Source: IRENA · via Pacific Data Hub"
+    },
+    "wscroll": {
+      "kicker": "Access to safe water",
+      "unit": " %",
+      "k_low": "The least",
+      "t_low": "Where safe water is scarcest",
+      "k_high": "The most",
+      "t_high": "Where access is near-universal",
+      "k_evo": "Over time",
+      "t_evo": "Each territory across the years",
+      "cap_low": "Each glass = a territory, filled to its access level, grouped by sub-region. In coral, those where safe water is scarcest.",
+      "cap_high": "The same territories: in cyan, those where almost everyone has a safe water source.",
+      "cap_evo": "And over time: each territory follows its own path (hover a line).",
+      "axis_year": "Year",
+      "hint": "Scroll →",
+      "loading": "Loading water access…",
+      "unavailable": "Water access data is temporarily unavailable.",
+      "source": "Source: access to safe drinking water — via Pacific Data Hub",
+      "unit_tb": " /100k",
+      "k_tb": "Health",
+      "t_tb": "Tuberculosis, per 100,000 people",
+      "cap_tb": "Where safe water is scarce, tuberculosis often weighs more — an echo between the two, not proof of cause.",
+      "region_melanesia": "Melanesia",
+      "region_polynesia": "Polynesia",
+      "region_micronesia": "Micronesia"
     }
   },
   "footer": {

@@ -1,0 +1,185 @@
+/* src/components/WaterHealthStory/WaterHealthStory.scss
+   ============================================================
+   Chapitre « Eau & santé » : panneaux, graphes SVG (barres + nuage),
+   filtres qui s'allument au palier actif. 100 % tokens, light/dark.
+   ============================================================ */
+
+.ws {
+  position: relative;
+}
+
+/* états chargement / indispo */
+.ws--state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
+}
+.ws__state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+/* ---------- Panneau ---------- */
+.ws__panel {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.ws__kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.ws__kicker--warm {
+  color: var(--c-warm);
+}
+.ws__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+.ws__chart {
+  width: 100%;
+  margin-top: var(--sp-2);
+}
+
+/* ---------- Barres ---------- */
+.ws__bars {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ws__bar {
+  fill: var(--c-accent);
+  opacity: 0.55;
+  transition: fill var(--t-fast) var(--ease-out),
+    opacity var(--t-fast) var(--ease-out);
+}
+.ws__bars.is-on .ws__bar {
+  opacity: 0.32;
+}
+.ws__bars.is-on .ws__bar--hi {
+  fill: var(--c-accent);
+  opacity: 1;
+}
+/* surlignage en corail (tuberculose) */
+.ws__bars--warm.is-on .ws__bar--hi {
+  fill: var(--c-warm);
+}
+.ws__bar-label {
+  fill: var(--c-text-soft);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-anchor: end;
+}
+.ws__bar-val {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------- Nuage de points ---------- */
+.ws__scatter {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 52vh;
+}
+.ws__axis {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.2;
+}
+.ws__tick {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: middle;
+}
+.ws__tick--y {
+  text-anchor: end;
+}
+.ws__axis-title {
+  fill: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-anchor: middle;
+}
+.ws__pt {
+  fill: var(--c-accent);
+  opacity: 0.7;
+  transition: fill var(--t-fast) var(--ease-out),
+    opacity var(--t-fast) var(--ease-out);
+}
+.ws__scatter.is-on .ws__pt {
+  opacity: 0.22;
+}
+.ws__scatter.is-on .ws__pt--hi {
+  fill: var(--c-warm);
+  opacity: 1;
+}
+
+/* ---------- Filtre (chip qui s'allume) ---------- */
+.ws__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute);
+  opacity: 0.5;
+  transition: opacity var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+.ws__filter.is-on {
+  opacity: 1;
+  color: var(--c-text);
+  border-color: var(--c-accent);
+}
+.ws__filter--warm.is-on {
+  border-color: var(--c-warm);
+}
+.ws__filter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-line-strong);
+  transition: background var(--t-fast) var(--ease-out);
+}
+.ws__filter.is-on .ws__filter-dot {
+  background: var(--c-accent);
+}
+.ws__filter--warm.is-on .ws__filter-dot {
+  background: var(--c-warm);
+}
+
+/* ---------- Source ---------- */
+.ws__source {
+  margin: 0;
+  padding: var(--sp-6) var(--sp-8);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+  text-align: center;
+  border-bottom: var(--border-hair) solid var(--c-line);
+  background: var(--c-bg);
+}

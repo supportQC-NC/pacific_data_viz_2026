@@ -178,7 +178,7 @@
     },
     "water": {
       "kicker": "Accès à l'eau",
-      "title": "Tout le monde n'a pas un verre d'eau sûr",
+      "title": "L'eau potable sûre, territoire par territoire",
       "lead": "Choisissez un territoire : le verre se remplit jusqu'à la part de sa population disposant d'une eau potable gérée en toute sécurité.",
       "select_label": "Territoire",
       "highest": "Le mieux desservi",
@@ -191,7 +191,13 @@
       "aria": "{area} : {n} % de la population avec une eau potable gérée en sécurité ({year}).",
       "loading": "Chargement des données d'accès à l'eau…",
       "unavailable": "Donnée d'accès à l'eau momentanément indisponible.",
-      "source": "Source : OMS/UNICEF (JMP) · ODD 6.1.1 · via Pacific Data Hub"
+      "source": "Source : OMS/UNICEF (JMP) · ODD 6.1.1 · via Pacific Data Hub",
+      "region_all": "Toutes",
+      "region_melanesia": "Mélanésie",
+      "region_polynesia": "Polynésie",
+      "region_micronesia": "Micronésie",
+      "region_pacific": "Pacifique",
+      "region_avg": "moyenne · {n} territoires"
     },
     "energy": {
       "kicker": "Énergie propre",
@@ -503,6 +509,31 @@
       "loading": "Chargement du mix électrique…",
       "unavailable": "Donnée de production électrique momentanément indisponible.",
       "source": "Source : IRENA · via Pacific Data Hub"
+    },
+    "wscroll": {
+      "kicker": "Accès à l'eau sûre",
+      "unit": " %",
+      "k_low": "Le moins",
+      "t_low": "Là où l'eau sûre manque le plus",
+      "k_high": "Le plus",
+      "t_high": "Là où l'accès est presque total",
+      "k_evo": "Évolution",
+      "t_evo": "Chaque territoire dans le temps",
+      "cap_low": "Chaque verre = un territoire, rempli à son niveau d'accès, regroupé par sous-région. En corail, ceux où l'eau sûre manque le plus.",
+      "cap_high": "Les mêmes territoires : en cyan, ceux où presque toute la population dispose d'une source d'eau sûre.",
+      "cap_evo": "Et dans la durée : chaque territoire suit sa propre trajectoire (survolez une courbe).",
+      "axis_year": "Année",
+      "hint": "Défilez →",
+      "loading": "Chargement de l'accès à l'eau…",
+      "unavailable": "Donnée d'accès à l'eau momentanément indisponible.",
+      "source": "Source : accès à une eau potable sûre — via Pacific Data Hub",
+      "unit_tb": " /100k",
+      "k_tb": "La santé",
+      "t_tb": "La tuberculose, pour 100 000 habitants",
+      "cap_tb": "Là où l'eau sûre manque, la tuberculose pèse souvent plus lourd — un écho entre les deux, pas une preuve de cause.",
+      "region_melanesia": "Mélanésie",
+      "region_polynesia": "Polynésie",
+      "region_micronesia": "Micronésie"
     }
   },
   "footer": {

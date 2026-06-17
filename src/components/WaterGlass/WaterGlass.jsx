@@ -37,6 +37,19 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./WaterGlass.scss";
 
+const SUBREGIONS = {
+  melanesia: ["FJ", "PG", "SB", "VU", "NC"],
+  polynesia: ["PF", "WS", "TO", "TV", "CK", "NU", "WF", "TK", "AS", "PN"],
+  micronesia: ["FM", "GU", "MP", "MH", "NR", "PW", "KI"],
+};
+const REGION_OF = {};
+Object.entries(SUBREGIONS).forEach(([r, codes]) =>
+  codes.forEach((c) => {
+    REGION_OF[c] = r;
+  }),
+);
+const REGION_TABS = ["all", "melanesia", "polynesia", "micronesia"];
+
 /* ---- Géométrie du verre (repère SVG, viewBox 0 0 240 300) ---- */
 const TOP = 54; // y du bord intérieur haut (eau pleine)
 const BOT = 260; // y du fond intérieur (eau vide)
@@ -98,13 +111,26 @@ export default function WaterGlass() {
     return Object.entries(water.data.byArea)
       .filter(([code]) => isPict(code))
       .map(([code, serie]) => {
-        const pt = lastFinite(serie);
-        if (!pt) return null;
+        // Valeur À L'ÉCHELLE DU TERRITOIRE : dernière année disponible, médiane
+        // des valeurs de cette année (robuste si la source détaille
+        // urbain/rural/total — la médiane ≈ le total du territoire).
+        const byYear = {};
+        serie.forEach((p) => {
+          if (Number.isFinite(p.value))
+            (byYear[p.year] = byYear[p.year] || []).push(p.value);
+        });
+        const yrs = Object.keys(byYear)
+          .map(Number)
+          .sort((a, b) => a - b);
+        if (!yrs.length) return null;
+        const year = yrs[yrs.length - 1];
+        const v = median(byYear[year]);
+        if (!Number.isFinite(v)) return null;
         return {
           code,
           name: pictName(code, lang),
-          value: Math.max(0, Math.min(100, pt.value)),
-          year: pt.year,
+          value: Math.max(0, Math.min(100, v)),
+          year,
         };
       })
       .filter(Boolean)
@@ -131,17 +157,58 @@ export default function WaterGlass() {
     return { best, least };
   }, [list]);
 
-  /* Sélection — défaut : Fidji si présent, sinon le premier disponible. */
-  const [selected, setSelected] = useState(null);
+  /* Sélection : un PAYS ou une SOUS-RÉGION (agrégat de tous ses pays). */
+  const [region, setRegion] = useState("all");
+  const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
     if (!list.length) return;
-    if (!selected || !byCode[selected]) {
-      setSelected(byCode.FJ ? "FJ" : list[0].code);
+    if (!view || (view.kind === "country" && !byCode[view.code])) {
+      setView({ kind: "country", code: byCode.FJ ? "FJ" : list[0].code });
     }
-  }, [list, selected, byCode]);
+  }, [list, view, byCode]);
 
-  const sel = selected ? byCode[selected] : null;
+  const selectCountry = (code) => setView({ kind: "country", code });
+  const selectRegion = (key) => {
+    setRegion(key);
+    setView({ kind: "region", key });
+  };
+
+  const sel = useMemo(() => {
+    if (!view) return null;
+    if (view.kind === "country") {
+      const o = byCode[view.code];
+      return o ? { ...o, isRegion: false } : null;
+    }
+    const members =
+      view.key === "all"
+        ? list
+        : list.filter((o) => REGION_OF[o.code] === view.key);
+    if (!members.length) return null;
+    const avg = members.reduce((acc, o) => acc + o.value, 0) / members.length;
+    const year = Math.max(...members.map((o) => o.year));
+    const name =
+      view.key === "all"
+        ? t("home.water.region_pacific")
+        : t(`home.water.region_${view.key}`);
+    return {
+      code: null,
+      name,
+      value: avg,
+      year,
+      isRegion: true,
+      count: members.length,
+    };
+  }, [view, byCode, list, t]);
   const selPct = sel ? sel.value / 100 : 0;
+
+  /* Liste filtrée par sous-région pour les chips. */
+  const visibleList = useMemo(
+    () =>
+      region === "all"
+        ? list
+        : list.filter((o) => REGION_OF[o.code] === region),
+    [list, region],
+  );
 
   /* ----------- Animation : eau vivante (vague + bulles + déficit) ----------- */
   const waterRef = useRef(null);
@@ -288,7 +355,6 @@ export default function WaterGlass() {
     >
       <div className="waterglass__inner container">
         <header className="waterglass__head">
-          <p className="eyebrow waterglass__kicker">{t("home.water.kicker")}</p>
           <h2 className="waterglass__title">{t("home.water.title")}</h2>
           <p className="waterglass__lead">{t("home.water.lead")}</p>
         </header>
@@ -303,59 +369,48 @@ export default function WaterGlass() {
         )}
 
         {ready && sel && (
-          <div className="waterglass__stage">
-            {/* Colonne 1 — contrôles */}
-            <div className="waterglass__controls">
-              <label className="waterglass__field">
-                <span className="waterglass__field-label">
-                  {t("home.water.select_label")}
-                </span>
-                <span className="waterglass__select">
-                  <img
-                    className="waterglass__flag"
-                    src={flagUrl(sel.code)}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <select
-                    className="waterglass__native"
-                    value={selected}
-                    onChange={(e) => setSelected(e.target.value)}
-                    aria-label={t("home.water.select_label")}
-                  >
-                    {list.map((o) => (
-                      <option key={o.code} value={o.code}>
-                        {o.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="waterglass__chevron" aria-hidden="true">
-                    ▾
-                  </span>
-                </span>
-              </label>
-
-              {extremes && (
-                <div className="waterglass__chips">
-                  <button
-                    type="button"
-                    className="waterglass__chip"
-                    onClick={() => setSelected(extremes.best.code)}
-                  >
-                    {t("home.water.highest")}
-                    <em>{Math.round(extremes.best.value)}%</em>
-                  </button>
-                  <button
-                    type="button"
-                    className="waterglass__chip"
-                    onClick={() => setSelected(extremes.least.code)}
-                  >
-                    {t("home.water.lowest")}
-                    <em>{Math.round(extremes.least.value)}%</em>
-                  </button>
-                </div>
-              )}
+          <>
+          <div className="waterglass__toolbar">
+            <span className="waterglass__field-label">
+              {t("home.water.select_label")}
+            </span>
+            <div className="waterglass__regions" role="tablist">
+              {REGION_TABS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  role="tab"
+                  aria-selected={region === r}
+                  className={`waterglass__region ${region === r ? "is-on" : ""}`}
+                  onClick={() => selectRegion(r)}
+                >
+                  {t(`home.water.region_${r}`)}
+                </button>
+              ))}
             </div>
+            {extremes && (
+              <div className="waterglass__chips">
+                <button
+                  type="button"
+                  className="waterglass__chip waterglass__chip--best"
+                  onClick={() => selectCountry(extremes.best.code)}
+                >
+                  {t("home.water.highest")}
+                  <em>{Math.round(extremes.best.value)}%</em>
+                </button>
+                <button
+                  type="button"
+                  className="waterglass__chip waterglass__chip--least"
+                  onClick={() => selectCountry(extremes.least.code)}
+                >
+                  {t("home.water.lowest")}
+                  <em>{Math.round(extremes.least.value)}%</em>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="waterglass__stage">
 
             {/* Colonne 2 — le verre */}
             <figure className="waterglass__viz">
@@ -488,13 +543,20 @@ export default function WaterGlass() {
                 <span className="waterglass__pct-unit">%</span>
               </p>
               <p className="waterglass__name">
-                <img
-                  className="waterglass__name-flag"
-                  src={flagUrl(sel.code)}
-                  alt=""
-                  aria-hidden="true"
-                />
+                {sel.code && (
+                  <img
+                    className="waterglass__name-flag"
+                    src={flagUrl(sel.code)}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                )}
                 {sel.name}
+                {sel.isRegion && (
+                  <span className="waterglass__name-tag">
+                    {fillTpl(t("home.water.region_avg"), { n: sel.count })}
+                  </span>
+                )}
               </p>
               <p className="waterglass__year">
                 {fillTpl(t("home.water.year_label"), { year: sel.year })}
@@ -517,6 +579,36 @@ export default function WaterGlass() {
               )}
             </div>
           </div>
+
+          <div className="waterglass__countrybar">
+            <div className="waterglass__countries">
+              {visibleList.map((o) => (
+                <button
+                  key={o.code}
+                  type="button"
+                  className={`waterglass__country ${
+                    view && view.kind === "country" && view.code === o.code
+                      ? "is-on"
+                      : ""
+                  }`}
+                  aria-pressed={
+                    view && view.kind === "country" && view.code === o.code
+                  }
+                  onClick={() => selectCountry(o.code)}
+                >
+                  <img
+                    className="waterglass__country-flag"
+                    src={flagUrl(o.code)}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="waterglass__country-name">{o.name}</span>
+                  <em className="waterglass__country-val">{Math.round(o.value)}%</em>
+                </button>
+              ))}
+            </div>
+          </div>
+          </>
         )}
 
         <p className="waterglass__source">{t("home.water.source")}</p>

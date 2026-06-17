@@ -1,0 +1,93 @@
+/* src/components/GlassVisual/GlassVisual.scss
+   ============================================================
+   Styles du verre — repris à l'identique du verre d'origine (waterglass__*).
+   100 % tokens, light/dark.
+   ============================================================ */
+
+.glassviz {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 24px 48px var(--c-accent-glow));
+}
+
+/* Cavité (verre vide) */
+.glassviz__cavity {
+  fill: var(--c-surface);
+  fill-opacity: 0.22;
+}
+
+/* Repères gravés */
+.glassviz__tick {
+  stroke: var(--c-line-strong);
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+
+.glassviz__water {
+  transition: none;
+}
+
+/* Méniscus */
+.glassviz__surface {
+  stroke: var(--c-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.95;
+}
+
+.glassviz__bubble {
+  fill: var(--c-accent);
+}
+
+/* Médiane */
+.glassviz__median {
+  stroke: var(--c-text-mute);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 5;
+  opacity: 0.7;
+}
+
+/* Déficit */
+.glassviz__deficit-num {
+  fill: var(--c-warm);
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: 34px;
+  letter-spacing: var(--ls-tight);
+}
+.glassviz__deficit-cap {
+  fill: var(--c-warm-soft);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Contour + ouverture */
+.glassviz__glass {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 2.6;
+}
+.glassviz__rim {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 2.6;
+  opacity: 0.7;
+}
+
+/* Dégradé de profondeur */
+.glassviz__stop-top {
+  stop-color: var(--c-accent);
+  stop-opacity: 0.95;
+}
+.glassviz__stop-mid {
+  stop-color: var(--c-accent-deep);
+  stop-opacity: 0.92;
+}
+.glassviz__stop-bot {
+  stop-color: var(--c-accent-deep);
+  stop-opacity: 0.99;
+}

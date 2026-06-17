@@ -7,7 +7,7 @@
 
 .waterglass {
   position: relative;
-  padding: var(--sp-24) 0;
+  padding: var(--sp-20) 0 var(--sp-20);
   border-top: var(--border-hair) solid var(--c-line);
   border-bottom: var(--border-hair) solid var(--c-line);
   background: radial-gradient(120% 80% at 50% 0%, var(--c-bg-2) 0%, var(--c-bg) 60%);
@@ -22,7 +22,8 @@
 
 /* ---------------- En-tête ---------------- */
 .waterglass__head {
-  max-width: var(--maxw-text);
+  max-width: none;
+  width: 100%;
 }
 
 .waterglass__kicker {
@@ -33,18 +34,20 @@
 .waterglass__title {
   font-family: var(--font-display);
   font-weight: var(--fw-light);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
   line-height: var(--lh-tight);
   letter-spacing: var(--ls-tight);
   color: var(--c-text);
-  margin: 0 0 var(--sp-4);
+  margin: 0 0 var(--sp-3);
 }
 
 .waterglass__lead {
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
   line-height: var(--lh-base);
   color: var(--c-text-soft);
   margin: 0;
+  max-width: none;
+  width: 100%;
 }
 
 /* ---------------- États ---------------- */
@@ -61,8 +64,8 @@
 /* ---------------- Scène (3 colonnes) ---------------- */
 .waterglass__stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: var(--sp-12);
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(var(--sp-8), 6vw, var(--sp-16));
   align-items: center;
 }
 
@@ -70,10 +73,10 @@
 .waterglass__controls {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
+  gap: var(--sp-5);
   justify-self: end;
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
 }
 
 .waterglass__field {
@@ -82,12 +85,125 @@
   gap: var(--sp-2);
 }
 
+.waterglass__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin: 0 auto var(--sp-10);
+}
+.waterglass__spacer {
+  width: 100%;
+}
 .waterglass__field-label {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: var(--ls-wide);
   text-transform: uppercase;
   color: var(--c-text-mute);
+}
+
+/* Filtres sous-région */
+.waterglass__regions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+.waterglass__region {
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+.waterglass__region:hover {
+  border-color: var(--c-accent);
+  color: var(--c-text);
+}
+.waterglass__region.is-on {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  color: var(--c-bg);
+  font-weight: var(--fw-bold);
+}
+.waterglass__region:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Chips pays (drapeau + nom + %) */
+.waterglass__countrybar {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  margin-top: var(--sp-8);
+  padding: var(--sp-8) clamp(var(--sp-6), 4vw, 72px) 0;
+  border-top: var(--border-hair) solid var(--c-line);
+  box-sizing: border-box;
+}
+.waterglass__countries {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+  width: 100%;
+}
+.waterglass__country {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+.waterglass__country:hover {
+  border-color: var(--c-accent);
+  color: var(--c-text);
+}
+.waterglass__country.is-on {
+  border-color: var(--c-accent);
+  color: var(--c-text);
+  box-shadow: 0 0 0 2px var(--c-accent-glow);
+}
+.waterglass__country:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+.waterglass__country-flag {
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 1px var(--c-line);
+  flex: 0 0 auto;
+}
+.waterglass__country-name {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  white-space: nowrap;
+}
+.waterglass__country-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  font-weight: var(--fw-bold);
+  color: var(--c-accent);
 }
 
 .waterglass__select {
@@ -193,12 +309,12 @@
 /* ---- Colonne 2 : le verre ---- */
 .waterglass__viz {
   margin: 0;
-  justify-self: center;
+  justify-self: end;
 }
 
 .waterglass__svg {
   display: block;
-  width: clamp(240px, 30vw, 360px);
+  width: clamp(220px, 26vw, 320px);
   height: auto;
   overflow: visible;
   filter: drop-shadow(0 26px 46px var(--c-accent-glow));
@@ -291,7 +407,7 @@
   gap: var(--sp-2);
   justify-self: start;
   width: 100%;
-  max-width: 340px;
+  max-width: 360px;
 }
 
 .waterglass__pct {
@@ -319,6 +435,14 @@
   opacity: 0.7;
 }
 
+.waterglass__name-tag {
+  margin-left: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-reg);
+  color: var(--c-text-mute);
+  letter-spacing: 0.03em;
+}
 .waterglass__name {
   display: flex;
   align-items: center;
@@ -355,6 +479,30 @@
 }
 .waterglass__note--gap {
   color: var(--c-text-mute);
+}
+
+.waterglass__chip--best {
+  border-color: var(--c-positive-soft);
+  color: var(--c-positive);
+}
+.waterglass__chip--best em {
+  color: var(--c-positive);
+}
+.waterglass__chip--best:hover {
+  border-color: var(--c-positive);
+  color: var(--c-positive);
+}
+
+.waterglass__chip--least {
+  border-color: var(--c-warm-soft);
+  color: var(--c-warm);
+}
+.waterglass__chip--least em {
+  color: var(--c-warm);
+}
+.waterglass__chip--least:hover {
+  border-color: var(--c-warm);
+  color: var(--c-warm);
 }
 
 .waterglass__legend {
