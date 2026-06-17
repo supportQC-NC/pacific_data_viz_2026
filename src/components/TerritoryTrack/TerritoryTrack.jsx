@@ -25,6 +25,7 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
 import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
+import { getLenis } from "../SmoothScroll/SmoothScroll";
 import WaterGlass from "../WaterGlass/WaterGlass";
 import TbBacilli from "../TbBacilli/TbBacilli";
 import EnergyCell from "../EnergyCell/EnergyCell";
@@ -198,6 +199,34 @@ export default function TerritoryTrack() {
     };
   }, [ready, reduced]);
 
+  /* ----- IMMERSION LENIS : la vitesse de scroll incline légèrement le
+     contenu (effet "speed = skew" des sites primés) et fait dériver
+     l'index fantôme (parallaxe de profondeur). Lissé, retour à 0 au repos. ----- */
+  useEffect(() => {
+    if (reduced) return undefined;
+    const sectionEl = sectionRef.current;
+    const trackEl = trackRef.current;
+    if (!sectionEl || !trackEl) return undefined;
+
+    let skew = 0;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const tick = () => {
+      const lenis = getLenis();
+      const v = lenis && typeof lenis.velocity === "number" ? lenis.velocity : 0;
+      const target = clamp(v * 0.18, -5, 5); // degrés
+      skew += (target - skew) * 0.08; // lissage
+      if (Math.abs(skew) < 0.001) skew = 0;
+      trackEl.style.setProperty("--vskew", skew.toFixed(3) + "deg");
+      sectionEl.style.setProperty("--vshift", (skew * 5).toFixed(2) + "px");
+    };
+    gsap.ticker.add(tick);
+    return () => {
+      gsap.ticker.remove(tick);
+      trackEl.style.removeProperty("--vskew");
+      sectionEl.style.removeProperty("--vshift");
+    };
+  }, [ready, reduced]);
+
   return (
     <section
       className={`ttrack ${reveal ? "ttrack--reveal" : ""}`}
@@ -245,7 +274,7 @@ export default function TerritoryTrack() {
               >
                 <span aria-hidden="true">‹</span>
               </button>
-              <div className="ttrack__chips" ref={chipsRef}>
+              <div className="ttrack__chips" ref={chipsRef} data-lenis-prevent>
                 {visibleList.map((o) => (
                   <button
                     key={o.code}

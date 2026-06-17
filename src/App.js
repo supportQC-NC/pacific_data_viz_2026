@@ -1,10 +1,11 @@
 // src/App.js
 // ============================================================
 // Racine applicative : providers thème + langue + parcours guidé,
-// header, ScrollToTop, routes. Chaque acte est enveloppé par <ActFlow>
-// au niveau de la route → barre de progression + navigation suivant/
-// précédent + intro plein écran sur TOUS les actes, sans toucher aux pages.
-// La page « À propos » (/a-propos) est hors parcours guidé.
+// smooth scroll global (Lenis), header, ScrollToTop, routes. Chaque
+// acte est enveloppé par <ActFlow> au niveau de la route → barre de
+// progression + navigation suivant/précédent + intro plein écran sur
+// TOUS les actes, sans toucher aux pages. La page « À propos »
+// (/a-propos) est hors parcours guidé.
 // ============================================================
 
 import React from 'react';
@@ -12,6 +13,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './store/context/themeContext';
 import { LangProvider } from './store/context/langContext';
 import { JourneyProvider } from './store/context/journeyContext';
+import SmoothScroll from './components/SmoothScroll/SmoothScroll';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import ActFlow from './components/ActFlow/ActFlow';
 import Header from './components/Header/Header';
@@ -72,7 +74,9 @@ export default function App() {
     <ThemeProvider>
       <LangProvider>
         <JourneyProvider>
-          <AppContent />
+          <SmoothScroll>
+            <AppContent />
+          </SmoothScroll>
         </JourneyProvider>
       </LangProvider>
     </ThemeProvider>

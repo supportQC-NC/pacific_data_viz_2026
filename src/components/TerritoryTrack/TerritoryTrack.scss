@@ -266,6 +266,8 @@
   opacity: 0.022;
   pointer-events: none;
   user-select: none;
+  transform: translateX(var(--vshift, 0px));
+  will-change: transform;
 }
 
 /* Grille éditoriale : en-tête EN HAUT, scène qui remplit le reste. */
@@ -279,6 +281,9 @@
   display: grid;
   grid-template-rows: auto 1fr;
   gap: clamp(var(--sp-4), 3vh, var(--sp-8));
+  transform: skewX(var(--vskew, 0deg));
+  transform-origin: center center;
+  will-change: transform;
 }
 
 /* En-tête : un court filet d'accent puis le titre, calés EN HAUT À GAUCHE.
