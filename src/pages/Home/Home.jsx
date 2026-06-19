@@ -17,7 +17,23 @@ import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
 import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
-import TerritoryTrack from "../../components/TerritoryTrack/TerritoryTrack";
+import WaterGlass from "../../components/WaterGlass/WaterGlass";
+import TbBacilli from "../../components/TbBacilli/TbBacilli";
+import EnergyCell from "../../components/EnergyCell/EnergyCell";
+import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
+import ForestCover from "../../components/ForestCover/ForestCover";
+import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
+import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
+import CattleThrive from "../../components/CattleThrive/CattleThrive";
+import SkyRain from "../../components/SkyRain/SkyRain";
+import SmokePlume from "../../components/SmokePlume/SmokePlume";
+import SeaWarm from "../../components/SeaWarm/SeaWarm";
+import StiltHouse from "../../components/StiltHouse/StiltHouse";
+import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
+import LossStack from "../../components/LossStack/LossStack";
+import TourismBeach from "../../components/TourismBeach/TourismBeach";
+import PopGrowth from "../../components/PopGrowth/PopGrowth";
+import PowerMix from "../../components/PowerMix/PowerMix";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -225,7 +241,25 @@ export default function Home() {
 
       <KeyFigures />
 
-      <TerritoryTrack />
+      <div className="home__signatures">
+        <WaterGlass />
+        <TbBacilli />
+        <EnergyCell />
+        <BiodiversityReef />
+        <ForestCover />
+        <CoastlineShift />
+        <PlantGrowth />
+        <CattleThrive />
+        <SkyRain />
+        <SmokePlume />
+        <SeaWarm />
+        <StiltHouse />
+        <CrowdAffected />
+        <LossStack />
+        <TourismBeach />
+        <PopGrowth />
+        <PowerMix />
+      </div>
 
       <HomeIntro />
 

@@ -30,10 +30,31 @@ export const DATASETS = {
   redList:           { flow: 'SPC,DF_SDG_15,3.0',         key: 'A.ER_RSK_LST.........', start: 1993 },
 };
 
-function buildUrl({ flow, key, start }) {
+function buildUrl({ key, start }, flow) {
   const qs = new URLSearchParams({ format: 'csv' });
   if (start) qs.set('startPeriod', String(start));
   return `${BASE}/${flow}/${key}?${qs.toString()}`;
+}
+
+// Repli de version : certains dataflows SDMX ne sont pas disponibles dans la
+// version codée en dur (ex. tuberculose DF_SDG_03,3.0 -> 404). On essaie
+// d'abord le flux configuré, puis la version "latest", sans version (= latest),
+// puis quelques versions courantes. N'est sollicité QUE si le 1er essai échoue.
+function flowCandidates(flow) {
+  const [agency, id] = flow.split(',');
+  const base = `${agency},${id}`;
+  const out = [flow];
+  [
+    base,
+    `${base},latest`,
+    `${base},1.0`,
+    `${base},2.0`,
+    `${base},3.0`,
+    `${base},4.0`,
+  ].forEach((f) => {
+    if (!out.includes(f)) out.push(f);
+  });
+  return out;
 }
 
 function parseSdmxCsv(text) {
@@ -95,13 +116,36 @@ export async function fetchDataset(id, { signal } = {}) {
   const onAbort = () => ctrl.abort();
   if (signal) signal.addEventListener('abort', onAbort);
   try {
-    const res = await fetch(buildUrl(def), { signal: ctrl.signal, headers: { Accept: 'text/csv' } });
-    if (!res.ok) throw new Error(`PDH ${res.status}`);
-    const text = await res.text();
-    const live = { id, source: 'live', ...normalize(parseSdmxCsv(text)) };
-    return live; // pas de repli : données réelles uniquement (sinon série vide / erreur honnête)
-  } catch (err) {
-    throw err;
+    const candidates = flowCandidates(def.flow);
+    let lastErr = null;
+    for (const flow of candidates) {
+      try {
+        const res = await fetch(buildUrl(def, flow), {
+          signal: ctrl.signal,
+          headers: { Accept: 'text/csv' },
+        });
+        if (!res.ok) {
+          lastErr = new Error(`PDH ${res.status} (${flow})`);
+          continue;
+        }
+        const text = await res.text();
+        const norm = normalize(parseSdmxCsv(text));
+        if (!norm.areas.length) {
+          lastErr = new Error(`PDH série vide (${flow})`);
+          continue;
+        }
+        if (flow !== def.flow) {
+          // eslint-disable-next-line no-console
+          console.info(`[pdhApi] ${id} : repli de version -> ${flow}`);
+        }
+        // Données réelles uniquement (jamais de chiffres fabriqués).
+        return { id, source: 'live', ...norm };
+      } catch (e) {
+        if (e && e.name === 'AbortError') throw e;
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error(`PDH échec : ${id}`);
   } finally {
     clearTimeout(timer);
     if (signal) signal.removeEventListener('abort', onAbort);

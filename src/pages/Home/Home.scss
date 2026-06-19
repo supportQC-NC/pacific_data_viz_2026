@@ -685,3 +685,17 @@
     transform: none;
   }
 }
+
+
+/* Galerie de signatures : chaque section occupe tout l'écran. */
+.home__signatures > section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .home__signatures > section {
+    min-height: auto;
+  }
+}

@@ -13,7 +13,6 @@ import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './store/context/themeContext';
 import { LangProvider } from './store/context/langContext';
 import { JourneyProvider } from './store/context/journeyContext';
-import SmoothScroll from './components/SmoothScroll/SmoothScroll';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import ActFlow from './components/ActFlow/ActFlow';
 import Header from './components/Header/Header';
@@ -74,9 +73,7 @@ export default function App() {
     <ThemeProvider>
       <LangProvider>
         <JourneyProvider>
-          <SmoothScroll>
-            <AppContent />
-          </SmoothScroll>
+          <AppContent />
         </JourneyProvider>
       </LangProvider>
     </ThemeProvider>
