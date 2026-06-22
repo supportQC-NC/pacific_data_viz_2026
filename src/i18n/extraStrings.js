@@ -24,13 +24,18 @@ const EXTRA_STRINGS = {
       },
       ocean: {
         eyebrow: "Chapitre 2",
-        title: "Un océan qui se réchauffe",
+        title: "La température monte, les côtes bougent",
         lede:
-          "L'eau se réchauffe et le trait de côte bouge. Île par île, on lit la chaleur de l'océan et le recul — ou l'avancée — des rivages.",
+          "La température grimpe et le trait de côte bouge. Île par île, on lit l'anomalie de température et le recul — ou l'avancée — des rivages.",
         problem:
           "Problème — le réchauffement est invisible, mais il redessine déjà les côtes. Réponse — pour chaque territoire, on lit l'anomalie de température (°C par rapport à la normale 1971–2000) et la variation du trait de côte (médiane en mètres par an, segments Landsat).",
         message:
-          "D'une île à l'autre, l'océan se réchauffe — et les côtes n'encaissent pas toutes de la même façon.",
+          "D'une île à l'autre, la température grimpe — et les côtes n'encaissent pas toutes de la même façon.",
+        map_title: "Le trait de côte, point par point",
+        map_lede:
+          "Zoomez : chaque point est un segment de littoral mesuré. En rouge il recule, en bleu il avance — survolez-les ou parcourez-les un à un.",
+        map_source:
+          "Source : Digital Earth Pacific (Landsat Coastlines, CC BY-NC 4.0) · Pacific Data Hub",
       },
     },
     vaa: {
@@ -46,9 +51,9 @@ const EXTRA_STRINGS = {
         question: "Île par île : l'eau coule-t-elle, la tuberculose recule-t-elle ?",
       },
       ocean: {
-        sea: "Réchauffement de l'océan",
+        sea: "Anomalie de température",
         coast: "Trait de côte",
-        question: "Île par île : de combien l'océan chauffe-t-il, et la côte tient-elle ?",
+        question: "Île par île : de combien la température grimpe-t-elle, et la côte tient-elle ?",
       },
     },
   },
@@ -71,13 +76,18 @@ const EXTRA_STRINGS = {
       },
       ocean: {
         eyebrow: "Chapter 2",
-        title: "A warming ocean",
+        title: "Temperatures rise, coasts shift",
         lede:
-          "The water is warming and the coastline is shifting. Island by island, we read the ocean's heat and the retreat — or advance — of the shores.",
+          "Temperatures are climbing and the coastline is shifting. Island by island, we read the temperature anomaly and the retreat — or advance — of the shores.",
         problem:
           "Problem — the warming is invisible, yet it is already redrawing the coasts. Response — for each territory, we read the temperature anomaly (°C against the 1971–2000 normal) and the change in the coastline (median metres per year, Landsat segments).",
         message:
-          "From one island to the next, the ocean warms — and the coasts don't all take it the same way.",
+          "From one island to the next, temperatures climb — and the coasts don't all take it the same way.",
+        map_title: "The coastline, point by point",
+        map_lede:
+          "Zoom in: each point is a measured shoreline segment. Red is retreating, blue is advancing — hover or step through them one by one.",
+        map_source:
+          "Source: Digital Earth Pacific (Landsat Coastlines, CC BY-NC 4.0) · Pacific Data Hub",
       },
     },
     vaa: {
@@ -93,9 +103,9 @@ const EXTRA_STRINGS = {
         question: "Island by island: is the water flowing, is tuberculosis receding?",
       },
       ocean: {
-        sea: "Ocean warming",
+        sea: "Temperature anomaly",
         coast: "Coastline",
-        question: "Island by island: how much is the ocean warming, and is the coast holding?",
+        question: "Island by island: how much are temperatures rising, and is the coast holding?",
       },
     },
   },

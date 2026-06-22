@@ -1,0 +1,81 @@
+/* src/pages/Ocean/Ocean.css
+   ============================================================
+   Section « carte satellite des points de trait de côte », placée sous le
+   voyage Va'a. Pleine hauteur (100vh), titre + carte (OceanMap réutilisé) +
+   source. La carte (OceanMap → .omap__map) est haute de 520px ; on la cadre
+   dans un conteneur arrondi.
+   ============================================================ */
+
+.coastmap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 9vh, 110px) clamp(20px, 5vw, 64px);
+  background: radial-gradient(
+    120% 90% at 50% 0%,
+    var(--c-bg-2, #0b1a2b) 0%,
+    var(--c-bg, #050a12) 62%
+  );
+  border-top: 1px solid var(--c-line, rgba(255, 255, 255, 0.08));
+}
+
+.coastmap__inner {
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vh, 28px);
+}
+
+.coastmap__head {
+  max-width: 760px;
+}
+
+.coastmap__title {
+  margin: 0 0 0.35em;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--c-text, #eaf2ff);
+}
+
+.coastmap__lede {
+  margin: 0;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--c-text-mute, #9fb3c8);
+}
+
+.coastmap__map {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
+  background: var(--c-bg-2, #0b1a2b);
+}
+
+/* Filet de sécurité : la carte occupe toute la largeur du conteneur. */
+.coastmap__map .omap {
+  width: 100%;
+}
+
+.coastmap__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  color: var(--c-text-mute, #9fb3c8);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+
+.coastmap__source {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute, #7f93a8);
+}
