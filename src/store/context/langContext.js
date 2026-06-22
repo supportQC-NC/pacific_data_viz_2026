@@ -1,16 +1,33 @@
 // src/store/context/langContext.js
 // ============================================================
-// Contexte global de langue (fr / en).
-// - Persiste le choix (localStorage)
-// - Expose t('chemin.clé') pour récupérer une chaîne traduite
-// - Aucune chaîne en dur dans les composants : tout passe par t()
+// Contexte de langue (fr / en). t('chemin.clé'), persistance localStorage.
+// Datamoana 2.0 : extraStrings est une COUCHE D'OVERRIDE fusionnée dans fr/en
+// (on peut AJOUTER des clés OU en CORRIGER une existante, sans éditer les gros
+// JSON). Les clés non présentes dans extraStrings gardent la valeur des JSON.
 // ============================================================
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import fr from '../../i18n/fr.json';
 import en from '../../i18n/en.json';
+import EXTRA_STRINGS from '../../i18n/extraStrings';
 
-const DICTS = { fr, en };
+// Fusion profonde : `extra` PRIME (override) sur `base`.
+function mergeDeep(base, extra) {
+  if (extra === undefined) return base;
+  if (extra === null || typeof extra !== 'object' || Array.isArray(extra)) return extra;
+  if (base === null || typeof base !== 'object' || Array.isArray(base)) return { ...extra };
+  const out = { ...base };
+  Object.keys(extra).forEach((k) => {
+    out[k] = k in out ? mergeDeep(out[k], extra[k]) : extra[k];
+  });
+  return out;
+}
+
+const DICTS = {
+  fr: mergeDeep(fr, EXTRA_STRINGS.fr || {}),
+  en: mergeDeep(en, EXTRA_STRINGS.en || {}),
+};
+
 const STORAGE_KEY = 'pdc-lang';
 const LangContext = createContext(null);
 
@@ -21,7 +38,6 @@ function getInitialLang() {
   return (window.navigator.language || 'fr').toLowerCase().startsWith('en') ? 'en' : 'fr';
 }
 
-// Récupère une valeur imbriquée via un chemin "a.b.c"
 function resolve(dict, path) {
   return path.split('.').reduce((acc, key) => (acc && acc[key] != null ? acc[key] : null), dict);
 }
@@ -47,7 +63,6 @@ export function LangProvider({ children }) {
   );
 
   const value = useMemo(() => ({ lang, setLang, toggleLang, t }), [lang, toggleLang, t]);
-
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }
 

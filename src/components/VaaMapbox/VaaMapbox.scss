@@ -1,0 +1,35 @@
+// src/components/VaaMapbox/VaaMapbox.scss
+.vaamapbox-wrap { margin: 0; width: 100%; }
+
+.vaamapbox {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 50vh, 560px);
+  border-radius: var(--r-md, 14px);
+  overflow: hidden;
+  border: 1px solid var(--c-line, rgba(255, 255, 255, 0.12));
+
+  &__canvas { position: absolute; inset: 0; }
+
+  // Pirogue fixe, centrée, bien visible.
+  &__canoe {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    z-index: 3;
+    pointer-events: none;
+    .hull { fill: var(--c-warm, #f4c06b); }
+    .sail { fill: #ffffff; }
+    .mast { stroke: #ffffff; stroke-width: 1.4; }
+    svg { filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.8)); }
+  }
+
+  &__cap {
+    margin-top: var(--sp-2, 8px);
+    font-family: var(--font-mono, monospace);
+    font-size: var(--fs-sm, 0.82rem);
+    letter-spacing: var(--ls-wide, 0.04em);
+    color: var(--c-accent, #54e0c7);
+    text-align: center;
+  }
+}

@@ -1,0 +1,252 @@
+// src/pages/Recit/Recit.scss
+// Récit narratif — design éditorial premium. Tokens du design system only.
+
+.recit {
+  --ch: var(--c-accent);
+  background: var(--c-bg);
+  color: var(--c-text);
+  overflow-x: hidden;
+}
+
+/* Révélation au scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------------- Manifeste ---------------- */
+.recit__hero {
+  position: relative;
+  min-height: 100vh;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: calc(var(--nav-h) + var(--sp-16)) clamp(var(--sp-6), 6vw, 96px)
+    var(--sp-24);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.recit__back {
+  position: absolute;
+  top: calc(var(--nav-h) + var(--sp-6));
+  left: clamp(var(--sp-6), 6vw, 96px);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+.recit__back:hover { color: var(--c-accent); }
+
+.recit__eyebrow {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ch);
+}
+.recit__hero-title {
+  margin: 0 0 var(--sp-6);
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2.4rem, 6.5vw, 5.2rem);
+  line-height: 1.02;
+  letter-spacing: var(--ls-tight);
+}
+.recit__hero-lead {
+  margin: 0;
+  max-width: 58ch;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+.recit__scroll {
+  position: absolute;
+  bottom: var(--sp-12);
+  left: clamp(var(--sp-6), 6vw, 96px);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.recit__scroll svg { animation: recitBob 1.8s var(--ease-out) infinite; }
+@keyframes recitBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* ---------------- Chapitre ---------------- */
+.recit__chapter {
+  position: relative;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--sp-24) clamp(var(--sp-6), 6vw, 96px);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+.recit__chapter--humain { --ch: var(--c-accent); }
+.recit__chapter--terre { --ch: var(--c-positive); }
+.recit__chapter--ocean { --ch: var(--c-accent-deep); }
+.recit__chapter--economie { --ch: var(--c-warm); }
+.recit__chapter--energie { --ch: var(--c-accent-glow); }
+
+.recit__chapter-head {
+  position: relative;
+  margin-bottom: var(--sp-16);
+}
+.recit__num {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 1;
+  color: var(--ch);
+  opacity: 0.18;
+  margin-bottom: var(--sp-4);
+}
+.recit__chapter-eyebrow {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ch);
+}
+.recit__chapter-title {
+  margin: 0 0 var(--sp-4);
+  max-width: 20ch;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(1.9rem, 4.2vw, 3.4rem);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+}
+.recit__chapter-lede {
+  margin: 0 0 var(--sp-4);
+  max-width: 60ch;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+.recit__chapter-story {
+  margin: 0 0 var(--sp-8);
+  max-width: 60ch;
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-text-mute);
+}
+
+/* Chiffres-clés médians */
+.recit__figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+.recit__fig {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.recit__fig-v {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1;
+  color: var(--ch);
+}
+.recit__fig-l {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+  max-width: 28ch;
+}
+
+/* Visuels */
+.recit__viz {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+.recit__viz-item {
+  position: relative;
+}
+
+/* ---------------- Plaidoyer ---------------- */
+.recit__closing {
+  max-width: var(--maxw-text);
+  margin: 0 auto;
+  padding: var(--sp-24) clamp(var(--sp-6), 6vw, 96px);
+  text-align: center;
+  border-top: var(--border-hair) solid var(--c-line);
+}
+.recit__closing .recit__eyebrow { color: var(--c-warm); }
+.recit__closing-title {
+  margin: 0 0 var(--sp-8);
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+}
+.recit__quote {
+  margin: 0 auto var(--sp-8);
+  max-width: 40ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+.recit__quote::before { content: "« "; color: var(--c-warm); }
+.recit__quote::after { content: " »"; color: var(--c-warm); }
+.recit__closing-source {
+  margin: 0 0 var(--sp-12);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+}
+.recit__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-6);
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text);
+  text-decoration: none;
+  transition: border-color var(--t-fast), color var(--t-fast),
+    transform var(--t-fast);
+}
+.recit__cta:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 720px) {
+  .recit__figs { gap: var(--sp-6); }
+}

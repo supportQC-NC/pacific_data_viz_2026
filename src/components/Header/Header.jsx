@@ -2,11 +2,13 @@
 // ============================================================
 // En-tête global — design éditorial premium.
 //   • Marque : LOGO de l'application (logo.png) + nom (Fraunces).
-//   • Navigation : lien « À propos ».
+//   • Navigation : « Le Récit » (nouvelle expérience Va'a) + « À propos ».
 //   • Langue : segmented control FR | EN (le segment actif glisse).
 //   • Thème : switch à rail, soleil/lune visibles, curseur lumineux.
 // S'efface pendant l'immersion. react-icons. Aucune chaîne en dur, zéro inline.
-// Le logo s'adapte au thème via un halo défini dans Header.scss (data-theme).
+// NB : le lien « Le Récit » pointe pour l'instant vers /chapitre/humain (seul
+//      chapitre Va'a monté). On le repointera vers /recit quand les 5
+//      chapitres seront enchaînés. Le HERO de la Home n'est jamais touché.
 // ============================================================
 
 import React, { useEffect, useState } from "react";
@@ -47,7 +49,15 @@ export default function Header() {
 
         <div className="header__actions">
           {/* Navigation */}
-          <nav className="header__nav" aria-label={t("header.nav_about")}>
+          <nav className="header__nav" aria-label={t("brand")}>
+            <NavLink
+              to="/recit"
+              className={({ isActive }) =>
+                `header__navlink ${isActive ? "is-active" : ""}`
+              }
+            >
+              {t("header.nav_recit")}
+            </NavLink>
             <NavLink
               to="/a-propos"
               className={({ isActive }) =>

@@ -1,0 +1,90 @@
+// src/components/ChapterShell/ChapterShell.scss
+// Ossature de chapitre — tokens du design system uniquement.
+
+.chapter {
+  min-height: 100vh;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.chapter__intro {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: calc(var(--nav-h) + var(--sp-12)) clamp(var(--sp-6), 5vw, 72px)
+    var(--sp-8);
+}
+
+.chapter__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-6);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+.chapter__back:hover {
+  color: var(--c-accent);
+}
+
+.chapter__eyebrow {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.chapter__title {
+  margin: 0 0 var(--sp-4);
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: clamp(2rem, 4.4vw, 3.6rem);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-text);
+}
+
+.chapter__lede {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+
+/* Corps : empilement des graphiques du chapitre (deviendra scrollytelling). */
+.chapter__body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Liseré d'accent par chapitre (sobre, réutilise les tokens existants). */
+.chapter--humain .chapter__eyebrow,
+.chapter--humain .chapter__back:hover {
+  color: var(--c-accent);
+}
+.chapter--terre .chapter__eyebrow,
+.chapter--terre .chapter__back:hover {
+  color: var(--c-positive);
+}
+.chapter--economie .chapter__eyebrow,
+.chapter--economie .chapter__back:hover {
+  color: var(--c-warm);
+}
+
+/* Placeholder (ex. Matrice à venir). */
+.chapter__todo {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--sp-8) clamp(var(--sp-6), 5vw, 72px) var(--sp-24);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}

@@ -5,10 +5,13 @@
 // - Données indexées par CODE PAYS (GEO_PICT) → on peut CROISER plusieurs
 //   indicateurs en utilisant le code comme clé de jointure (cf.
 //   selectCrossSection / joinByArea).
+// - AJOUT Datamoana 2.0 : selectRegionalMedian → la « Couche 2 » du moteur
+//   Va'a (médiane régionale translucide), calculée DEPUIS la donnée (cf. Q3).
 // ============================================================
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchDataset, DATASETS } from "../../services/pdhApi";
+import { isPict } from "../../i18n/pictNames";
 
 export const loadDataset = createAsyncThunk(
   "climate/loadDataset",
@@ -84,6 +87,14 @@ function valueAt(entry, area, year) {
   return pt ? pt.value : null;
 }
 
+// Médiane d'un tableau de nombres (ignore les non-finis).
+function median(nums) {
+  const a = nums.filter(Number.isFinite).slice().sort((x, y) => x - y);
+  if (!a.length) return null;
+  const m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
 // JOINTURE PAR CODE PAYS : pour une liste d'indicateurs, renvoie une ligne
 // par territoire avec la valeur de chaque indicateur — base des graphiques
 // qui croisent (ex. émissions vs niveau de mer).
@@ -110,6 +121,25 @@ export const selectCrossSection =
       });
       return row;
     });
+  };
+
+// MÉDIANE RÉGIONALE (Couche 2 du moteur Va'a). Médiane, sur les seuls
+// territoires PICT, de la valeur d'un indicateur à une année donnée (ou la
+// dernière disponible). Calculée DEPUIS la donnée → aucune valeur saisie à
+// la main. Renvoie { value, n } ou null si la donnée est indisponible.
+//   selectRegionalMedian('emissions', 2023)(state) → { value: 0.93, n: 19 }
+export const selectRegionalMedian =
+  (id, year = null) =>
+  (state) => {
+    const entry = state.climate.datasets[id];
+    if (!entry || entry.status !== "succeeded" || !entry.data) return null;
+    const vals = [];
+    entry.data.areas.filter(isPict).forEach((area) => {
+      const v = valueAt(entry, area, year);
+      if (Number.isFinite(v)) vals.push(v);
+    });
+    const value = median(vals);
+    return value == null ? null : { value, n: vals.length };
   };
 
 export default climateSlice.reducer;

@@ -1,0 +1,95 @@
+// src/components/OceanSST/OceanSST.scss
+// Bloc SST du récit — tokens du design system uniquement.
+
+.oceansst {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  padding: var(--sp-8);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+}
+
+.oceansst__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.oceansst__filter {
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast),
+    background var(--t-fast);
+}
+.oceansst__filter:hover {
+  color: var(--c-text);
+  border-color: var(--c-line-strong);
+}
+.oceansst__filter.is-on {
+  color: var(--c-bg);
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+.oceansst__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
+}
+@media (max-width: 900px) {
+  .oceansst__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.oceansst__card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.oceansst__card-title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+.oceansst__chart {
+  width: 100%;
+  min-height: 360px;
+}
+.oceansst__find {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--c-text-soft);
+}
+
+.oceansst__state {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 180px;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.oceansst__source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--c-text-mute);
+}
