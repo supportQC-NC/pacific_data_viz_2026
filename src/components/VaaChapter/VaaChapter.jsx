@@ -21,6 +21,7 @@ import "./VaaChapter.scss";
 
 export default function VaaChapter({
   accent = "humain",
+  noHero = false,
   heroImage,
   eyebrowKey,
   titleKey,
@@ -37,34 +38,52 @@ export default function VaaChapter({
   const total = route && route.length ? route.length : VAA_ROUTE.length;
 
   return (
-    <div className={`vaa vaa--${accent}`}>
-      <header
-        className="vaa__hero"
-        style={heroImage ? { "--vaa-hero": `url(${heroImage})` } : undefined}
-      >
-        <div className="vaa__hero-bg" aria-hidden="true" />
-        <div className="vaa__hero-inner">
-          <Link to="/" className="vaa__back">
-            <FiArrowLeft aria-hidden="true" />
-            <span>{t("chapters.back")}</span>
-          </Link>
-          <p className="vaa__eyebrow">{t(eyebrowKey)}</p>
-          <h1 className="vaa__title">{t(titleKey)}</h1>
-          <p className="vaa__lede">{t(ledeKey)}</p>
+    <div className={`vaa vaa--${accent}${noHero ? " vaa--continued" : ""}`}>
+      {noHero ? (
+        /* Course ENCHAÎNÉE : pas de hero plein écran, un bandeau d'intro sobre
+           qui présente la 2ᵉ traversée du chapitre. */
+        <header className="vaa__intro">
+          <div className="vaa__intro-inner">
+            <p className="vaa__eyebrow">{t(eyebrowKey)}</p>
+            <h2 className="vaa__intro-title">{t(titleKey)}</h2>
+            <p className="vaa__lede">{t(ledeKey)}</p>
+            {problemKey && (
+              <aside className="vaa__problem">
+                <span className="vaa__problem-tag">{t("vaa.problem_tag")}</span>
+                <p className="vaa__problem-text">{t(problemKey)}</p>
+              </aside>
+            )}
+          </div>
+        </header>
+      ) : (
+        <header
+          className="vaa__hero"
+          style={heroImage ? { "--vaa-hero": `url(${heroImage})` } : undefined}
+        >
+          <div className="vaa__hero-bg" aria-hidden="true" />
+          <div className="vaa__hero-inner">
+            <Link to="/" className="vaa__back">
+              <FiArrowLeft aria-hidden="true" />
+              <span>{t("chapters.back")}</span>
+            </Link>
+            <p className="vaa__eyebrow">{t(eyebrowKey)}</p>
+            <h1 className="vaa__title">{t(titleKey)}</h1>
+            <p className="vaa__lede">{t(ledeKey)}</p>
 
-          {problemKey && (
-            <aside className="vaa__problem">
-              <span className="vaa__problem-tag">{t("vaa.problem_tag")}</span>
-              <p className="vaa__problem-text">{t(problemKey)}</p>
-            </aside>
-          )}
+            {problemKey && (
+              <aside className="vaa__problem">
+                <span className="vaa__problem-tag">{t("vaa.problem_tag")}</span>
+                <p className="vaa__problem-text">{t(problemKey)}</p>
+              </aside>
+            )}
 
-          <span className="vaa__cue">
-            <FiArrowDown aria-hidden="true" />
-            {t("vaa.scroll_hint")}
-          </span>
-        </div>
-      </header>
+            <span className="vaa__cue">
+              <FiArrowDown aria-hidden="true" />
+              {t("vaa.scroll_hint")}
+            </span>
+          </div>
+        </header>
+      )}
 
       <section
         className="vaa__voyage"
@@ -102,7 +121,10 @@ export default function VaaChapter({
                           : "bad"
                       : null;
                     return (
-                      <article className="vaa__ind" key={i}>
+                      <article
+                        className={`vaa__ind${ok ? "" : " vaa__ind--empty"}`}
+                        key={i}
+                      >
                         <div className="vaa__ind-head">
                           <h3 className="vaa__ind-label">{t(ind.labelKey)}</h3>
                           {tr && (

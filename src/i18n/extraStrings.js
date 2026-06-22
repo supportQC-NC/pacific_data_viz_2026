@@ -37,6 +37,24 @@ const EXTRA_STRINGS = {
         map_source:
           "Source : Digital Earth Pacific (Landsat Coastlines, CC BY-NC 4.0) · Pacific Data Hub",
       },
+      terre: {
+        eyebrow: "Chapitre 3 · nourrir",
+        title: "Vivre de la terre",
+        lede:
+          "Sur ces îles, se nourrir tient à peu : ce que donnent les cultures, ce que rend l'élevage. On le regarde, territoire par territoire.",
+        problem:
+          "Problème — petites et isolées, ces îles importent cher et produisent peu ; un rendement qui faiblit pèse vite sur l'assiette. Réponse — pour chaque territoire, on lit le rendement des cultures et celui de l'élevage.",
+        message:
+          "D'une île à l'autre, ce que la terre nourrit n'a rien de comparable.",
+      },
+      terre2: {
+        eyebrow: "Chapitre 3 · le vivant",
+        title: "Et le vivant, autour",
+        lede:
+          "Produire est une chose ; préserver le milieu qui le permet en est une autre. On regarde la couverture des terres et la pression sur les espèces.",
+        message:
+          "Ce que la terre abrite recule parfois là où on l'attend le moins.",
+      },
     },
     vaa: {
       problem_tag: "Le problème & la réponse",
@@ -54,6 +72,14 @@ const EXTRA_STRINGS = {
         sea: "Anomalie de température",
         coast: "Trait de côte",
         question: "Île par île : de combien la température grimpe-t-elle, et la côte tient-elle ?",
+      },
+      terre: {
+        crop: "Agriculture — rendement des cultures",
+        forest: "Couverture des terres",
+        cattle: "Élevage — rendement",
+        bio: "Biodiversité — espèces",
+        q1: "Île par île : que produit la terre pour nourrir ?",
+        q2: "Île par île : que reste-t-il du vivant qui l'entoure ?",
       },
     },
   },
@@ -89,6 +115,24 @@ const EXTRA_STRINGS = {
         map_source:
           "Source: Digital Earth Pacific (Landsat Coastlines, CC BY-NC 4.0) · Pacific Data Hub",
       },
+      terre: {
+        eyebrow: "Chapter 3 · feeding",
+        title: "Living off the land",
+        lede:
+          "On these islands, feeding people hangs on little: what the crops give, what the livestock returns. We look at it, territory by territory.",
+        problem:
+          "Problem — small and isolated, these islands import at high cost and produce little; a weakening yield quickly weighs on the plate. Response — for each territory, we read crop yield and livestock yield.",
+        message:
+          "From one island to the next, what the land feeds is nothing alike.",
+      },
+      terre2: {
+        eyebrow: "Chapter 3 · the living world",
+        title: "And the life around it",
+        lede:
+          "Producing is one thing; protecting the environment that allows it is another. We look at land cover and pressure on species.",
+        message:
+          "What the land shelters sometimes recedes where you'd least expect it.",
+      },
     },
     vaa: {
       problem_tag: "Problem & response",
@@ -106,6 +150,14 @@ const EXTRA_STRINGS = {
         sea: "Temperature anomaly",
         coast: "Coastline",
         question: "Island by island: how much are temperatures rising, and is the coast holding?",
+      },
+      terre: {
+        crop: "Agriculture — crop yield",
+        forest: "Land cover",
+        cattle: "Livestock — yield",
+        bio: "Biodiversity — species",
+        q1: "Island by island: what does the land produce to feed people?",
+        q2: "Island by island: what's left of the life around it?",
       },
     },
   },

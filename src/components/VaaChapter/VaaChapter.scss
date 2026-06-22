@@ -94,6 +94,22 @@
     svg { animation: vaaBob 1.8s ease-in-out infinite; }
   }
 
+  /* ---------------- Bandeau d'intro (course enchaînée, noHero) ----------- */
+  &__intro {
+    max-width: var(--maxw, 1240px); margin: 0 auto;
+    padding: var(--sp-16, 64px) var(--sp-6, 24px) var(--sp-10, 40px);
+    border-top: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
+  }
+  &__intro-inner { max-width: 760px; }
+  &__intro-title {
+    font-family: var(--font-display, serif);
+    font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.04;
+    font-weight: var(--fw-bold, 700); letter-spacing: -0.01em;
+    margin: var(--sp-2, 8px) 0 var(--sp-4, 16px);
+    color: var(--c-text, #eaf2f6);
+    border-left: 3px solid var(--vaa-accent); padding-left: var(--sp-4, 16px);
+  }
+
   /* ---------------- Voyage épinglé ---------------- */
   &__voyage { position: relative; height: calc(var(--vaa-steps, 12) * 62vh + 40vh); }
   &__pin { position: sticky; top: 0; height: 100vh; display: flex; align-items: flex-start; overflow: hidden; }
@@ -160,8 +176,12 @@
     /* SVG entièrement visibles, taille mesurée (ratio préservé). */
     svg { max-height: clamp(130px, 18vh, 195px) !important; }
 
-    /* En-têtes internes masqués (titres redondants). */
-    header, h2 { display: none !important; }
+    /* En-têtes internes masqués (titres redondants). Certaines signatures
+       « terre » utilisent un <div> plutôt qu'un <header> : on les cible. */
+    header, h2,
+    .plant__head, .forest__head, .cattle__head, .reef__head {
+      display: none !important;
+    }
 
     /* Pas de CONTRÔLES (le scroll pilote le territoire, comme Humain). */
     select,
@@ -173,17 +193,20 @@
        contrôles (désormais masqués) : `.sea__stage` est en `1fr auto 1fr`,
        d'où une piste VIDE qui fait flotter le graphique et laisse du vide.
        On recompose en paire CENTRÉE et compacte [graphique + lecture]. */
-    .sea__stage, .coast__stage {
+    .sea__stage, .coast__stage,
+    .plant__stage, .forest__stage, .cattle__stage, .reef__stage {
       grid-template-columns: auto auto !important;
       justify-content: center !important;
       column-gap: clamp(18px, 3vw, 44px) !important;
     }
 
-    /* Gros chiffres mesurés (eau, TB, réchauffement, côte). */
-    .waterglass__pct-num, .bac__val-num, .coast__rate-num, .sea__val-num {
+    /* Gros chiffres mesurés (eau, TB, océan, terre). */
+    .waterglass__pct-num, .bac__val-num, .coast__rate-num, .sea__val-num,
+    .plant__val-num, .forest__val-num, .cattle__val-num, .reef__index-num {
       font-size: clamp(1.6rem, 2.6vw, 2.2rem) !important; line-height: 1 !important;
     }
-    .waterglass__pct-unit, .bac__val-unit, .coast__rate-unit, .sea__val-unit {
+    .waterglass__pct-unit, .bac__val-unit, .coast__rate-unit, .sea__val-unit,
+    .plant__val-unit, .forest__val-unit, .cattle__val-unit {
       font-size: 0.6em !important;
     }
 
@@ -194,6 +217,10 @@
     .waterglass__year, .bac__year, .bac__legend,
     .sea__year, .sea__legend,
     .coast__legend, .coast__note, .coast__ref,
+    .plant__year, .plant__legend,
+    .forest__year, .forest__legend, .forest__val-cap,
+    .cattle__year, .cattle__legend, .cattle__legend-dash, .cattle__median,
+    .reef__year, .reef__legend,
     [class*="__source"] {
       display: none !important;
     }
@@ -218,6 +245,18 @@
     font-family: var(--font-mono, monospace); font-size: var(--fs-sm, 0.82rem);
     border: 1px dashed var(--c-line-strong, rgba(255, 255, 255, 0.18));
     border-radius: var(--r-sm, 8px);
+  }
+
+  /* Indicateur SANS donnée pour ce territoire : on n'impose pas une grande
+     boîte vide. La carte se réduit à son strict minimum (titre + mention
+     discrète), atténuée — la traversée reste propre même sur les petites îles. */
+  &__ind--empty {
+    min-height: 0;
+    opacity: 0.45;
+    .vaa__ind-empty {
+      margin: 2px 0 0; padding: 0; border: 0;
+      text-align: left; font-size: var(--fs-xs, 0.72rem);
+    }
   }
 
   /* ---------------- Coda ---------------- */
