@@ -1,4 +1,4 @@
-/* src/pages/Humain/HumainCharts.css
+/* src/pages/Ocean/OceanCharts.css
    ============================================================
    Tableau de lecture « Humain » (fin de chapitre, avant Océan).
    Design : entonnoir décideur — chiffres-clés, puis lectures numérotées.
@@ -6,7 +6,7 @@
    rouge = pire, accent = neutre). ApexCharts reçoit une hauteur FIXE stable.
    ============================================================ */
 
-.humaincharts {
+.oceancharts {
   padding: clamp(56px, 9vh, 120px) clamp(20px, 5vw, 64px);
   background: radial-gradient(
       120% 80% at 50% -10%,
@@ -17,18 +17,18 @@
   border-top: 1px solid var(--c-line, rgba(255, 255, 255, 0.08));
 }
 
-.humaincharts__inner {
+.oceancharts__inner {
   max-width: 1180px;
   margin: 0 auto;
 }
 
 /* ---------- En-tête ---------- */
-.humaincharts__head {
+.oceancharts__head {
   max-width: 720px;
   margin-bottom: clamp(28px, 4vh, 44px);
 }
 
-.humaincharts__eyebrow {
+.oceancharts__eyebrow {
   margin: 0 0 0.9em;
   font-family: var(--font-mono, ui-monospace, monospace);
   text-transform: uppercase;
@@ -37,7 +37,7 @@
   color: var(--c-accent, #38bdf8);
 }
 
-.humaincharts__title {
+.oceancharts__title {
   margin: 0 0 0.4em;
   font-size: clamp(1.5rem, 2.8vw, 2.3rem);
   line-height: 1.12;
@@ -45,7 +45,7 @@
   color: var(--c-text, #eaf2ff);
 }
 
-.humaincharts__lede {
+.oceancharts__lede {
   margin: 0;
   max-width: 64ch;
   font-size: clamp(1rem, 1.3vw, 1.12rem);
@@ -54,14 +54,14 @@
 }
 
 /* ---------- Chiffres-clés (KPI) ---------- */
-.humaincharts__kpis {
+.oceancharts__kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: clamp(14px, 1.5vw, 20px);
   margin-bottom: clamp(20px, 3vh, 34px);
 }
 
-.humaincharts__kpi {
+.oceancharts__kpi {
   padding: clamp(16px, 1.6vw, 22px);
   border: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
   border-radius: 14px;
@@ -72,7 +72,7 @@
   );
 }
 
-.humaincharts__kpi-label {
+.oceancharts__kpi-label {
   margin: 0 0 0.9em;
   font-family: var(--font-mono, ui-monospace, monospace);
   text-transform: uppercase;
@@ -81,7 +81,7 @@
   color: var(--c-text-mute, #9fb3c8);
 }
 
-.humaincharts__kpi-value {
+.oceancharts__kpi-value {
   margin: 0;
   display: flex;
   align-items: baseline;
@@ -94,14 +94,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.humaincharts__kpi-unit {
+.oceancharts__kpi-unit {
   font-size: 0.42em;
   font-weight: 500;
   letter-spacing: 0;
   color: var(--c-text-mute, #9fb3c8);
 }
 
-.humaincharts__kpi-delta {
+.oceancharts__kpi-delta {
   display: inline-block;
   margin: 0.8em 0 0;
   padding: 0.2em 0.6em;
@@ -110,20 +110,20 @@
   font-size: 0.72rem;
   letter-spacing: 0.02em;
 }
-.humaincharts__kpi-delta--good {
+.oceancharts__kpi-delta--good {
   color: #2bbf76;
   background: rgba(43, 191, 118, 0.12);
 }
-.humaincharts__kpi-delta--bad {
+.oceancharts__kpi-delta--bad {
   color: #ff6b5e;
   background: rgba(232, 69, 60, 0.12);
 }
-.humaincharts__kpi-delta--flat {
+.oceancharts__kpi-delta--flat {
   color: var(--c-text-mute, #9fb3c8);
   background: rgba(255, 255, 255, 0.06);
 }
 
-.humaincharts__kpi-note {
+.oceancharts__kpi-note {
   margin: 0.8em 0 0;
   font-size: 0.78rem;
   line-height: 1.4;
@@ -131,26 +131,26 @@
 }
 
 /* ---------- Pile des lectures ---------- */
-.humaincharts__stack {
+.oceancharts__stack {
   display: flex;
   flex-direction: column;
   gap: clamp(18px, 2.5vh, 30px);
 }
 
-.humaincharts__grid {
+.oceancharts__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
   gap: clamp(18px, 2.2vw, 30px);
 }
 
 @media (max-width: 760px) {
-  .humaincharts__grid {
+  .oceancharts__grid {
     grid-template-columns: 1fr;
   }
 }
 
 /* ---------- Carte graphique ---------- */
-.humaincharts__card {
+.oceancharts__card {
   display: flex;
   flex-direction: column;
   padding: clamp(16px, 2vw, 26px);
@@ -163,22 +163,22 @@
   );
 }
 
-.humaincharts__card--wide {
+.oceancharts__card--wide {
   width: 100%;
 }
 
-.humaincharts__cardhead {
+.oceancharts__cardhead {
   margin-bottom: 16px;
 }
 
-.humaincharts__cardtop {
+.oceancharts__cardtop {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 0.45em;
 }
 
-.humaincharts__step {
+.oceancharts__step {
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -194,14 +194,14 @@
   color: var(--c-accent, #38bdf8);
 }
 
-.humaincharts__cardtitle {
+.oceancharts__cardtitle {
   margin: 0;
   font-size: clamp(1.05rem, 1.7vw, 1.32rem);
   line-height: 1.18;
   color: var(--c-text, #eaf2ff);
 }
 
-.humaincharts__find {
+.oceancharts__find {
   margin: 0;
   max-width: 78ch;
   font-size: 0.95rem;
@@ -210,7 +210,7 @@
 }
 
 /* ---------- Conteneurs de graphiques ---------- */
-.humaincharts__chart {
+.oceancharts__chart {
   position: relative;
   width: 100%;
   height: clamp(380px, 52vh, 540px);
@@ -219,22 +219,22 @@
 /* ApexCharts mesure le conteneur au montage : une hauteur FIXE (px) évite que
    la courbe se rende plus grande que sa carte et déborde. S'applique aux deux
    cartes pleine largeur (trajectoire ApexCharts, lien ScatterChart ECharts). */
-.humaincharts__card--wide .humaincharts__chart {
+.oceancharts__card--wide .oceancharts__chart {
   height: 440px;
 }
 
 /* Les graphiques (ApexCharts / ECharts) remplissent exactement leur cadre. */
-.humaincharts__chart > *,
-.humaincharts__chart .apexchart,
-.humaincharts__chart .apexchart--tall,
-.humaincharts__chart .echart,
-.humaincharts__chart .echart--tall {
+.oceancharts__chart > *,
+.oceancharts__chart .apexchart,
+.oceancharts__chart .apexchart--tall,
+.oceancharts__chart .echart,
+.oceancharts__chart .echart--tall {
   width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
 }
 
-.humaincharts__empty {
+.oceancharts__empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,7 +247,7 @@
 }
 
 /* ---------- Source ---------- */
-.humaincharts__source {
+.oceancharts__source {
   margin: clamp(22px, 3vh, 34px) 0 0;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 0.76rem;

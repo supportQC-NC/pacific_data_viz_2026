@@ -16,6 +16,7 @@
 
 import React, { useMemo, lazy, Suspense } from "react";
 import VaaChapter from "../../components/VaaChapter/VaaChapter";
+import OceanCharts from "./OceanCharts";
 import SeaWarm from "../../components/SeaWarm/SeaWarm";
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
@@ -170,6 +171,9 @@ export default function Ocean() {
           <p className="coastmap__source">{t("chapters.ocean.map_source")}</p>
         </div>
       </section>
+
+      {/* Tableau de lecture Océan — KPI + graphiques, sous la carte des points. */}
+      <OceanCharts landTemp={landTemp} />
     </>
   );
 }
