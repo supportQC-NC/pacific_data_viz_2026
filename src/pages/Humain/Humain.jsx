@@ -13,6 +13,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import VaaChapter from "../../components/VaaChapter/VaaChapter";
+import HumainCharts from "./HumainCharts";
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import TbBacilli from "../../components/TbBacilli/TbBacilli";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
@@ -92,17 +93,22 @@ export default function Humain() {
   );
 
   return (
-    <VaaChapter
-      accent="humain"
-      heroImage={heroImage}
-      eyebrowKey="chapters.humain.eyebrow"
-      titleKey="chapters.humain.title"
-      ledeKey="chapters.humain.lede"
-      problemKey="chapters.humain.problem"
-      messageKey="chapters.humain.message"
-      questionKey="vaa.humain.question"
-      route={route}
-      indicators={indicators}
-    />
+    <>
+      <VaaChapter
+        accent="humain"
+        heroImage={heroImage}
+        eyebrowKey="chapters.humain.eyebrow"
+        titleKey="chapters.humain.title"
+        ledeKey="chapters.humain.lede"
+        problemKey="chapters.humain.problem"
+        messageKey="chapters.humain.message"
+        questionKey="vaa.humain.question"
+        route={route}
+        indicators={indicators}
+      />
+
+      {/* Graphiques pertinents sur les données Humain — avant le chapitre Océan. */}
+      <HumainCharts water={water} tb={tb} />
+    </>
   );
 }

@@ -1,0 +1,143 @@
+/* src/pages/Humain/HumainCharts.css
+   ============================================================
+   Deux graphiques (classements eau + tuberculose) en fin de chapitre Humain.
+   Côte à côte sur grand écran, empilés sinon. RankChart = EChart, qui remplit
+   son conteneur : on lui donne une hauteur définie.
+   ============================================================ */
+
+.humaincharts {
+  padding: clamp(56px, 9vh, 110px) clamp(20px, 5vw, 64px);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--c-bg-2, #0b1a2b) 0%,
+    var(--c-bg, #050a12) 60%
+  );
+  border-top: 1px solid var(--c-line, rgba(255, 255, 255, 0.08));
+}
+
+.humaincharts__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.humaincharts__head {
+  max-width: 760px;
+  margin-bottom: clamp(28px, 5vh, 52px);
+}
+
+.humaincharts__eyebrow {
+  margin: 0 0 0.8em;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--c-accent, #38bdf8);
+}
+
+.humaincharts__title {
+  margin: 0 0 0.35em;
+  font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--c-text, #eaf2ff);
+}
+
+.humaincharts__lede {
+  margin: 0;
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.55;
+  color: var(--c-text-mute, #9fb3c8);
+}
+
+.humaincharts__stack {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vh, 34px);
+}
+
+.humaincharts__card--wide {
+  width: 100%;
+}
+
+.humaincharts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: clamp(20px, 2.5vw, 32px);
+}
+
+@media (max-width: 760px) {
+  .humaincharts__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.humaincharts__card {
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--c-line, rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  padding: clamp(16px, 2vw, 24px);
+}
+
+.humaincharts__cardhead {
+  margin-bottom: 14px;
+}
+
+.humaincharts__cardtitle {
+  margin: 0 0 0.3em;
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  line-height: 1.15;
+  color: var(--c-text, #eaf2ff);
+}
+
+.humaincharts__find {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--c-text-mute, #9fb3c8);
+}
+
+.humaincharts__chart {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 52vh, 540px);
+}
+
+/* La courbe d'évolution (ApexCharts) reçoit une hauteur FIXE et stable :
+   ApexCharts mesure le conteneur au montage ; une hauteur en vh pouvait être
+   mal lue pendant la mise en page → le graphe débordait sous la carte. */
+.humaincharts__card--wide .humaincharts__chart {
+  height: 440px;
+}
+
+/* Les graphiques (ApexCharts / ECharts) remplissent exactement leur cadre. */
+.humaincharts__chart > *,
+.humaincharts__chart .apexchart,
+.humaincharts__chart .apexchart--tall,
+.humaincharts__chart .echart,
+.humaincharts__chart .echart--tall {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.humaincharts__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  color: var(--c-text-mute, #9fb3c8);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+
+.humaincharts__source {
+  margin: clamp(20px, 3vh, 32px) 0 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  color: var(--c-text-mute, #7f93a8);
+}
