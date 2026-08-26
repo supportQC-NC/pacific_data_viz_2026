@@ -12,7 +12,7 @@
 // ============================================================
 
 import React, { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { FiSun, FiMoon } from "react-icons/fi";
 import { useTheme } from "../../store/context/themeContext";
 import { useLang } from "../../store/context/langContext";
@@ -25,6 +25,14 @@ export default function Header() {
   const { lang, setLang, t } = useLang();
   const { immersive } = useJourney();
   const [scrolled, setScrolled] = useState(false);
+  const { pathname } = useLocation();
+
+  // Le hero de la Home est NOCTURNE : l'encre par défaut du header (sombre en
+  // thème clair) y est illisible. On pose un modificateur, et LUI SEUL porte
+  // l'encre claire — uniquement sur "/", et uniquement tant qu'on est encore
+  // dans le hero (une fois défilé, le header reprend son apparence normale).
+  // Aucune autre page n'est affectée.
+  const onNightHero = pathname === "/" && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -38,7 +46,11 @@ export default function Header() {
   const isDark = theme === "dark";
 
   return (
-    <header className={`header ${scrolled ? "header--scrolled" : ""}`}>
+    <header
+      className={`header ${scrolled ? "header--scrolled" : ""} ${
+        onNightHero ? "header--nighthero" : ""
+      }`}
+    >
       <div className="header__inner container">
         <Link to="/" className="header__brand" aria-label={t("brand")}>
           <img className="header__logo" src={logo} alt="" aria-hidden="true" />
@@ -50,14 +62,8 @@ export default function Header() {
         <div className="header__actions">
           {/* Navigation */}
           <nav className="header__nav" aria-label={t("brand")}>
-            <NavLink
-              to="/recit"
-              className={({ isActive }) =>
-                `header__navlink ${isActive ? "is-active" : ""}`
-              }
-            >
-              {t("header.nav_recit")}
-            </NavLink>
+            {/* Le lien « Le Récit » est retiré : on entre dans le récit par le
+                bouton du hero, pas par le menu. La route /recit reste active. */}
             <NavLink
               to="/a-propos"
               className={({ isActive }) =>

@@ -20,15 +20,85 @@ $mark-ring: 30px;
   animation: langgateIn 0.5s var(--ease-out);
 }
 
-/* Pluie binaire (canvas) en fond, atténuée par un masque radial */
-.langgate__rain {
+/* LE LAGON — décor de départ, en SVG plein cadre.
+   `slice` sur le viewBox : la scène couvre toujours l'écran quel que soit le
+   ratio, quitte à rogner les bords. Le contenu utile (pirogue, horizon) est
+   au centre, donc le rognage ne mange rien d'essentiel. */
+.langgate__lagoon {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+}
+.langgate__lagoon svg {
   width: 100%;
   height: 100%;
-  opacity: 0.5;
-  -webkit-mask-image: radial-gradient(110% 80% at 50% 40%, #000 18%, transparent 78%);
-          mask-image: radial-gradient(110% 80% at 50% 40%, #000 18%, transparent 78%);
+  display: block;
+}
+
+/* Cocotier : traits, pas d'aplat — cohérent avec la pirogue. */
+.langgate__palm path {
+  fill: none;
+  stroke: #1d3348;
+  stroke-width: 7;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+/* La pirogue reprend EXACTEMENT le vocabulaire des traversées : coque sombre
+   cernée de crème, voiles crème, balancier au trait. */
+.langgate__hull {
+  fill: #0e2233;
+  stroke: #f4f1ea;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.langgate__sail {
+  fill: rgba(244, 241, 234, 0.97);
+}
+.langgate__sail--back {
+  fill: rgba(244, 241, 234, 0.64);
+}
+.langgate__mast,
+.langgate__ama,
+.langgate__iako {
+  stroke: #f4f1ea;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+.langgate__vshadow {
+  fill: rgba(20, 48, 62, 0.28);
+}
+
+/* Respiration très lente de la pirogue : elle attend, elle ne navigue pas. */
+.langgate__vaa {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+  animation: langgateRock 7s ease-in-out infinite;
+}
+@keyframes langgateRock {
+  0%,
+  100% {
+    transform: translate(1090px, 566px) scale(1.28) rotate(-0.7deg);
+  }
+  50% {
+    transform: translate(1090px, 566px) scale(1.28) rotate(0.7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .langgate__vaa {
+    animation: none;
+  }
+}
+
+/* Sous 900px, `slice` rogne les bords : une pirogue à droite serait coupée.
+   On la ramène vers le centre-bas, sous le panneau qui remonte. */
+@media (max-width: 900px) {
+  .langgate__vaa {
+    animation: none;
+    transform: translate(700px, 610px) scale(1.05);
+  }
 }
 
 /* Voile : glow de marque + vignette pour asseoir le panneau */
@@ -36,13 +106,17 @@ $mark-ring: 30px;
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* Assombrissement CENTRAL et non périphérique : le panneau doit rester
+     lisible par-dessus un lagon clair, mais l'horizon et la pirogue doivent
+     rester visibles. D'où un voile doux au centre plutôt qu'une vignette. */
   background:
-    radial-gradient(90% 60% at 50% 28%,
-      color-mix(in srgb, var(--c-accent) 20%, transparent) 0%,
-      transparent 60%),
-    radial-gradient(120% 100% at 50% 50%,
-      transparent 30%,
-      color-mix(in srgb, var(--c-bg) 70%, transparent) 100%);
+    radial-gradient(58% 42% at 50% 44%,
+      rgba(8, 20, 32, 0.72) 0%,
+      rgba(8, 20, 32, 0.42) 55%,
+      transparent 82%),
+    linear-gradient(180deg,
+      rgba(8, 20, 32, 0.34) 0%,
+      transparent 38%);
 }
 
 /* Panneau en verre */

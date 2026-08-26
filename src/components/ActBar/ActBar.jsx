@@ -24,6 +24,16 @@ export default function ActBar({
   total, // nombre total d'actes
   navAria, // libellé aria de la nav
   progressAria, // libellé aria de la progression
+  // Sortie du voyage — OPTIONNELS et rétro-compatibles : le bouton n'est
+  // rendu que si les deux sont fournis. Les appelants existants qui ne les
+  // passent pas gardent exactement le rendu d'avant.
+  //
+  // Nécessaire parce que `exitJourney()` n'était appelable que depuis le
+  // Récit : une fois dans un acte, il n'existait plus AUCUN moyen de quitter
+  // le mode guidé, qui restait actif y compris après fermeture du navigateur
+  // (il est persisté dans localStorage).
+  onExit = null,
+  exitLabel = "",
 }) {
   // Fraction de progression pour la jauge (0 → 100). Garde-fous si props absentes.
   const hasProgress =
@@ -69,6 +79,12 @@ export default function ActBar({
                 />
               </span>
             </span>
+          ) : null}
+
+          {onExit && exitLabel ? (
+            <button type="button" className="actbar__exit" onClick={onExit}>
+              <span aria-hidden="true">✕</span> {exitLabel}
+            </button>
           ) : null}
         </div>
 

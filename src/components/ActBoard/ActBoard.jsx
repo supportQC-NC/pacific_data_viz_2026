@@ -50,7 +50,7 @@ export default function ActBoard({
     return v && v !== key ? v : lang === "en" ? en : fr;
   };
   const { pathname } = useLocation();
-  const { byPath, journey } = useJourney();
+  const { byPath, journey, guided, exitJourney } = useJourney();
 
   // Résolution de l'acte courant via la route → numéro, total, voisins.
   const here = byPath(pathname);
@@ -107,7 +107,19 @@ export default function ActBoard({
     const sig = mainCharts.findIndex((c) => c.signature);
     return sig >= 0 ? sig : 0;
   });
-  const [step, setStep] = useState(0); // 0 intro · 1 board · 2 outro
+  // 0 intro · 1 board · 2 outro
+  //
+  // EN MODE VOYAGE GUIDÉ, l'étape 0 n'est plus une porte narrative : la
+  // traversée en pirogue (ActFlow) joue ce rôle. On entre donc directement
+  // dans le board dès que les données sont exploitables, pour éviter DEUX
+  // écrans d'accueil successifs avant la donnée.
+  //
+  // L'étape 0 reste indispensable dans tous les autres cas : c'est elle qui
+  // porte le loader, l'état d'erreur avec `onRetry`, l'état vide, et la garde
+  // qui empêche d'ouvrir un board sans graphique. On ne la saute donc QUE si
+  // `status === "ready" && count > 0`.
+  const skipIntro = guided && status === "ready" && count > 0;
+  const [step, setStep] = useState(skipIntro ? 1 : 0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [infoTab, setInfoTab] = useState(0);
   const infoActive = hasInfo
@@ -154,6 +166,14 @@ export default function ActBoard({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
+  // Les données arrivent souvent APRÈS le montage : à ce moment `skipIntro`
+  // était encore faux et l'étape 0 s'est affichée (loader). Dès qu'elles sont
+  // exploitables, on enchaîne sur le board — le voyage n'a qu'une porte.
+  // Uniquement 0 → 1 : on ne ramène jamais l'utilisateur depuis l'outro (2).
+  useEffect(() => {
+    if (skipIntro && step === 0) setStep(1);
+  }, [skipIntro, step]);
+
   useEffect(() => {
     if (!infoOpen) return undefined;
     const onKey = (e) => {
@@ -185,6 +205,10 @@ export default function ActBoard({
           total={effProgress ? effProgress.total : undefined}
           navAria={t("flow.nav_aria")}
           progressAria={t("flow.progress_aria")}
+          // Sortie du voyage : uniquement en mode guidé, sinon la barre reste
+          // strictement identique à ce qu'elle était.
+          onExit={guided ? exitJourney : null}
+          exitLabel={guided ? tf("flow.exit_voyage", "Quitter le voyage", "Leave the voyage") : ""}
         />
       )}
 
@@ -247,6 +271,14 @@ export default function ActBoard({
         {step === 1 &&
           (status === "ready" && active ? (
             <section className="board__panel">
+              {/* CHIFFRES-CLÉS — rendus ici aussi, car en mode voyage guidé
+                  l'étape 0 est sautée : sans cela les KPI disparaîtraient
+                  complètement du parcours. Hors voyage, ils restent affichés
+                  à l'étape 0 comme avant ; on ne les montre donc ici que
+                  lorsque l'intro a été court-circuitée. */}
+              {skipIntro && kpis.length > 0 ? (
+                <KpiRow items={kpis} title={kpiTitle} />
+              ) : null}
               <div className="board__work">
                 {hasInfo && (
                   <button

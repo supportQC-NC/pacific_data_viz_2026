@@ -353,3 +353,30 @@ $switch-thumb: 22px;
 /* (Optionnel) L'ancienne pastille n'est plus utilisée : ces règles peuvent
    être supprimées de Header.scss si tu veux nettoyer.
    .header__mark { ... }  @keyframes pulse { ... } */
+/* ---------- HEADER SUR LE HERO NOCTURNE DE LA HOME ----------
+   Uniquement quand <Header> porte .header--nighthero, c'est-à-dire sur "/"
+   et tant qu'on n'a pas défilé (cf. Header.jsx). Dès qu'on scrolle, la classe
+   tombe et le header retrouve exactement son apparence habituelle.
+
+   On REDÉFINIT LES TOKENS localement plutôt que de réécrire chaque règle :
+   tous les descendants (marque, tagline, liens, bascules) héritent de l'encre
+   claire sans qu'on ait à les énumérer, et rien d'autre dans le site n'est
+   touché. */
+.header--nighthero {
+  --c-text: #f6f9ff;
+  --c-text-soft: #dbe4f8;
+  --c-text-mute: #a8b8dd;
+  --c-line: rgba(219, 228, 248, 0.24);
+  --c-line-strong: rgba(219, 228, 248, 0.44);
+  --c-accent: #b9c4f5;
+
+  /* Indispensable : `color` est HÉRITÉ depuis <body>, où il a déjà été résolu
+     en valeur sombre. Redéfinir --c-text ne suffit donc pas pour les éléments
+     qui n'ont pas de règle `color` propre (la marque, par ex.) — il faut le
+     re-résoudre ici pour que l'héritage reparte du bon pied. */
+  color: var(--c-text);
+
+  /* Le fond du header est transparent avant scroll : une ombre portée douce
+     décolle le texte du ciel sans ajouter de bandeau. */
+  text-shadow: 0 1px 12px rgba(2, 8, 22, 0.55);
+}

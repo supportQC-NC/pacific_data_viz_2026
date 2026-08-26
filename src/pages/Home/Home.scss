@@ -34,6 +34,141 @@
   background-position: center;
 }
 
+/* LA NUIT — plein cadre, mais ANCRÉE EN HAUT À GAUCHE : c'est de là que le
+   ciel s'ouvre, et c'est là que la voie lactée et les filantes se lisent.
+   Elle s'estompe vers la mer pour ne pas éteindre la photo du hero.
+   Sans cette couche, le champ d'étoiles est invisible sur fond clair. */
+.home__sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  /* NUIT PLEIN ÉCRAN. La version précédente concentrait la nuit dans le coin
+     haut-gauche : le ciel n'existait que là, ce qui n'était pas l'intention.
+     Ici la nuit couvre toute la largeur et ne s'ouvre que vers le bas, pour
+     laisser la houle et le bas de la photo respirer. */
+  /* La nuit tient plus longtemps vers le bas : elle s'éteignait à 58 %, donc
+     les étoiles de la moitié basse tombaient sur une photo claire et
+     disparaissaient — d'où l'impression d'un ciel confiné en haut à gauche. */
+  background:
+    linear-gradient(180deg,
+      rgba(2, 6, 16, 0.97) 0%,
+      rgba(3, 9, 22, 0.95) 40%,
+      rgba(4, 11, 26, 0.88) 62%,
+      rgba(6, 15, 33, 0.62) 80%,
+      rgba(8, 18, 38, 0.22) 93%,
+      transparent 100%),
+    radial-gradient(140% 90% at 50% 0%,
+      rgba(12, 26, 54, 0.55) 0%,
+      transparent 76%);
+}
+
+/* VOIE LACTÉE 3D — canvas plein cadre (hauteur ET largeur).
+   Le rendu (volume, perspective, poussière, dérive) est dans
+   MilkyWayCanvas ; ici uniquement le placement. L'ancienne version était un
+   empilement de dégradés CSS : elle se lisait comme un aplat et disparaissait
+   sous le flou, quelle que soit l'opacité. */
+.home__milkyway {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  /* Éteinte au ras de la houle : la galaxie n'a rien à faire dans l'eau. */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 95%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 95%);
+}
+
+/* ENCRE CLAIRE SUR LE HERO — et NULLE PART AILLEURS.
+   Le hero est désormais nocturne, mais le site reste en thème clair : ses
+   tokens de texte sont sombres. Sans ceci, « Nos ancêtres lisaient les
+   étoiles » s'affiche en bleu nuit sur fond bleu nuit (constaté à l'écran).
+   Portée strictement limitée à .home__hero-content : le reste de la Home,
+   le Header et les autres pages ne sont pas touchés. */
+.home__hero-content {
+  .home__title {
+    color: #f6f9ff;
+  }
+  .home__title-accent {
+    color: #b9c4f5;
+  }
+  .home__thesis {
+    color: rgba(233, 239, 255, 0.88);
+  }
+  .home__eyebrow {
+    color: #93a8e8;
+  }
+}
+
+/* CIEL ÉTOILÉ — au-dessus de la nuit (1), sous la houle et le contenu.
+   Le masque suit la nuit : dense en haut à gauche, éteint vers la mer, pour
+   que les étoiles n'aillent pas flotter sur l'eau. */
+.home__stars {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 1;
+  /* Rehaussées : le composant dessine des étoiles crème à alpha faible,
+     pensées pour le fond quasi noir du Prologue. Ici elles se superposent à
+     une photo, donc on force le contraste plutôt que de toucher au composant
+     partagé (utilisé aussi par le Prologue et les traversées). */
+  filter: brightness(1.5) contrast(1.15);
+  /* Masque PLEIN ÉCRAN, tenu jusqu'au ras de la houle. Il coupait à 62 %,
+     ce qui vidait la moitié basse du ciel. */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 97%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 97%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home__milkyway {
+    animation: none;
+  }
+}
+
+/* LA PIROGUE sur la houle. Calée sur la ligne d'eau initiale (~11% du bas).
+   z-index 1 comme la mer, mais placée APRÈS elle dans le DOM : elle se peint
+   donc par-dessus l'eau, sans passer devant le texte (contenu en z-index 2). */
+.home__vaa {
+  position: absolute;
+  right: clamp(2%, 7vw, 12%);
+  bottom: 9%;
+  width: clamp(130px, 17vw, 260px);
+  z-index: 1;
+  pointer-events: none;
+  animation: homeVaaRock 8s ease-in-out infinite;
+  transform-origin: 50% 88%;
+}
+
+@keyframes homeVaaRock {
+  0%,
+  100% {
+    transform: rotate(-1deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1deg) translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home__vaa {
+    animation: none;
+  }
+}
+
+/* Sous 720px le texte occupe toute la largeur : la pirogue devient un détail
+   d'horizon plutôt qu'un sujet, pour ne pas concurrencer le titre. */
+@media (max-width: 720px) {
+  .home__vaa {
+    width: 118px;
+    right: 4%;
+    bottom: 13%;
+    opacity: 0.75;
+  }
+}
+
 /* SCRIM premium : lisibilité d'abord.
    - dégradé horizontal solide à gauche (sous le texte)
    - fondu vertical bas (raccord vers le récit)
@@ -698,4 +833,19 @@
   .home__signatures > section {
     min-height: auto;
   }
+}
+/* ---------- ÉTOILE FILANTE ----------
+   Même plan que le ciel (1) mais APRÈS les étoiles dans le DOM : elle passe
+   devant elles, et reste derrière la pirogue et le texte. Elle traverse tout
+   le hero, du coin haut-gauche jusqu'à l'horizon. */
+.home__shooting {
+  position: absolute;
+  inset: 0;
+  /* Indispensable sur un <canvas> : c'est un élément REMPLACÉ, `inset: 0`
+     seul ne l'étire pas — il resterait à sa taille intrinsèque de 300×150. */
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  pointer-events: none;
 }

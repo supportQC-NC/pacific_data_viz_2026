@@ -26,6 +26,20 @@ const LAYERS = [
   { amp: 10, len: 240, spd: 0.00096, ph: 4.2, alpha: 0.48, off: 8 },
 ];
 
+// NIVEAU DE LA MER, en fraction de la hauteur du hero mesurée DEPUIS LE BAS.
+// Exporté pour que ce qui flotte dessus (la pirogue du hero) se cale sur le
+// VRAI niveau au lieu de réimplémenter la courbe de son côté.
+//
+// ⚠️ Courbe EN CLOCHE : elle monte jusqu'à mi-scroll puis redescend. Tout
+// appelant qui veut un comportement MONOTONE (« une fois englouti, on ne
+// ressort pas ») doit borner son entrée à 0,5 — voir Home.jsx.
+export const SEA_LEVEL_MIN = 0.11;
+export const SEA_LEVEL_PEAK_AT = 0.5;
+export function seaLevelAt(rise) {
+  const r = Math.min(1, Math.max(0, rise));
+  return SEA_LEVEL_MIN + 0.45 * Math.sin(r * Math.PI);
+}
+
 export default function HeroSeaRise() {
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
@@ -67,7 +81,7 @@ export default function HeroSeaRise() {
     const render = (time) => {
       const t = REDUCED ? 0 : time;
       // Niveau en cloche : 0 -> pic au centre (mi-scroll) -> redescend.
-      const level = 0.11 + 0.45 * Math.sin(riseRef.current * Math.PI);
+      const level = seaLevelAt(riseRef.current);
       const surface = H * (1 - level);
       ctx.clearRect(0, 0, W, H);
 

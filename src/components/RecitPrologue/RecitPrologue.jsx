@@ -17,13 +17,17 @@ import React, { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { useLang } from "../../store/context/langContext";
 import StarfieldCanvas from "../StarfieldCanvas/StarfieldCanvas";
+import MilkyWayCanvas from "../MilkyWayCanvas/MilkyWayCanvas";
 import "./RecitPrologue.scss";
 
 // --- La prose de couverture (à valider) ---------------------------------
 const COPY = {
   fr: {
-    title1: "Nos ancêtres lisaient les étoiles.",
-    title2: "Nous lisons les données.",
+    // Échangé avec le hero de la Home : la Home porte désormais « Nos
+    // ancêtres lisaient les étoiles », et le Récit s'ouvre sur la promesse
+    // de lecture par la donnée.
+    title1: "Lire le Pacifique",
+    title2: "par ses données.",
     quote: "« Nous ne sombrons pas, nous nous battons. »",
     cite: "Pacific Climate Warriors",
     tagline:
@@ -31,8 +35,8 @@ const COPY = {
     cue: "Commencer le voyage",
   },
   en: {
-    title1: "Our ancestors read the stars.",
-    title2: "We read the data.",
+    title1: "Reading the Pacific",
+    title2: "through its data.",
     quote: "“We are not drowning, we are fighting.”",
     cite: "Pacific Climate Warriors",
     tagline:
@@ -101,6 +105,11 @@ export default function RecitPrologue({ onStart }) {
     <header className="rprologue" ref={rootRef}>
       {/* --- Décor --- */}
       <div className="rprologue__sky" aria-hidden="true" />
+      {/* VOIE LACTÉE 3D, tout au fond — même canvas que le hero de la Home.
+          Le Prologue est déjà nocturne, elle s'y lit donc encore mieux.
+          z-index entre le ciel (-5) et le champ d'étoiles (-4) : elle passe
+          derrière les étoiles, qui gardent le premier plan stellaire. */}
+      <MilkyWayCanvas className="rprologue__milkyway" />
       <StarfieldCanvas />
       <div className="rprologue__vignette" aria-hidden="true" />
 

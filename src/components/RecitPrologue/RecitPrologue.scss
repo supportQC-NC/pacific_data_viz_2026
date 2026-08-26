@@ -415,3 +415,25 @@
     animation: none !important;
   }
 }
+
+/* ---------- VOIE LACTÉE 3D (arrière-plan du Prologue) ----------
+   Entre le ciel (-5) et le champ d'étoiles (-4) : elle installe la profondeur
+   sans jamais passer devant les étoiles ni le texte. Même composant que le
+   hero de la Home — aucune duplication. */
+.rprologue__milkyway {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* Il n'existe aucun entier entre -5 (le ciel) et -4 (les étoiles). On prend
+     donc -5 comme le ciel : placée APRÈS lui dans le DOM, elle se peint
+     par-dessus, et reste sous les étoiles (-4), la vignette (-3), la mer (-2),
+     la pirogue (-1) et le texte (1). */
+  z-index: -5;
+  pointer-events: none;
+  opacity: 0.9;
+  /* S'éteint vers le bas, là où la mer et la pirogue prennent le relais. */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 66%, transparent 92%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 66%, transparent 92%);
+}

@@ -14,7 +14,7 @@
 //      « suivant » se recalculent automatiquement partout.
 // ============================================================
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // Ordre narratif officiel (doit suivre les chapitres de la Home).
 // Plan validé v2 — 5 mouvements :
@@ -93,6 +93,24 @@ export function JourneyProvider({ children }) {
   const [presentation, setPresentation] = useState(false);
   const [immersive, setImmersive] = useState(false);
 
+  // DERNIER ACTE VISITÉ — volontairement NON PERSISTÉ (ni localStorage, ni
+  // history.state). Il sert à distinguer un vrai DÉPLACEMENT entre deux
+  // dashboards d'un simple (re)chargement de page :
+  //   • null      → on vient d'arriver sur le site / F5 → pas de traversée
+  //   • ≠ actId   → déplacement réel → traversée
+  //   • = actId   → re-rendu du même acte → pas de traversée
+  //
+  // `location.key` de React Router ne convient PAS ici : sa valeur vient de
+  // `window.history.state.key`, que le navigateur RESTAURE au rechargement.
+  // Vérifié en v7.16.0 : après un F5 sur une route atteinte par navigation,
+  // la clé n'est pas "default" — un rechargement serait pris pour un
+  // déplacement. D'où cette mémoire de session.
+  //
+  // C'est une REF et non un état : la lire ne doit pas provoquer de rendu, et
+  // surtout elle doit toujours renvoyer la valeur courante (un état capturé
+  // dans une closure serait périmé au moment où l'acte change).
+  const lastActRef = useRef(null);
+
   useEffect(() => {
     window.localStorage.setItem(MODE_KEY, guided ? "1" : "0");
   }, [guided]);
@@ -144,6 +162,7 @@ export function JourneyProvider({ children }) {
       presentation,
       immersive,
       setImmersive,
+      lastActRef,
       startJourney,
       exitJourney,
       markSeen,
@@ -165,6 +184,7 @@ export function JourneyProvider({ children }) {
       seen,
       presentation,
       immersive,
+      lastActRef,
       startJourney,
       exitJourney,
       markSeen,

@@ -1,0 +1,51 @@
+// src/components/Vaa/Vaa.scss
+// ============================================================
+// Habillage par défaut de la pirogue. Volontairement en TOKENS : elle doit
+// suivre le thème clair/sombre, contrairement aux copies inline existantes
+// qui figeaient leurs couleurs. Un appelant peut tout surcharger via sa
+// propre classe.
+// ============================================================
+
+.vaacraft {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.vaacraft__hull {
+  fill: var(--c-bg);
+  stroke: var(--c-text);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.vaacraft__sail {
+  fill: var(--c-text);
+  opacity: 0.96;
+}
+.vaacraft__sail--back {
+  opacity: 0.62;
+}
+
+.vaacraft__mast,
+.vaacraft__ama,
+.vaacraft__iako {
+  fill: none;
+  stroke: var(--c-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.vaacraft__shadow {
+  fill: color-mix(in srgb, var(--c-bg) 55%, transparent);
+}
+
+.vaacraft__wake {
+  fill: none;
+  stroke: var(--c-text);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 3 7;
+  opacity: 0.5;
+}

@@ -8,13 +8,20 @@
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "../../store/context/langContext";
-import LanguageGate from "../../components/LanguageGate/LanguageGate";
-import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
+import HeroSeaRise, {
+  seaLevelAt,
+  SEA_LEVEL_MIN,
+  SEA_LEVEL_PEAK_AT,
+} from "../../components/HeroSeaRise/HeroSeaRise";
+import StarfieldCanvas from "../../components/StarfieldCanvas/StarfieldCanvas";
+import MilkyWayCanvas from "../../components/MilkyWayCanvas/MilkyWayCanvas";
+import ShootingStar from "../../components/ShootingStar/ShootingStar";
+import Vaa from "../../components/Vaa/Vaa";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
-import KeyFigures from "../../components/KeyFigures/KeyFigures";
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import TbBacilli from "../../components/TbBacilli/TbBacilli";
 import EnergyCell from "../../components/EnergyCell/EnergyCell";
@@ -43,10 +50,12 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Home() {
   const { t } = useLang();
 
-  const [gateOpen, setGateOpen] = useState(false);
+  const navigate = useNavigate();
+  const [warping, setWarping] = useState(false); // plongée dans les étoiles
 
   const heroRef = useRef(null);
   const contentRef = useRef(null);
+  const vaaRef = useRef(null); // la pirogue, que la montée des eaux fait disparaître
 
   // Descendre sous le hero (vers le manifeste / les modes de lecture).
   const scrollDown = () =>
@@ -55,7 +64,26 @@ export default function Home() {
       behavior: "smooth",
     });
 
-  const beginExperience = () => setGateOpen(true);
+  // ENTRÉE DANS LE RÉCIT — on plonge d'abord dans les étoiles, puis on arrive
+  // sur le prologue. Plus d'écran de choix de langue sur ce chemin : la
+  // langue se change dans le header, et le voyage démarre depuis le prologue
+  // (« Commencer le voyage » y appelle startJourney).
+  //
+  // Le délai correspond à la rampe d'accélération du canvas : assez pour voir
+  // les traînées se former, assez court pour ne pas faire attendre.
+  // `prefers-reduced-motion` court-circuite la plongée et navigue tout de suite.
+  const beginExperience = () => {
+    const reducedNow =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedNow) {
+      navigate("/recit");
+      return;
+    }
+    setWarping(true);
+    window.setTimeout(() => navigate("/recit"), 900);
+  };
 
   const reduced =
     typeof window !== "undefined" &&
@@ -81,11 +109,14 @@ export default function Home() {
     return () => ctx.revert();
   }, [reduced]);
 
-  // Parallax du contenu du hero au scroll.
+  // Parallax du contenu du hero au scroll + ENGLOUTISSEMENT DE LA PIROGUE.
   useEffect(() => {
     if (reduced || !contentRef.current) return undefined;
     const setY = gsap.quickSetter(contentRef.current, "y", "px");
     const setA = gsap.quickSetter(contentRef.current, "opacity");
+    const setVaaA = vaaRef.current
+      ? gsap.quickSetter(vaaRef.current, "opacity")
+      : null;
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -96,6 +127,28 @@ export default function Home() {
         const p = Math.min(1, Math.max(0, y / h));
         setY(y * 0.22);
         setA(1 - p * 0.9);
+
+        // LA MER MONTE ET AVALE LA PIROGUE — définitivement.
+        //
+        // On utilise le VRAI niveau de HeroSeaRise (seaLevelAt), pas une
+        // copie de sa formule. Mais cette courbe est EN CLOCHE : elle monte
+        // jusqu'à mi-scroll puis REDESCEND. Appliquée telle quelle, la
+        // pirogue réapparaissait en scrollant plus bas.
+        //
+        // On borne donc l'entrée au pic (SEA_LEVEL_PEAK_AT) : le niveau
+        // devient monotone croissant, puis reste à son maximum. Une fois
+        // engloutie, la pirogue ne ressort jamais.
+        //
+        // Repères : la coque est à 9 % du bas, le haut du mât à ~30 % —
+        // hauteur où se trouvent aussi les boutons. L'eau atteint le mât,
+        // l'opacité vaut 0.
+        if (setVaaA) {
+          const level = seaLevelAt(Math.min(p, SEA_LEVEL_PEAK_AT));
+          const HULL = SEA_LEVEL_MIN; // l'eau touche la coque
+          const MAST = 0.3; // l'eau atteint le mât / le niveau des boutons
+          const sunk = Math.min(1, Math.max(0, (level - HULL) / (MAST - HULL)));
+          setVaaA(1 - sunk);
+        }
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -190,11 +243,54 @@ export default function Home() {
 
   return (
     <main className="home">
-      <LanguageGate open={gateOpen} onClose={() => setGateOpen(false)} />
 
       <section className="home__hero" ref={heroRef}>
         <div className="home__hero-overlay" aria-hidden="true" />
+
+        {/* NUIT + VOIE LACTÉE — indispensable AVANT les étoiles : le hero a
+            une photo sous-marine claire en fond, et un champ d'étoiles clair
+            sur fond clair est purement invisible (constaté à l'écran).
+            Cette couche installe une nuit qui s'ouvre en haut à gauche, avec
+            une bande laiteuse en diagonale, et se dissipe vers la mer. */}
+        <div className="home__sky" aria-hidden="true">
+          {/* Voie lactée 3D : étoiles en volume, projetées en perspective,
+              qu'on traverse lentement. Le dégradé CSS précédent ne tenait pas
+              — il se lisait comme un aplat, pas comme une galaxie. */}
+          <MilkyWayCanvas className="home__milkyway" warp={warping} />
+        </div>
+
+        {/* CIEL ÉTOILÉ — même composant que le Prologue et les traversées :
+            étoiles, constellations, étoiles filantes, et la « lanterne du
+            navigateur » (le curseur allume les étoiles proches et trace des
+            fils vers elles). Placé AVANT la mer pour que la houle se peigne
+            par-dessus le bas du ciel. */}
+        {/* Densité NETTEMENT relevée par rapport au défaut (0.00016 / 150),
+            calibré pour le Prologue : ici le ciel doit tenir toute la largeur
+            d'un hero plein écran. Réglé par PROPS uniquement — le composant
+            partagé (Prologue, traversées) garde ses valeurs. */}
+        <StarfieldCanvas
+          className="home__stars"
+          density={0.00042}
+          maxStars={460}
+          linkDist={112}
+          lanternRadius={190}
+        />
+
+        {/* ÉTOILE FILANTE — entre en haut à gauche, décrit un arc et
+            s'éteint près de l'horizon. Canvas dédié : il ne dessine que la
+            filante, et rien du tout entre deux passages. */}
+        <ShootingStar className="home__shooting" />
+
         <HeroSeaRise />
+
+        {/* LA PIROGUE, posée sur la houle. La ligne d'eau de HeroSeaRise vaut
+            0.11 + 0.45·sin(scroll·π) : elle MONTE au scroll. La pirogue est
+            donc calée sur le niveau initial (scroll 0), l'état où le hero se
+            regarde ; plus bas dans la page, le contenu du hero s'efface de
+            toute façon en parallaxe. */}
+        <div className="home__vaa" ref={vaaRef} aria-hidden="true">
+          <Vaa withWake />
+        </div>
 
         <div className="home__hero-content container" ref={contentRef}>
           <p className="eyebrow home__eyebrow">{t("home.kicker")}</p>
@@ -211,11 +307,15 @@ export default function Home() {
             >
               {t("home.begin")} <span aria-hidden="true">✦</span>
             </button>
+            {/* Second bouton : les SOURCES, vers « À propos ». Il ne fait plus
+                défiler la page — c'est le seul endroit du hero qui mène à la
+                provenance des données, ce qui compte pour un lecteur qui veut
+                vérifier avant de lire. */}
             <button
               className="home__cta home__cta--ghost"
-              onClick={scrollDown}
+              onClick={() => navigate("/a-propos")}
             >
-              {t("home.cta")} <span aria-hidden="true">↓</span>
+              {t("home.sources")} <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
@@ -228,8 +328,6 @@ export default function Home() {
           <span className="home__scrollcue-line" />
         </button>
       </section>
-
-      <KeyFigures />
 
       <div className="home__signatures">
         <WaterGlass />

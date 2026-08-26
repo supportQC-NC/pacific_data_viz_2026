@@ -8,6 +8,11 @@ const EXTRA_STRINGS = {
   fr: {
     header: { nav_recit: "Le Récit" },
     home: {
+      // ⚠️ UN SEUL objet `home` par langue. Une deuxième clé du même nom dans
+      // le même littéral écrase silencieusement la première (le dernier gagne
+      // en JS) — c'est ce qui avait fait disparaître ces trois légendes.
+      begin: "Découvrir", // remplace « Commencer l'expérience »
+      sources: "Les sources",
       tb: { value_caption: "Incidence locale" },
       sea: { value_caption: "Anomalie locale · vs normale 1971–2000" },
       coast: { rate_caption: "Taux annuel · médiane des segments" },
@@ -90,6 +95,8 @@ const EXTRA_STRINGS = {
     },
     // Passage du board vers la conclusion de l'acte (3e temps).
     board: { conclude: "Lire la conclusion" },
+    // Sortie du voyage guidé, depuis la barre d'acte.
+    flow: { exit_voyage: "Quitter le voyage" },
     // Barre de voyage du Récit (chaque acte = une escale).
     recit: {
       voyage_exit: "Quitter le voyage",
@@ -108,6 +115,7 @@ const EXTRA_STRINGS = {
       export_excel: "Excel workbook",
     },
     board: { conclude: "Read the conclusion" },
+    flow: { exit_voyage: "Leave the voyage" },
     recit: {
       voyage_exit: "Leave the voyage",
       voyage_next: "Next leg",
@@ -117,6 +125,9 @@ const EXTRA_STRINGS = {
       voyage_leg: "Leg",
     },
     home: {
+      // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
+      begin: "Discover",
+      sources: "The sources",
       tb: { value_caption: "Local incidence" },
       sea: { value_caption: "Local anomaly · vs 1971–2000 normal" },
       coast: { rate_caption: "Annual rate · median of segments" },
