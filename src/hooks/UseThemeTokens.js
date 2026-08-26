@@ -24,6 +24,46 @@ const KEYS = {
   secondary: "--c-secondary",
   positive: "--c-positive",
   negative: "--c-negative",
+
+  // --- Palette DATAVIZ (cf. _variables.scss § PALETTE DATAVIZ) ---
+  // Réservée aux séries de graphiques. Les tokens ci-dessus habillent
+  // l'interface : ne pas s'en servir pour colorer une série.
+  series1: "--c-series-1",
+  series2: "--c-series-2",
+  series3: "--c-series-3",
+  series4: "--c-series-4",
+  series5: "--c-series-5",
+  series6: "--c-series-6",
+  series7: "--c-series-7",
+  series8: "--c-series-8",
+
+  seq100: "--c-seq-100",
+  seq200: "--c-seq-200",
+  seq300: "--c-seq-300",
+  seq400: "--c-seq-400",
+  seq500: "--c-seq-500",
+  seq600: "--c-seq-600",
+  seq700: "--c-seq-700",
+  seq800: "--c-seq-800",
+  seq900: "--c-seq-900",
+
+  ord1: "--c-ord-1",
+  ord2: "--c-ord-2",
+  ord3: "--c-ord-3",
+  ord4: "--c-ord-4",
+  ord5: "--c-ord-5",
+  ord6: "--c-ord-6",
+
+  // Rampe divergente (lavande ↔ rouge, centre neutre) — dépend du thème.
+  div1: "--c-div-1",
+  div2: "--c-div-2",
+  div3: "--c-div-3",
+  div4: "--c-div-4",
+  div5: "--c-div-5",
+  div6: "--c-div-6",
+  div7: "--c-div-7",
+  div8: "--c-div-8",
+  div9: "--c-div-9",
 };
 
 function readTokens() {

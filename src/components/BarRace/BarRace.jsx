@@ -19,6 +19,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
+import { paletteOf } from "../charts/echartsBase";
 import "./BarRace.scss";
 
 const MONO = "IBM Plex Mono";
@@ -55,8 +56,13 @@ export default function BarRace({ series = [], years = [], unit = "", tk = {}, l
     const chart = echarts.init(el, null, { renderer: "canvas" });
     chartRef.current = chart;
 
-    const palette = [tk.accent, tk.warm, tk.secondary, tk.positive, tk.accentDeep, tk.negative].filter(Boolean);
-    const colorOf = (i) => (palette.length ? palette[i % palette.length] : "#8fa1ea");
+    // Palette de SÉRIES validée (et non les tokens d'interface, qui encodent
+    // une intention, pas une identité). `i` vient de l'ordre stable de
+    // `series`, donc la couleur suit bien le territoire et non son rang.
+    // Pas de `i % length` : au-delà de 8, encre neutre — recycler donnait la
+    // même couleur à plusieurs territoires (6 teintes pour jusqu'à 22).
+    const palette = paletteOf(tk).filter(Boolean);
+    const colorOf = (i) => palette[i] || tk.textMute || "#898781";
     const names = series.map((s) => s.name);
     const valuesFor = (yi) =>
       series.map((s, i) => {

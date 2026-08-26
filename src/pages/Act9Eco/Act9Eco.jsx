@@ -24,7 +24,7 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import ApexChart from "../../components/ApexChart/ApexChart";
-import { baseChart, baseGrid, MONO } from "../../components/charts/apexBase";
+import { baseChart, baseGrid, MONO, apexPalette as paletteOf } from "../../components/charts/apexBase";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RadarChart from "../../components/charts/RadarChart";
@@ -328,14 +328,9 @@ export default function Act9Eco() {
 
   // Tourisme — qui capte les visiteurs (treemap) à la dernière année connue de chaque territoire.
   const tourTree = useMemo(() => {
-    const palette = [
-      tk.accent,
-      tk.warm,
-      tk.positive,
-      tk.negative,
-      tk.accentDeep,
-      tk.secondary,
-    ];
+    // Palette de SÉRIES validée (les tokens d'interface encodent une intention,
+    // pas une identité). `i` suit l'ordre stable de `tourS`.
+    const palette = paletteOf(tk);
     return tourS
       .map((s, i) => {
         const last = s.values[s.values.length - 1];
@@ -343,7 +338,8 @@ export default function Act9Eco() {
           ? {
               label: s.name,
               value: last.value,
-              color: palette[i % palette.length],
+              // Pas de recyclage : encre neutre au-delà de la palette.
+              color: palette[i] || tk.textMute,
             }
           : null;
       })

@@ -31,7 +31,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
-import useThemeTokens from "../../hooks/UseThemeTokens";
+// (la heatmap n'impose plus de rampe locale : elle consomme la rampe
+// validée par défaut, il n'y a plus de couleur résolue dans cette page)
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
@@ -43,7 +44,8 @@ import CoverageChart from "../../components/charts/CoverageChart";
 import ShareAboveChart from "../../components/charts/ShareAboveChart";
 import ChangeChart from "../../components/charts/ChangeChart";
 import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
-import { BRAND as EVO_PALETTE } from "../../components/charts/EvolutionLines";
+import { territoryColors } from "../../components/charts/seriesColor";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import { median, fmt, valAt } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
 
@@ -142,37 +144,48 @@ export default function Act2Ocean() {
     [pointsFor, currentYear],
   );
 
-  // Classement coloré par territoire (même palette de marque que l'Évolution).
-  const rankPoints = useMemo(() => {
-    const reg = allSeries.filter((s) => inRegion(s.area));
-    const colorByArea = {};
-    reg.forEach((s, i) => {
-      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
-    });
-    return pointsFor(currentYear).map((p) => ({
-      ...p,
-      color: colorByArea[p.area] || EVO_PALETTE[0],
-    }));
-  }, [allSeries, inRegion, pointsFor, currentYear]);
+  // Couleur d'identité par territoire, PARTAGÉE par toutes les vues de l'acte.
+  // Indexée sur l'ordre canonique des sous-régions, pas sur la liste filtrée :
+  // changer le filtre ne repeint plus les survivants. Voir charts/seriesColor.js.
+  const CANONICAL = useMemo(
+    () => [...SUBREGIONS.melanesia, ...SUBREGIONS.polynesia, ...SUBREGIONS.micronesia],
+    [],
+  );
+  const colorByArea = useMemo(() => {
+    const codes = allSeries.filter((s) => inRegion(s.area)).map((s) => s.area);
+    return territoryColors(codes, tk, {
+      canonical: region === "all" ? CANONICAL : SUBREGIONS[region] || CANONICAL,
+      regionOf: REGION_OF,
+      regionOrder: Object.keys(SUBREGIONS),
+    }).byCode;
+  }, [allSeries, inRegion, region, tk, CANONICAL]);
+
+  // Classement coloré par territoire (même couleur d'identité que l'Évolution).
+  const rankPoints = useMemo(
+    () =>
+      pointsFor(currentYear).map((p) => ({
+        ...p,
+        color: colorByArea[p.area] || tk.textMute,
+      })),
+    [pointsFor, currentYear, colorByArea, tk],
+  );
 
   // Évolution depuis le début (dernière − première valeur), par territoire.
   // delta > 0 = réchauffement ; delta < 0 = refroidissement relatif.
-  const changeRows = useMemo(() => {
-    // Couleur de marque par territoire (même base que rank / évolution).
-    const colorByArea = {};
-    regionSeries.forEach((s, i) => {
-      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
-    });
-    return regionSeries
-      .filter((s) => s.values.length >= 2)
-      .map((s) => ({
-        name: s.name,
-        delta: Number(
-          (s.values[s.values.length - 1].value - s.values[0].value).toFixed(3),
-        ),
-        color: colorByArea[s.area],
-      }));
-  }, [regionSeries]);
+  const changeRows = useMemo(
+    () =>
+      regionSeries
+        .filter((s) => s.values.length >= 2)
+        .map((s) => ({
+          name: s.name,
+          delta: Number(
+            (s.values[s.values.length - 1].value - s.values[0].value).toFixed(3),
+          ),
+          // Même couleur d'identité que le classement et l'évolution.
+          color: colorByArea[s.area] || tk.textMute,
+        })),
+    [regionSeries, colorByArea, tk],
+  );
 
   // Chiffres-chocs (SST).
   const kpiItems = useMemo(() => {
@@ -419,7 +432,12 @@ export default function Act2Ocean() {
                 years={years}
                 unit={t("act2.sst_unit")}
                 mode="rank"
-                ramp={[tk.positive, tk.warm, tk.negative]}
+                /* Pas de `ramp` locale : rampe ORDINALE validée par défaut.
+                   NB : l'anomalie de SST est une grandeur DIVERGENTE (au-dessus
+                   / au-dessous de la normale). Le mode "rank" la traite en
+                   quantiles, donc une rampe une-teinte est correcte ici ; si on
+                   veut vraiment lire le signe, il faudra passer à une échelle
+                   divergente centrée sur 0 (deux teintes + gris neutre). */
                 labels={{
                   low: t("act2.heatmap_low"),
                   high: t("act2.heatmap_high"),

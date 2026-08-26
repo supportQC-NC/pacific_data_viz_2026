@@ -44,14 +44,14 @@ import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import HeatmapChart from "../../components/charts/HeatmapChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import ScatterChart from "../../components/charts/ScatterChart";
-import EvolutionLines, {
-  BRAND as EVO_PALETTE,
-} from "../../components/charts/EvolutionLines";
+import EvolutionLines from "../../components/charts/EvolutionLines";
+import { territoryColors } from "../../components/charts/seriesColor";
 import {
   median,
   fmt,
   valAt,
   paletteOf,
+  scatterPaletteOf,
 } from "../../components/charts/echartsBase";
 import "./Act1Emissions.scss";
 
@@ -151,23 +151,45 @@ export default function Act1Emissions() {
     [pointsFor, currentYear],
   );
 
-  // Classement en FUNNEL : du plus gros émetteur au plus petit. Chaque
-  // territoire garde la MÊME couleur que dans la vue Évolution (palette de
-  // marque indexée sur l'ordre régional).
-  const rankFunnel = useMemo(() => {
-    const reg = allSeries.filter((s) => inRegion(s.area));
-    const colorByArea = {};
-    reg.forEach((s, i) => {
-      colorByArea[s.area] = EVO_PALETTE[i % EVO_PALETTE.length];
+  // Couleur d'identité par territoire, PARTAGÉE par toutes les vues de l'acte
+  // (évolution, classement, tendance). Indexée sur l'ordre CANONIQUE des
+  // sous-régions, pas sur la liste filtrée : changer le filtre ne repeint donc
+  // plus les territoires survivants. Voir charts/seriesColor.js.
+  const CANONICAL = useMemo(
+    () => [...SUBREGIONS.melanesia, ...SUBREGIONS.polynesia, ...SUBREGIONS.micronesia],
+    [],
+  );
+  const colorByArea = useMemo(() => {
+    const codes = allSeries.filter((s) => inRegion(s.area)).map((s) => s.area);
+    return territoryColors(codes, tk, {
+      canonical: region === "all" ? CANONICAL : SUBREGIONS[region] || CANONICAL,
+      regionOf: REGION_OF,
+      regionOrder: Object.keys(SUBREGIONS),
+    }).byCode;
+  }, [allSeries, inRegion, region, tk, CANONICAL]);
+
+  // Même carte, indexée par NOM de série : EvolutionLines travaille par nom.
+  const colorByName = useMemo(() => {
+    const m = {};
+    allSeries.forEach((s) => {
+      if (colorByArea[s.area]) m[s.name] = colorByArea[s.area];
     });
-    return [...pointsFor(currentYear)]
-      .sort((a, b) => b.value - a.value)
-      .map((p) => ({
-        label: p.name,
-        value: p.value,
-        color: colorByArea[p.area] || EVO_PALETTE[0],
-      }));
-  }, [pointsFor, currentYear, allSeries, inRegion]);
+    return m;
+  }, [allSeries, colorByArea]);
+
+  // Classement en FUNNEL : du plus gros émetteur au plus petit. Chaque
+  // territoire garde la MÊME couleur que dans la vue Évolution.
+  const rankFunnel = useMemo(
+    () =>
+      [...pointsFor(currentYear)]
+        .sort((a, b) => b.value - a.value)
+        .map((p) => ({
+          label: p.name,
+          value: p.value,
+          color: colorByArea[p.area] || tk.textMute,
+        })),
+    [pointsFor, currentYear, colorByArea, tk],
+  );
 
   // Vue Tendance : aire empilée par territoire. Options du filtre pays
   // (limitées à la sous-région courante) et séries effectivement tracées.
@@ -201,14 +223,18 @@ export default function Act1Emissions() {
 
   // Nuage niveau × évolution (groupé par sous-région).
   const scatterGroups = useMemo(() => {
-    // Couleurs de marque, distinctes et lisibles en clair ET sombre :
-    // cyan (Mélanésie) · corail (Polynésie) · violet (Micronésie).
-    const SUB_COLORS = ["#06b6d4", "#ff6b4a", "#8b5cf6"];
+    // Un nuage de points est une forme TOUTES-PAIRES (chaque groupe côtoie
+    // tous les autres) : plafond à 3 séries validées. Les 3 sous-régions
+    // tombent juste. Même source que `volGroups` plus bas — sans quoi les deux
+    // nuages du MÊME acte donnaient des couleurs différentes aux mêmes
+    // sous-régions (avant : cyan/corail/violet codés en dur, hors charte et
+    // insensibles au thème).
+    const palette = scatterPaletteOf(tk);
     const inReg = allSeries.filter((s) => inRegion(s.area));
     return Object.keys(SUBREGIONS)
       .map((reg, i) => ({
         name: subNames[reg],
-        color: SUB_COLORS[i % SUB_COLORS.length],
+        color: palette[i] || tk.textMute,
         points: inReg
           .filter((s) => REGION_OF[s.area] === reg)
           .map((s) => {
@@ -530,6 +556,7 @@ export default function Act1Emissions() {
                 years={years}
                 unit={t("act1.unit")}
                 mode="index"
+                colorBy={colorByName}
                 labels={{ base: tf("act1.evo.base", "base 100", "base 100") }}
               />
             ),
@@ -580,14 +607,11 @@ export default function Act1Emissions() {
                 years={years}
                 unit={t("act1.unit")}
                 mode="rank"
-                ramp={[
-                  "#43745f",
-                  "#7ba18d",
-                  "#b3c0a6",
-                  "#d6c29c",
-                  "#c28a72",
-                  "#9e564f",
-                ]}
+                /* Pas de `ramp` locale : on laisse HeatmapChart appliquer la
+                   rampe ORDINALE validée (une seule teinte, clair → sombre).
+                   L'ancienne rampe codée en dur ici encodait la magnitude par
+                   la TEINTE (vert → sable → terracotta), donc illisible en
+                   niveaux de gris et pour un daltonien. */
                 labels={{
                   low: t("act1.heatmap.low"),
                   high: t("act1.heatmap.high"),

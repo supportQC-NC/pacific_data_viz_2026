@@ -134,7 +134,13 @@ export default function ActBoard({
       if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        goTab((p) => p + 1);
+        // Au-delà du dernier graphique, on enchaîne sur la CONCLUSION de
+        // l'acte (étape 2) au lieu de rester bloqué : c'est le troisième
+        // temps prévu par la coquille (intro → board → outro).
+        // (`tab`/`count` et non `idx`, déclaré plus bas : le tableau de
+        // dépendances est évalué pendant le rendu, donc avant `idx`.)
+        if (outro && tab >= count - 1) goStep(2);
+        else goTab((p) => p + 1);
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         goTab((p) => p - 1);
@@ -142,7 +148,7 @@ export default function ActBoard({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [status, step, goTab]);
+  }, [status, step, goTab, goStep, outro, tab, count]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -324,6 +330,25 @@ export default function ActBoard({
                       key={nav === "carousel" ? idx : undefined}
                     >
                       {active.node}
+                    </div>
+                  )}
+
+                  {/* Passage vers le TROISIÈME temps de l'acte. Sans ce
+                      bouton, l'outro (étape 2) restait injoignable : rien
+                      n'appelait goStep(2), donc la conclusion rédigée de
+                      chaque acte n'était jamais lue. Visible sur le dernier
+                      graphique seulement, pour ne pas court-circuiter la
+                      lecture des précédents. */}
+                  {outro && idx === count - 1 && (
+                    <div className="board__toconclude">
+                      <button
+                        type="button"
+                        className="board__conclude"
+                        onClick={() => goStep(2)}
+                      >
+                        {tf("board.conclude", "Lire la conclusion", "Read the conclusion")}{" "}
+                        <span aria-hidden="true">→</span>
+                      </button>
                     </div>
                   )}
                 </div>

@@ -8,31 +8,13 @@
 import React, { useMemo, useState, useCallback } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
-import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis } from "./apexBase";
+import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, apexPalette as paletteOf } from "./apexBase";
 import "./RiverChart.scss";
 
-// Palette de marque : famille FROIDE (cyan primaire → teals/bleus/verts/violets),
-// ordonnée en alternant clair/foncé pour un contraste lisible entre bandes.
-const BRAND = [
-  "#0e7490",
-  "#67e8f9",
-  "#0d9488",
-  "#5eead4",
-  "#1d4ed8",
-  "#93c5fd",
-  "#15803d",
-  "#86efac",
-  "#6d28d9",
-  "#c4b5fd",
-  "#0891b2",
-  "#a5f3fc",
-  "#0f766e",
-  "#99f6e4",
-  "#2563eb",
-  "#bfdbfe",
-  "#16a34a",
-  "#4ade80",
-];
+// (La copie locale de 18 teintes codées en dur a été retirée : famille
+// quasi entièrement froide, non validée, avec des paires indiscernables sous
+// daltonisme — et recyclée par `i % length`, ce qui donnait la même couleur à
+// plusieurs séries. On consomme désormais la palette validée via `paletteOf`.)
 
 export default function RiverChart({
   subAvg = [],
@@ -43,7 +25,11 @@ export default function RiverChart({
   const tk = useThemeTokens();
   const [hidden, setHidden] = useState({});
 
-  const palette = colors && colors.length ? colors : BRAND;
+  // `colors` (prop) reste prioritaire : une page qui connaît une identité
+  // stable peut imposer sa carte. Sinon, palette de séries validée.
+  const palette = colors && colors.length ? colors : paletteOf(tk);
+  // Pas de recyclage : au-delà de la palette, encre neutre.
+  const colorAt = (i) => palette[i] || tk.textMute;
   const toggle = useCallback(
     (name) => setHidden((h) => ({ ...h, [name]: !h[name] })),
     [],
@@ -142,7 +128,7 @@ export default function RiverChart({
               className="riverlegend__dot"
               ref={(el) => {
                 if (el)
-                  el.style.setProperty("--dot", palette[i % palette.length]);
+                  el.style.setProperty("--dot", colorAt(i));
               }}
             />
             <span className="riverlegend__name">{g.name}</span>

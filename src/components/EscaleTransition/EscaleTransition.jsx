@@ -25,6 +25,14 @@ export default function EscaleTransition({
   enterLabel = "Entrer",
   onEnter,
   active = true,
+  // Décor de la traversée :
+  //   "sea"  (défaut) · haute mer, la pirogue passe et poursuit sa route
+  //   "land"           · ATTERRAGE : une île entre par la droite, la pirogue
+  //                      ralentit et vient s'y ranger (le sillage s'éteint).
+  // La coque du Récit dérive cette valeur du MOUVEMENT narratif de l'acte
+  // (journeyContext) : les escales « Ressources & vivant » et « L'humain en
+  // première ligne » se jouent à terre.
+  scene = "sea",
 }) {
   const rootRef = useRef(null);
 
@@ -58,12 +66,22 @@ export default function EscaleTransition({
       gsap.set(".etrans__voyage", { xPercent: -34, scale: 0.82, opacity: 0 });
       gsap.set(".etrans__wake", { scaleX: 0.15, transformOrigin: "100% 50%" });
 
+      const landing = scene === "land";
+      // À l'atterrage la pirogue s'arrête plus tôt : elle vient se ranger le
+      // long de l'île qui entre par la droite, au lieu de filer au large.
+      const endX = landing ? 1 : 16;
+
       const tl = gsap.timeline();
       // 1) La pirogue entre et navigue d'ouest en est.
       tl.to(".etrans__voyage", { opacity: 1, duration: 0.5 }, 0)
         .to(
           ".etrans__voyage",
-          { xPercent: 16, scale: 1.06, duration: 2.1, ease: "power1.inOut" },
+          {
+            xPercent: endX,
+            scale: 1.06,
+            duration: 2.1,
+            ease: landing ? "power2.out" : "power1.inOut",
+          },
           0,
         )
         .to(
@@ -72,9 +90,16 @@ export default function EscaleTransition({
           0.3,
         )
         // 2) Le ciel étoilé défile (parallaxe) → sensation d'avancer.
+        // Parallaxe du ciel : glissement VOLONTAIREMENT faible. Le canvas est
+        // dimensionné en JS à la largeur du conteneur, donc tout décalage
+        // découvre une bande sans étoiles sur le bord droit — 173 px à -12%,
+        // mesuré à l'écran. À -3%, la sensation d'avancer subsiste et la
+        // bande (~43 px) tombe sous la vignette.
+        // Opacité remontée de 0.4 à 0.62 : à 0.4 le ciel paraissait vide,
+        // alors que les étoiles sont le fil conducteur du voyage.
         .to(
           ".etrans__starfield",
-          { xPercent: -12, opacity: 0.4, duration: 2.1, ease: "none" },
+          { xPercent: -3, opacity: 0.62, duration: 2.1, ease: "none" },
           0,
         )
         .to(".etrans__sea", { xPercent: -7, duration: 2.1, ease: "none" }, 0)
@@ -102,15 +127,30 @@ export default function EscaleTransition({
           { scaleX: 0, duration: 0.6, ease: "power2.out" },
           1.85,
         );
+
+      // 5) ATTERRAGE : l'île entre par la droite pendant la traversée, puis
+      //    le sillage s'éteint — on arrive, on ne passe plus.
+      if (landing) {
+        gsap.set(".etrans__land", { xPercent: 46, opacity: 0 });
+        tl.to(
+          ".etrans__land",
+          { xPercent: 0, opacity: 1, duration: 1.9, ease: "power1.out" },
+          0.25,
+        ).to(
+          ".etrans__wake",
+          { scaleX: 0.18, opacity: 0.3, duration: 0.8, ease: "power2.in" },
+          1.5,
+        );
+      }
     }, rootRef);
     return () => ctx.revert();
-  }, [active, reduced]);
+  }, [active, reduced, scene]);
 
   if (!active) return null;
 
   return (
     <section
-      className="etrans"
+      className={`etrans ${scene === "land" ? "etrans--land" : ""}`}
       ref={rootRef}
       style={{ "--escale-accent": accent }}
       aria-label={`${kicker} — ${title}`}
@@ -124,6 +164,39 @@ export default function EscaleTransition({
       <div className="etrans__dawn" aria-hidden="true">
         <div className="etrans__glow" />
       </div>
+
+      {/* L'ÎLE — uniquement à l'atterrage. Silhouette : relief, cocotiers,
+          frange de récif. Derrière la mer (z-index), devant l'aube : la
+          pirogue passe donc DEVANT le rivage, elle y accoste. */}
+      {scene === "land" && (
+        <div className="etrans__land" aria-hidden="true">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMax meet">
+            {/* relief */}
+            <path
+              className="etrans__land-hill"
+              d="M60 230 Q 150 96 250 150 Q 320 60 400 150 Q 460 190 520 230 Z"
+            />
+            {/* frange de plage */}
+            <path
+              className="etrans__land-shore"
+              d="M20 236 Q 180 208 300 232 Q 420 252 520 236 L520 300 L20 300 Z"
+            />
+            {/* cocotiers : tronc courbé + palmes */}
+            <g className="etrans__land-palm">
+              <path d="M150 232 Q 158 190 146 160" />
+              <path d="M146 160 Q 122 146 106 156" />
+              <path d="M146 160 Q 170 142 190 152" />
+              <path d="M146 160 Q 138 138 148 122" />
+            </g>
+            <g className="etrans__land-palm">
+              <path d="M348 234 Q 342 198 352 172" />
+              <path d="M352 172 Q 330 158 316 168" />
+              <path d="M352 172 Q 376 156 394 166" />
+              <path d="M352 172 Q 356 150 348 136" />
+            </g>
+          </svg>
+        </div>
+      )}
 
       {/* la mer */}
       <div className="etrans__sea" aria-hidden="true">

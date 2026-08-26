@@ -103,13 +103,19 @@
   width: 26vw;
   height: 30vh;
   transform: translateX(-50%);
-  background: linear-gradient(
-    180deg,
-    rgba(174, 220, 235, 0.18) 0%,
-    rgba(174, 220, 235, 0.05) 45%,
-    transparent 80%
+  /* Reflet de lune sur l'eau. ELLIPSE et non `linear-gradient(180deg)` :
+     un dégradé linéaire ne fond que verticalement, donc les bords gauche et
+     droit de la boîte restaient francs — le reflet se voyait comme un
+     rectangle clair posé sur la mer (constaté à l'écran, 386 × 270 px).
+     Le flou seul n'y suffisait pas : 8 px sur 386 px de large ne mange pas
+     un bord net. */
+  background: radial-gradient(
+    ellipse 62% 52% at 50% 6%,
+    rgba(174, 220, 235, 0.2) 0%,
+    rgba(174, 220, 235, 0.07) 46%,
+    transparent 78%
   );
-  filter: blur(8px);
+  filter: blur(14px);
   opacity: 0.8;
   animation: rp-shimmer 5.5s ease-in-out infinite;
 }

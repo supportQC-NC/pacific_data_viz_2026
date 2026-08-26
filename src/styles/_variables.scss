@@ -85,6 +85,74 @@
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
+/* ---------- PALETTE DATAVIZ (séries, rampes) ----------
+   Tokens RÉSERVÉS aux graphiques. Volontairement SÉPARÉS des tokens
+   d'interface (--c-accent, --c-warm, …) : une couleur de série encode une
+   IDENTITÉ, une couleur d'interface encode une intention. Les mélanger était
+   la cause des collisions mesurées (terracotta ↔ negative à ΔE 0,7 en deutan).
+   Ne PAS réutiliser un --c-series-* pour un bouton, un lien ou un état.
+
+   INVARIANTS PAR THÈME : une seule série de valeurs sert les deux modes.
+   C'est possible ici parce que les deux surfaces (#ffffff et le navy #121828)
+   sont assez éloignées pour qu'une clarté moyenne dégage ≥ 3:1 des deux côtés.
+   Vérifié sur les QUATRE surfaces réelles : #ffffff, #f6f8fb, #121828, #050811.
+
+   Portes franchies (validate_palette.js, paires adjacentes, les deux modes) :
+     • bande de clarté, plancher de chroma, contraste ≥ 3:1 .... PASS
+     • séparation daltonisme .... ΔE 10,0 (deutan)  [cible ≥ 8]
+     • plancher vision normale .... ΔE 18,1          [plancher 15]
+
+   ⚠️ PLAFOND TOUTES-PAIRES = 3 SÉRIES. En adjacence (barres, empilements,
+   lignes) les 8 slots passent. Pour les formes où TOUTES les paires se
+   côtoient (nuage de points, radar, bulles, coordonnées parallèles), seuls les
+   3 PREMIERS slots sont validés (CVD ΔE 12,5 · normale 19,1). Le slot 4 (or,
+   78°) entre en collision avec le slot 2 (terracotta, 38°) : ΔE 2,2 en deutan.
+   Au-delà de 3 séries sur ces formes : regrouper en « Autres » ou facetter.
+
+   L'ORDRE des slots est le mécanisme de sécurité daltonisme, pas une
+   décoration. Ne pas réordonner sans repasser le validateur. */
+:root {
+  --c-series-1: #606dd6; /* lavande     — accent historique de la charte */
+  --c-series-2: #c54f28; /* terracotta  — chaud historique de la charte */
+  --c-series-3: #109387; /* sarcelle    — Pacifique / océan */
+  --c-series-4: #a8750c; /* or          — cf. plafond toutes-paires ci-dessus */
+  --c-series-5: #ae3a72; /* rose        — secondaire historique de la charte */
+  --c-series-6: #139a48; /* vert */
+  --c-series-7: #8d58c0; /* violet */
+  --c-series-8: #ba3d47; /* rouge */
+
+  /* Rampe SÉQUENTIELLE (magnitude continue : heatmap « abs », choroplèthe).
+     Une seule teinte, clair → sombre. Le pas le plus clair vaut « ~zéro » et a
+     le droit de se fondre dans la surface. */
+  --c-seq-100: #e1e7fe;
+  --c-seq-200: #c4cefd;
+  --c-seq-300: #a7b6fc;
+  --c-seq-400: #8999f6;
+  --c-seq-500: #6f7de9;
+  --c-seq-600: #5965cb;
+  --c-seq-700: #4751a4;
+  --c-seq-800: #353d7e;
+  --c-seq-900: #272d5e;
+
+  /* Rampe ORDINALE (bandes discrètes ordonnées : heatmap « rank », paliers).
+     Plage resserrée : chaque pas reste lisible sur les DEUX surfaces
+     (2,09:1 au bout clair sur blanc, 2,43:1 au bout sombre sur navy). */
+  --c-ord-1: #a6b1e6;
+  --c-ord-2: #8e9be2;
+  --c-ord-3: #7685e3;
+  --c-ord-4: #626fd9;
+  --c-ord-5: #5661b0;
+  --c-ord-6: #4a5388;
+
+  /* Seconde rampe séquentielle, quand deux échelles de magnitude coexistent.
+     Teinte du slot 2, même construction. */
+  --c-seq2-100: #fee1d7;
+  --c-seq2-300: #faa085;
+  --c-seq2-500: #d75f39;
+  --c-seq2-700: #96391a;
+  --c-seq2-900: #561f0e;
+}
+
 /* ---------- Thème DARK (défaut) ----------
    Near-black à cast lavande, accents lumineux et CONTRASTÉS. */
 :root,
@@ -120,6 +188,32 @@
   --grad-abyss: radial-gradient(120% 90% at 50% -10%, #1a2238 0%, #0c1322 46%, #050811 100%);
   --shadow-glow: 0 0 44px -8px var(--c-accent-glow);
   --shadow-soft: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+
+  /* Rampe DIVERGENTE — lavande ↔ rouge, centre gris neutre.
+     Pour les grandeurs à VRAIE polarité autour d'un zéro qui a un sens
+     (anomalies vs normale, évolution vs base). Pas pour une magnitude simple.
+
+     Contrairement à la palette catégorielle, elle N'EST PAS invariante par
+     thème : sur fond navy les pôles doivent être CLAIRS, sinon les valeurs
+     extrêmes — les plus importantes — se noient dans la surface.
+     Pôles ici : 6,40:1 et 6,10:1 (≥ 3:1) · symétrie des pôles : ΔL 0,001.
+
+     Vert ↔ rouge a été écarté après mesure : ΔE 4,1 en deutéranopie (les deux
+     pôles sont la MÊME couleur pour ~8 % des hommes) alors qu'il paraît
+     parfaitement lisible en vision normale — d'où sa persistance ailleurs.
+     Lavande ↔ rouge mesure ΔE 22,7.
+
+     Le pas voisin du centre s'efface volontairement vers la surface : il
+     signifie « proche de zéro ». */
+  --c-div-1: #8494fa; /* pôle lavande */
+  --c-div-2: #6876d5;
+  --c-div-3: #535d9c;
+  --c-div-4: #3f4565;
+  --c-div-5: #2f3140; /* centre neutre — doit lire « rien » */
+  --c-div-6: #623b3b;
+  --c-div-7: #944a4b;
+  --c-div-8: #c8565b;
+  --c-div-9: #f86970; /* pôle rouge */
 
   color-scheme: dark;
 }
@@ -158,6 +252,19 @@
   --grad-abyss: radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #eef1f7 50%, #e1e6f0 100%);
   --shadow-glow: 0 0 30px -10px var(--c-accent-glow);
   --shadow-soft: 0 24px 60px -32px rgba(18, 26, 48, 0.24);
+
+  /* Rampe DIVERGENTE, version surface claire : mêmes teintes, profil de
+     clarté INVERSÉ (pôles sombres, ils ressortent sur du blanc).
+     Pôles : 6,75:1 et 7,03:1 · symétrie ΔL 0,000. Cf. le bloc sombre. */
+  --c-div-1: #474ebf; /* pôle lavande */
+  --c-div-2: #606dcb;
+  --c-div-3: #7f8cce;
+  --c-div-4: #a0a9ce;
+  --c-div-5: #e9e9ec; /* centre neutre */
+  --c-div-6: #cb9e9c;
+  --c-div-7: #c67777;
+  --c-div-8: #be4d53;
+  --c-div-9: #ac1e33; /* pôle rouge */
 
   color-scheme: light;
 }

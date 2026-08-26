@@ -11,29 +11,18 @@
 import React, { useMemo, useState, useCallback } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
-import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis } from "./apexBase";
+import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, apexPalette } from "./apexBase";
 import "./EvolutionLines.scss";
 
-export const BRAND = [
-  "#0e7490",
-  "#67e8f9",
-  "#0d9488",
-  "#5eead4",
-  "#1d4ed8",
-  "#93c5fd",
-  "#15803d",
-  "#86efac",
-  "#6d28d9",
-  "#c4b5fd",
-  "#0891b2",
-  "#a5f3fc",
-  "#0f766e",
-  "#99f6e4",
-  "#2563eb",
-  "#bfdbfe",
-  "#16a34a",
-  "#4ade80",
-];
+// ⚠️ OBSOLÈTE — conservé uniquement pour ne pas casser les imports existants.
+// C'était une palette de 18 teintes codées en dur, non validée : deux paires y
+// étaient indiscernables (#6d28d9 ↔ #1d4ed8 : ΔE 0,3 en deutéranopie, cible
+// ≥ 8), et les appelants la recyclaient avec `i % BRAND.length`, ce qui donnait
+// la même couleur à plusieurs territoires.
+//
+// À la place : passer une `colorBy` explicite (voir plus bas), alimentée par la
+// palette validée de _variables.scss § PALETTE DATAVIZ.
+export const BRAND = [];
 
 // Encre lisible selon la luminance du fond (YIQ).
 function inkFor(hex) {
@@ -50,6 +39,10 @@ export default function EvolutionLines({
   unit = "",
   labels = {},
   mode = "index",
+  // Carte { nom de série -> couleur }. À FOURNIR par la page : elle seule
+  // connaît une clé d'identité stable (le code territoire) indépendante du
+  // filtre courant. Sans elle, on retombe sur un repli sûr (ci-dessous).
+  colorBy,
 }) {
   const tk = useThemeTokens();
   const [hidden, setHidden] = useState({});
@@ -59,14 +52,23 @@ export default function EvolutionLines({
     [],
   );
 
-  // Couleur stable par territoire (indexée sur l'ordre d'origine).
+  // La couleur suit l'ENTITÉ, jamais sa position dans le tableau filtré :
+  // sinon masquer une série repeint toutes les autres, et un lecteur qui a
+  // appris « Fidji est lavande » est trompé.
+  //
+  // Repli (si la page ne fournit pas `colorBy`) : au plus 8 teintes validées,
+  // jamais recyclées. Au-delà de 8 séries, aucune palette catégorielle ne tient
+  // — les suivantes passent en encre neutre et restent identifiables par la
+  // légende cliquable et l'infobulle.
   const colorOf = useMemo(() => {
+    if (colorBy) return colorBy;
+    const pal = apexPalette(tk);
     const m = {};
     series.forEach((g, i) => {
-      m[g.name] = BRAND[i % BRAND.length];
+      m[g.name] = i < pal.length ? pal[i] : tk.textMute;
     });
     return m;
-  }, [series]);
+  }, [colorBy, series, tk]);
 
   const visible = useMemo(
     () => series.filter((g) => !hidden[g.name]),

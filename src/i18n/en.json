@@ -1566,6 +1566,8 @@
       "conclusion": "Conclusion",
       "back_intro": "Intro",
       "revise_data": "Review the data",
+      "dataset_label": "Data",
+      "group_view": "View",
       "kpi_mean": "Average renewable share",
       "kpi_high": "Regional champion",
       "kpi_low": "Furthest behind",
@@ -2746,6 +2748,14 @@
       "resp_m": "Method: median per-capita GHG emissions (t CO₂e/cap.) across scored territories, at the latest year. The green bar is the Pacific median, the coral one the highest per-capita emitter. Source: World Bank via the Pacific Data Hub.",
       "ocean_m": "Method: median sea level per sub-region (Melanesia / Polynesia / Micronesia), year by year. You read a relative trajectory, not an absolute height. Source: Pacific Data Hub sea level.",
       "atlas_m": "Method: bubble size = composite vulnerability index (0–100), colour likewise. The index is the equal-weight average of 6 stresses (sea, heat, rainfall, water, tuberculosis, biodiversity), each normalised by percentile rank within the Pacific. A territory appears only if it has at least 2 of the 6 dimensions — hence the gaps.",
+      "power_center": "Electricity generation",
+      "arc_title": "The weave of injustice",
+      "arc_text": "Each arc links a territory from its responsibility — its per-capita emissions rank — to its vulnerability. When an arc climbs to the right — few emissions, high exposure — it turns coral. The tangle of these coral arcs, all leaning the same way, draws the Pacific's climate injustice at a glance: those who weigh least bear the most.",
+      "arc_m": "Method: responsibility is the percentile rank of per-capita GHG emissions within the Pacific (0 = lowest, 100 = highest); vulnerability is the composite index from this synthesis (0–100). Two distinct scales brought to the same rank so they remain comparable. Source: Pacific Data Hub (SPC).",
+      "renew2_title": "The effort: footprint against clean energy",
+      "renew2_text": "Here the footprint — per-capita emissions, on the x-axis — is set against the effort — share of renewable energy, on the y-axis. Top left, the territories that combine a light footprint with largely renewable electricity show the way; bottom right, those whose transition is still ahead of them.",
+      "renew2_m": "Method: per-capita GHG emissions (latest year) on X; share of renewables in final energy consumption (%) on Y. One dot per territory, grouped by sub-region. Source: SDG 7 and climate change, Pacific Data Hub (SPC).",
+      "renew2_y": "Renewable share (%)",
       "radar_m": "Method: for each sub-region, the average of its territories' normalised scores (0–100) on each of the 6 dimensions. The larger the area, the more exposed the sub-region on that axis. Scale relative to the Pacific.",
       "matrix_m": "Method: each cell is a territory's normalised score on one dimension (0 = the most spared in the Pacific, 100 = the most exposed). Rows are sorted by descending composite index. An empty cell = dimension unavailable for that territory.",
       "paradox_m": "Method: X axis = per-capita GHG emissions (responsibility), Y axis = composite vulnerability index (0–100). The median lines split territories in two. Each dot is a scored territory; reading relative to the Pacific.",
@@ -3047,7 +3057,7 @@
     }
   },
   "act12": {
-    "thesis": "Since 1977, hundreds of tropical systems have crossed the region. Layered season after season, their tracks reveal a pattern — and it is not their number that is most worrying, but their strength.",
+    "thesis": "Since 1977, 212 tropical systems recorded by Météo-France's New Caledonia cyclone database: those that entered New Caledonia's alert zone (13°S–25°S, 158°E–172°E). So this is not the whole Pacific — and each full track is drawn here, often reaching far beyond the territory. Layered season after season, they reveal a pattern, and it is not their number that is most worrying, but their strength.",
     "no_data": "Cyclone data not found. Drop the file into public/data/cyclones/ and try again.",
     "kpi": {
       "total": "Recorded tracks",
@@ -3081,7 +3091,7 @@
       "search_clear": "Clear selection"
     },
     "viz": {
-      "map_title": "Half a century of cyclones over the Pacific",
+      "map_title": "Half a century of cyclones concerning New Caledonia",
       "map_find": "Scrub through the seasons — or search a cyclone by name to isolate its track. Past seasons stay as a watermark; the active season draws itself.",
       "bystage_title": "Distribution by intensity stage",
       "bystage_find": "How many tracks reached each stage, from weak depression to very intense cyclone.",

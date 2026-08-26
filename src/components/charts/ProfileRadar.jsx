@@ -6,19 +6,18 @@
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import EChart from "../Echart/Echart";
-import { tooltipStyle, MONO, SANS } from "./echartsBase";
+import { tooltipStyle, scatterPaletteOf, MONO, SANS } from "./echartsBase";
 
 export default function ProfileRadar({ indicators = [], series = [] }) {
   const tk = useThemeTokens();
 
   const option = useMemo(() => {
-    const palette = [
-      tk.warm,
-      tk.accent,
-      tk.positive,
-      tk.secondary,
-      tk.negative,
-    ].filter(Boolean);
+    // Un radar superpose ses séries : TOUTES les paires se côtoient, pas
+    // seulement les voisines. C'est la forme la plus exigeante, plafonnée à
+    // 3 séries (cf. _variables.scss § PALETTE DATAVIZ). Act11 y passe
+    // exactement les 3 sous-régions : le compte tombe juste, et aucun
+    // recyclage n'est possible par construction.
+    const palette = scatterPaletteOf(tk).filter(Boolean);
     return {
       tooltip: { ...tooltipStyle(tk) },
       legend: {
@@ -46,9 +45,11 @@ export default function ProfileRadar({ indicators = [], series = [] }) {
           data: series.map((s, i) => ({
             name: s.name,
             value: s.values,
-            lineStyle: { width: 2.5, color: palette[i % palette.length] },
-            itemStyle: { color: palette[i % palette.length] },
-            areaStyle: { opacity: 0.1, color: palette[i % palette.length] },
+            // Pas de `i % length` : au-delà du plafond, encre neutre plutôt
+            // qu'une teinte déjà prise par une autre série.
+            lineStyle: { width: 2.5, color: palette[i] || tk.textMute },
+            itemStyle: { color: palette[i] || tk.textMute },
+            areaStyle: { opacity: 0.1, color: palette[i] || tk.textMute },
           })),
         },
       ],

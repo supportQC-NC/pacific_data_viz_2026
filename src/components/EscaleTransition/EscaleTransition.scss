@@ -41,9 +41,13 @@
 /* le VRAI ciel étoilé (canvas) */
 .etrans__starfield {
   position: absolute;
-  inset: 0 0 28vh 0;
+  /* Le canvas se dimensionne EN JS (StarfieldCanvas) : l'élargir en CSS ne
+     sert à rien, il reste à la largeur du viewport et le décalage empire.
+     La parallaxe est donc bridée côté timeline (voir EscaleTransition.jsx),
+     pas ici. */
+  inset: 0 0 24vh 0;
   width: 100%;
-  height: 72%;
+  height: 76%;
   z-index: 1;
   pointer-events: none;
 }
@@ -115,13 +119,62 @@
   fill: var(--et-deep);
 }
 
+/* ---------- L'ÎLE (atterrage) ----------
+   Ancrée à droite : la pirogue navigue d'ouest en est, elle arrive donc PAR
+   la gauche vers un rivage qui vient à sa rencontre. z-index 2 = derrière la
+   mer (3) et la pirogue (4), devant l'aube : le rivage se pose à l'horizon. */
+.etrans__land {
+  position: absolute;
+  right: 0;
+  bottom: 6vh;
+  width: clamp(260px, 46vw, 620px);
+  z-index: 2;
+  pointer-events: none;
+}
+.etrans__land svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.etrans__land-hill {
+  fill: #0c1c2b;
+  stroke: var(--et-cream);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  opacity: 0.96;
+}
+.etrans__land-shore {
+  /* le rivage prend la couleur de l'escale : l'atterrage annonce le sujet */
+  fill: color-mix(in srgb, var(--escale-accent) 42%, #0c1c2b);
+  opacity: 0.9;
+}
+.etrans__land-palm path {
+  fill: none;
+  stroke: var(--et-cream);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0.86;
+}
+
+/* Petits écrans : l'île rétrécit mais reste lisible (elle porte le sens). */
+@media (max-width: 640px) {
+  .etrans__land {
+    width: 62vw;
+    bottom: 4vh;
+  }
+}
+
 /* la pirogue */
 .etrans__voyage {
   position: absolute;
   left: 50%;
-  bottom: 9vh;
-  width: clamp(150px, 20vw, 280px);
-  margin-left: clamp(-140px, -10vw, -100px);
+  /* Plus bas et plus petite qu'avant : la pirogue chevauchait le bouton
+     « Entrer dans l'escale » sur 219 × 39 px (mesuré). Elle se lit désormais
+     comme un voilier à l'horizon, sous le carton-titre, sans le percuter. */
+  bottom: 3.5vh;
+  width: clamp(120px, 15vw, 215px);
+  margin-left: clamp(-108px, -7.5vw, -60px);
   z-index: 4;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.34));
 }

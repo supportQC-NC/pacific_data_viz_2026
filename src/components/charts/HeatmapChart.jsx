@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import EChart from "../Echart/Echart";
-import { fmt, quantile, valAt, tooltipStyle, SANS, MONO } from "./echartsBase";
+import { fmt, quantile, valAt, tooltipStyle, seqRampOf, ordRampOf, divRampOf, SANS, MONO } from "./echartsBase";
 
 export default function HeatmapChart({
   series = [],
@@ -13,6 +13,14 @@ export default function HeatmapChart({
   mode = "rank",
   labels = {},
   ramp: rampProp,
+  // Ce que la couleur ENCODE. À déclarer explicitement pour que toutes les
+  // heatmaps du produit parlent la même langue :
+  //   "magnitude" → grandeur sans jugement (population, arrivées, effectifs)
+  //   "stress"    → grandeur orientée, sombre = toujours pire (défaut)
+  //   "polarity"  → vraie polarité autour d'un zéro qui a un sens
+  //                 (anomalie vs normale). Exige mode="abs" centré sur 0 :
+  //                 sur des quantiles, le milieu n'est PAS le zéro.
+  kind = "stress",
 }) {
   const tk = useThemeTokens();
   const option = useMemo(() => {
@@ -33,8 +41,19 @@ export default function HeatmapChart({
         if (Number.isFinite(v)) data.push({ value: [xi, yi, Number(v.toFixed(2))] });
       }),
     );
-    const ramp = Array.isArray(rampProp) && rampProp.length ? rampProp : [tk.positive, tk.accent, tk.secondary, tk.warm, tk.negative];
     const useRank = mode === "rank";
+    // La rampe découle de ce que la couleur ENCODE, pas du hasard de la page.
+    // Polarité → divergente (centre neutre = zéro). Sinon : ordinale pour des
+    // bandes discrètes (plage resserrée), séquentielle pour un dégradé continu
+    // (plage complète, le bout clair vaut « ~zéro »).
+    const ramp =
+      Array.isArray(rampProp) && rampProp.length
+        ? rampProp
+        : kind === "polarity"
+          ? divRampOf(tk)
+          : useRank
+            ? ordRampOf(tk)
+            : seqRampOf(tk);
     let visualMap;
     if (useRank && sorted.length > 4) {
       const ths = [...new Set([1, 2, 3, 4, 5].map((i) => Number(quantile(sorted, i / 6).toFixed(2))))].sort(
@@ -107,7 +126,7 @@ export default function HeatmapChart({
         },
       ],
     };
-  }, [series, years, unit, mode, labels, rampProp, tk]);
+  }, [series, years, unit, mode, labels, rampProp, kind, tk]);
 
   return <EChart option={option} className="echart--tall" />;
 }

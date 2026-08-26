@@ -8,29 +8,30 @@
 // duplication. Aucune couleur en dur : tout vient des tokens.
 // ============================================================
 
-import { MONO, SANS, fmt, median, quantile, valAt } from "./echartsBase";
+import {
+  MONO, SANS, fmt, median, quantile, valAt,
+  paletteOf, scatterPaletteOf, seqRampOf, ordRampOf, SCATTER_SERIES_CAP,
+} from "./echartsBase";
 
 // Réexport pour que les charts n'aient qu'un seul import.
-export { MONO, SANS, fmt, median, quantile, valAt };
+export { MONO, SANS, fmt, median, quantile, valAt, SCATTER_SERIES_CAP };
 
-// Palette qualitative (mêmes teintes que la version ECharts).
-export const apexPalette = (tk) => [
-  tk.accent,
-  tk.warm,
-  tk.secondary,
-  tk.positive,
-  tk.accentDeep,
-  tk.negative,
-];
+// Palette qualitative — SOURCE UNIQUE, partagée avec la version ECharts.
+// (Auparavant redéfinie ici, ce qui laissait les deux listes diverger.)
+export const apexPalette = paletteOf;
+export const apexScatterPalette = scatterPaletteOf;
 
-// Rampe séquentielle (faible -> élevé) pour les heatmaps.
-export const apexRamp = (tk) => [
-  tk.positive,
-  tk.accent,
-  tk.secondary,
-  tk.warm,
-  tk.negative,
-];
+// Rampe SÉQUENTIELLE (faible -> élevé) pour les heatmaps en mode continu.
+// Une seule teinte, clair → sombre.
+//
+// ⚠️ Remplace un arc-en-ciel vert→bleu→rose→terracotta→rouge. Celui-ci
+// échouait la monotonie de clarté : ses 5 pas ne couvraient que ΔL 0,05, donc
+// il ne portait AUCUN signal de magnitude en niveaux de gris, à l'impression
+// ou en forced-colors. Ne pas revenir à une rampe multi-teintes.
+export const apexRamp = seqRampOf;
+
+// Rampe ORDINALE pour les bandes discrètes (quantiles, paliers).
+export const apexOrdRamp = ordRampOf;
 
 // Bloc `chart` de base : police, couleurs neutres via tokens, fond
 // transparent (le panneau gère le fond), toolbar masquée par défaut.

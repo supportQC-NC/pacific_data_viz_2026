@@ -22,16 +22,26 @@ import "./TrendLines.scss";
 const W = 1000;
 const H = 380;
 const M = { top: 26, right: 198, bottom: 40, left: 64 };
+// Palette de séries VALIDÉE (miroir de --c-series-1..8 dans _variables.scss).
+// Écrite en dur ici parce que ce composant est du d3 pur, sans accès aux
+// tokens — c'est sans risque : la palette catégorielle est invariante par
+// thème (elle dégage ≥ 3:1 sur les deux surfaces).
+// ⚠️ Si tu modifies ces valeurs, modifie AUSSI _variables.scss et repasse
+// scripts/validate_palette.js sur les deux modes.
 const PALETTE = [
-  "#ff5a36",
-  "#1f9bc9",
-  "#ffd166",
-  "#46c7b8",
-  "#9b8cff",
-  "#ff8fab",
-  "#5ad1ff",
-  "#c0e060",
+  "#606dd6", // lavande
+  "#c54f28", // terracotta
+  "#109387", // sarcelle
+  "#a8750c", // or
+  "#ae3a72", // rose
+  "#139a48", // vert
+  "#8d58c0", // violet
+  "#ba3d47", // rouge
 ];
+// Encre neutre au-delà de la palette : jamais de recyclage, qui donnerait la
+// même couleur à deux séries différentes.
+const NEUTRAL = "#898781";
+const colorAt = (i) => PALETTE[i] || NEUTRAL;
 const NICE_LOG = [
   0.5, 1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 500, 1000, 2000, 5000,
 ];
@@ -118,7 +128,7 @@ export default function TrendLines({
         return {
           area: s.area,
           name: s.name,
-          color: PALETTE[i % PALETTE.length],
+          color: colorAt(i),
           yTrue: y(last.value),
           xEnd: x(last.year),
         };
@@ -219,7 +229,7 @@ export default function TrendLines({
                 pinned === s.area ? "is-pinned" : ""
               }`}
               d={line(s.values) || ""}
-              stroke={PALETTE[i % PALETTE.length]}
+              stroke={colorAt(i)}
               onMouseEnter={() => setHoverArea(s.area)}
               onMouseLeave={() => setHoverArea(null)}
               onClick={(e) => {
@@ -289,7 +299,7 @@ export default function TrendLines({
                   className={`trend__marker-dot ${dim ? "is-dim" : ""}`}
                   cy={y(pt.value)}
                   r={focusArea === s.area ? 5.5 : 4.5}
-                  fill={PALETTE[i % PALETTE.length]}
+                  fill={colorAt(i)}
                 />
               );
             })}

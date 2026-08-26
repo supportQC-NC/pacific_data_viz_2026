@@ -1,0 +1,122 @@
+// src/components/VoyageBar/VoyageBar.scss
+// ============================================================
+// Barre de voyage — même grammaire visuelle que <ActBar> (vitrée, hairline,
+// tokens), mais ANCRÉE EN BAS : une escale est du scrollytelling plein cadre,
+// et une barre haute entrerait en concurrence avec le Header fixe.
+// ============================================================
+
+.voyagebar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-nav);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-6);
+  min-height: 58px;
+
+  background: color-mix(in srgb, var(--c-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  border-top: var(--border-hair) solid var(--c-line);
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.voyagebar__exit,
+.voyagebar__next {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-text);
+    border-color: var(--c-accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+// Sortie plus discrète que la continuation : on ne pousse pas à partir.
+.voyagebar__exit {
+  color: var(--c-text-mute);
+  border-color: transparent;
+}
+
+// Réserve la place du bouton « suivant » à la dernière escale, pour que la
+// progression reste centrée et que la barre ne saute pas.
+.voyagebar__next--empty {
+  border-color: transparent;
+  pointer-events: none;
+  min-width: 8ch;
+}
+
+.voyagebar__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.voyagebar__count {
+  color: var(--c-text-mute);
+  font-variant-numeric: tabular-nums; // colonne de chiffres : alignement voulu
+  white-space: nowrap;
+}
+
+.voyagebar__track {
+  position: relative;
+  display: block;
+  width: clamp(80px, 22vw, 260px);
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.voyagebar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pct, 0%);
+  background: var(--c-accent);
+  transition: width var(--t-base) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voyagebar__fill {
+    transition: none;
+  }
+}
+
+// Sous 640px, la barre passe sur deux lignes plutôt que d'écraser la piste.
+@media (max-width: 640px) {
+  .voyagebar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+  }
+  .voyagebar__progress {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+}

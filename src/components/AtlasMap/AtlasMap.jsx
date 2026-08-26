@@ -19,7 +19,10 @@ const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 export default function AtlasMap({
   points = [],
   range = { min: 0, max: 100 },
-  ramp = ["#25e09a", "#ff6b4a", "#ff4d6d"],
+  // Défaut = 3 arrêts de la rampe séquentielle validée (une seule teinte,
+  // clair → sombre). L'ancien défaut vert → corail → rouge encodait la
+  // magnitude par la teinte : illisible en niveaux de gris et pour un daltonien.
+  ramp = ["#c4cefd", "#6f7de9", "#353d7e"],
   selected = null,
   onSelect,
   legendTitle = "",

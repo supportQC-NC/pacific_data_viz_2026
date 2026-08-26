@@ -8,14 +8,12 @@
 // ============================================================
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "../../store/context/langContext";
 import LanguageGate from "../../components/LanguageGate/LanguageGate";
 import HeroSeaRise from "../../components/HeroSeaRise/HeroSeaRise";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
-import ReadingModes from "../../components/ReadingModes/ReadingModes";
 import KeyFigures from "../../components/KeyFigures/KeyFigures";
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import TbBacilli from "../../components/TbBacilli/TbBacilli";
@@ -44,7 +42,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const { t } = useLang();
-  const navigate = useNavigate();
 
   const [gateOpen, setGateOpen] = useState(false);
 
@@ -58,7 +55,6 @@ export default function Home() {
       behavior: "smooth",
     });
 
-  const goActs = () => navigate("/actes");
   const beginExperience = () => setGateOpen(true);
 
   const reduced =
@@ -221,12 +217,6 @@ export default function Home() {
             >
               {t("home.cta")} <span aria-hidden="true">↓</span>
             </button>
-            <button
-              className="home__cta home__cta--ghost"
-              onClick={() => navigate("/le-saviez-vous")}
-            >
-              {t("home.funfacts")} <span aria-hidden="true">✦</span>
-            </button>
           </div>
         </div>
 
@@ -262,12 +252,6 @@ export default function Home() {
       </div>
 
       <HomeIntro />
-
-      <ReadingModes
-        onBrowse={goActs}
-        onGuided={beginExperience}
-        onFunFacts={() => navigate("/le-saviez-vous")}
-      />
 
       <PacificTeaser />
 

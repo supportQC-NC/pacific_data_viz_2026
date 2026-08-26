@@ -11,6 +11,12 @@
 # production
 /build
 
+# CSS compilé depuis les .scss (CRA compile le .scss directement : ces
+# fichiers sont des artefacts, personne ne les importe). Éditer le .scss.
+src/**/*.css
+src/**/*.css.map
+!src/App.css
+
 # misc
 .DS_Store
 .env

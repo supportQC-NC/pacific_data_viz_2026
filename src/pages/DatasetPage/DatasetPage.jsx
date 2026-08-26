@@ -10,17 +10,22 @@
 // i18n via t(). SCSS only.
 // ============================================================
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, Suspense, lazy } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FiArrowLeft, FiArrowUpRight, FiDatabase } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
-import DATASET_CATALOG, { datasetById } from "../../data/datasetCatalog";
+import { datasetById } from "../../data/datasetCatalog";
 import { getDatasetSource } from "../../data/datasetSources";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName } from "../../i18n/pictNames";
 import RawDataTable from "../../components/RawDataTable/RawDataTable";
 import "./DatasetPage.scss";
+
+// ExportBar tire jspdf + html2canvas + exceljs (~436 kB). Comme l'export ne
+// sert que sur cette page, on le sort du bundle initial : le poids n'est payé
+// qu'au moment où la page jeu de données s'affiche.
+const ExportBar = lazy(() => import("../../components/ExportBar/ExportBar"));
 
 // id du catalogue -> clé pdhApi (jeux récupérables génériquement → table brute)
 const RAW_LOADABLE = {
@@ -93,6 +98,32 @@ export default function DatasetPage() {
     ],
     [t],
   );
+
+  // --- Export PDF / Excel -------------------------------------------------
+  // ExportBar attend `series` sous la forme [{ code, name, values:[{year,value}] }],
+  // ce qui est exactement la forme de `byArea` une fois nommée.
+  const exportRef = useRef(null);
+
+  const exportSeries = useMemo(() => {
+    const data = dsState && dsState.data;
+    if (!data || !data.byArea) return [];
+    return Object.keys(data.byArea)
+      .map((area) => ({
+        code: area,
+        name: pictName(area, lang),
+        values: (data.byArea[area] || []).filter(
+          (p) => p && Number.isFinite(p.value),
+        ),
+      }))
+      .filter((s) => s.values.length)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [dsState, lang]);
+
+  const exportYears = useMemo(() => {
+    const set = new Set();
+    exportSeries.forEach((s) => s.values.forEach((p) => set.add(p.year)));
+    return [...set].sort((a, b) => a - b);
+  }, [exportSeries]);
 
   // id inconnu → message + retour
   if (!ds) {
@@ -184,7 +215,31 @@ export default function DatasetPage() {
                 <p className="datasetpage__hint">
                   {t("dataset.table_hint")} {rows.length.toLocaleString(nf)}.
                 </p>
-                <div className="datasetpage__grid">
+                <Suspense fallback={null}>
+                  <ExportBar
+                    targetRef={exportRef}
+                    rows={rows}
+                    meta={{
+                      title: pick(ds.labelFr, ds.labelEn),
+                      subtitle: pick(ds.descFr, ds.descEn),
+                      source:
+                        ds.sources && ds.sources[0] ? ds.sources[0].label : "",
+                      filename: `datamoana-${id}`,
+                      sheet: t("dataset.col_value"),
+                      year: exportYears.length
+                        ? exportYears[exportYears.length - 1]
+                        : "",
+                      series: exportSeries,
+                      years: exportYears,
+                    }}
+                    labels={{
+                      title: t("dataset.export_title"),
+                      pdf: t("dataset.export_pdf"),
+                      excel: t("dataset.export_excel"),
+                    }}
+                  />
+                </Suspense>
+                <div className="datasetpage__grid" ref={exportRef}>
                   <RawDataTable
                     columns={columns}
                     data={rows}

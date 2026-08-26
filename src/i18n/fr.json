@@ -3051,7 +3051,7 @@
     }
   },
   "act12": {
-    "thesis": "Depuis 1977, des centaines de phénomènes tropicaux ont traversé la région. Superposées saison après saison, leurs trajectoires dessinent une trame — et ce n'est pas leur nombre qui inquiète le plus, mais leur force.",
+    "thesis": "Depuis 1977, 212 phénomènes tropicaux recensés par la base cyclonique néo-calédonienne de Météo-France : ceux entrés dans la zone d'alerte de la Nouvelle-Calédonie (13°S–25°S, 158°E–172°E). Ce n'est donc pas tout le Pacifique — et on trace ici leur trajectoire entière, qui s'étend souvent bien au-delà du territoire. Superposées saison après saison, elles dessinent une trame, et ce n'est pas leur nombre qui inquiète le plus, mais leur force.",
     "no_data": "Données cyclones introuvables. Dépose le fichier dans public/data/cyclones/ puis réessaie.",
     "kpi": {
       "total": "Trajectoires recensées",
@@ -3085,7 +3085,7 @@
       "search_clear": "Effacer la sélection"
     },
     "viz": {
-      "map_title": "Un demi-siècle de cyclones sur le Pacifique",
+      "map_title": "Un demi-siècle de cyclones concernant la Nouvelle-Calédonie",
       "map_find": "Faites défiler les saisons — ou cherchez un cyclone par son nom pour isoler sa trajectoire. Les saisons passées restent en filigrane, la saison active se dessine.",
       "bystage_title": "Répartition par stade d'intensité",
       "bystage_find": "Combien de trajectoires ont atteint chaque stade, de la dépression faible au cyclone très intense.",

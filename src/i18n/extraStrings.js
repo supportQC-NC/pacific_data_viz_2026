@@ -82,9 +82,40 @@ const EXTRA_STRINGS = {
         q2: "Île par île : que reste-t-il du vivant qui l'entoure ?",
       },
     },
+    // Barre d'export de la page jeu de données (/data/:id).
+    dataset: {
+      export_title: "Exporter",
+      export_pdf: "Rapport PDF",
+      export_excel: "Classeur Excel",
+    },
+    // Passage du board vers la conclusion de l'acte (3e temps).
+    board: { conclude: "Lire la conclusion" },
+    // Barre de voyage du Récit (chaque acte = une escale).
+    recit: {
+      voyage_exit: "Quitter le voyage",
+      voyage_next: "Escale suivante",
+      voyage_enter: "Entrer dans l’escale",
+      voyage_aria: "Navigation du voyage",
+      voyage_progress: "Progression du voyage",
+      voyage_leg: "Escale",
+    },
   },
   en: {
     header: { nav_recit: "The Story" },
+    dataset: {
+      export_title: "Export",
+      export_pdf: "PDF report",
+      export_excel: "Excel workbook",
+    },
+    board: { conclude: "Read the conclusion" },
+    recit: {
+      voyage_exit: "Leave the voyage",
+      voyage_next: "Next leg",
+      voyage_enter: "Enter the leg",
+      voyage_aria: "Voyage navigation",
+      voyage_progress: "Voyage progress",
+      voyage_leg: "Leg",
+    },
     home: {
       tb: { value_caption: "Local incidence" },
       sea: { value_caption: "Local anomaly · vs 1971–2000 normal" },

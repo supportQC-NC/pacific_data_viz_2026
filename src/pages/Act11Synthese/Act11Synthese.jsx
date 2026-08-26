@@ -926,7 +926,9 @@ export default function Act11Synthese() {
           points={atlasPoints}
           satellite3d
           range={{ min: 0, max: 100 }}
-          ramp={[tk.positive, tk.warm, tk.negative]}
+          /* Indice composite 0–100 = magnitude continue → rampe SÉQUENTIELLE
+             une seule teinte (AtlasMap consomme exactement 3 arrêts). */
+          ramp={[tk.seq200, tk.seq500, tk.seq800]}
           selected={focus}
           onSelect={(c) => setFocus((s) => (s === c ? null : c))}
           legendTitle={t("act11.studio.layer_composite")}
