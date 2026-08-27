@@ -1250,9 +1250,22 @@ export default function Act5Momentum() {
         ]
       : [];
 
-  // Filtrage du carrousel par famille de vues (part renouvelable / mix électrique).
+  // Filtrage du carrousel par famille de vues (part renouvelable / mix
+  // électrique) — À DEUX EXCEPTIONS PRÈS : les deux visuels d'ouverture.
+  //
+  // Ils restent à l'écran quelle que soit la famille choisie, comme sur les
+  // escales « santé » et « impact » où les deux dessins se suivent en tête de
+  // navigation. Le camembert du mix électrique, en particulier, se pilotait
+  // sinon depuis un menu qu'il fallait deviner : il est trop parlant pour
+  // dépendre d'un filtre. Chacun garde sa propre sélection de territoire —
+  // c'est son interaction, on n'y touche pas.
+  const VIZ_IDS = ["cell", "mix_viz"];
   const visibleCharts = charts.filter((c) =>
-    dataset === "mix" ? c.id.startsWith("mix_") : !c.id.startsWith("mix_"),
+    VIZ_IDS.includes(c.id)
+      ? true
+      : dataset === "mix"
+        ? c.id.startsWith("mix_")
+        : !c.id.startsWith("mix_"),
   );
 
   return (

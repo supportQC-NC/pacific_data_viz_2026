@@ -816,6 +816,16 @@ export default function Act3Territory() {
                       highLabel={t("act3.map_high")}
                       noTokenMsg={t("act1.map_no_token")}
                       coastlineUrl={COAST_URL}
+                      // Aucune colonne peinte sur cette vue : la barre
+                      // d'échelle générique n'aurait rien décrit. La légende
+                      // recul/avancée, juste dessous, est la bonne.
+                      showLegend={false}
+                      // On ouvre au ras de la Nouvelle-Calédonie : de
+                      // loin, un segment de littoral fait moins d'un
+                      // pixel. Le lecteur reprend la main dès le premier
+                      // geste, et « Parcourir la côte » l'emmène ensuite
+                      // sur tous les autres sites du Pacifique.
+                      droneOn="NC"
                     />
                   </Suspense>
                 </ErrorBoundary>

@@ -22,23 +22,7 @@ import MilkyWayCanvas from "../../components/MilkyWayCanvas/MilkyWayCanvas";
 import ShootingStar from "../../components/ShootingStar/ShootingStar";
 import Vaa from "../../components/Vaa/Vaa";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
-import WaterGlass from "../../components/WaterGlass/WaterGlass";
-import TbBacilli from "../../components/TbBacilli/TbBacilli";
-import EnergyCell from "../../components/EnergyCell/EnergyCell";
-import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
-import ForestCover from "../../components/ForestCover/ForestCover";
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
-import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
-import CattleThrive from "../../components/CattleThrive/CattleThrive";
-import SkyRain from "../../components/SkyRain/SkyRain";
-import SmokePlume from "../../components/SmokePlume/SmokePlume";
-import SeaWarm from "../../components/SeaWarm/SeaWarm";
-import StiltHouse from "../../components/StiltHouse/StiltHouse";
-import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
-import LossStack from "../../components/LossStack/LossStack";
-import TourismBeach from "../../components/TourismBeach/TourismBeach";
-import PopGrowth from "../../components/PopGrowth/PopGrowth";
-import PowerMix from "../../components/PowerMix/PowerMix";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -329,24 +313,18 @@ export default function Home() {
         </button>
       </section>
 
+      {/* LES VISUELS SIGNATURE VIVENT MAINTENANT DANS LES ESCALES.
+          Chacun de ces seize dessins lisait déjà exactement le jeu de données
+          d'une escale — la plante et `cropYield`, le verre et l'eau potable,
+          le camembert et le mix électrique. Ils y sont désormais la vue
+          d'ouverture, avec leur interaction complète, et ne sont plus montés
+          ici : la Home les montrait une première fois hors contexte, ce qui
+          faisait de l'escale une redite plutôt qu'une découverte.
+
+          `CoastlineShift` reste : le trait de côte n'a pas été repris en vue
+          d'ouverture, l'escale « territoire » le garde tel quel. */}
       <div className="home__signatures">
-        <WaterGlass />
-        <TbBacilli />
-        <EnergyCell />
-        <BiodiversityReef />
-        <ForestCover />
         <CoastlineShift />
-        <PlantGrowth />
-        <CattleThrive />
-        <SkyRain />
-        <SmokePlume />
-        <SeaWarm />
-        <StiltHouse />
-        <CrowdAffected />
-        <LossStack />
-        <TourismBeach />
-        <PopGrowth />
-        <PowerMix />
       </div>
 
       <HomeIntro />

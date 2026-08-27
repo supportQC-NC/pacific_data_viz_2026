@@ -186,6 +186,10 @@ export default function OceanMap({
   onTogglePlay = null,
   onScrub = null,
   coastlineUrl = null,
+  showLegend = true,
+  // Code territoire sur lequel OUVRIR la couche littoral, en survol
+  // rapproché plutôt qu'en cadrage large. `null` = cadrage habituel.
+  droneOn = null,
   fitAreas = null,
   // Ouverture DIRECTE en plein écran, sans passer par l'état interne.
   // Une carte du monde tassée dans un panneau de dashboard n'est ni un
@@ -215,6 +219,8 @@ export default function OceanMap({
   const [fitTick, setFitTick] = useState(0);
   const coastPtsRef = useRef([]);
   const coastIdxRef = useRef(-1);
+  // Centre de survol recalculé sur les segments du territoire (voir plus bas).
+  const droneCenterRef = useRef(null);
   const showCoastRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(initialFull);
@@ -324,14 +330,30 @@ export default function OceanMap({
     // FAUX, les donnees etant completes ; seule la carte manquait.
     if (!TOKEN || !mapboxgl || !containerRef.current) return undefined;
     mapboxgl.accessToken = TOKEN;
+
+    // OUVERTURE EN SURVOL RAPPROCHÉ (`droneOn`).
+    // Vu du globe entier, un segment de littoral fait moins d'un pixel : on
+    // aperçoit deux nappes de chaleur sans comprendre qu'il s'agit d'un
+    // rivage. Sur cette vue, la carte NAÎT donc au ras du terrain, caméra
+    // inclinée, au-dessus du territoire demandé.
+    //
+    // Le cadrage est posé à la création et non par une animation après coup :
+    // une traversée de dix niveaux de zoom sur une projection sphérique,
+    // caméra inclinée, avec deux nappes de chaleur de 2 405 points à
+    // rasteriser à chaque image, bloquait le rendu.
+    //
+    // `PICT_GEO` est la table de centroïdes que la carte utilise déjà pour
+    // poser ses colonnes : de la géographie de référence, pas une donnée.
+    const DRONE = droneOn && PICT_GEO[droneOn] ? PICT_GEO[droneOn] : null;
+
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       projection: "globe",
-      center: [200, -13],
-      zoom: 2.0,
-      pitch: 45,
-      bearing: -8,
+      center: DRONE || [200, -13],
+      zoom: DRONE ? 6.6 : 2.0,
+      pitch: DRONE ? 50 : 45,
+      bearing: DRONE ? -18 : -8,
       maxPitch: 80,
       renderWorldCopies: true,
       antialias: true,
@@ -559,6 +581,32 @@ export default function OceanMap({
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
     const map = mapRef.current;
+
+    // OUVERTURE EN SURVOL : on REPOSE la caméra à chaque recadrage demandé.
+    //
+    // La carte naît déjà cadrée sur le territoire, mais elle naît aussi dans
+    // un conteneur qui n'a pas encore sa taille définitive : Mapbox calcule
+    // alors sa projection pour une boîte de quelques pixels. Quand le panneau
+    // prend sa hauteur, l'observateur de taille appelle `resize()` et demande
+    // un recadrage — sans cette branche, le cadrage large étant désactivé en
+    // mode survol, plus personne ne reposait la caméra et l'on se retrouvait
+    // devant une sphère noire, trop près, sans une seule tuile servie.
+    //
+    // `jumpTo` et non `easeTo` : aucune traversée de zoom à animer, donc
+    // aucune vague de tuiles intermédiaires à charger.
+    if (droneOn && PICT_GEO[droneOn]) {
+      const key = `drone:${droneOn}`;
+      if (fittedKeyRef.current !== key) {
+        map.jumpTo({
+          center: droneCenterRef.current || PICT_GEO[droneOn],
+          zoom: droneCenterRef.current ? 7.2 : 6.6,
+          pitch: droneCenterRef.current ? 52 : 50,
+          bearing: -18,
+        });
+        fittedKeyRef.current = key;
+      }
+    }
+
     const cs = map.getSource("cols");
     const ce = map.getSource("centers");
     if (cs) cs.setData(fc);
@@ -600,10 +648,14 @@ export default function OceanMap({
         //
         // `cameraForBounds` renvoie la même caméra sans rien appliquer : on
         // peut donc la borner, puis l'appliquer une seule fois.
-        const cam = map.cameraForBounds(bounds, {
-          padding: 60,
-          maxZoom: 4.2,
-        });
+        // Ouverture en survol : le cadrage large n'a pas lieu d'être,
+        // il ramènerait aussitôt la caméra sur tout le Pacifique.
+        const cam = droneOn
+          ? null
+          : map.cameraForBounds(bounds, {
+              padding: 60,
+              maxZoom: 4.2,
+            });
 
         // PLANCHER DE ZOOM. `fitBounds` sait plafonner, pas planchéier. Le
         // Pacifique couvre près de 90° de longitude : le cadrage « qui fait
@@ -620,7 +672,7 @@ export default function OceanMap({
             bearing: -8,
             duration,
           });
-        } else {
+        } else if (!droneOn) {
           map.fitBounds(bounds, {
             padding: 60,
             pitch: 45,
@@ -629,11 +681,11 @@ export default function OceanMap({
             duration,
           });
         }
-        fittedKeyRef.current = key;
+        if (!droneOn) fittedKeyRef.current = key;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, fc, centers, fitFeatures, fitTick]);
+  }, [loaded, fc, centers, fitFeatures, fitTick, droneOn]);
 
   // Couche optionnelle « trait de côte » (Digital Earth Pacific — Landsat
   // Coastlines, CC BY-NC 4.0). Lisibilité à deux niveaux :
@@ -707,14 +759,39 @@ export default function OceanMap({
         coastPtsRef.current = pts;
         coastIdxRef.current = -1;
         setCoastNav({ idx: -1, total: pts.length });
-        showCoastRef.current = (i) => {
-          const p = pts[i];
-          if (!p) return;
-          cpop
-            .setLngLat([p.lng, p.lat])
-            .setHTML(coastHtml(p.r, { lng: p.lng, lat: p.lat }))
-            .addTo(map);
-        };
+
+        // RECALAGE DU SURVOL SUR LES SEGMENTS RÉELLEMENT MESURÉS.
+        //
+        // La carte naît cadrée sur le centroïde du territoire (`pictGeo`),
+        // ce qui suffit à ouvrir au bon endroit du globe. Mais un centroïde
+        // n'est pas là où la donnée se trouve : pour la Nouvelle-Calédonie,
+        // les 170 segments suivis se concentrent au sud-est, à environ deux
+        // degrés du centre géographique — assez, à cette altitude, pour que
+        // la côte sorte du cadre et qu'on n'ait sous les yeux que de l'eau.
+        //
+        // On recale donc sur la moyenne des segments du territoire. `jumpTo`
+        // et non `easeTo` : pas de traversée à animer, donc pas de vague de
+        // tuiles intermédiaires — c'est ce qui figeait le rendu.
+        if (droneOn) {
+          const mine = pts.filter(
+            (q) => nearestPict({ lng: q.lng, lat: q.lat }) === droneOn,
+          );
+          if (mine.length) {
+            // Moyenne en longitudes déroulées : le jeu traverse l'antiméridien.
+            const wrap = (v) => (v < 0 ? v + 360 : v);
+            const lw = mine.reduce((a, q) => a + wrap(q.lng), 0) / mine.length;
+            const lat = mine.reduce((a, q) => a + q.lat, 0) / mine.length;
+            droneCenterRef.current = [lw > 180 ? lw - 360 : lw, lat];
+            map.jumpTo({
+              center: droneCenterRef.current,
+              zoom: 7.2,
+              pitch: 52,
+              bearing: -18,
+            });
+            fittedKeyRef.current = `drone:${droneOn}`;
+          }
+        }
+
         if (map.getSource("coast")) {
           map.getSource("coast").setData(gj);
           return;
@@ -727,6 +804,9 @@ export default function OceanMap({
             id: "coast-ero-heat",
             type: "heatmap",
             source: "coast",
+            // Invisible au-delà : inutile de la rasteriser. Sans cette
+            // borne, le survol rapproché faisait geler le rendu.
+            maxzoom: 5.5,
             paint: {
               "heatmap-weight": eroW,
               "heatmap-intensity": [
@@ -776,6 +856,9 @@ export default function OceanMap({
             id: "coast-acc-heat",
             type: "heatmap",
             source: "coast",
+            // Invisible au-delà : inutile de la rasteriser. Sans cette
+            // borne, le survol rapproché faisait geler le rendu.
+            maxzoom: 5.5,
             paint: {
               "heatmap-weight": accW,
               "heatmap-intensity": [
@@ -912,7 +995,7 @@ export default function OceanMap({
         /* carte deja detruite */
       }
     };
-  }, [loaded, coastlineUrl, lang]);
+  }, [loaded, coastlineUrl, lang, droneOn]);
 
   // Redimensionnement du conteneur : on remet la carte à la bonne taille PUIS
   // on redemande un cadrage. Sans le second, la caméra garde le réglage d'une
@@ -998,6 +1081,8 @@ export default function OceanMap({
     }
     coastIdxRef.current = idx;
     const p = pts[idx];
+    // On conserve le zoom ET l'inclinaison courants : passer d'un site au
+    // suivant ne doit pas faire remonter la caméra.
     map.flyTo({ center: [p.lng, p.lat], zoom: map.getZoom(), speed: 0.8 });
     if (showCoastRef.current) showCoastRef.current(idx);
     setCoastNav({ idx, total: pts.length });
@@ -1185,6 +1270,13 @@ export default function OceanMap({
         )}
       </div>
 
+      {/* L'échelle de valeurs n'a de sens QUE si la carte peint des valeurs.
+          La vue « trait de côte » monte le globe avec une liste de points
+          vide : elle n'affiche aucune colonne, seulement la couche de
+          littoral, et porte sa propre légende recul/avancée. La barre
+          générique s'empilait au-dessus en annonçant une échelle qui ne
+          correspondait à rien de visible à l'écran. */}
+      {showLegend ? (
       <div className={`omap__legend omap__legend--${ramp}`}>
         <span>{lowLabel}</span>
         <span className="omap__legend-bar" />
@@ -1195,6 +1287,7 @@ export default function OceanMap({
           </span>
         ) : null}
       </div>
+      ) : null}
     </div>
   );
 }

@@ -2181,6 +2181,36 @@
   height: 100%;
 }
 
+/* ---------- FOCUS · le globe du TRAIT DE CÔTE SATELLITE ----------
+   Cette vue-là n'expose pas la carte directement : elle l'enveloppe dans
+   `.act6coast`, avec sa propre légende recul/avancée sous le tracé. Cette
+   enveloppe est une colonne flex SANS hauteur — la chaîne se coupait donc
+   là : `.omap` recevait la hauteur de son contenu, `.omap__stage` prenait
+   1 fr de zéro, et `.omap__map` calculait `height: 100 %` de rien.
+
+   Résultat à l'écran : les trois légendes s'affichaient, le globe non. Le
+   panneau paraissait vide alors que Mapbox était bien monté — le canevas
+   mesurait 0 pixel de haut.
+
+   La projection, elle, était déjà la bonne : OceanMap monte en
+   `projection: "globe"` pour toutes les escales. Il n'y avait rien à
+   changer au mode 3D, seulement de la hauteur à lui donner. */
+.board--focus .board__chart .act6coast {
+  height: 100%;
+  min-height: 0;
+}
+
+.board--focus .board__chart .act6coast > .omap {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* La légende de la vue reste sur une ligne, en pied, sans grignoter le
+   globe. */
+.board--focus .board__chart .act6coast__legend {
+  flex: 0 0 auto;
+}
+
 /* ---------- FOCUS · pas de doublon avec la colonne de lecture ----------
    Au-dessus de 1180 px, la colonne « comment lire » porte déjà la phrase de
    lecture et la consigne d'exploration. Les garder AUSSI en bandeau sous le
