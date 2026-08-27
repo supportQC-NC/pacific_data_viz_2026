@@ -72,6 +72,12 @@ function parseSdmxCsv(text) {
   const iGeo = find('GEO_PICT', 'REF_AREA', 'AREA');
   const iTime = find('TIME_PERIOD', 'TIME');
   const iVal = find('OBS_VALUE', 'VALUE');
+  // Erreur type fournie par la source (colonne ERROR_VAL, présente p.ex. sur
+  // DF_CLIMATE_CHANGE). Elle était jusqu'ici jetée au parsing alors que les
+  // fiches méthode l'annoncent : sans elle, impossible de dire qu'une
+  // anomalie de +0,1 °C assortie d'une erreur de 0,1 °C n'est PAS
+  // distinguable de zéro. Facultative : absente -> `err` vaut null.
+  const iErr = find('ERROR_VAL', 'OBS_ERROR');
   if (iVal < 0 || iTime < 0) return [];
   const num = (s) => parseFloat(decimalComma ? String(s).replace(',', '.') : s);
   const rows = [];
@@ -80,7 +86,13 @@ function parseSdmxCsv(text) {
     const value = num(c[iVal]);
     const year = parseInt(c[iTime], 10);
     if (Number.isNaN(value) || Number.isNaN(year)) continue;
-    rows.push({ geo: iGeo >= 0 ? (c[iGeo] || 'PAC') : 'PAC', year, value });
+    const err = iErr >= 0 ? num(c[iErr]) : NaN;
+    rows.push({
+      geo: iGeo >= 0 ? (c[iGeo] || 'PAC') : 'PAC',
+      year,
+      value,
+      err: Number.isFinite(err) ? err : null,
+    });
   }
   return rows;
 }
@@ -90,8 +102,10 @@ function normalize(rows) {
   const years = new Set();
   let min = Infinity;
   let max = -Infinity;
-  rows.forEach(({ geo, year, value }) => {
-    (byArea[geo] = byArea[geo] || []).push({ year, value });
+  rows.forEach(({ geo, year, value, err }) => {
+    // `err` s'ajoute au point sans rien changer pour les consommateurs
+    // existants, qui ne lisent que `year` / `value`.
+    (byArea[geo] = byArea[geo] || []).push({ year, value, err: err ?? null });
     years.add(year);
     if (value < min) min = value;
     if (value > max) max = value;

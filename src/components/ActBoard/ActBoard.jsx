@@ -42,6 +42,13 @@ export default function ActBoard({
   outro,
   nav = "rail",
   initialTab,
+  // --- Disposition « focus » (opt-in, cf. ActBoard.scss) -----------------
+  // Rend la QUESTION de l'acte visible dans le board et redonne au
+  // graphique la hauteur qu'il n'avait plus : mesuré avant refonte, la
+  // donnée n'occupait que 460 px sur 959, soit 48 % de l'écran — le reste
+  // partait en chrome (KPI, filtres, onglets, barre d'acte).
+  // Opt-in acte par acte : les actes qui ne la passent pas ne bougent pas.
+  focus = false,
 }) {
   const { t, lang } = useLang();
   // Repli i18n : si la clé n'existe pas encore, on affiche un libellé lisible.
@@ -194,7 +201,11 @@ export default function ActBoard({
   const showActBar = step === 1 || step === 2;
 
   return (
-    <main className={`board board--s${step} ${nav === "carousel" ? "board--carousel" : ""}`}>
+    <main
+      className={`board board--s${step} ${nav === "carousel" ? "board--carousel" : ""} ${
+        focus ? "board--focus" : ""
+      }`}
+    >
       {/* ---------- Barre d'acte persistante (préc · titre+progression · suiv) ---------- */}
       {showActBar && (
         <ActBar
@@ -276,11 +287,98 @@ export default function ActBoard({
                   complètement du parcours. Hors voyage, ils restent affichés
                   à l'étape 0 comme avant ; on ne les montre donc ici que
                   lorsque l'intro a été court-circuitée. */}
-              {skipIntro && kpis.length > 0 ? (
-                <KpiRow items={kpis} title={kpiTitle} />
+              {/* ---------- BANDE DE TÊTE ----------
+                  La QUESTION de l'acte n'est plus posée ici : elle est
+                  portée par la traversée en pirogue qui précède le
+                  dashboard, où elle a la place et le temps d'être lue.
+                  Le board s'ouvre donc directement sur la donnée — et
+                  n'affiche cette bande que si l'acte lui confie des
+                  chiffres-clés. Sans eux, elle disparaît complètement et
+                  toute sa hauteur revient au graphique.
+
+                  `thesis` continue d'être rendue à l'étape 0 (hors voyage
+                  guidé), où elle reste l'amorce de l'acte. */}
+              {focus ? (
+                kpis.length > 0 ? (
+                  <div className="board__ask">
+                    <KpiRow items={kpis} title={kpiTitle} compact />
+                  </div>
+                ) : null
+              ) : (
+                skipIntro && kpis.length > 0 ? (
+                  <KpiRow items={kpis} title={kpiTitle} />
+                ) : null
+              )}
+
+              {/* Barre d'outils : onglets + filtres sur UNE ligne. Ils
+                  occupaient deux bandes distinctes (~154 px cumulés) au-dessus
+                  du graphique. */}
+              {focus && nav === "carousel" ? (
+                <div className="board__bar">
+                  <ChartCarousel
+                    charts={mainCharts}
+                    index={idx}
+                    onSelect={goTab}
+                    labels={{
+                      prev: labels.prev,
+                      next: labels.next,
+                      signature: labels.signature,
+                      group: labels.viewGroup,
+                    }}
+                  />
+                  {filters ? (
+                    <div className="board__bar-filters">{filters}</div>
+                  ) : null}
+                  {/* COMMENT JOUER AVEC LA DONNÉE.
+                      Plutôt qu'un mode d'emploi écrit sous chaque graphique
+                      — du texte que personne ne lit et qui mange la place du
+                      tracé — une pastille discrète qui livre l'info AU
+                      SURVOL, au moment où l'on se demande quoi faire.
+                      Le contenu est propre à chaque vue : survoler une case
+                      de heatmap et faire défiler un globe ne s'apprennent
+                      pas de la même façon. */}
+                  {active && active.hint ? (
+                    <div className="board__hint">
+                      <button
+                        type="button"
+                        className="board__hint-btn"
+                        aria-describedby="board-hint-bubble"
+                      >
+                        <span aria-hidden="true">?</span>
+                        <span className="u-sr-only">
+                          {tf("board.explore", "Comment explorer", "How to explore")}
+                        </span>
+                      </button>
+                      <span
+                        className="board__hint-bubble"
+                        id="board-hint-bubble"
+                        role="tooltip"
+                      >
+                        {active.hint}
+                        {labels.switchHint ? (
+                          <em className="board__hint-keys">{labels.switchHint}</em>
+                        ) : null}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {hasInfo && (
+                    <button
+                      type="button"
+                      className="board__infobtn board__infobtn--bar"
+                      onClick={() => setInfoOpen(true)}
+                      aria-haspopup="dialog"
+                      aria-label={tf("board.info_title", "Données & couverture", "Data & coverage")}
+                      title={tf("board.info_title", "Données & couverture", "Data & coverage")}
+                    >
+                      <span aria-hidden="true">i</span>
+                    </button>
+                  )}
+                </div>
               ) : null}
+
               <div className="board__work">
-                {hasInfo && (
+                {hasInfo && !focus && (
                   <button
                     type="button"
                     className="board__infobtn"
@@ -292,7 +390,7 @@ export default function ActBoard({
                     <span aria-hidden="true">i</span>
                   </button>
                 )}
-                {(nav !== "carousel" || filters) && (
+                {!focus && (nav !== "carousel" || filters) && (
                 <aside className="board__rail">
                   {filters ? <div className="board__rail-filters">{filters}</div> : null}
 
@@ -328,7 +426,7 @@ export default function ActBoard({
                 )}
 
                 <div className="board__main">
-                  {nav === "carousel" && (
+                  {!focus && nav === "carousel" && (
                     <ChartCarousel
                       charts={mainCharts}
                       index={idx}
@@ -357,13 +455,81 @@ export default function ActBoard({
                   {active.empty ? (
                     <div className="board__chart-empty">{labels.empty}</div>
                   ) : (
-                    <div
-                      className={`board__chart ${nav === "carousel" ? "chcar-fade" : ""}`}
-                      key={nav === "carousel" ? idx : undefined}
-                    >
-                      {active.node}
+                    <div className="board__plot">
+                      <div
+                        className={`board__chart ${nav === "carousel" ? "chcar-fade" : ""}`}
+                        key={nav === "carousel" ? idx : undefined}
+                      >
+                        {active.node}
+                      </div>
+
+                      {/* ---------- CLÉ DE LECTURE ----------
+                          Un graphique plein cadre n'est pas plus lisible
+                          qu'un graphique plus étroit dont on comprend les
+                          axes. La largeur gagnée sert donc à dire, en
+                          toutes lettres et à côté du tracé : ce que porte
+                          la verticale, ce que porte l'horizontale, ce que
+                          dit la couleur, d'où vient le chiffre.
+                          C'est l'ancienne « légende » sortie du graphique
+                          et remise au même rang que lui. */}
+                      {focus && active.legend ? (
+                        <aside className="board__key">
+                          {active.legend.y ? (
+                            <div className="board__key-row">
+                              <span className="board__key-axis" aria-hidden="true">↕</span>
+                              <span className="board__key-txt">{active.legend.y}</span>
+                            </div>
+                          ) : null}
+                          {active.legend.x ? (
+                            <div className="board__key-row">
+                              <span className="board__key-axis" aria-hidden="true">↔</span>
+                              <span className="board__key-txt">{active.legend.x}</span>
+                            </div>
+                          ) : null}
+                          {active.legend.color ? (
+                            <div className="board__key-row board__key-row--color">
+                              <span className="board__key-swatch" aria-hidden="true" />
+                              <span className="board__key-txt">{active.legend.color}</span>
+                            </div>
+                          ) : null}
+                          {active.legend.note ? (
+                            <p className="board__key-note">{active.legend.note}</p>
+                          ) : null}
+                        </aside>
+                      ) : null}
                     </div>
                   )}
+
+                  {/* ---------- « À RETENIR » ----------
+                      Chaque acte rédige un `takeaway` par graphique — 95 au
+                      total dans l'application — et AUCUN n'était rendu.
+                      Ce ne sont pas des conclusions mais des CONSIGNES DE
+                      LECTURE (« la lecture juste se fait sur la durée »,
+                      « à confronter au film »…). D'où deux traitements :
+                        • graphe SIGNATURE → affiché, il porte le message ;
+                        • les autres       → repliés, disponibles à la
+                          demande, pour ne pas ajouter du texte partout.
+                      Les vues méta (fiche du jeu, couverture) n'en ont pas
+                      besoin : elles sont déjà entièrement explicatives. */}
+                  {active.takeaway && !active.bare ? (
+                    active.signature ? (
+                      <p className="board__take board__take--lead">
+                        {labels.takeawayKicker ? (
+                          <span className="board__take-kicker">
+                            {labels.takeawayKicker}
+                          </span>
+                        ) : null}
+                        <span className="board__take-text">{active.takeaway}</span>
+                      </p>
+                    ) : (
+                      <details className="board__take board__take--fold">
+                        <summary className="board__take-sum">
+                          {tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
+                        </summary>
+                        <span className="board__take-text">{active.takeaway}</span>
+                      </details>
+                    )
+                  ) : null}
 
                   {/* Passage vers le TROISIÈME temps de l'acte. Sans ce
                       bouton, l'outro (étape 2) restait injoignable : rien

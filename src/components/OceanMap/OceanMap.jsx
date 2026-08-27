@@ -26,6 +26,7 @@ import PICT_GEO from "../../data/pictGeo";
 import { pictName } from "../../i18n/pictNames";
 import { useLang } from "../../store/context/langContext";
 import mapLabels from "../../i18n/mapLabels";
+import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./OceanMap.scss";
 
 // Mapbox GL est charge via le CDN officiel dans public/index.html
@@ -35,11 +36,32 @@ import "./OceanMap.scss";
 const mapboxgl = window.mapboxgl;
 
 const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
+// Rampes historiques : hexs en dur, ne suivent pas le theme. Conservees
+// telles quelles — elles sont utilisees par plusieurs actes et les changer
+// les repeindrait tous. Migration prevue acte par acte.
 const RAMPS = {
   diverging: { cold: "#2c7fb8", neutral: "#e6edf3", hot: "#e8453c" },
   good: { cold: "#1f8f54", neutral: "#d6efe0", hot: "#1f8f54" },
   semantic: { cold: "#25e09a", neutral: "#00e6ff", hot: "#ff4d6d" },
 };
+
+// Rampe "polarity" : la rampe DIVERGENTE validee du design system, lue dans
+// les tokens (--c-div-*) donc elle suit le theme. C'est la seule des rampes
+// du produit dont les deux poles ressortent sur les DEUX surfaces (poles
+// 6,40:1 / 6,10:1 sur navy, 6,75:1 / 7,03:1 sur blanc ; centre a 1,3:1, il
+// doit lire "rien"). Reservee aux grandeurs a vraie polarite autour d'un
+// zero qui a un sens — une anomalie, typiquement.
+//
+// Elle remplace le vert<->rouge de la rampe "semantic", ecarte apres mesure :
+// DE 4,1 en deuteranopie (les deux poles sont la MEME couleur pour ~8 % des
+// hommes) contre 22,7 pour lavande<->rouge.
+function polarityRamp() {
+  return {
+    cold: cssVarRaw("--c-div-1", "#8494fa"),
+    neutral: cssVarRaw("--c-div-5", "#2f3140"),
+    hot: cssVarRaw("--c-div-9", "#f86970"),
+  };
+}
 const MAX_H = 750000;
 const BASE_H = 45000;
 
@@ -165,7 +187,15 @@ export default function OceanMap({
 
   const min = range?.min ?? -1;
   const max = range?.max ?? 1;
-  const pal = RAMPS[ramp] || RAMPS.diverging;
+  // `tk` n'est pas lu directement : il sert de DECLENCHEUR. Il change a chaque
+  // bascule de theme, ce qui relit les tokens --c-div-* et, via les deps de
+  // l'effet de peinture plus bas, repeint les colonnes.
+  const tk = useThemeTokens();
+  const pal = useMemo(
+    () => (ramp === "polarity" ? polarityRamp() : RAMPS[ramp] || RAMPS.diverging),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ramp, tk],
+  );
 
   const { dom, loD, hiD, midD } = useMemo(() => {
     const fn = logScale ? (v) => Math.log10(1 + Math.max(0, v)) : (v) => v;
@@ -246,6 +276,13 @@ export default function OceanMap({
   }, [fitAreas, fc]);
 
   useEffect(() => {
+    // GARDE — sans elle, cet effet s'executait meme quand le composant rend
+    // le repli "token manquant" (retour anticipe plus bas) : `containerRef`
+    // n'etait alors jamais attache et Mapbox levait
+    // « Invalid type: 'container' must be a String or HTMLElement ».
+    // L'ErrorBoundary parent affichait « Donnees indisponibles » — un message
+    // FAUX, les donnees etant completes ; seule la carte manquait.
+    if (!TOKEN || !mapboxgl || !containerRef.current) return undefined;
     mapboxgl.accessToken = TOKEN;
     const map = new mapboxgl.Map({
       container: containerRef.current,

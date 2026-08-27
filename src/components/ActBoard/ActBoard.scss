@@ -181,7 +181,14 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr;
+  // `minmax(0, 1fr)` et NON `1fr` : une piste `1fr` a un `min-width: auto`,
+  // elle se dimensionne donc sur le contenu le plus large de la colonne.
+  // Mesuré à 390 px : la piste se résolvait à 602 px (largeur intrinsèque du
+  // rail de filtres) et TOUTE la planche débordait — document à 639 px pour
+  // un écran de 390, défilement latéral sur les graphiques. Le `minmax(0,…)`
+  // autorise la piste à devenir plus étroite que son contenu, et les
+  // graphiques se recalculent alors à la largeur réelle de l'écran.
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-5);
 }
 
@@ -191,6 +198,9 @@
   flex-direction: column;
   gap: var(--sp-6);
   min-height: 0;
+  // Second verrou du même débordement : sans `min-width: 0`, un enfant flex
+  // ne peut pas rétrécir sous sa largeur intrinsèque.
+  min-width: 0;
   overflow: visible;
 }
 .board__rail-filters {
@@ -331,6 +341,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   gap: var(--sp-3);
 }
 .board__head {
@@ -1051,4 +1062,913 @@
 @media (prefers-reduced-motion: reduce) {
   .board__info-scrim,
   .board__info-panel { animation: none; }
+}
+/* ============================================================
+   DISPOSITION « FOCUS » — le graphique est le sujet
+   ------------------------------------------------------------
+   Opt-in via la prop `focus` d'ActBoard. Aucun acte qui ne la passe pas
+   n'est affecté.
+
+   Constat de départ, mesuré sur l'acte 02 à 1918 × 959 (le board ne défile
+   pas : le budget de hauteur est FIXE) :
+
+     barre d'acte ...... 103 px
+     KPI (4 cartes) .... 162 px
+     filtres ........... 108 px
+     onglets ............ 46 px
+     phrase ............. 20 px
+     GRAPHIQUE ......... 460 px   <- 48 % de l'écran
+
+   La chrome prenait plus de place que la donnée. Trois leviers, sans rien
+   retirer d'utile :
+     1. la question de l'acte et les chiffres partagent UNE bande ;
+     2. onglets et filtres partagent UNE ligne ;
+     3. tout ce qui reste va au graphique.
+   ============================================================ */
+
+.board--focus {
+  .board__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    min-height: 0;
+  }
+
+  /* ---------- Bande « question + chiffres » ---------- */
+  /* Bande « question ». Elle accueille les chiffres-clés QUAND l'acte en
+     passe (grille à deux colonnes) ; sans eux, elle se réduit à une ligne
+     éditoriale — le graphique récupère la hauteur. */
+  .board__ask {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: var(--sp-6);
+    padding-bottom: var(--sp-3);
+    border-bottom: var(--border-hair) solid var(--c-line);
+  }
+
+  .board__ask:has(.kpi) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+  }
+
+  /* Sans chiffres à droite, question et clé de lecture se posent côte à
+     côte : deux lignes deviennent une. */
+
+
+  .board__ask-q {
+    min-width: 0;
+  }
+
+  .board__ask-kicker {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+    margin-bottom: var(--sp-2);
+  }
+
+  /* La QUESTION de l'acte. Volontairement une seule ligne éditoriale : elle
+     amorce la lecture, elle ne rejoue pas l'intro plein écran. */
+  .board__ask-text {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.4vw, 1.4rem);
+    font-weight: var(--fw-semi);
+    line-height: 1.25;
+    color: var(--c-text);
+    // Assez large pour que la question tienne sur UNE ligne aux largeurs
+    // courantes : à 46ch elle se coupait avant le « ? », qui se retrouvait
+    // seul sur la seconde ligne.
+    max-width: 62ch;
+    text-wrap: balance;
+  }
+
+  /* Clé de lecture (ex. « 0 = normale 1971-2000 »). Elle conditionne la
+     lecture de TOUTES les vues de l'acte : elle ne peut pas rester dans une
+     modale que personne n'ouvre. */
+  .board__ask-note {
+    margin-top: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+    color: var(--c-text-mute);
+  }
+
+  /* ---------- Barre d'outils : onglets + filtres sur une ligne ---------- */
+  .board__bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-5);
+    min-width: 0;
+  }
+
+  .board__bar .chcar {
+    flex: 0 1 auto;
+    min-width: 0;
+    // Marge basse de 20 px héritée du carrousel : dans une barre d'outils
+    // elle ne sert plus qu'à voler de la hauteur au graphique.
+    margin-bottom: 0;
+  }
+
+  /* NAVIGATION CONCENTRÉE.
+     Les onglets étaient en `flex: 1 1 0` : cinq libellés courts répartis sur
+     1 400 px, séparés par 200 px de vide. Étalée ainsi, la navigation ne se
+     lit plus comme UN groupe — l'œil doit balayer toute la largeur pour
+     savoir où il en est, et le libellé actif ne se distingue plus de ses
+     voisins par la proximité mais seulement par sa couleur.
+     Les onglets se dimensionnent maintenant sur leur texte et restent
+     groupés à gauche ; la largeur libérée va aux filtres, et surtout le
+     regard n'a plus qu'un seul endroit à parcourir. */
+  .board__bar .chcar__track {
+    justify-content: flex-start;
+    gap: var(--sp-1);
+  }
+
+  .board__bar .chcar__item {
+    flex: 0 0 auto;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--fs-sm);
+    // La numérotation est posée en CSS : elle exprime un PARCOURS sans
+    // toucher au JSX ni ajouter de chaîne à traduire.
+    counter-increment: viz;
+  }
+
+  /* METTRE EN VALEUR ≠ GROSSIR.
+     Le graphe signature ne se distingue pas par une taille ni par une
+     couleur de plus, mais par sa PLACE et par un petit repère : il ouvre la
+     rangée, et un filet le sépare des vues suivantes. Le regard comprend
+     alors « celle-ci d'abord, puis les autres » sans qu'on le lui écrive. */
+  .board__bar .chcar__track {
+    counter-reset: viz;
+    align-items: stretch;
+  }
+
+  .board__bar .chcar__item::before {
+    content: counter(viz, decimal-leading-zero);
+    margin-right: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--c-text-mute);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+
+  .board__bar .chcar__item.is-active::before {
+    color: var(--c-text-soft);
+  }
+
+  /* Le graphe signature ouvre la rangée : son numéro cède la place à
+     l'étoile, et un filet marque la césure avec « et aussi… ». */
+  .board__bar .chcar__item.is-signature::before {
+    content: none;
+  }
+
+  .board__bar .chcar__item.is-signature {
+    margin-right: var(--sp-4);
+    padding-right: var(--sp-4);
+    border-right: var(--border-hair) solid var(--c-line);
+  }
+
+  .board__bar .chcar__item.is-signature .chcar__star {
+    color: var(--c-text);
+  }
+
+  /* L'INTERFACE NE PARLE PAS LA LANGUE DES DONNÉES.
+     La pilule d'onglet actif était remplie en `--c-warm` (saumon) pour le
+     graphe signature, `--c-accent` (lavande) sinon. Depuis que la donnée
+     encode « au-dessus de la normale » en AMBRE et « au-dessous » en BLEU,
+     ces deux teintes d'interface sont devenues des quasi-homonymes des
+     couleurs de données : un onglet saumon à côté d'une courbe ambre laisse
+     croire qu'ils disent la même chose.
+
+     La navigation abandonne donc la couleur pleine. L'onglet actif se
+     distingue par une SURFACE surélevée, un texte plein contraste et un
+     soulignement — trois signaux non chromatiques, qui ne peuvent entrer en
+     collision avec aucune échelle de valeurs. Bonus d'accessibilité : l'état
+     actif ne repose plus sur la seule teinte. */
+  .board__bar .chcar__indicator,
+  .board__bar .chcar__indicator.is-signature {
+    top: auto;
+    bottom: 0;
+    height: 2px;
+    border-radius: var(--r-pill);
+    background: var(--c-text);
+    box-shadow: none;
+  }
+
+  .board__bar .chcar__item {
+    border-radius: var(--r-sm) var(--r-sm) 0 0;
+  }
+
+  .board__bar .chcar__item.is-active {
+    color: var(--c-text);
+    background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+  }
+
+  .board__bar .chcar__item.is-active .chcar__star,
+  .board__bar .chcar__star {
+    color: var(--c-text-mute);
+  }
+
+  .board__bar .chcar__item.is-active .chcar__star {
+    color: var(--c-text);
+  }
+
+  /* Le soulignement glissant suit des onglets de largeurs différentes : rien
+     à changer côté JS, il se cale sur offsetLeft/offsetWidth. */
+  .board__bar-filters {
+    margin-left: auto;
+  }
+
+  .board__bar-filters {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding-left: var(--sp-5);
+    border-left: var(--border-hair) solid var(--c-line);
+    min-width: 0;
+  }
+
+  /* Filtre en MENU DÉROULANT (composant ChartFilter). Quatre cartes-boutons
+     mangeaient toute la largeur restante de la barre et écrasaient les
+     onglets à quelques pixels. */
+  .board__bar-filters .chfilter {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    white-space: nowrap;
+  }
+
+  .board__bar-filters .chfilter__select {
+    min-width: 11rem;
+  }
+
+  /* Repli pour les actes qui passent encore des cartes-filtres. */
+  .board__bar-filters .dsw {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  .board__bar-filters .dsw__label {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .board__bar-filters .dsw__list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  /* Le bouton ⓘ vit dans la barre d'outils : en position absolue sur
+     .board__work il retombait sur le coin haut-droit du GRAPHIQUE. */
+  .board__infobtn--bar {
+    position: static;
+    flex: 0 0 auto;
+  }
+
+  /* Chiffres compacts : la bande « question + KPI » ne doit pas manger la
+     hauteur qu'on vient de rendre au graphique. */
+  /* Les KPI passent de CARTES à une BANDE DE STATISTIQUES.
+     Quatre cartes rembourrées, encadrées et ombrées prenaient 117 px de
+     hauteur pour porter quatre nombres — davantage qu'un quart de l'écran
+     utile, au détriment du graphique qui est le sujet. On retire tout le
+     chrome (fond, bordure, ombre, marges) et on ne garde que ce qui porte
+     de l'information : le nombre, son qualifiant, son libellé, et un filet
+     coloré qui dit la polarité. */
+  .board__ask .kpi {
+    gap: 0;
+  }
+
+  .board__ask .kpi__card {
+    min-height: 0;
+    margin: 0;
+    padding: 0 var(--sp-4);
+    gap: 1px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .board__ask .kpi__card:hover {
+    transform: none;
+    border-color: transparent;
+  }
+
+  /* Le filet de ton passe du HAUT à la GAUCHE : en bande, c'est lui qui
+     sépare les statistiques les unes des autres. */
+  .board__ask .kpi__card::before {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .board__ask .kpi__card--hero .kpi__value {
+    font-size: clamp(1.9rem, 2.5vw, 2.6rem);
+  }
+
+  .board__ask .kpi__value {
+    font-size: clamp(1.15rem, 1.35vw, 1.45rem);
+  }
+
+  .board__ask .kpi__label {
+    font-size: 0.62rem;
+    line-height: 1.25;
+  }
+
+  .board__ask .kpi__meta {
+    font-size: var(--fs-xs);
+    line-height: 1.2;
+  }
+
+  /* ---------- Barre d'acte compacte ----------
+     Elle empilait titre / progression / « quitter » sur trois lignes :
+     103 px, soit 11 % de l'écran, pour trois liens. Tout tient sur une
+     ligne. Scopé à la disposition focus : les autres actes ne bougent pas. */
+  .actbar__inner {
+    min-height: 0;
+    padding-block: var(--sp-1);
+  }
+
+  .actbar__center {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--sp-2) var(--sp-4);
+  }
+
+  /* La barre porte le SUJET de l'acte (« Un océan qui change »), le board
+     porte la QUESTION (« Combien d'îles dépassent déjà leur normale ? »).
+     Deux niveaux distincts, donc pas deux titres concurrents : celui de la
+     barre reste discret, en petit et en encre douce. */
+  .actbar__title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-med);
+    letter-spacing: 0.01em;
+    color: var(--c-text-soft);
+  }
+
+  .actbar__exit {
+    margin-top: 0;
+  }
+
+  /* Filtres : cartes ramassées, elles n'ont pas besoin de leur gabarit
+     pleine hauteur dans une barre d'outils. */
+  .board__bar-filters .dsw__card {
+    padding: var(--sp-2) var(--sp-3);
+    min-height: 0;
+  }
+
+  /* ---------- Le graphique prend tout le reste ---------- */
+  .board__work {
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 0;
+  }
+
+  .board__main {
+    gap: var(--sp-2);
+  }
+
+  /* Titre du graphique RÉTABLI. En mode carrousel il passait à
+     `display:none` au-dessus de 901 px — et restait visible en dessous : la
+     hiérarchie de lecture était donc littéralement inversée entre desktop et
+     mobile. Ici il tient sur une ligne avec la phrase de résumé. */
+  /* TITRE ET RÉSUMÉ SUR UNE MÊME LIGNE.
+     Empilés, ils formaient deux blocs de texte que l'œil traite l'un après
+     l'autre avant d'arriver au tracé. Côte à côte, ils se lisent d'un seul
+     mouvement : le titre nomme, la phrase précise, le graphique montre.
+     Grille plutôt que flex : la colonne du titre ne dépend pas de la
+     longueur de la phrase, donc les vues ne dansent pas d'un onglet à
+     l'autre. */
+  .board__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: var(--sp-5);
+    row-gap: var(--sp-1);
+    max-width: none;
+    padding-bottom: var(--sp-2);
+    border-bottom: var(--border-hair) solid var(--c-line);
+  }
+
+  .board__num {
+    display: none;
+  }
+
+  .board__chart-title {
+    display: block;
+    margin: 0;
+    font-size: var(--fs-h5);
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .board__finding {
+    min-width: 0;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--c-text-soft);
+  }
+
+  .board__chart {
+    min-height: 320px;
+  }
+
+  /* ---------- « À retenir » ---------- */
+  .board__take {
+    flex: 0 0 auto;
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--c-text-soft);
+  }
+
+  /* Graphe signature : le takeaway porte le message, il est affiché. */
+  .board__take--lead {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: color-mix(in srgb, var(--c-surface) 55%, transparent);
+    border-left: 3px solid var(--c-div-9);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    color: var(--c-text);
+  }
+
+  .board__take-kicker {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-div-9);
+  }
+
+  /* Les autres : repliés. Ce sont des consignes de lecture, pas le message
+     du graphique — les afficher tous ajouterait du texte partout. */
+  .board__take--fold {
+    padding-left: var(--sp-1);
+  }
+
+  .board__take-sum {
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+    transition: color var(--t-fast) var(--ease-out);
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: "+";
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: var(--c-text-soft);
+    }
+  }
+
+  .board__take--fold[open] .board__take-sum::before {
+    content: "\2013";
+  }
+
+  .board__take--fold .board__take-text {
+    display: block;
+    padding-top: var(--sp-2);
+    max-width: 92ch;
+  }
+}
+
+/* ---------- FOCUS · largeurs intermédiaires ----------
+   Entre ~900 et 1280 px, onglets + filtres + ⓘ ne tiennent plus sur une
+   ligne : les onglets se faisaient écraser à quelques pixels par les
+   filtres, qui eux ne peuvent pas rétrécir. On passe alors à DEUX lignes —
+   onglets d'abord, filtres ensuite. Deux lignes lisibles valent mieux
+   qu'une ligne illisible. */
+@media (min-width: 901px) and (max-width: 1279px) {
+  .board--focus .board__bar {
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+  }
+
+  .board--focus .board__bar .chcar {
+    flex: 1 1 100%;
+  }
+
+  .board--focus .board__bar-filters {
+    flex: 1 1 auto;
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+
+/* ---------- FOCUS · tablette et mobile ----------
+   Le board redevient défilant : impossible de loger question, chiffres,
+   onglets et graphique dans une hauteur d'écran de téléphone. On soigne
+   donc l'ORDRE plutôt que la compression. Avant refonte, il fallait
+   défiler 1 185 px — 1,4 écran — avant le premier pixel de donnée. */
+@media (max-width: 900px) {
+  .board--focus {
+    .board__ask {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--sp-3);
+      padding-bottom: var(--sp-3);
+    }
+
+    .board__ask-text {
+      font-size: 1.05rem;
+      max-width: none;
+    }
+
+    /* Deux lignes, pas trois : les onglets prennent la première (défilement
+       horizontal), le filtre et le ⓘ se partagent la seconde. Empilés, ils
+       coûtaient 147 px avant le premier pixel de graphique. */
+    .board__bar {
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .board__bar .chcar {
+      flex: 1 1 100%;
+    }
+
+    .board__bar-filters {
+      flex: 1 1 auto;
+      padding-left: 0;
+      border-left: none;
+      min-width: 0;
+    }
+
+    .board__bar-filters .chfilter,
+    .board__bar-filters .chfilter__selwrap {
+      width: 100%;
+    }
+
+    .board__bar-filters .dsw__list {
+      flex-wrap: nowrap;
+    }
+
+    /* Le titre ne peut plus tenir sur une ligne à 390 px. */
+    .board__chart-title {
+      white-space: normal;
+      font-size: 1.05rem;
+    }
+
+    .board__head {
+      flex-direction: column;
+      gap: var(--sp-1);
+    }
+
+    /* Titre + phrase de résumé occupaient 213 px avant le graphique — un
+       quart d'écran de texte. Le titre reste entier (il nomme la vue) ; la
+       phrase descriptive est ramenée à trois lignes, le détail vivant de
+       toute façon dans « Comment lire ce graphique » et dans l'infobulle. */
+    .board__finding {
+      font-size: var(--fs-xs);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Hauteur de graphique adaptée au tactile : assez haute pour viser une
+       barre au doigt, assez courte pour laisser voir ce qui suit. */
+    .board__chart {
+      min-height: 60vh;
+    }
+
+    .board__take--lead {
+      flex-direction: column;
+      gap: var(--sp-1);
+    }
+  }
+}
+
+/* ============================================================
+   FOCUS · LE DÉCOR DU VOYAGE
+   ------------------------------------------------------------
+   Le dashboard était une surface neutre : rien ne rappelait qu'on est à une
+   escale d'un voyage. L'image de l'acte existait déjà (`--act-img`, posée
+   par ActFlow, `public/intro/aN.jpg`) mais n'était utilisée que par l'écran
+   d'intro et le loader — c'est-à-dire les deux moments où l'on ne lit pas
+   de données.
+
+   Elle passe en fond du board. Trois précautions, parce que DATA FIRST :
+
+     1. FLOU LÉGER. Une photo nette entre en concurrence avec les traits fins
+        d'un graphique : le détail de l'image se lit comme du bruit sur la
+        courbe. 4 px de flou suffisent à la réduire à une ambiance.
+     2. DÉSATURATION. La photo ne doit pas introduire de teintes qui
+        entreraient en conflit avec la grammaire couleur (lavande / rouge).
+     3. VOILE DENSE. Le fond effectif reste à ~90 % la couleur de surface :
+        on perçoit l'image, elle ne dispute jamais la lisibilité.
+
+   `background-attachment: fixed` (via position: fixed) : l'image ne bouge
+   pas quand on change d'onglet — c'est un décor, pas un élément de contenu.
+   ============================================================ */
+
+.board--focus {
+  position: relative;
+  isolation: isolate;
+}
+
+.board--focus::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image: var(--act-img, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  // scale : le flou éclaircirait les bords sans ce léger débord.
+  transform: scale(1.06);
+  filter: blur(3px) saturate(0.7);
+}
+
+.board--focus::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  // UNE seule couche. Deux voiles empilés (radial + aplat) cumulaient leurs
+  // opacités : ~98 % au total, l'image devenait invisible. Ici le fond
+  // effectif est à ~72 % en haut et ~88 % en bas — l'image se perçoit, la
+  // lecture ne souffre pas.
+  background: radial-gradient(
+    135% 105% at 50% -5%,
+    color-mix(in srgb, var(--c-bg) 30%, transparent),
+    color-mix(in srgb, var(--c-bg) 58%, transparent) 50%,
+    color-mix(in srgb, var(--c-bg) 78%, transparent)
+  );
+}
+
+/* Le contenu passe au-dessus du décor. */
+.board--focus .container,
+.board--focus .actbar {
+  position: relative;
+  z-index: 1;
+}
+
+/* Surface claire : une photo sous un voile blanc perd tout contraste et
+   grisaille le texte. On la retient davantage et on l'éclaircit. */
+[data-theme="light"] .board--focus::before {
+  filter: blur(4px) saturate(0.5) brightness(1.12);
+}
+
+[data-theme="light"] .board--focus::after {
+  background: radial-gradient(
+    135% 105% at 50% -5%,
+    color-mix(in srgb, var(--c-bg) 58%, transparent),
+    color-mix(in srgb, var(--c-bg) 78%, transparent) 50%,
+    color-mix(in srgb, var(--c-bg) 88%, transparent)
+  );
+}
+
+/* Les panneaux posés sur le décor reprennent un fond propre, sinon le texte
+   fin (clé de lecture, libellés d'axe) perd son contraste. */
+.board--focus .board__take--lead {
+  background: color-mix(in srgb, var(--c-surface) 80%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* Mobile : le décor est conservé mais encore plus discret — sur un petit
+   écran la densité d'information par pixel est bien plus forte. */
+@media (max-width: 900px) {
+  .board--focus::after {
+    background: color-mix(in srgb, var(--c-bg) 90%, transparent);
+  }
+}
+
+/* Économie de données / mouvement réduit : on retire le décor. */
+@media (prefers-reduced-motion: reduce) {
+  .board--focus::before {
+    filter: blur(4px) saturate(0.6);
+  }
+}
+
+/* ============================================================
+   FOCUS · LE GRAPHIQUE ET SA CLÉ DE LECTURE
+   ------------------------------------------------------------
+   Un tracé plein cadre n'est pas plus lisible qu'un tracé plus étroit dont
+   on comprend les axes. Sur un écran large, on rend donc de la largeur au
+   graphique pour la donner à une COLONNE DE LECTURE : ce que porte la
+   verticale, ce que porte l'horizontale, ce que dit la couleur, d'où vient
+   le chiffre.
+
+   C'est la légende sortie de l'intérieur du graphique — où elle était en
+   9 px, coincée contre un bord — et remise à côté de lui, au même rang.
+   ============================================================ */
+
+.board--focus {
+  .board__plot {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-6);
+  }
+
+  .board__chart {
+    min-width: 0;
+  }
+
+  .board__key {
+    display: none;
+  }
+}
+
+/* La colonne de lecture n'apparaît que s'il y a vraiment de la place :
+   en dessous, elle volerait au graphique la largeur qu'elle prétend
+   rentabiliser. */
+@media (min-width: 1180px) {
+  .board--focus .board__plot {
+    grid-template-columns: minmax(0, 1fr) clamp(200px, 17vw, 264px);
+    align-items: stretch;
+  }
+
+  .board--focus .board__key {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    align-self: center;
+    padding: var(--sp-5);
+    border-left: var(--border-hair) solid var(--c-line);
+  }
+
+  .board--focus .board__key-row {
+    display: grid;
+    grid-template-columns: 1.1rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-3);
+  }
+
+  /* Le glyphe d'axe : discret, il sert de puce, pas de décoration. */
+  .board--focus .board__key-axis {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--c-text-mute);
+  }
+
+  .board--focus .board__key-txt {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--c-text-soft);
+  }
+
+  /* Pastille de la rampe divergente : elle montre l'échelle au lieu de la
+     décrire. Les deux pôles et le neutre, dans l'ordre de lecture. */
+  .board--focus .board__key-swatch {
+    width: 1rem;
+    height: 2.6rem;
+    margin-top: 2px;
+    border-radius: var(--r-pill);
+    background: linear-gradient(
+      to top,
+      var(--c-div-1),
+      var(--c-div-5) 50%,
+      var(--c-div-9)
+    );
+  }
+
+  .board--focus .board__key-note {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: var(--c-text-mute);
+    padding-top: var(--sp-3);
+    border-top: var(--border-hair) solid var(--c-line);
+  }
+}
+
+/* ============================================================
+   FOCUS · BULLE « COMMENT EXPLORER »
+   ------------------------------------------------------------
+   Une consigne d'usage n'a pas besoin d'occuper la page en permanence :
+   elle sert une fois, au moment où l'on se demande quoi faire. D'où une
+   pastille discrète dans la barre d'outils, et l'explication au survol —
+   et au focus clavier, sinon l'aide n'existe que pour ceux qui ont une
+   souris.
+   ============================================================ */
+
+.board--focus {
+  .board__hint {
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+  }
+
+  .board__hint-btn {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--c-text-mute);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    cursor: help;
+    transition: color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out);
+
+    &:hover,
+    &:focus-visible {
+      color: var(--c-text);
+      border-color: var(--c-line-strong);
+    }
+  }
+
+  .board__hint-bubble {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    width: max-content;
+    max-width: 30ch;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--c-surface);
+    border: var(--border-hair) solid var(--c-line);
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-soft);
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: var(--c-text);
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+
+  .board__hint:hover .board__hint-bubble,
+  .board__hint:focus-within .board__hint-bubble {
+    opacity: 1;
+    transform: none;
+  }
+
+  .board__hint-keys {
+    display: block;
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    border-top: var(--border-hair) solid var(--c-line);
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--c-text-mute);
+  }
+}
+
+/* Libellé réservé aux lecteurs d'écran. */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Très grands écrans : le tracé ne s'étire pas indéfiniment ----------
+   Au-delà d'une certaine largeur, allonger la ligne de temps n'ajoute pas
+   d'information : elle aplatit les variations et éloigne l'axe des Y de son
+   axe des X. On plafonne le bloc, la marge gagnée va à la clé de lecture. */
+@media (min-width: 1600px) {
+  .board--focus .board__plot {
+    grid-template-columns: minmax(0, 1fr) clamp(240px, 20vw, 320px);
+    max-width: 1560px;
+  }
 }

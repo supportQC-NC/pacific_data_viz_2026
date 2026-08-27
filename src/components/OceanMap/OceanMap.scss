@@ -240,6 +240,18 @@
     var(--c-negative)
   );
 }
+// Rampe « polarity » — la divergente validee du design system. Meme source
+// que la peinture des colonnes (--c-div-*), donc legende et carte ne peuvent
+// plus diverger. Le centre est volontairement proche de la surface : il
+// signifie « a la normale », c.-a-d. rien.
+.omap__legend--polarity .omap__legend-bar {
+  background: linear-gradient(
+    90deg,
+    var(--c-div-1),
+    var(--c-div-5),
+    var(--c-div-9)
+  );
+}
 
 /* ---- Popup ---- */
 .pm-popup .mapboxgl-popup-content {

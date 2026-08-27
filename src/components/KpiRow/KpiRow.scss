@@ -134,3 +134,147 @@
 .kpi__card--neutral::before {
   background: var(--c-line-strong);
 }
+
+/* --- Tons manquants (bug silencieux) -----------------------------------
+   `secondary` (Act4, Act6) et `negative` (Act11) étaient passés par les
+   pages mais n'existaient pas ici : les cartes concernées sortaient sans
+   filet de tête ni couleur de chiffre, sans erreur ni avertissement. */
+.kpi__card--secondary::before {
+  background: var(--c-secondary);
+}
+.kpi__card--secondary .kpi__value {
+  color: var(--c-secondary);
+}
+
+.kpi__card--negative::before {
+  background: var(--c-negative);
+}
+.kpi__card--negative .kpi__value {
+  color: var(--c-negative);
+}
+
+/* --- Tons de POLARITÉ (pôles de la rampe divergente) --------------------
+   `above` / `below` disent la position par rapport à une référence qui a un
+   sens (une normale, un zéro). Ils reprennent EXACTEMENT les couleurs que
+   les graphiques emploient pour la même idée — un KPI rouge et une case de
+   heatmap rouge parlent alors de la même chose.
+
+   Volontairement distincts de positive/negative, qui restent la paire
+   vert/rouge de l'interface : ici la question n'est pas « bien / mal » mais
+   « au-dessus / au-dessous ». Les deux pôles sont mesurés à 6,40:1 et 6,10:1
+   sur la surface sombre, 6,75:1 et 7,03:1 sur la claire. */
+.kpi__card--above::before {
+  background: var(--c-div-9);
+}
+.kpi__card--above .kpi__value {
+  color: var(--c-div-9);
+}
+
+.kpi__card--below::before {
+  background: var(--c-div-1);
+}
+.kpi__card--below .kpi__value {
+  color: var(--c-div-1);
+}
+
+/* ---------- Qualifiant d'une valeur ----------
+   Nom de territoire, année… Il transitait par `unit`, donc rendu en position
+   d'unité et, sur mobile, sur deux lignes au-dessus du chiffre. */
+.kpi__meta {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.25;
+  color: var(--c-text-soft);
+}
+
+/* ============================================================
+   HIÉRARCHIE — un chiffre héros, les autres en appui
+   Utilisé par la disposition « focus » du board (cf. ActBoard.scss).
+   Sans cela, quatre KPI de poids identique n'indiquent pas au lecteur
+   lequel porte le message de l'acte.
+   ============================================================ */
+.kpi--compact {
+  gap: var(--sp-3);
+
+  .kpi__card {
+    min-height: 0;
+    margin: 0;
+    padding: var(--sp-4) var(--sp-5);
+    gap: var(--sp-1);
+  }
+
+  .kpi__value {
+    font-size: clamp(1.4rem, 1.7vw, 1.9rem);
+  }
+
+  .kpi__label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* Rangée avec héros : la carte principale prend deux fois la largeur d'un
+   appui et garde une typo nettement plus grande. */
+.kpi--hero {
+  grid-template-columns: minmax(240px, 1.6fr) repeat(auto-fit, minmax(140px, 1fr));
+  align-items: stretch;
+}
+
+.kpi__card--hero {
+  justify-content: center;
+
+  .kpi__value {
+    font-size: clamp(2.4rem, 3.4vw, 3.6rem);
+  }
+
+  .kpi__label {
+    font-size: var(--fs-xs);
+    color: var(--c-text-soft);
+  }
+}
+
+/* En dessous de 900 px la grille auto-fit repasse en colonne unique : le
+   héros reste en tête, les appuis défilent horizontalement au lieu de
+   s'empiler. Avant, quatre cartes empilées occupaient 665 px — plus que la
+   hauteur d'un téléphone — AVANT le moindre graphique. */
+@media (max-width: 900px) {
+  .kpi--hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-2);
+  }
+
+  /* Le héros occupe la largeur ; les appuis se rangent deux par deux. */
+  .kpi--hero .kpi__card--hero {
+    grid-column: 1 / -1;
+  }
+
+  .kpi--hero .kpi__card {
+    min-height: 0;
+    margin: 0;
+    padding: var(--sp-3) var(--sp-4);
+    gap: var(--sp-1);
+  }
+
+  .kpi--hero .kpi__card--hero .kpi__value {
+    font-size: clamp(2.1rem, 9vw, 2.8rem);
+  }
+
+  .kpi--hero .kpi__card:not(.kpi__card--hero) .kpi__value {
+    font-size: 1.25rem;
+  }
+
+  .kpi--hero .kpi__label {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+
+  .kpi--hero .kpi__meta {
+    font-size: var(--fs-xs);
+  }
+
+  /* Pas d'effet de survol sur tactile : il n'y a pas de survol, et le
+     décalage de 4 px décale la grille au moindre appui. */
+  .kpi--hero .kpi__card:hover {
+    transform: none;
+  }
+}

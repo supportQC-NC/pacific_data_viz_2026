@@ -58,12 +58,17 @@ export const seqRampOf = (tk) => [
 // resserrée pour rester lisible sur les deux surfaces.
 export const ordRampOf = (tk) => [tk.ord1, tk.ord2, tk.ord3, tk.ord4, tk.ord5, tk.ord6];
 
-// Rampe DIVERGENTE (lavande ↔ rouge, centre gris neutre). RÉSERVÉE aux
+// Rampe DIVERGENTE (BLEU ↔ AMBRE, centre gris neutre). RÉSERVÉE aux
 // grandeurs à vraie polarité autour d'un zéro qui a un sens : anomalie vs
 // normale, évolution vs base. Pour une simple magnitude, utiliser seqRampOf.
 //
+// Lecture : froid/bleu = SOUS la référence · ambre = AU-DESSUS.
+//
 // ⚠️ Ne jamais remplacer par du vert ↔ rouge : mesuré à ΔE 4,1 en
-// deutéranopie (pôles indiscernables) contre 22,7 pour cette paire.
+// deutéranopie (pôles indiscernables). Bleu ↔ ambre mesure 25,1 au pire cas
+// des trois déficiences — c'est la paire la mieux équilibrée testée, et elle
+// a remplacé lavande ↔ rouge (20,4). Détail du comparatif dans
+// _variables.scss § rampe divergente.
 export const divRampOf = (tk) => [
   tk.div1, tk.div2, tk.div3, tk.div4, tk.div5,
   tk.div6, tk.div7, tk.div8, tk.div9,
@@ -80,19 +85,25 @@ export const rampFor = (kind, tk) => {
   return seqRampOf(tk);
 };
 
+// Taille commune de la « chrome » de graphique (axes, légendes, repères).
+// Relevée de 11 à 12,5 px et passée en encre `textSoft` : à 11 px en
+// `textMute`, la légende s'effaçait avant la donnée sur la surface sombre.
+// Voir la note équivalente dans apexBase.js.
+export const AXIS_FS = 12.5;
+
 // Style d'axe commun (lignes discrètes en pointillé).
 export const axisStyle = (tk) => ({
   axisLine: { lineStyle: { color: tk.line } },
-  axisLabel: { color: tk.textMute, fontFamily: MONO },
+  axisLabel: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
   splitLine: { lineStyle: { color: tk.line, type: "dashed", opacity: 0.55 } },
-  nameTextStyle: { color: tk.textMute },
+  nameTextStyle: { color: tk.textSoft, fontSize: AXIS_FS },
 });
 
 export const tooltipStyle = (tk) => ({
   backgroundColor: tk.surface,
   borderColor: tk.line,
   borderWidth: 1,
-  textStyle: { color: tk.text, fontFamily: SANS },
+  textStyle: { color: tk.text, fontFamily: SANS, fontSize: 13 },
 });
 
 export const valAt = (serie, year) => {

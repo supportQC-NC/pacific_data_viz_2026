@@ -98,12 +98,23 @@
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
-import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, MONO, SANS } from "../charts/apexBase";
+import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, refLineX, MONO, SANS } from "../charts/apexBase";
 import "./DumbbellChart.scss";
 
-const ROW_H = 30; // hauteur d'une ligne (px)
+const ROW_H = 30; // hauteur d'une ligne (px) — défaut historique
 const EXTRA_H = 96; // axe X + légende + marges
 
+// AJOUTS (audit acte 02) — tous optionnels, les appelants existants
+// (actes 06 · 07 · 08 · 09 · 10) gardent exactement le rendu d'avant :
+//   • rowHeight  : densifier quand il y a beaucoup de lignes. À 30 px,
+//                  21 territoires réclamaient 726 px de haut, donc un
+//                  défilement imbriqué dans le panneau.
+//   • startColor / endColor : imposer la sémantique de couleur de l'acte.
+//                  Par défaut la couleur suit la DIRECTION (hausse/baisse) ;
+//                  quand toutes les évolutions vont dans le même sens, cela
+//                  n'encode plus rien — mieux vaut alors que la couleur dise
+//                  « départ » et « arrivée ».
+//   • refX / refLabel : repère vertical (le zéro d'une anomalie, p.ex.).
 export default function DumbbellChart({
   rows = [],
   yearA = "",
@@ -111,6 +122,16 @@ export default function DumbbellChart({
   unit = "",
   labels = {},
   decimals = 2,
+  rowHeight = ROW_H,
+  startColor = null,
+  endColor = null,
+  refX = null,
+  refLabel = "",
+  // "asc" = comportement historique (conservé par défaut pour les actes
+  // 06 · 07 · 08 · 09 · 10) ; "desc" place la plus forte valeur d'arrivée
+  // EN HAUT, ce qu'attend un lecteur d'un classement.
+  sort = "asc",
+  barHeight = "55%",
 }) {
   const tk = useThemeTokens();
 
@@ -119,33 +140,56 @@ export default function DumbbellChart({
     // plus grande valeur finale en haut.
     const r = [...rows]
       .filter((x) => Number.isFinite(x.a) && Number.isFinite(x.b))
-      .sort((x, y) => x.b - y.b);
+      // Apex place le PREMIER élément du tableau en HAUT de l'axe.
+      // "desc" = plus forte valeur d'arrivée en haut.
+      .sort((x, y) => (sort === "desc" ? y.b - x.b : x.b - y.b));
 
     const data = r.map((x) => ({
       x: x.name,
       y: [Number(x.a.toFixed(3)), Number(x.b.toFixed(3))],
       // Couleur du point d'arrivée selon le sens (hausse / baisse).
-      fillColor: x.b >= x.a ? tk.accent : tk.warm,
+      // `fillColor` par point ENCODE LA DIRECTION (hausse / baisse). Quand
+      // l'appelant impose une couleur d'arrivée, on ne le pose PAS : il
+      // écraserait le dégradé départ → arrivée d'un aplat uni, et l'haltère
+      // se lisait alors comme une simple barre pleine.
+      ...(endColor ? {} : { fillColor: x.b >= x.a ? tk.accent : tk.warm }),
     }));
 
-    const height = Math.max(320, r.length * ROW_H + EXTRA_H);
-    const fmtD = (v) => fmt(Number(v), decimals);
+    const cStart = startColor || tk.textMute;
+    const cEnd = endColor || tk.accent;
+    const height = Math.max(300, r.length * rowHeight + EXTRA_H);
+    // `-0.0` apparaissait sur l'axe : un zéro négatif de virgule flottante.
+    const fmtD = (v) => {
+      const n = Number(v);
+      return fmt(Math.abs(n) < 1e-9 ? 0 : n, decimals);
+    };
 
     return {
       chart: { ...baseChart(tk, { type: "rangeBar" }), height },
-      colors: [tk.lineStrong],
+      // Sens du dégradé. Sur un `rangeBar` horizontal, Apex applique
+      // `gradientToColors` à GAUCHE et `colors` à DROITE — l'inverse de ce
+      // qu'on lit dans l'API. Sans inversion, le trajet partait de la
+      // couleur d'ARRIVÉE : le graphique racontait l'histoire à l'envers.
+      // (Inversion appliquée uniquement quand l'appelant impose ses
+      // couleurs, pour ne pas repeindre les actes qui utilisaient déjà ce
+      // composant avec les valeurs par défaut.)
+      colors: [endColor ? cEnd : tk.lineStrong],
       series: [{ data }],
       plotOptions: {
         bar: {
           horizontal: true,
           isDumbbell: true,
-          dumbbellColors: [[tk.textMute, tk.accent]],
-          barHeight: "55%",
+          dumbbellColors: [[cStart, cEnd]],
+          barHeight,
         },
       },
       fill: {
         type: "gradient",
-        gradient: { type: "horizontal", gradientToColors: [tk.accent], stops: [0, 100] },
+        gradient: {
+          type: "horizontal",
+          gradientToColors: [endColor ? cStart : cEnd],
+          stops: [0, 100],
+        },
       },
       stroke: { width: 2, colors: [tk.lineStrong] },
       markers: { size: 0 },
@@ -155,22 +199,22 @@ export default function DumbbellChart({
         position: "top",
         horizontalAlign: "left",
         fontFamily: MONO,
-        fontSize: "11px",
+        fontSize: "12.5px",
         labels: { colors: tk.textSoft },
-        markers: { width: 10, height: 10, radius: 5 },
+        markers: { width: 12, height: 12, radius: 6 },
         customLegendItems: [labels.up, labels.down].filter(Boolean),
       },
       grid: baseGrid(tk),
       xaxis: baseXaxis(tk, {
         type: "numeric",
-        title: { text: unit, style: { color: tk.textMute, fontFamily: MONO, fontWeight: 400, fontSize: "11px" } },
+        title: { text: unit, style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: "12.5px" } },
         labels: {
-          style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+          style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "12.5px" },
           formatter: (v) => fmtD(v),
         },
       }),
       yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: SANS, fontSize: "12px" } },
+        labels: { style: { colors: tk.textSoft, fontFamily: SANS, fontSize: "12.5px" } },
       }),
       tooltip: baseTooltip({
         custom: ({ dataPointIndex }) => {
@@ -185,8 +229,26 @@ export default function DumbbellChart({
           </div>`;
         },
       }),
+      ...(Number.isFinite(refX)
+        ? { annotations: { xaxis: [refLineX(tk, refX, refLabel, tk.lineStrong)] } }
+        : {}),
     };
-  }, [rows, yearA, yearB, unit, labels, decimals, tk]);
+  }, [
+    rows,
+    yearA,
+    yearB,
+    unit,
+    labels,
+    decimals,
+    rowHeight,
+    sort,
+    barHeight,
+    startColor,
+    endColor,
+    refX,
+    refLabel,
+    tk,
+  ]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

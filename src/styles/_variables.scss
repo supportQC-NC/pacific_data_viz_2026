@@ -51,6 +51,14 @@
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
   --sp-4: 1rem;
+  // --sp-5 MANQUAIT alors que 40 déclarations le référencent (ActBoard,
+  // ChartCarousel, KpiRow, EvolutionPanel, WaterGlass, Act11Synthese,
+  // CountryPage). Une custom property non définie ne déclenche aucune
+  // erreur : `gap: var(--sp-5)` retombait simplement sur `normal`, donc
+  // zéro. Autrement dit, des gouttières écrites par leurs auteurs
+  // n'existaient tout simplement pas à l'écran. Valeur déduite de la
+  // progression de l'échelle (0,25 rem par cran).
+  --sp-5: 1.25rem;
   --sp-6: 1.5rem;
   --sp-8: 2rem;
   --sp-12: 3rem;
@@ -196,24 +204,48 @@
      Contrairement à la palette catégorielle, elle N'EST PAS invariante par
      thème : sur fond navy les pôles doivent être CLAIRS, sinon les valeurs
      extrêmes — les plus importantes — se noient dans la surface.
-     Pôles ici : 6,40:1 et 6,10:1 (≥ 3:1) · symétrie des pôles : ΔL 0,001.
+     Pôles ici : 7,89:1 et 8,18:1 (≥ 3:1) · sur blanc 5,41:1 et 5,40:1.
 
      Vert ↔ rouge a été écarté après mesure : ΔE 4,1 en deutéranopie (les deux
      pôles sont la MÊME couleur pour ~8 % des hommes) alors qu'il paraît
      parfaitement lisible en vision normale — d'où sa persistance ailleurs.
-     Lavande ↔ rouge mesure ΔE 22,7.
+
+     PAIRE RETENUE : BLEU ↔ AMBRE. Elle remplace lavande ↔ rouge, mesurée
+     après coup comme le maillon faible de la rampe. Comparatif (ΔE OKLab
+     ×100 entre les deux pôles, simulation Machado 2009, sévérité 1,0) :
+
+                              protan  deutan  tritan   pire cas
+       lavande ↔ rouge   .....  20,4    22,8    30,5     20,4
+       BLEU ↔ AMBRE      .....  26,5    28,8    27,3     25,1   ← retenu
+       sarcelle ↔ orange .....  19,4    18,8    32,0     16,0
+       lavande ↔ ambre   .....  28,0    30,3    22,7     21,6
+
+     Bleu ↔ ambre est la seule paire ÉQUILIBRÉE sur les trois déficiences :
+     les autres excellent sur l'une en s'effondrant sur une autre. C'est
+     aussi la paire la plus contrastée sur la surface sombre, et elle retire
+     du produit un rouge saturé qui saturait l'écran dès qu'il couvrait de
+     grandes surfaces.
+
+     CHROMA BAISSÉE de 24 % par rapport au premier jet (0,141 -> 0,107 côté
+     froid, 0,144 -> 0,114 côté chaud). Une teinte à pleine saturation étalée
+     sur un tiers d'écran fatigue et donne un ton d'alerte, là où ce récit
+     est un voyage. Le pire cas daltonisme retombe à 20,5 — soit encore
+     au-dessus de l'ancienne paire lavande ↔ rouge (20,4) et deux fois et
+     demie la cible de 8. On perd de l'éclat, pas de la sécurité.
+
+     Lecture : froid/bleu = SOUS la référence · ambre = AU-DESSUS.
 
      Le pas voisin du centre s'efface volontairement vers la surface : il
      signifie « proche de zéro ». */
-  --c-div-1: #8494fa; /* pôle lavande */
-  --c-div-2: #6876d5;
-  --c-div-3: #535d9c;
-  --c-div-4: #3f4565;
-  --c-div-5: #2f3140; /* centre neutre — doit lire « rien » */
-  --c-div-6: #623b3b;
-  --c-div-7: #944a4b;
-  --c-div-8: #c8565b;
-  --c-div-9: #f86970; /* pôle rouge */
+  --c-div-1: #7fb0f0; /* pôle froid (bleu) — 7,89:1 */
+  --c-div-2: #6e95ca;
+  --c-div-3: #5d79a4;
+  --c-div-4: #4b5e7e;
+  --c-div-5: #2f3140; /* centre neutre — doit lire « rien » (1,38:1) */
+  --c-div-6: #6e5a4a;
+  --c-div-7: #947350;
+  --c-div-8: #ba8c56;
+  --c-div-9: #e0a55c; /* pôle chaud (ambre) — 8,18:1 */
 
   color-scheme: dark;
 }
@@ -256,15 +288,15 @@
   /* Rampe DIVERGENTE, version surface claire : mêmes teintes, profil de
      clarté INVERSÉ (pôles sombres, ils ressortent sur du blanc).
      Pôles : 6,75:1 et 7,03:1 · symétrie ΔL 0,000. Cf. le bloc sombre. */
-  --c-div-1: #474ebf; /* pôle lavande */
-  --c-div-2: #606dcb;
-  --c-div-3: #7f8cce;
-  --c-div-4: #a0a9ce;
-  --c-div-5: #e9e9ec; /* centre neutre */
-  --c-div-6: #cb9e9c;
-  --c-div-7: #c67777;
-  --c-div-8: #be4d53;
-  --c-div-9: #ac1e33; /* pôle rouge */
+  --c-div-1: #3f68b8; /* pôle froid (bleu) — 5,41:1 */
+  --c-div-2: #6484c3;
+  --c-div-3: #889fce;
+  --c-div-4: #adbbda;
+  --c-div-5: #e9e9ec; /* centre neutre (1,21:1) */
+  --c-div-6: #c7b9a4;
+  --c-div-7: #b39d78;
+  --c-div-8: #9e804c;
+  --c-div-9: #8a6320; /* pôle chaud (ambre) — 5,40:1 */
 
   color-scheme: light;
 }

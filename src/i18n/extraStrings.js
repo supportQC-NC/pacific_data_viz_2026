@@ -8,6 +8,11 @@ const EXTRA_STRINGS = {
   fr: {
     header: { nav_recit: "Le Récit" },
     home: {
+      // Titre de l'acte 02. « Un océan suivi de près » décrivait notre
+      // dispositif d'observation ; celui-ci décrit ce qui arrive à l'océan.
+      // Le titre nomme le sujet, la question posée en tête du board dit ce
+      // qu'on y cherche — deux niveaux, pas deux titres concurrents.
+      acts: { a2_title: "Un océan qui change" },
       // ⚠️ UN SEUL objet `home` par langue. Une deuxième clé du même nom dans
       // le même littéral écrase silencieusement la première (le dernier gagne
       // en JS) — c'est ce qui avait fait disparaître ces trois légendes.
@@ -126,6 +131,7 @@ const EXTRA_STRINGS = {
     },
     home: {
       // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
+      acts: { a2_title: "An ocean in motion" },
       begin: "Discover",
       sources: "The sources",
       tb: { value_caption: "Local incidence" },

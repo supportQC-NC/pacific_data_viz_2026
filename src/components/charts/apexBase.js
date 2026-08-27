@@ -61,15 +61,25 @@ export const baseGrid = (tk, extra = {}) => ({
   ...extra,
 });
 
+// TAILLES DE LA CHROME DE GRAPHIQUE — relevées après relecture à l'écran.
+// Axes, légendes et repères étaient à 11 px en `textMute` : sur la surface
+// sombre, à distance de lecture normale, la légende disparaissait avant la
+// donnée. Or c'est elle qui dit CE QU'ON REGARDE — sans elle, un graphique
+// n'est qu'une forme. On passe à 12,5 px et à l'encre `textSoft`, un cran
+// plus contrastée. La donnée peut perdre quelques pixels de hauteur ; sa
+// légende, non.
+export const CHROME_FS = "12.5px";
+export const AXIS_FS = "12.5px";
+
 export const baseLegend = (tk, extra = {}) => ({
   show: true,
   position: "top",
   horizontalAlign: "left",
   fontFamily: MONO,
-  fontSize: "11px",
+  fontSize: CHROME_FS,
   labels: { colors: tk.textSoft },
-  markers: { width: 9, height: 9, radius: 3 },
-  itemMargin: { horizontal: 8, vertical: 3 },
+  markers: { width: 11, height: 11, radius: 3 },
+  itemMargin: { horizontal: 10, vertical: 4 },
   ...extra,
 });
 
@@ -77,10 +87,10 @@ export const baseXaxis = (tk, extra = {}) => ({
   axisBorder: { show: true, color: tk.line },
   axisTicks: { show: true, color: tk.line },
   labels: {
-    style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+    style: { colors: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
   },
   title: {
-    style: { color: tk.textMute, fontFamily: MONO, fontWeight: 400, fontSize: "11px" },
+    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: AXIS_FS },
   },
   crosshairs: { stroke: { color: tk.line, dashArray: 3 } },
   tooltip: { enabled: false },
@@ -91,10 +101,10 @@ export const baseYaxis = (tk, extra = {}) => ({
   axisBorder: { show: false, color: tk.line },
   axisTicks: { show: false, color: tk.line },
   labels: {
-    style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
+    style: { colors: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
   },
   title: {
-    style: { color: tk.textMute, fontFamily: MONO, fontWeight: 400, fontSize: "11px" },
+    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: AXIS_FS },
   },
   ...extra,
 });
@@ -106,7 +116,7 @@ export const baseTooltip = (extra = {}) => ({
   shared: false,
   intersect: true,
   followCursor: true,
-  style: { fontSize: "12px", fontFamily: SANS },
+  style: { fontSize: "13px", fontFamily: SANS },
   ...extra,
 });
 
@@ -124,7 +134,7 @@ export const refLineX = (tk, x, text, color) => ({
       color: color || tk.accent,
       background: "transparent",
       fontFamily: MONO,
-      fontSize: "10px",
+      fontSize: "12px",
     },
   },
 });
@@ -138,10 +148,10 @@ export const refLineY = (tk, y, text, color) => ({
     position: "right",
     borderWidth: 0,
     style: {
-      color: color || tk.textMute,
+      color: color || tk.textSoft,
       background: "transparent",
       fontFamily: MONO,
-      fontSize: "10px",
+      fontSize: "12px",
     },
   },
 });

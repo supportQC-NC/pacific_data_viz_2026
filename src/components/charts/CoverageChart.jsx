@@ -12,7 +12,7 @@
 import React, { useMemo } from "react";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import EChart from "../Echart/Echart";
-import { valAt, tooltipStyle, MONO, SANS } from "./echartsBase";
+import { valAt, tooltipStyle, MONO, SANS, AXIS_FS } from "./echartsBase";
 
 export default function CoverageChart({ series = [], years = [], labels = {} }) {
   const tk = useThemeTokens();
@@ -40,7 +40,7 @@ export default function CoverageChart({ series = [], years = [], labels = {} }) 
       xAxis: {
         type: "category",
         data: years,
-        axisLabel: { color: tk.textMute, fontFamily: MONO, fontSize: 10, interval: "auto" },
+        axisLabel: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS, interval: "auto" },
         axisLine: { lineStyle: { color: tk.line } },
         axisTick: { show: false },
         splitArea: { show: false },
@@ -48,7 +48,7 @@ export default function CoverageChart({ series = [], years = [], labels = {} }) 
       yAxis: {
         type: "category",
         data: names,
-        axisLabel: { color: tk.textSoft, fontFamily: SANS, fontSize: 11 },
+        axisLabel: { color: tk.textSoft, fontFamily: SANS, fontSize: AXIS_FS },
         axisLine: { lineStyle: { color: tk.line } },
         axisTick: { show: false },
         splitArea: { show: false },
@@ -58,9 +58,9 @@ export default function CoverageChart({ series = [], years = [], labels = {} }) 
         bottom: 0,
         left: "center",
         orient: "horizontal",
-        itemWidth: 12,
-        itemHeight: 12,
-        textStyle: { color: tk.textMute, fontFamily: MONO, fontSize: 11 },
+        itemWidth: 14,
+        itemHeight: 14,
+        textStyle: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
         pieces: [
           { value: 0, label: absentLbl, color: tk.line },
           { value: 1, label: presentLbl, color: tk.accent },
