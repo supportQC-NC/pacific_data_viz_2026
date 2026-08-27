@@ -1191,9 +1191,6 @@
     flex: 0 0 auto;
     padding: var(--sp-2) var(--sp-3);
     font-size: var(--fs-sm);
-    // La numérotation est posée en CSS : elle exprime un PARCOURS sans
-    // toucher au JSX ni ajouter de chaîne à traduire.
-    counter-increment: viz;
   }
 
   /* METTRE EN VALEUR ≠ GROSSIR.
@@ -1201,22 +1198,17 @@
      couleur de plus, mais par sa PLACE et par un petit repère : il ouvre la
      rangée, et un filet le sépare des vues suivantes. Le regard comprend
      alors « celle-ci d'abord, puis les autres » sans qu'on le lui écrive. */
+  /* NUMÉROTATION RETIRÉE.
+     Les vues portaient un « 01 », « 02 »… posé en CSS pour exprimer un
+     parcours. Une fois les onglets nommés d'un seul mot, ce préfixe coûtait
+     plus qu'il ne rapportait : trois caractères et une marge devant chaque
+     libellé, soit sur une escale de dix vues une bonne part de la largeur qui
+     manquait ensuite aux derniers onglets — et il ne disait rien que l'ordre
+     de gauche à droite ne dise déjà.
+     L'étoile du graphe signature, elle, reste : c'est le seul repère de la
+     rangée qui porte une information. */
   .escbar__views .chcar__track {
-    counter-reset: viz;
     align-items: stretch;
-  }
-
-  .escbar__views .chcar__item::before {
-    content: counter(viz, decimal-leading-zero);
-    margin-right: var(--sp-2);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--c-text-mute);
-    transition: color var(--t-fast) var(--ease-out);
-  }
-
-  .escbar__views .chcar__item.is-active::before {
-    color: var(--c-text-soft);
   }
 
   /* Le graphe signature n'ouvre plus forcément la rangée : une escale peut
