@@ -47,11 +47,11 @@ import { fmt } from "../../components/charts/echartsBase";
 // StiltHouse lit `seaLevel`, PopGrowth lit `population` — exactement les jeux
 // du sélecteur. Ils restent montés sur la page d'accueil ; on les ajoute ici,
 // on ne les déplace pas.
-//
-// `CoastlineShift`, le troisième visuel de cette escale sur la Home, n'est PAS
-// repris : le trait de côte est explicitement laissé en l'état.
 import StiltHouse from "../../components/StiltHouse/StiltHouse";
 import PopGrowth from "../../components/PopGrowth/PopGrowth";
+// Le dernier des visuels de la Home, celui du trait de côte. Il lit
+// `coastlineByTerritory` — le même agrégat que la vue « Bilan » ci-dessous.
+import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import "./Act3Territory.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -79,6 +79,10 @@ const SOURCE_SEA_FR =
   "Anomalie du niveau de la mer, via le Pacific Data Hub — en mètres, par rapport à la référence 1993-2012. Le zéro est cette référence, pas le niveau absolu de l'océan.";
 const SOURCE_SEA_EN =
   "Sea-level anomaly, via the Pacific Data Hub - in metres, against the 1993-2012 reference. Zero is that reference, not the ocean's absolute level.";
+const SOURCE_COAST_FR =
+  "Digital Earth Pacific — Landsat Coastlines (CC BY-NC 4.0), agrégé par territoire. Recul et avancée au seuil de ±0,2 m/an ; chaque segment est rattaché au centroïde de territoire le plus proche. Lecture APPROCHÉE à cette échelle.";
+const SOURCE_COAST_EN =
+  "Digital Earth Pacific - Landsat Coastlines (CC BY-NC 4.0), aggregated by territory. Retreat and advance at a +/-0.2 m/yr threshold; each segment is attached to its nearest territory centroid. An APPROXIMATE reading at this scale.";
 const SOURCE_POP_FR =
   "Taux de croissance de la population, via le Pacific Data Hub — en pourcentage par an. Un taux, pas un effectif : un petit territoire peut afficher un fort taux pour peu d'habitants.";
 const SOURCE_POP_EN =
@@ -86,6 +90,7 @@ const SOURCE_POP_EN =
 
 const DATASET_OF = {
   stilt: "sea",
+  coastviz: "sea",
   popviz: "population",
   band: "sea",
   slope: "sea",
@@ -784,6 +789,54 @@ export default function Act3Territory() {
                 </Suspense>
               </ErrorBoundary>
             ),
+          },
+          // ---------- Le visuel du littoral, en tête du groupe côtier -------
+          // `CoastlineShift` — le dernier des dix-sept dessins de la Home, et
+          // le seul qui restait là-bas. Il lit `coastlineByTerritory`, c'est-
+          // à-dire exactement l'agrégat que la vue « Bilan » de cette escale
+          // met en barres : même source, même seuil de ±0,2 m/an, deux
+          // lectures différentes.
+          //
+          // Il ouvre le groupe côtier plutôt que l'escale entière : la
+          // question du trait de côte arrive après celle du niveau de la mer,
+          // et c'est là qu'il éclaire. Il précède la vue satellite — on
+          // comprend d'abord ce que « recul » et « avancée » veulent dire sur
+          // un rivage dessiné, puis on va les voir mesurés sur le globe.
+          {
+            id: "coastviz",
+            empty: false,
+            tab: tx("act3.board.tab_rivage", "Rivage", "Shore"),
+            title: tx(
+              "act3.viz.coastviz_title",
+              "Le rivage qui recule ou qui avance, territoire par territoire",
+              "The shore retreating or advancing, territory by territory",
+            ),
+            finding: tx(
+              "act3.viz.coastviz_find",
+              "Choisissez un territoire : le rivage suit son bilan côtier médian.",
+              "Pick a territory: the shore follows its median coastal balance.",
+            ),
+            takeaway: tx(
+              "act3.viz.coastviz_take",
+              "Une médiane par territoire cache des rivages opposés : la Nouvelle-Calédonie affiche −0,02 m/an, avec 4 % de son littoral en recul et 10 % en avancée. Le total ne dit rien du village qui perd sa plage.",
+              "One median per territory hides opposite shores: New Caledonia posts −0.02 m/yr, with 4% of its coastline retreating and 10% advancing. The total says nothing about the village losing its beach.",
+            ),
+            hint: tx(
+              "act3.hint.coastviz",
+              "Changez de territoire avec le sélecteur sous le visuel, puis passez à la vue satellite pour voir les segments un par un.",
+              "Switch territory with the selector below the visual, then move to the satellite view to see the segments one by one.",
+            ),
+            legend: {
+              color: tx(
+                "act3.key.coastviz_c",
+                "Le rivage se retire quand le bilan médian du territoire est négatif, et gagne sur la mer quand il est positif.",
+                "The shore pulls back when the territory's median balance is negative, and gains on the sea when it is positive.",
+              ),
+              note: tx("act3.key.coast_note", SOURCE_COAST_FR, SOURCE_COAST_EN),
+              // Le dessin encode par un DÉPLACEMENT du rivage, pas une teinte.
+              swatch: "none",
+            },
+            node: <CoastlineShift embed />,
           },
           {
             id: "coast",

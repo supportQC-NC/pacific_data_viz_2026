@@ -22,7 +22,6 @@ import MilkyWayCanvas from "../../components/MilkyWayCanvas/MilkyWayCanvas";
 import ShootingStar from "../../components/ShootingStar/ShootingStar";
 import Vaa from "../../components/Vaa/Vaa";
 import HomeIntro from "../../components/HomeIntro/HomeIntro";
-import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
@@ -314,18 +313,15 @@ export default function Home() {
       </section>
 
       {/* LES VISUELS SIGNATURE VIVENT MAINTENANT DANS LES ESCALES.
-          Chacun de ces seize dessins lisait déjà exactement le jeu de données
-          d'une escale — la plante et `cropYield`, le verre et l'eau potable,
-          le camembert et le mix électrique. Ils y sont désormais la vue
-          d'ouverture, avec leur interaction complète, et ne sont plus montés
-          ici : la Home les montrait une première fois hors contexte, ce qui
-          faisait de l'escale une redite plutôt qu'une découverte.
+          Les dix-sept dessins interactifs lisaient déjà, chacun, le jeu de
+          données d'une escale précise — la plante et `cropYield`, le verre et
+          l'eau potable, le camembert et le mix électrique, le rivage et le
+          trait de côte. Ils y sont désormais la vue d'ouverture, avec leur
+          interaction complète.
 
-          `CoastlineShift` reste : le trait de côte n'a pas été repris en vue
-          d'ouverture, l'escale « territoire » le garde tel quel. */}
-      <div className="home__signatures">
-        <CoastlineShift />
-      </div>
+          Les monter aussi ici faisait de la Home une première visite hors
+          contexte, et de l'escale une redite. Les composants ne sont pas
+          touchés : seule leur adresse a changé. */}
 
       <HomeIntro />
 
