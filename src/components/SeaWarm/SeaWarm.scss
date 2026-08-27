@@ -382,3 +382,66 @@
     justify-content: center;
   }
 }
+
+/* ============================================================
+   MODE EMBARQUÉ (`.sea--embed`)
+   ------------------------------------------------------------
+   La classe était posée par le JSX depuis l'origine mais n'avait AUCUN
+   style : embarqué hors de la Home, le composant gardait donc son gabarit
+   de section de page — 6 rem de rembourrage haut et bas, son propre fond,
+   son filet de séparation et son en-tête éditorial. Dans un panneau de
+   dashboard, tout cela fait doublon avec le titre de la vue et écrase le
+   visuel lui-même.
+
+   Ici on ne garde que le visuel : le thermomètre, sa valeur, son sélecteur
+   de territoire. Le titre, la source et la clé de lecture sont déjà portés
+   par l'escale.
+   ============================================================ */
+
+.sea--embed {
+  padding: 0;
+  border-bottom: none;
+  background: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .sea__inner {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  /* L'en-tête de section fait doublon avec le titre de la vue. */
+  .sea__head {
+    display: none;
+  }
+
+  /* GRAMMAIRE COULEUR DE L'ESCALE.
+     Sur la Home, le mercure est corail au-dessus de la normale et lavande en
+     dessous : cohérent avec la charte d'interface de cette page. Embarqué
+     dans une escale, il se retrouve à côté d'une clé de lecture, d'une
+     matrice et d'une carte qui disent tous « au-dessus » en AMBRE et
+     « en dessous » en BLEU. Deux vocabulaires pour la même idée, dans le
+     même écran : le lecteur doit réapprendre la couleur à chaque vue.
+
+     On bascule donc, en mode embarqué seulement, sur les pôles de la rampe
+     divergente — la même que la heatmap, le globe et l'haltère. La Home
+     n'est pas touchée. */
+  .sea__merc--warm {
+    fill: var(--c-div-9);
+  }
+
+  .sea__merc--cool {
+    fill: var(--c-div-1);
+  }
+
+  .sea__val--warm .sea__val-num {
+    color: var(--c-div-9);
+  }
+
+  .sea__val--cool .sea__val-num {
+    color: var(--c-div-1);
+  }
+}

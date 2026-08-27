@@ -1,7 +1,7 @@
 // src/components/Header/Header.jsx
 // ============================================================
 // En-tête global — design éditorial premium.
-//   • Marque : LOGO de l'application (logo.png) + nom (Fraunces).
+//   • Marque : LOGO de l'application (logo.png) + nom (Newsreader).
 //   • Navigation : « Le Récit » (nouvelle expérience Va'a) + « À propos ».
 //   • Langue : segmented control FR | EN (le segment actif glisse).
 //   • Thème : switch à rail, soleil/lune visibles, curseur lumineux.

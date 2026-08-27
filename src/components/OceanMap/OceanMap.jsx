@@ -55,6 +55,24 @@ const RAMPS = {
 // Elle remplace le vert<->rouge de la rampe "semantic", ecarte apres mesure :
 // DE 4,1 en deuteranopie (les deux poles sont la MEME couleur pour ~8 % des
 // hommes) contre 22,7 pour lavande<->rouge.
+// Rampe "magnitude" : la rampe SÉQUENTIELLE du design system, lue dans les
+// tokens (--c-seq-*) donc sensible au thème. Pour les grandeurs ORIENTÉES
+// sans zéro qui ait un sens : des émissions par habitant, une population,
+// des arrivées. Le pas le plus détaché de la surface est la valeur la plus
+// forte, dans les deux thèmes.
+//
+// Elle remplace l'usage détourné d'une rampe divergente centrée sur la
+// MÉDIANE : être sous la médiane du Pacifique n'est pas une polarité, c'est
+// un rang. Et cette médiane bouge avec le filtre et avec l'année — le même
+// territoire changeait donc de couleur sans avoir bougé.
+function magnitudeRamp() {
+  return {
+    cold: cssVarRaw("--c-seq-100", "#3b4593"),
+    neutral: cssVarRaw("--c-seq-500", "#8790c9"),
+    hot: cssVarRaw("--c-seq-900", "#d3daff"),
+  };
+}
+
 function polarityRamp() {
   return {
     cold: cssVarRaw("--c-div-1", "#8494fa"),
@@ -169,6 +187,15 @@ export default function OceanMap({
   onScrub = null,
   coastlineUrl = null,
   fitAreas = null,
+  // Ouverture DIRECTE en plein écran, sans passer par l'état interne.
+  // Une carte du monde tassée dans un panneau de dashboard n'est ni un
+  // graphique ni une immersion : elle est trop petite pour qu'on s'y repère
+  // et trop grande pour qu'on la compare. Les escales peuvent donc la
+  // présenter comme ce qu'elle est — un plein écran qu'on ouvre.
+  initialFull = false,
+  // Prévient le parent quand on quitte le plein écran, pour qu'il puisse
+  // démonter la carte au lieu de la laisser retomber dans un panneau.
+  onExitFull = null,
 }) {
   const { lang } = useLang();
   const ml = mapLabels[lang] || mapLabels.fr;
@@ -178,11 +205,19 @@ export default function OceanMap({
   const popupRef = useRef(null);
   const rafRef = useRef(0);
   const fittedKeyRef = useRef("");
+  // Compteur de RECADRAGE. Le cadrage caméra se calculait une seule fois, au
+  // premier rendu — c'est-à-dire potentiellement avant que le conteneur ait
+  // sa taille définitive (chargement différé du composant, panneau qui se
+  // met en place). La caméra restait alors réglée pour une boîte minuscule
+  // et l'on ouvrait sur un globe lointain et noir, sans une seule tuile
+  // visible. Ce compteur permet de redemander un cadrage quand la taille
+  // change réellement.
+  const [fitTick, setFitTick] = useState(0);
   const coastPtsRef = useRef([]);
   const coastIdxRef = useRef(-1);
   const showCoastRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
-  const [full, setFull] = useState(false);
+  const [full, setFull] = useState(initialFull);
   const [coastNav, setCoastNav] = useState(null);
 
   const min = range?.min ?? -1;
@@ -192,7 +227,12 @@ export default function OceanMap({
   // l'effet de peinture plus bas, repeint les colonnes.
   const tk = useThemeTokens();
   const pal = useMemo(
-    () => (ramp === "polarity" ? polarityRamp() : RAMPS[ramp] || RAMPS.diverging),
+    () =>
+      ramp === "polarity"
+        ? polarityRamp()
+        : ramp === "magnitude"
+          ? magnitudeRamp()
+          : RAMPS[ramp] || RAMPS.diverging,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [ramp, tk],
   );
@@ -549,17 +589,51 @@ export default function OceanMap({
         ];
         // 1er rendu : instantané ; changements de filtre ensuite : transition douce.
         const duration = fittedKeyRef.current ? 700 : 0;
-        map.fitBounds(bounds, {
+
+        // On CALCULE la caméra avant de l'appliquer, au lieu d'appeler
+        // `fitBounds` puis de corriger.
+        //
+        // `fitBounds` applique sa caméra à la frame SUIVANTE : lire
+        // `map.getZoom()` juste après renvoie encore la valeur précédente, et
+        // toute correction posée dans la foulée se fait écraser une frame
+        // plus tard. C'est ce qui rendait un plancher de zoom inopérant.
+        //
+        // `cameraForBounds` renvoie la même caméra sans rien appliquer : on
+        // peut donc la borner, puis l'appliquer une seule fois.
+        const cam = map.cameraForBounds(bounds, {
           padding: 60,
-          pitch: 45,
-          bearing: -8,
           maxZoom: 4.2,
-          duration,
         });
+
+        // PLANCHER DE ZOOM. `fitBounds` sait plafonner, pas planchéier. Le
+        // Pacifique couvre près de 90° de longitude : le cadrage « qui fait
+        // tout tenir » renvoie un zoom si bas que, sur une projection
+        // sphérique, on regarde le globe de trop loin — aucune tuile
+        // satellite n'est servie et les colonnes passent sous le pixel.
+        const MIN_Z = 2.9;
+
+        if (cam) {
+          map.easeTo({
+            center: cam.center,
+            zoom: Math.max(cam.zoom ?? MIN_Z, MIN_Z),
+            pitch: 45,
+            bearing: -8,
+            duration,
+          });
+        } else {
+          map.fitBounds(bounds, {
+            padding: 60,
+            pitch: 45,
+            bearing: -8,
+            maxZoom: 4.2,
+            duration,
+          });
+        }
         fittedKeyRef.current = key;
       }
     }
-  }, [loaded, fc, centers, fitFeatures]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, fc, centers, fitFeatures, fitTick]);
 
   // Couche optionnelle « trait de côte » (Digital Earth Pacific — Landsat
   // Coastlines, CC BY-NC 4.0). Lisibilité à deux niveaux :
@@ -840,18 +914,58 @@ export default function OceanMap({
     };
   }, [loaded, coastlineUrl, lang]);
 
+  // Redimensionnement du conteneur : on remet la carte à la bonne taille PUIS
+  // on redemande un cadrage. Sans le second, la caméra garde le réglage d'une
+  // boîte qui n'existe plus.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    let last = 0;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0] ? entries[0].contentRect.height : 0;
+      // Seuil : on ignore les variations d'un pixel, on ne réagit qu'aux
+      // vrais changements de gabarit.
+      if (Math.abs(h - last) < 24) return;
+      last = h;
+      if (!mapRef.current) return;
+      mapRef.current.resize();
+      fittedKeyRef.current = "";
+      setFitTick((n) => n + 1);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!mapRef.current) return undefined;
     const id = setTimeout(() => {
-      if (mapRef.current) mapRef.current.resize();
+      if (!mapRef.current) return;
+      mapRef.current.resize();
+      // RECADRAGE après le changement de taille. Le cadrage initial est
+      // calculé pour la boîte du panneau ; en plein écran la boîte change du
+      // tout au tout et la caméra reste réglée pour l'ancienne — on ouvrait
+      // sur un globe minuscule et noir, vu de si loin qu'aucune tuile
+      // satellite n'était visible. Vider la clé de cadrage force le recalcul
+      // sur les dimensions réelles.
+      fittedKeyRef.current = "";
+      setLoaded((v) => v);
     }, 340);
     return () => clearTimeout(id);
   }, [full]);
 
+  // `onExitFull` passe par une ref : le parent le redéfinit à chaque rendu
+  // (c'est une closure sur son propre état), l'inclure dans les dépendances
+  // rebrancherait l'écouteur clavier à chaque frappe.
+  const exitRef = useRef(onExitFull);
+  exitRef.current = onExitFull;
+
   useEffect(() => {
     if (!full) return undefined;
     const onKey = (e) => {
-      if (e.key === "Escape") setFull(false);
+      if (e.key === "Escape") {
+        setFull(false);
+        if (exitRef.current) exitRef.current();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -908,7 +1022,12 @@ export default function OceanMap({
         <button
           type="button"
           className="omap__expand"
-          onClick={() => setFull((f) => !f)}
+          onClick={() => {
+            setFull((f) => {
+              if (f && exitRef.current) exitRef.current();
+              return !f;
+            });
+          }}
           aria-label={full ? ml.close : ml.expand}
           title={full ? ml.close : ml.expand}
         >

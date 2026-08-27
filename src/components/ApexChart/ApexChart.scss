@@ -30,7 +30,7 @@
     background: var(--c-bg-2) !important;
     border-bottom: 1px solid var(--c-line) !important;
     color: var(--c-text-soft) !important;
-    font-family: "IBM Plex Mono", monospace;
+    font-family: "DM Mono", monospace;
     font-size: 11px;
   }
 
@@ -63,7 +63,7 @@
   // ---- Légende (en complément des `colors` passés en JS) ----
   .apexcharts-legend-text {
     color: var(--c-text-soft) !important;
-    font-family: "IBM Plex Mono", monospace;
+    font-family: "DM Mono", monospace;
   }
 
   // ---- Textes SVG (axes, "no data", titre) ----
@@ -81,14 +81,14 @@
     color: var(--c-text);
 
     &-title {
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "DM Mono", monospace;
       font-size: 11px;
       color: var(--c-text-soft);
       margin-bottom: 4px;
     }
 
     &-row {
-      font-family: "Hanken Grotesk", sans-serif;
+      font-family: "Figtree", sans-serif;
       font-size: 12.5px;
       line-height: 1.4;
 

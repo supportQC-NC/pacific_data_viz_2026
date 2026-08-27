@@ -167,7 +167,7 @@ export default function ShareAboveChart({
         tickAmount: Math.min(10, Math.max(2, years.length - 1)),
         decimalsInFloat: 0,
         labels: {
-          style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "12.5px" },
+          style: { colors: tk.text, fontFamily: MONO, fontSize: "13.5px" },
           formatter: (v) => String(Math.round(Number(v))),
         },
       }),
@@ -176,7 +176,7 @@ export default function ShareAboveChart({
         max: 100,
         tickAmount: 4,
         labels: {
-          style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "12.5px" },
+          style: { colors: tk.text, fontFamily: MONO, fontSize: "13.5px" },
           formatter: (v) => `${Math.round(Number(v))} %`,
         },
       }),

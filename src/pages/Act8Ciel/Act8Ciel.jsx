@@ -34,15 +34,34 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
 import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import BarRace from "../../components/BarRace/BarRace";
 import CoverageChart from "../../components/charts/CoverageChart";
+// Le visuel de la Home qui porte l'indicateur de cette escale. Il reste
+// monté sur la page d'accueil : on l'ajoute ici, on ne le déplace pas.
+import SkyRain from "../../components/SkyRain/SkyRain";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act8Ciel.scss";
+
+// Sources, mot pour mot ce que sert cielApi. Elles sont écrites une fois et
+// épinglées en pied de la colonne de lecture, mesure par mesure : chaque
+// mesure a sa propre normale, et l'annoncer fait partie de la lecture.
+const SOURCE_RAIN_FR =
+  "GPCP v2.3 (NOAA), CC0 — cumuls annuels sommés depuis le mensuel. Normale 1991-2020 : la période de référence standard de l'OMM.";
+const SOURCE_RAIN_EN =
+  "GPCP v2.3 (NOAA), CC0 — annual totals summed from monthly data. 1991-2020 normal: the WMO standard reference period.";
+const SOURCE_TEMP_FR =
+  "NOAAGlobalTemp v6.0.0 (NOAA / NCEI), CC0 — moyenne spatiale par pays. Normale 1971-2000, propre à chaque territoire.";
+const SOURCE_TEMP_EN =
+  "NOAAGlobalTemp v6.0.0 (NOAA / NCEI), CC0 — country-level spatial mean. 1971-2000 normal, specific to each territory.";
+const SOURCE_METEO_FR =
+  "OMM / OSCAR, CC BY-SA 4.0 — stations opérationnelles en cumul ; les statuts « silencieuse » et « inconnue » sont exclus par le producteur.";
+const SOURCE_METEO_EN =
+  "WMO / OSCAR, CC BY-SA 4.0 — operational stations, cumulative; « silent » and « unknown » statuses are excluded by the publisher.";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
@@ -57,14 +76,6 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v, kind) =>
-  !Number.isFinite(v)
-    ? "—"
-    : kind === "count"
-      ? String(Math.round(v))
-      : Math.abs(v) < 10
-        ? String(Math.round(v * 100) / 100).replace(".", ",")
-        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -83,12 +94,6 @@ function exactAt(values, year) {
 function mean(nums) {
   const a = nums.filter((n) => Number.isFinite(n));
   return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
-}
-function median(nums) {
-  const a = nums.filter((n) => Number.isFinite(n)).sort((x, y) => x - y);
-  if (!a.length) return null;
-  const m = Math.floor(a.length / 2);
-  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
 }
 function toSeries(ind, lang) {
   if (!ind || ind.status !== "live") return [];
@@ -192,6 +197,18 @@ function Select({ label, options, value, onChange }) {
 
 export default function Act8Ciel() {
   const { t, lang } = useLang();
+
+  // Traduction avec repli littéral : `t()` renvoie le chemin quand la clé
+  // manque. Les chaînes nouvelles vivent ici en attendant d'être versées
+  // dans extraStrings — le tableau de bord ne doit jamais afficher un
+  // chemin pointé.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
@@ -319,6 +336,20 @@ export default function Act8Ciel() {
         baseline: t("act8.rain_baseline"),
         below: t("act8.rain_hm_below"),
         above: t("act8.rain_hm_above"),
+        key: {
+          y: tx(
+            "act8.key.rain_y",
+            "Écart de cumul de pluie par rapport à la normale 1991-2020, en millimètres. Zéro = une année ordinaire.",
+            "Rainfall gap against the 1991-2020 normal, in millimetres. Zero = an ordinary year.",
+          ),
+          x: tx("act8.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act8.key.anom_c",
+            "Bleu : au-dessous de la normale. Ambre : au-dessus. Le gris central, c'est la normale elle-même.",
+            "Blue: below the normal. Amber: above. The grey centre is the normal itself.",
+          ),
+          note: tx("act8.key.rain_note", SOURCE_RAIN_FR, SOURCE_RAIN_EN),
+        },
         titles: {
           trend: t("act8.regional_rain_title"),
           multiples: t("act8.rain_title"),
@@ -341,6 +372,20 @@ export default function Act8Ciel() {
         baseline: t("act8.temp_baseline"),
         below: t("act8.temp_hm_below"),
         above: t("act8.temp_hm_above"),
+        key: {
+          y: tx(
+            "act8.key.temp_y",
+            "Écart de température de l'air à 2 m par rapport à la normale 1971-2000, en degrés. Zéro = une année ordinaire.",
+            "Air-temperature gap at 2 m against the 1971-2000 normal, in degrees. Zero = an ordinary year.",
+          ),
+          x: tx("act8.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act8.key.anom_c",
+            "Bleu : au-dessous de la normale. Ambre : au-dessus. Le gris central, c'est la normale elle-même.",
+            "Blue: below the normal. Amber: above. The grey centre is the normal itself.",
+          ),
+          note: tx("act8.key.temp_note", SOURCE_TEMP_FR, SOURCE_TEMP_EN),
+        },
         titles: {
           trend: t("act8.regional_temp_title"),
           multiples: t("act8.temp_title"),
@@ -359,6 +404,24 @@ export default function Act8Ciel() {
       unit: t("act8.meteo_unit"),
       A: meteoA,
       B: meteoB,
+      key: {
+        y: tx(
+          "act8.key.meteo_y",
+          "Nombre de stations météo en service, en cumul. Ce n'est pas un écart : zéro veut dire aucune station.",
+          "Number of weather stations in service, cumulative. This is not a gap: zero means no station.",
+        ),
+        x: tx("act8.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act8.key.count_c",
+          "Une seule teinte : plus elle est marquée, plus le réseau est dense. Aucun jugement de valeur, seulement une grandeur.",
+          "A single hue: the stronger it is, the denser the network. No value judgement, only a magnitude.",
+        ),
+        note: tx("act8.key.meteo_note", SOURCE_METEO_FR, SOURCE_METEO_EN),
+        // Un nombre de stations n'a pas de zéro chargé de sens : c'est une
+        // grandeur, pas une polarité. La pastille de la colonne et la
+        // rampe de la carte suivent cette déclaration.
+        swatch: "magnitude",
+      },
       titles: {
         trend: t("act8.regional_meteo_title"),
         multiples: t("act8.meteo_title"),
@@ -368,6 +431,7 @@ export default function Act8Ciel() {
       },
     };
   }, [
+    tx,
     metric,
     rainS,
     rainBand,
@@ -409,36 +473,9 @@ export default function Act8Ciel() {
     return { min: 0, max: Math.max(...xs) };
   }, [M.series, M.kind]);
 
-  const kpiItems = useMemo(() => {
-    if (!M.rank.length) return [];
-    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    const med = median(M.rank.map((r) => r.value));
-    return [
-      {
-        key: "med",
-        value: fmtVal(med, M.kind),
-        unit: M.unit,
-        label: t("act8.board.kpi_med"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmtVal(high.value, M.kind),
-        unit: high.name,
-        label: t("act8.board.kpi_high"),
-        tone: "warm",
-      },
-      {
-        key: "low",
-        value: fmtVal(low.value, M.kind),
-        unit: low.name,
-        label: t("act8.board.kpi_low"),
-        tone: "positive",
-      },
-    ];
-  }, [M.rank, M.unit, M.kind, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
@@ -514,26 +551,29 @@ export default function Act8Ciel() {
         ? "loading"
         : "empty";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act8.board.group_measure")}
-        items={measureItems}
         value={metric}
         onChange={setMetric}
-        iconOnly
-        hideSpark
+        options={asOptions(measureItems)}
       />
-      <DatasetSwitcher
-        label={t("act8.board.group_zone")}
-        items={regionItems}
+      <ChartFilter
+        label={t("act1.filter.title")}
+        hideLabel
         value={region}
         onChange={(k) => {
-          setRegion(k);
-          setCountry("all");
-        }}
-        dense
-        hideSpark
+        setRegion(k);
+        setCountry("all");
+      }}
+        options={asOptions(regionItems)}
       />
     </>
   );
@@ -608,6 +648,12 @@ export default function Act8Ciel() {
           title: M.titles.trend,
           finding: t("act8.board.trend_find"),
           takeaway: t("act8.board.trend_take"),
+          legend: M.key,
+          hint: tx(
+            "act8.hint.trend",
+            "Survolez la courbe pour lire une année précise, et changez de mesure en haut de l'écran.",
+            "Hover the line to read a single year, and switch measure at the top of the screen.",
+          ),
           node: (
             <div className="act8b__fit">
               <AnomalyTrend
@@ -629,6 +675,12 @@ export default function Act8Ciel() {
           title: M.titles.trend,
           finding: t("act8.board.trend_find"),
           takeaway: t("act8.board.trend_take"),
+          legend: M.key,
+          hint: tx(
+            "act8.hint.trend_count",
+            "Survolez une courbe pour suivre un territoire année par année.",
+            "Hover a line to follow one territory year by year.",
+          ),
           node: (
             <div className="act8b__fit">
               <TrendLines
@@ -647,10 +699,25 @@ export default function Act8Ciel() {
       ? {
           id: "change",
           empty: M.dumb.length === 0,
-          tab: t("act8.board.tab_change"),
+          tab: tx("act8.board.tab_evolution", "Évolution", "Change"),
           title: `${M.titles.change} · ${M.A}–${M.B}`,
           finding: t("act8.board.change_find"),
           takeaway: t("act8.board.change_take"),
+          legend: {
+            ...M.key,
+            y: tx("act8.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+            x: M.key.y,
+            color: tx(
+              "act8.key.dumb_c",
+              "Le point clair marque la première année, le point foncé la dernière : la barre entre les deux est le chemin parcouru.",
+              "The light dot marks the first year, the dark dot the last: the bar between them is the distance travelled.",
+            ),
+          },
+          hint: tx(
+            "act8.hint.change",
+            "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
+            "Compare bar lengths: they show how much changed, not the level reached.",
+          ),
           node: (
             <div className="act8b__scroll">
               <DumbbellChart
@@ -671,6 +738,16 @@ export default function Act8Ciel() {
           title: M.titles.rank,
           finding: t("act8.board.race_find"),
           takeaway: t("act8.board.race_take"),
+          legend: {
+            ...M.key,
+            y: tx("act8.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+            x: M.key.y,
+          },
+          hint: tx(
+            "act8.hint.race",
+            "Lancez l'animation : les barres se réordonnent au fil des années.",
+            "Press play: the bars reorder themselves year after year.",
+          ),
           node: (
             <BarRace
               series={M.race}
@@ -690,15 +767,68 @@ export default function Act8Ciel() {
   const charts =
     status === "ready"
       ? [
+          // ---------- Le visuel interactif, en ouverture -------------------
+          // `SkyRain` — l'averse de la Home, en SVG et entièrement
+          // interactive (sélecteur de territoire, gouttes, sol qui se
+          // craquelle). C'est le seul visuel de la Home qui porte
+          // l'indicateur de cette escale : l'écart de pluie. Il reste monté
+          // sur la page d'accueil ; on l'ajoute ici, on ne le déplace pas.
+          //
+          // Il ouvre l'escale parce qu'un écart en millimètres ne veut rien
+          // dire tant qu'on ne l'a pas vu tomber : le visuel donne la mesure
+          // d'abord, les courbes la mettent en série ensuite.
+          {
+            id: "sky",
+            empty: false,
+            tab: tx("act8.board.tab_averse", "Averse", "Downpour"),
+            title: tx(
+              "act8.viz.sky_title",
+              "Une année de pluie, territoire par territoire",
+              "One year of rain, territory by territory",
+            ),
+            finding: tx(
+              "act8.viz.sky_find",
+              "Choisissez un territoire : l'averse suit son écart à la normale.",
+              "Pick a territory: the downpour follows its gap from the normal.",
+            ),
+            takeaway: tx(
+              "act8.viz.sky_take",
+              "Un écart de pluie ne se ressent pas en millimètres. Ici il se voit : moins d'eau, un sol qui se fend ; plus d'eau, une averse qui s'épaissit.",
+              "A rainfall gap is not felt in millimetres. Here you can see it: less water and the ground cracks; more water and the downpour thickens.",
+            ),
+            hint: tx(
+              "act8.hint.sky",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act8.key.sky_c",
+                "L'averse s'épaissit quand l'année dépasse sa normale de pluie, et se clairsème quand elle passe dessous.",
+                "The downpour thickens when the year is above its rainfall normal, and thins when it falls below.",
+              ),
+              note: tx("act8.key.rain_note", SOURCE_RAIN_FR, SOURCE_RAIN_EN),
+              // Le dessin encode par une DENSITÉ de gouttes, pas par une
+              // teinte : pas d'échelle de couleur à annoncer.
+              swatch: "none",
+            },
+            node: <SkyRain embed />,
+          },
           trendChart,
           readChart,
           {
             id: "multiples",
             empty: M.series.length === 0,
-            tab: t("act8.board.tab_multiples"),
+            tab: tx("act8.board.tab_multiples_1", "Multiples", "Multiples"),
             title: M.titles.multiples,
             finding: t("act8.board.multiples_find"),
             takeaway: t("act8.board.multiples_take"),
+            legend: M.key,
+            hint: tx(
+              "act8.hint.multiples",
+              "Chaque vignette a la même échelle : on peut les comparer entre elles du regard.",
+              "Every panel shares one scale: you can compare them at a glance.",
+            ),
             node: (
               <div className="act8b__scroll">
                 <SmallMultiples
@@ -714,10 +844,22 @@ export default function Act8Ciel() {
           {
             id: "heat",
             empty: M.series.length === 0,
-            tab: t("act8.board.tab_heat"),
+            tab: tx("act8.board.tab_matrice", "Matrice", "Matrix"),
             title: M.titles.heat,
             finding: t("act8.board.heat_find"),
             takeaway: t("act8.board.heat_take"),
+            legend: {
+              y: tx("act8.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: M.key.x,
+              color: M.key.color,
+              note: M.key.note,
+              swatch: M.key.swatch,
+            },
+            hint: tx(
+              "act8.hint.heat",
+              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
+              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
+            ),
             node: (
               <div className="act8b__scroll">
                 <ApexYearHeatmap
@@ -725,7 +867,6 @@ export default function Act8Ciel() {
                   years={M.years}
                   unit={M.unit}
                   scale={M.kind === "anom" ? "diverging" : "sequential"}
-                  scheme="greenRed"
                   decimals={metricDecimals}
                   labels={{
                     below: M.below,
@@ -739,13 +880,26 @@ export default function Act8Ciel() {
             ),
           },
           changeChart,
+          // La carte ferme la navigation, comme sur les escales 01 et 02 :
+          // elle situe, elle ne démontre pas. (`coverageChart`, qui la suit
+          // dans ce tableau, est renvoyé dans la fiche ⓘ par ActBoard.)
           {
             id: "map",
             empty: M.rank.length === 0,
-            tab: t("act8.board.tab_map"),
+            tab: tx("act8.board.tab_carte", "Carte", "Map"),
             title: `${t("act8.board.map_title")} · ${M.B}`,
             finding: t("act8.board.map_find"),
             takeaway: t("act8.board.map_take"),
+            legend: {
+              color: M.key.color,
+              note: M.key.note,
+              swatch: M.key.swatch,
+            },
+            hint: tx(
+              "act8.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -760,6 +914,14 @@ export default function Act8Ciel() {
                   <OceanMap
                     data={M.rank}
                     unit={M.unit}
+                    // La rampe suit la NATURE de la mesure, pas la page :
+                    // divergente autour de la normale pour un écart de pluie
+                    // ou de température, séquentielle pour un comptage de
+                    // stations. Auparavant la carte peignait un dégradé à
+                    // deux pôles sur un simple décompte — deux pôles pour
+                    // une grandeur qui n'en a qu'un.
+                    ramp={M.kind === "anom" ? "polarity" : "magnitude"}
+                    mid={M.kind === "anom" ? 0 : null}
                     range={mapRange}
                     lowLabel={t("act6.heatmap_low")}
                     midLabel={
@@ -784,12 +946,15 @@ export default function Act8Ciel() {
       eyebrow={t("act8.tag")}
       title={t("act8.title")}
       thesis={t("act8.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
-      initialTab="map"
+      initialTab="sky"
       progress={{ index: 3, total: 12 }}
       labels={{
         loading: t("scene.loading"),
@@ -805,7 +970,6 @@ export default function Act8Ciel() {
         conclusion: t("act8.board.conclusion"),
         backIntro: t("act8.board.back_intro"),
         reviseData: t("act8.board.revise_data"),
-        viewGroup: t("act8.board.group_view"),
       }}
       outro={{
         kicker: t("act8.outro.kicker"),

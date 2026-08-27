@@ -35,23 +35,46 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
+// Les visuels de la Home qui portent les jeux de cette escale. Chacun lit
+// exactement le même jeu qu'une des trois mesures du sélecteur :
+// PlantGrowth → cropYield, CattleThrive → livestockYield,
+// ForestCover → landCover. Ils restent montés sur la page d'accueil ; on les
+// ajoute ici, on ne les déplace pas.
+import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
+import CattleThrive from "../../components/CattleThrive/CattleThrive";
+import ForestCover from "../../components/ForestCover/ForestCover";
 import RankChart from "../../components/charts/RankChart";
 import BarRace from "../../components/BarRace/BarRace";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import { fmt } from "../../components/charts/echartsBase";
 import ChangeChart from "../../components/charts/ChangeChart";
 import TrendChart from "../../components/charts/TrendChart";
 import SlopeChart from "../../components/charts/SlopeChart";
 import { useDispatch, useSelector } from "react-redux";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import "./Act6Agriculture.scss";
+
+// Les trois jeux de l'escale, chacun avec sa source et son unité propre : un
+// rendement et un indice d'occupation des sols ne se lisent pas contre la
+// même référence, et ne se comparent pas entre eux.
+const SOURCE_CROP_FR =
+  "FAOSTAT, via le Pacific Data Hub — rendement en kilogrammes par hectare récolté. Un rendement bouge rarement pour une seule raison : climat, intrants, surface déclarée.";
+const SOURCE_CROP_EN =
+  "FAOSTAT, via the Pacific Data Hub - yield in kilograms per hectare harvested. Yields rarely move for a single reason: climate, inputs, declared area.";
+const SOURCE_LIVE_FR =
+  "FAOSTAT, via le Pacific Data Hub — rendement en kilogrammes par animal. Même prudence de lecture que pour les cultures.";
+const SOURCE_LIVE_EN =
+  "FAOSTAT, via the Pacific Data Hub - yield in kilograms per animal. Read with the same caution as crops.";
+const SOURCE_LAND_FR =
+  "Indice CALCI d'occupation des sols, via le Pacific Data Hub — base 100 en 2015. C'est un INDICE d'usage, pas une surface.";
+const SOURCE_LAND_EN =
+  "CALCI land-cover index, via the Pacific Data Hub - base 100 in 2015. It is a land-USE index, not an area.";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
@@ -173,6 +196,15 @@ function Select({ label, options, value, onChange }) {
 
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
   const dispatch = useDispatch();
   const land = useSelector(selectDataset("landCover"));
@@ -238,10 +270,6 @@ export default function Act6Agriculture() {
         : []
       ).filter((p) => areaVisible(p.area)),
     [agg, currentYear, lang, areaVisible],
-  );
-  const refMedian = useMemo(
-    () => median(points.map((p) => p.value)) ?? 0,
-    [points],
   );
 
   const firstYear = agg?.firstYear ?? null;
@@ -426,35 +454,9 @@ export default function Act6Agriculture() {
       .filter((r) => r.values.some((v) => v.value > 0));
   }, [raceData, raceYears, areaVisible, lang]);
 
-  const kpiItems = useMemo(() => {
-    if (agri.status !== "ready" || !points.length) return [];
-    const sorted = [...points].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    return [
-      {
-        key: "median",
-        value: fmt(refMedian, 0),
-        unit,
-        label: t("act6.board.kpi_median"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmt(high.value, 0),
-        unit: high.name,
-        label: t("act6.board.kpi_high"),
-        tone: "positive",
-      },
-      {
-        key: "low",
-        value: fmt(low.value, 0),
-        unit: low.name,
-        label: t("act6.board.kpi_low"),
-        tone: "warm",
-      },
-    ];
-  }, [agri.status, points, refMedian, unit, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const retry = useCallback(() => {
     setAgri({ status: "loading", data: null });
@@ -502,26 +504,27 @@ export default function Act6Agriculture() {
     tone: "accent",
   }));
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act6.board.dataset_label")}
-        items={datasetItems}
         value={dataset}
         onChange={setDataset}
-        iconOnly
-        hideSpark
+        options={asOptions(datasetItems)}
       />
-      {dataset !== "soil" ? (
-        <DatasetSwitcher
-          label={t("act1.filter.title")}
-          items={regionItems}
-          value={region}
-          onChange={setRegion}
-          dense
-          hideSpark
-        />
-      ) : null}
+      <ChartFilter
+        label={t("act1.filter.title")}
+        hideLabel
+        value={region}
+        onChange={setRegion}
+        options={asOptions(regionItems)}
+      />
     </>
   );
 
@@ -540,17 +543,192 @@ export default function Act6Agriculture() {
     t("act6.spotlight.n5"),
   ];
 
+  // CE QUE PORTENT LES AXES change avec le jeu : des kilos par hectare, des
+  // kilos par animal, ou un indice base 100. Une seule clé pour l'escale
+  // entière mentirait sur deux jeux sur trois.
+  const key =
+    dataset === "soil"
+      ? {
+          y: tx(
+            "act6.key.land_y",
+            "Indice d'occupation des sols, base 100 en 2015. 100 = le niveau de 2015 pour ce territoire, pas un niveau commun.",
+            "Land-cover index, base 100 in 2015. 100 = that territory's own 2015 level, not a shared level.",
+          ),
+          x: tx("act6.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act6.key.mag_c",
+            "Une seule teinte : plus elle est marquée, plus la valeur est élevée. Aucun jugement de valeur, seulement une grandeur.",
+            "A single hue: the stronger it is, the higher the value. No value judgement, only a magnitude.",
+          ),
+          note: tx("act6.key.land_note", SOURCE_LAND_FR, SOURCE_LAND_EN),
+          swatch: "magnitude",
+        }
+      : dataset === "livestock"
+        ? {
+            y: tx(
+              "act6.key.live_y",
+              "Rendement en kilogrammes par animal. Ce n'est pas un nombre de bêtes.",
+              "Yield in kilograms per animal. This is not a head count.",
+            ),
+            x: tx("act6.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+            color: tx(
+              "act6.key.mag_c",
+              "Une seule teinte : plus elle est marquée, plus la valeur est élevée. Aucun jugement de valeur, seulement une grandeur.",
+              "A single hue: the stronger it is, the higher the value. No value judgement, only a magnitude.",
+            ),
+            note: tx("act6.key.live_note", SOURCE_LIVE_FR, SOURCE_LIVE_EN),
+            swatch: "magnitude",
+          }
+        : {
+            y: tx(
+              "act6.key.crop_y",
+              "Rendement en kilogrammes par hectare récolté. La surface déclarée entre dans le calcul autant que la récolte.",
+              "Yield in kilograms per hectare harvested. Declared area enters the figure as much as the harvest does.",
+            ),
+            x: tx("act6.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+            color: tx(
+              "act6.key.mag_c",
+              "Une seule teinte : plus elle est marquée, plus la valeur est élevée. Aucun jugement de valeur, seulement une grandeur.",
+              "A single hue: the stronger it is, the higher the value. No value judgement, only a magnitude.",
+            ),
+            note: tx("act6.key.crop_note", SOURCE_CROP_FR, SOURCE_CROP_EN),
+            swatch: "magnitude",
+          };
+
   const charts =
     status === "ready" && currentYear != null
       ? [
+          // ---------- Les visuels interactifs, en ouverture ----------------
+          // Trois dessins de la Home, un par jeu de données de l'escale, et
+          // c'est exactement le même jeu qu'ils lisent — `cropYield`,
+          // `livestockYield`, `landCover`. Ils se suivent en tête de
+          // navigation : le sélecteur de mesure décide lesquels sont à
+          // l'écran (les deux de production ensemble, celui des sols seul,
+          // comme pour toutes les autres vues de cette escale).
+          //
+          // Ils ouvrent parce qu'un rendement en kg/ha ne se ressent pas :
+          // le dessin lui donne une taille avant que les courbes ne le
+          // mettent en série.
+          {
+            id: "plant",
+            empty: false,
+            tab: tx("act6.board.tab_pousse", "Pousse", "Growth"),
+            title: tx(
+              "act6.viz.plant_title",
+              "Le rendement des cultures, territoire par territoire",
+              "Crop yield, territory by territory",
+            ),
+            finding: tx(
+              "act6.viz.plant_find",
+              "Choisissez un territoire : la plante suit son rendement.",
+              "Pick a territory: the plant follows its yield.",
+            ),
+            takeaway: tx(
+              "act6.viz.plant_take",
+              "Une plante plus haute ne dit pas une meilleure agriculture : elle dit plus de kilos par hectare déclaré. Le pourquoi n'est pas dans ce chiffre.",
+              "A taller plant does not mean better farming: it means more kilos per declared hectare. The why is not in this number.",
+            ),
+            hint: tx(
+              "act6.hint.plant",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act6.key.plant_c",
+                "La plante grandit avec le rendement du territoire choisi, et se rétracte quand il baisse.",
+                "The plant grows with the chosen territory's yield, and shrinks when it falls.",
+              ),
+              note: tx("act6.key.crop_note", SOURCE_CROP_FR, SOURCE_CROP_EN),
+              // La plante encode par une HAUTEUR, pas par une teinte.
+              swatch: "none",
+            },
+            node: <PlantGrowth embed />,
+          },
+          {
+            id: "cattle",
+            empty: false,
+            tab: tx("act6.board.tab_betail", "Bétail", "Livestock"),
+            title: tx(
+              "act6.viz.cattle_title",
+              "Le rendement de l'élevage, territoire par territoire",
+              "Livestock yield, territory by territory",
+            ),
+            finding: tx(
+              "act6.viz.cattle_find",
+              "Choisissez un territoire : l'animal suit son rendement.",
+              "Pick a territory: the animal follows its yield.",
+            ),
+            takeaway: tx(
+              "act6.viz.cattle_take",
+              "Des kilos par animal, pas un nombre d'animaux : un troupeau qui rétrécit peut très bien afficher un rendement qui monte.",
+              "Kilos per animal, not a head count: a shrinking herd can perfectly well post a rising yield.",
+            ),
+            hint: tx(
+              "act6.hint.cattle",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act6.key.cattle_c",
+                "L'animal s'étoffe avec le rendement du territoire choisi.",
+                "The animal fills out with the chosen territory's yield.",
+              ),
+              note: tx("act6.key.live_note", SOURCE_LIVE_FR, SOURCE_LIVE_EN),
+              swatch: "none",
+            },
+            node: <CattleThrive embed />,
+          },
+          {
+            id: "forest",
+            empty: false,
+            tab: tx("act6.board.tab_sols", "Sols", "Land"),
+            title: tx(
+              "act6.viz.forest_title",
+              "L'occupation des sols, territoire par territoire",
+              "Land cover, territory by territory",
+            ),
+            finding: tx(
+              "act6.viz.forest_find",
+              "Choisissez un territoire : le couvert suit son indice d'occupation des sols.",
+              "Pick a territory: the cover follows its land-cover index.",
+            ),
+            takeaway: tx(
+              "act6.viz.forest_take",
+              "Base 100 en 2015 : ce visuel montre un écart à cette année-là, pas une surface. Deux territoires au même niveau n'ont pas la même forêt.",
+              "Base 100 in 2015: this shows a gap from that year, not an area. Two territories at the same level do not have the same forest.",
+            ),
+            hint: tx(
+              "act6.hint.forest",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act6.key.forest_c",
+                "Le couvert se densifie quand l'indice dépasse sa base 2015, et s'éclaircit quand il passe dessous.",
+                "The cover thickens when the index rises above its 2015 base, and thins when it falls below.",
+              ),
+              note: tx("act6.key.land_note", SOURCE_LAND_FR, SOURCE_LAND_EN),
+              swatch: "none",
+            },
+            node: <ForestCover embed />,
+          },
           {
             id: "small",
             signature: true,
             empty: vSeries.length === 0,
-            tab: t("act6.board.tab_small"),
+            tab: tx("act6.board.tab_multiples_1", "Multiples", "Multiples"),
             title: t("act6.trend_title"),
             finding: t("act6.board.small_find"),
             takeaway: t("act6.board.small_take"),
+            legend: key,
+            hint: tx(
+              "act6.hint.multiples",
+              "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
+              "Every panel shares one scale: they compare at a glance.",
+            ),
             node: (
               <div className="act6b__scroll">
                 <SmallMultiples
@@ -589,10 +767,16 @@ export default function Act6Agriculture() {
             id: "regional",
             empty:
               !regionalSeries.length || regionalSeries[0].values.length < 2,
-            tab: t("act6.board.tab_regional"),
+            tab: tx("act6.board.tab_tendance", "Tendance", "Trend"),
             title: t("act6.regional_title"),
             finding: t("act6.board.regional_find"),
             takeaway: t("act6.board.regional_take"),
+            legend: key,
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act6b__fit">
                 <TrendLines
@@ -609,11 +793,21 @@ export default function Act6Agriculture() {
             empty: cropRankRows.length === 0,
             tab:
               kind === "crop"
-                ? t("act6.board.tab_crops")
-                : t("act6.board.tab_animals"),
+                ? tx("act6.board.tab_palmares", "Palmarès", "Ranking")
+                : tx("act6.board.tab_palmares", "Palmarès", "Ranking"),
             title: `${kind === "crop" ? t("act6.crop_rank_title") : t("act6.animal_rank_title")} · ${currentYear}`,
             finding: t("act6.board.crops_find"),
             takeaway: t("act6.board.crops_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act6b__scroll">
                 <CropRanking rows={cropRankRows} unit={unit} max={12} />
@@ -627,6 +821,16 @@ export default function Act6Agriculture() {
             title: `${t("act6.compare_title")} · ${firstYear}–${lastYear}`,
             finding: t("act6.board.change_find"),
             takeaway: t("act6.board.change_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act6.hint.change",
+              "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
+              "Compare bar lengths: they show how much changed, not the level reached.",
+            ),
             node: (
               <div className="act6b__scroll">
                 <DumbbellChart
@@ -650,6 +854,20 @@ export default function Act6Agriculture() {
             title: t("act6.board.stability_title"),
             finding: t("act6.board.stability_find"),
             takeaway: t("act6.board.stability_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act6.key.stab_x",
+                "La dispersion des rendements d'une année à l'autre : plus la barre est large, plus la récolte est irrégulière.",
+                "How yields scatter from year to year: the wider the bar, the more irregular the harvest.",
+              ),
+            },
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <RankChart
                 points={volatilityRows}
@@ -668,6 +886,16 @@ export default function Act6Agriculture() {
             title: t("act6.board.race_title"),
             finding: t("act6.board.race_find"),
             takeaway: t("act6.board.race_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act6.hint.race",
+              "Lancez l'animation : les barres se réordonnent au fil des années.",
+              "Press play: the bars reorder themselves year after year.",
+            ),
             node: (
               <div className="act6b__race">
                 <div className="act6b__racebar">
@@ -702,10 +930,22 @@ export default function Act6Agriculture() {
           {
             id: "heat",
             empty: vSeries.length === 0,
-            tab: t("act6.board.tab_heat"),
+            tab: tx("act6.board.tab_matrice", "Matrice", "Matrix"),
             title: t("act6.heatmap_title"),
             finding: t("act6.board.heat_find"),
             takeaway: t("act6.board.heat_take"),
+            legend: {
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.x,
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act6.hint.heat",
+              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
+              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
+            ),
             node: (
               <div className="act6b__scroll">
                 <ApexYearHeatmap
@@ -725,10 +965,16 @@ export default function Act6Agriculture() {
           {
             id: "map",
             empty: points.length === 0,
-            tab: t("act6.board.tab_map"),
+            tab: tx("act6.board.tab_carte", "Carte", "Map"),
             title: `${t("act6.map_title")} · ${currentYear}`,
             finding: t("act6.board.map_find"),
             takeaway: t("act6.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act6.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -743,6 +989,12 @@ export default function Act6Agriculture() {
                   <OceanMap
                     data={points}
                     unit={unit}
+                    // Rendements et indice d'occupation sont des GRANDEURS :
+                    // pas de zéro chargé de sens, donc une seule teinte, du
+                    // plus faible au plus élevé — la même que la pastille de
+                    // la colonne et que la matrice.
+                    ramp="magnitude"
+                    mid={null}
                     range={agg ? agg.range : null}
                     logScale
                     lowLabel={t("act6.map_low")}
@@ -762,6 +1014,16 @@ export default function Act6Agriculture() {
             title: t("act6.explorer_title"),
             finding: t("act6.board.explorer_find"),
             takeaway: t("act6.board.explorer_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act6.hint.explorer",
+              "Choisissez une culture ou un élevage : tout le tracé se recalcule sur lui.",
+              "Pick a crop or a livestock type: the whole plot recomputes on it.",
+            ),
             node: (
               <div className="act6b__scroll">
                 <CropExplorer
@@ -780,10 +1042,24 @@ export default function Act6Agriculture() {
           {
             id: "land_change",
             empty: !landReady || landChangeRows.length === 0,
-            tab: t("act6.board.tab_land_change"),
+            tab: tx("act6.board.tab_land_evo", "Évolution", "Change"),
             title: t("act6.land.change_title"),
             finding: t("act6.board.land_change_find"),
             takeaway: t("act6.board.land_change_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act6.key.land_change_x",
+                "L'écart d'indice entre la première et la dernière année disponibles.",
+                "The index gap between the first and last available years.",
+              ),
+            },
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <ChangeChart
                 rows={landChangeRows}
@@ -796,10 +1072,16 @@ export default function Act6Agriculture() {
           {
             id: "land_lines",
             empty: !landReady || landSeries.length === 0,
-            tab: t("act6.board.tab_land_lines"),
+            tab: tx("act6.board.tab_land_traj", "Trajectoire", "Path"),
             title: t("act6.land.lines_title"),
             finding: t("act6.board.land_lines_find"),
             takeaway: t("act6.board.land_lines_take"),
+            legend: key,
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <TrendChart
                 series={landSeries}
@@ -812,10 +1094,24 @@ export default function Act6Agriculture() {
           {
             id: "land_slope",
             empty: !landReady || landSlopeRows.length < 2,
-            tab: t("act6.board.tab_land_slope"),
+            tab: tx("act6.board.tab_land_pente", "Pente", "Slope"),
             title: t("act6.land.slope_title"),
             finding: t("act6.board.land_slope_find"),
             takeaway: t("act6.board.land_slope_take"),
+            legend: {
+              ...key,
+              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act6.key.land_slope_x",
+                "La pente moyenne de l'indice, en points par an : le rythme, pas le niveau.",
+                "The index's average slope, in points per year: the pace, not the level.",
+              ),
+            },
+            hint: tx(
+              "act6.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <SlopeChart
                 rows={landSlopeRows}
@@ -850,7 +1146,7 @@ export default function Act6Agriculture() {
 
   // Le jeu choisi décide des VUES : Sol → ses 3 vues d'occupation ; Culture /
   // Élevage → toutes les vues de production.
-  const SOIL_IDS = ["land_change", "land_lines", "land_slope"];
+  const SOIL_IDS = ["forest", "land_change", "land_lines", "land_slope"];
   const visibleCharts = charts.filter((c) =>
     dataset === "soil" ? SOIL_IDS.includes(c.id) : !SOIL_IDS.includes(c.id),
   );
@@ -863,10 +1159,13 @@ export default function Act6Agriculture() {
       eyebrow={t("act6.tag")}
       title={t("act6.title")}
       thesis={t("act6.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={visibleCharts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 5, total: 12 }}
       labels={{
@@ -883,7 +1182,6 @@ export default function Act6Agriculture() {
         conclusion: t("act6.board.conclusion"),
         backIntro: t("act6.board.back_intro"),
         reviseData: t("act6.board.revise_data"),
-        viewGroup: t("act6.board.group_view"),
       }}
       outro={{
         kicker: t("act6.outro.kicker"),

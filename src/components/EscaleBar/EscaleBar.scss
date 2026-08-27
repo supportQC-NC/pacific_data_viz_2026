@@ -1,0 +1,226 @@
+// src/components/EscaleBar/EscaleBar.scss
+// ============================================================
+// Barre d'escale : une seule rangée, trois zones.
+// Tokens uniquement → suit le thème. Aucune couleur en dur.
+// ============================================================
+
+.escbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.escbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 52px;
+  padding-block: var(--sp-2);
+}
+
+/* ---------- Chevrons : la navigation ENTRE escales ----------
+   Aux extrémités, isolés du reste : on ne les confond pas avec les onglets
+   de vue qui vivent au centre. */
+.escbar__arrow {
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  color: var(--c-text-soft);
+  font-size: 1.1rem;
+  transition: color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--c-text);
+    border-color: var(--c-line-strong);
+  }
+
+  &--prev:hover {
+    transform: translateX(-2px);
+  }
+
+  &--next:hover {
+    transform: translateX(2px);
+  }
+
+  &.is-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+}
+
+/* ---------- Où je suis ---------- */
+.escbar__where {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.escbar__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  line-height: 1.1;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.escbar__progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.escbar__count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--c-text-mute);
+  font-variant-numeric: tabular-nums;
+
+  i {
+    font-style: normal;
+    padding: 0 2px;
+    opacity: 0.5;
+  }
+}
+
+.escbar__meter {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.escbar__meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--escbar-pct, 0%);
+  background: var(--c-text-soft);
+  transition: width var(--t-base) var(--ease-out);
+}
+
+/* ---------- Ce que je regarde ----------
+   Occupe toute la largeur restante : c'est la zone qui travaille. */
+.escbar__views {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+  padding-left: var(--sp-4);
+  border-left: var(--border-hair) solid var(--c-line);
+}
+
+.escbar__exit {
+  flex: 0 0 auto;
+  padding: 2px var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--c-text);
+    border-color: var(--c-line);
+  }
+}
+
+/* ---------- Sous 1100 px : deux rangées, mais un seul bloc ----------
+   On ne recrée pas deux en-têtes : la barre reste UN bloc, dont le contenu
+   se replie. Les chevrons et le titre gardent la première ligne, les vues
+   passent en dessous. */
+@media (max-width: 1099px) {
+  .escbar__inner {
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+  }
+
+  .escbar__views {
+    order: 3;
+    flex: 1 1 100%;
+    padding-left: 0;
+    border-left: none;
+    border-top: var(--border-hair) solid var(--c-line);
+    padding-top: var(--sp-2);
+  }
+
+  .escbar__where {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .escbar__title {
+    font-size: var(--fs-sm);
+    white-space: normal;
+  }
+
+  .escbar__views {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+}
+
+/* ---------- Mobile : la barre reste UN bloc, mais ramassée ----------
+   Mesurée à 289 px de haut à 390 px de large : titre, progression, onglets,
+   filtre, aide, données et sortie s'empilaient chacun sur sa ligne. On les
+   regroupe — la jauge et le libellé de sortie s'effacent (le compteur et la
+   croix suffisent), le filtre partage sa ligne avec l'aide et les données. */
+@media (max-width: 640px) {
+  .escbar__inner {
+    min-height: 0;
+    gap: var(--sp-2);
+  }
+
+  .escbar__meter {
+    display: none;
+  }
+
+  .escbar__arrow {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .escbar__exit {
+    order: 2;
+    padding: 0;
+    font-size: 0;
+
+    /* Le libellé disparaît, la croix reste — et garde son intitulé pour les
+       lecteurs d'écran via le texte du bouton. */
+    &::first-letter {
+      font-size: 1rem;
+    }
+  }
+
+  .escbar__views {
+    padding-top: var(--sp-2);
+    gap: var(--sp-2);
+  }
+
+  /* Filtre, aide et données tiennent sur une seule ligne sous les onglets. */
+  .escbar__views .board__bar-filters {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}

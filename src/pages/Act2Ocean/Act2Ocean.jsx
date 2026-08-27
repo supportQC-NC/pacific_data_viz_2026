@@ -68,6 +68,7 @@ import CoverageChart from "../../components/charts/CoverageChart";
 import ShareAboveChart from "../../components/charts/ShareAboveChart";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
+import SeaWarm from "../../components/SeaWarm/SeaWarm";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import { valAt } from "../../components/charts/echartsBase";
 import "./Act2Ocean.scss";
@@ -343,6 +344,47 @@ export default function Act2Ocean() {
   const charts =
     status === "ready" && currentYear != null
       ? [
+          // ---------- Le visuel interactif, en ouverture -------------------
+          // `SeaWarm` — le thermomètre planté dans la houle, repris de la
+          // Home. C'est du SVG, entièrement interactif (sélecteur d'île,
+          // mercure animé), et c'est le SEUL visuel de la Home qui porte
+          // l'indicateur de cette escale : l'anomalie de température de
+          // surface. Les autres (niveau de la mer, trait de côte, pluie)
+          // appartiennent aux escales 07 et 03 — on ne les force pas ici.
+          //
+          // Il reste monté sur la Home et sur /chapitre/ocean : on l'ajoute,
+          // on ne le déplace pas.
+          {
+            id: "sea",
+            empty: noPts,
+            tab: tx("act2.board.tab_thermo", "Thermomètre", "Thermometer"),
+            title: tx("act2.viz.sea_title", "L'écart, île par île", "The gap, island by island"),
+            finding: tx(
+              "act2.viz.sea_find",
+              "Le mercure monte au-dessus de la normale, descend en dessous. Choisissez une île.",
+              "The mercury rises above the normal and falls below it. Pick an island.",
+            ),
+            takeaway: tx(
+              "act2.viz.sea_take",
+              "Un chiffre reste abstrait tant qu'on ne l'a pas vu bouger. Ici l'écart n'est plus une valeur dans un tableau : c'est une hauteur.",
+              "A number stays abstract until you watch it move. Here the gap is no longer a value in a table: it is a height.",
+            ),
+            hint: tx(
+              "act2.hint.sea",
+              "Changez d'île avec le sélecteur sous le thermomètre.",
+              "Switch islands with the selector below the thermometer.",
+            ),
+            legend: {
+              color: tx(
+                "act2.key.sea_c",
+                "Le mercure monte quand l'eau dépasse sa normale, descend quand elle passe dessous.",
+                "High mercury: the water is above its normal. Low: below it.",
+              ),
+              note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
+            },
+            node: <SeaWarm embed />,
+          },
+
           // ---------- ★ SIGNATURE ------------------------------------------
           // Une série, un axe, une échelle bornée 0–100, un seuil naturel.
           // C'est la vue qui répond littéralement à la question de l'acte.
@@ -350,13 +392,13 @@ export default function Act2Ocean() {
             id: "share",
             signature: true,
             empty: noSeries,
-            tab: t("act2.board.tab_share"),
+            tab: tx("act2.board.tab_part", "Proportion", "Share"),
             // Vocabulaire aligné sur la question de l'acte (« îles ») : les
             // titres parlaient de « territoires », la question d'« îles ».
             title: tx(
               "act2.viz.share_title_short",
-              "La bascule",
-              "The tipping point",
+              "Proportion d'îles au-dessus de leur normale",
+              "Share of islands above their normal",
             ),
             finding: tx(
               "act2.viz.share_find_short",
@@ -366,12 +408,12 @@ export default function Act2Ocean() {
             legend: {
               y: tx(
                 "act2.key.share_y",
-                "Part des îles au-dessus de leur normale, en %",
+                "Combien d'îles dépassent leur normale, en %",
                 "Share of islands above their normal, in %",
               ),
               x: tx(
                 "act2.key.share_x",
-                "Une année par point, de 1970 à 2025",
+                "Une année par point — cinquante-six en tout",
                 "One point per year, 1970 to 2025",
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
@@ -402,7 +444,7 @@ export default function Act2Ocean() {
           {
             id: "band",
             empty: noSeries,
-            tab: t("act2.board.tab_band"),
+            tab: tx("act2.board.tab_ecart", "Écart", "Gap"),
             title: t("act2.viz.band_title"),
             // La chaîne d'origine annonçait l'anomalie « moyenne » ; on trace
             // la MÉDIANE (cohérence avec les KPI, et robustesse aux valeurs
@@ -415,12 +457,12 @@ export default function Act2Ocean() {
             legend: {
               y: tx(
                 "act2.key.band_y",
-                "Écart à la normale, en degrés",
+                "L'écart à la normale, en degrés",
                 "Gap to the normal, in degrees",
               ),
               x: tx(
                 "act2.key.band_x",
-                "Une année par point, de 1970 à 2025",
+                "Une année par point — cinquante-six en tout",
                 "One point per year, 1970 to 2025",
               ),
               color: tx(
@@ -460,7 +502,7 @@ export default function Act2Ocean() {
           {
             id: "heat",
             empty: noSeries,
-            tab: t("act2.board.tab_heat"),
+            tab: tx("act2.board.tab_matrice", "Matrice", "Matrix"),
             // « Une décennie d'anomalies » annonçait dix ans pour une série
             // qui en couvre cinquante-six.
             title: tx(
@@ -476,26 +518,31 @@ export default function Act2Ocean() {
             legend: {
               y: tx(
                 "act2.key.heat_y",
-                "Une ligne par île, de la plus chaude en haut à la plus fraîche en bas",
+                "Une ligne par île, la plus chaude en haut",
                 "One row per island, warmest at the top, coolest at the bottom",
               ),
               x: tx(
                 "act2.key.heat_x",
-                "Une colonne par année, de 1970 à 2025",
+                "Une colonne par année, 1970 à gauche, 2025 à droite",
                 "One column per year, 1970 to 2025",
               ),
               color: tx(
                 "act2.key.heat_c",
-                "Bleu : cette année-là, l'eau est restée sous sa normale. Ambre : elle l'a dépassée.",
+                "Bleu, l'eau est restée sous sa normale cette année-là. Ambre, elle l'a dépassée.",
                 "Blue: that year the water stayed below its normal. Amber: it went above.",
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
             takeaway: t("act2.board.heat_take"),
+            // La légende de valeurs est `calculable` : ses deux poignées se
+            // font glisser pour n'afficher qu'une plage. C'est l'interaction
+            // la plus puissante de l'escale — on isole les années au-dessus
+            // de +0,5 °C et la bascule saute aux yeux — et absolument
+            // personne ne la découvre sans qu'on la nomme.
             hint: tx(
               "act2.hint.heat",
-              "Survolez une case : vous obtenez l'écart exact de cette île, cette année-là.",
-              "Hover a cell to get that island's exact gap for that year.",
+              "Faites glisser les deux poignées de l'échelle, à droite : la matrice ne garde que la plage choisie. Isolez les années au-dessus de +0,5 °C, la bascule des années 1990 saute aux yeux. Survolez une case pour la valeur exacte.",
+              "Drag the two handles on the scale to the right: the matrix keeps only the range you pick. Isolate the years above +0.5 °C and the 1990s shift jumps out. Hover a cell for the exact value.",
             ),
             node: (
               <HeatmapChart
@@ -522,17 +569,17 @@ export default function Act2Ocean() {
           {
             id: "path",
             empty: noPath,
-            tab: tx("act2.board.tab_path", "Le chemin", "The path"),
+            tab: tx("act2.board.tab_evolution", "Évolution", "Change"),
+            // Une seule phrase, qui dit ce qu'on regarde. Le titre et la
+            // phrase de résumé faisaient doublon : « Le chemin parcouru
+            // depuis 1970 » ne disait rien que la phrase suivante ne redise.
+            // Le détail des couleurs vit dans la clé de lecture, à droite.
             title: tx(
               "act2.viz.path_title",
-              `Le chemin parcouru depuis ${firstYear}`,
-              `The road travelled since ${firstYear}`,
+              `Le réchauffement de chaque île, de ${firstYear} à aujourd'hui`,
+              `How much each island warmed, from ${firstYear} to today`,
             ),
-            finding: tx(
-              "act2.viz.path_find",
-              `Le point gris marque ${firstYear}, le point ambre ${lastYear}. Entre les deux, ce que l'île a pris.`,
-              `The grey dot is ${firstYear}, the amber dot ${lastYear}. In between, what the island gained.`,
-            ),
+            finding: null,
             takeaway: tx(
               "act2.viz.path_take",
               "Le départ compte autant que l'arrivée. Une île partie de très bas peut avoir beaucoup bougé sans être la plus chaude aujourd'hui.",
@@ -546,12 +593,12 @@ export default function Act2Ocean() {
             legend: {
               y: tx(
                 "act2.key.path_y",
-                "Une ligne par île, de la plus chaude en haut",
+                "Une ligne par île, la plus chaude en haut",
                 "One row per island, warmest at the top",
               ),
               x: tx(
                 "act2.key.path_x",
-                "Écart à la normale, en degrés",
+                "L'écart à la normale, en degrés",
                 "Gap to the normal, in degrees",
               ),
               color: tx(
@@ -570,7 +617,11 @@ export default function Act2Ocean() {
                 decimals={1}
                 // 30 px par ligne réclamaient 726 px pour 21 territoires,
                 // donc un défilement imbriqué dans le panneau.
-                rowHeight={22}
+                // `fill` : occuper toute la hauteur du panneau, comme les
+                // autres vues de l'escale. Sans lui, 21 lignes × 22 px
+                // laissaient 189 px de vide sous le graphique et la zone de
+                // tracé sautait d'un onglet à l'autre.
+                fill
                 // Fin : l'haltère doit se lire comme un TRAJET entre deux
                 // points, pas comme une barre pleine.
                 barHeight="46%"
@@ -590,28 +641,41 @@ export default function Act2Ocean() {
             ),
           },
 
-          // ---------- La géographie ----------------------------------------
+          // ---------- La carte, en fin de parcours -------------------------
+          // Une carte du globe tassée dans un panneau n'est ni un graphique
+          // ni une immersion : trop petite pour s'y repérer, trop grande
+          // pour comparer. Cette vue n'est donc PAS un panneau, c'est une
+          // PORTE : un clic, et le globe occupe l'écran. Échap ramène ici.
           {
             id: "map",
             empty: noPts,
-            tab: t("act2.board.tab_map"),
-            title: t("act2.viz.map_title"),
-            finding: t("act2.board.map_find"),
+            tab: tx("act2.board.tab_carte", "Carte", "Map"),
+            title: tx("act2.viz.map_title2", "La géographie de l'écart", "The geography of the gap"),
+            finding: tx(
+              "act2.viz.map_find2",
+              "Chaque île porte une colonne : sa hauteur suit l'écart à la normale, sa couleur en donne le sens.",
+              "Each island carries a column: its height follows the gap to the normal, its colour gives the direction.",
+            ),
             takeaway: t("act2.board.map_take"),
             hint: tx(
               "act2.hint.map",
-              "Faites défiler les années avec le lecteur, faites pivoter le globe, survolez une colonne.",
-              "Scrub through the years, spin the globe, hover a column.",
+              "Faites tourner le globe, zoomez, survolez une colonne. Le lecteur d'années est en bas, et le bouton en haut à droite passe en plein écran.",
+              "Spin the globe, zoom in, hover a column. The year scrubber sits at the bottom, and the top-right button goes full screen.",
             ),
             legend: {
               color: tx(
                 "act2.key.map_c",
-                "Bleu : sous la normale. Ambre : au-dessus. La hauteur de la colonne suit l'écart.",
+                "Bleu sous la normale, ambre au-dessus. Plus la colonne est haute, plus l'écart est grand.",
                 "Blue: below the normal. Amber: above. Column height follows the gap.",
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
             node: (
+              // La carte vit dans le flux, comme les autres vues : elle
+              // réagit au filtre de sous-région et au curseur d'années, donc
+              // elle doit rester manipulable sans changement de contexte.
+              // Son bouton plein écran natif reste disponible pour qui veut
+              // s'y plonger.
               <ErrorBoundary
                 fallback={
                   <div className="board__state board__state--err">
@@ -623,15 +687,11 @@ export default function Act2Ocean() {
                   </div>
                 }
               >
-                <Suspense
-                  fallback={<Loader compact label={t("scene.loading")} />}
-                >
+                <Suspense fallback={<Loader compact label={t("scene.loading")} />}>
                   <OceanMap
                     data={mapPoints}
                     unit={unit}
                     range={mapRange}
-                    // Rampe divergente validée, lue dans les tokens : elle
-                    // suit le thème et remplace le vert↔rouge codé en dur.
                     ramp="polarity"
                     mid={0}
                     lowLabel={t("act2.map_low")}
@@ -639,8 +699,8 @@ export default function Act2Ocean() {
                     highLabel={t("act2.map_high")}
                     noTokenMsg={tx(
                       "act2.map_no_token",
-                      "Carte indisponible : clé Mapbox absente. Les données de l'acte, elles, sont complètes.",
-                      "Map unavailable: no Mapbox key. The act's data itself is complete.",
+                      "Carte indisponible : clé Mapbox absente. Les données de l'escale, elles, sont complètes.",
+                      "Map unavailable: no Mapbox key. The escale's data itself is complete.",
                     )}
                     years={years}
                     yearIndex={yearIdx}
@@ -740,6 +800,10 @@ export default function Act2Ocean() {
 
       filters={filtersEl}
       charts={charts}
+      // On arrive sur le VISUEL INTERACTIF : c'est la porte d'entrée la plus
+      // manipulable de l'escale. Sans cela, ActBoard choisirait le graphe
+      // signature comme vue d'arrivée.
+      initialTab="sea"
       nav="carousel"
       labels={{
         loading: t("scene.loading"),

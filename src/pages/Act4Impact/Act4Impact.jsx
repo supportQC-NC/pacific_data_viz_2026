@@ -19,7 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import EventTimeline from "../../components/EventTimeline/EventTimeline";
@@ -27,6 +27,12 @@ import RankBars from "../../components/RankBars/RankBars";
 import TrendChart from "../../components/charts/TrendChart";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import CoverageChart from "../../components/charts/CoverageChart";
+// Les visuels de la Home qui portent les deux jeux de cette escale :
+// CrowdAffected lit `disastersAffected`, LossStack lit `disastersLoss` —
+// exactement les jeux du sélecteur. Ils restent montés sur la page d'accueil ;
+// on les ajoute ici, on ne les déplace pas.
+import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
+import LossStack from "../../components/LossStack/LossStack";
 import "./Act4Impact.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -107,8 +113,29 @@ function buildCoverageSeries(d, lang, inRegion) {
   return { series, years: [...yearsSet].sort((x, y) => x - y) };
 }
 
+// Deux comptes issus du même recensement de catastrophes. Ils partagent une
+// limite qu'il faut dire : un total bas peut signifier peu de dégâts — ou une
+// déclaration incomplète. La clé de lecture le rappelle sur chaque vue.
+const SOURCE_AFF_FR =
+  "Recensement des catastrophes, via le Pacific Data Hub — nombre de personnes affectées, cumulé par territoire. Un total bas peut aussi signaler des déclarations incomplètes.";
+const SOURCE_AFF_EN =
+  "Disaster records, via the Pacific Data Hub - number of people affected, cumulative by territory. A low total may also signal incomplete reporting.";
+const SOURCE_LOSS_FR =
+  "Recensement des catastrophes, via le Pacific Data Hub — pertes économiques déclarées, cumulées par territoire. Les montants ne sont pas ramenés à la taille de l'économie.";
+const SOURCE_LOSS_EN =
+  "Disaster records, via the Pacific Data Hub - reported economic losses, cumulative by territory. Amounts are not scaled to the size of each economy.";
+
 export default function Act4Impact() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const dispatch = useDispatch();
   const affected = useSelector(selectDataset("disastersAffected"));
   const loss = useSelector(selectDataset("disastersLoss"));
@@ -146,19 +173,6 @@ export default function Act4Impact() {
     [loss.data, lang, inRegion],
   );
 
-  const totalAff = useMemo(
-    () => affEvents.reduce((s, e) => s + e.value, 0),
-    [affEvents],
-  );
-  const totalLoss = useMemo(
-    () => lossEvents.reduce((s, e) => s + e.value, 0),
-    [lossEvents],
-  );
-  const worst = useMemo(
-    () =>
-      affEvents.reduce((m, e) => (e.value > (m ? m.value : -1) ? e : m), null),
-    [affEvents],
-  );
 
   const isLoss = metric === "loss";
   const selEvents = isLoss ? lossEvents : affEvents;
@@ -193,41 +207,9 @@ export default function Act4Impact() {
     };
   }, [selEvents, metricLabel]);
 
-  const kpiItems = useMemo(() => {
-    if (!ready) return [];
-    const items = [
-      {
-        key: "aff",
-        value: fmtNum(totalAff),
-        unit: t("act4.affected_unit"),
-        label: t("act4.kpi_affected"),
-        tone: "warm",
-      },
-      {
-        key: "loss",
-        value: fmtMoney(totalLoss),
-        unit: "",
-        label: t("act4.kpi_loss"),
-        tone: "warm",
-      },
-      {
-        key: "events",
-        value: String(affEvents.length),
-        unit: "",
-        label: t("act4.kpi_events"),
-        tone: "accent",
-      },
-    ];
-    if (worst)
-      items.push({
-        key: "worst",
-        value: fmtNum(worst.value),
-        unit: `${worst.name} ${worst.year}`,
-        label: t("act4.kpi_worst"),
-        tone: "warm",
-      });
-    return items;
-  }, [ready, totalAff, totalLoss, affEvents, worst, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const retry = useCallback(() => {
     dispatch(loadDataset("disastersAffected"));
@@ -263,23 +245,26 @@ export default function Act4Impact() {
         ? "empty"
         : "ready";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act4.board.metric_label")}
-        items={metricItems}
         value={metric}
         onChange={setMetric}
-        iconOnly
-        hideSpark
+        options={asOptions(metricItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={setRegion}
-        dense
-        hideSpark
+        options={asOptions(regionItems)}
       />
     </>
   );
@@ -299,17 +284,138 @@ export default function Act4Impact() {
     t("act4.spotlight.n5"),
   ];
 
+  // Ce que portent les axes change avec l'indicateur : des personnes d'un
+  // côté, des montants de l'autre. Les deux sont des GRANDEURS cumulées —
+  // pas de zéro chargé de sens, donc une seule teinte.
+  const key = isLoss
+    ? {
+        y: tx(
+          "act4.key.loss_y",
+          "Pertes économiques déclarées, en cumul. Le montant n'est pas rapporté à la taille de l'économie : une même somme ne pèse pas pareil partout.",
+          "Reported economic losses, cumulative. The amount is not scaled to the economy: the same sum does not weigh the same everywhere.",
+        ),
+        x: tx("act4.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act4.key.mag_c",
+          "Une seule teinte : plus elle est marquée, plus le total est élevé. C'est une grandeur, pas un jugement.",
+          "A single hue: the stronger it is, the higher the total. A magnitude, not a judgement.",
+        ),
+        note: tx("act4.key.loss_note", SOURCE_LOSS_FR, SOURCE_LOSS_EN),
+        swatch: "magnitude",
+      }
+    : {
+        y: tx(
+          "act4.key.aff_y",
+          "Nombre de personnes affectées, en cumul. Ce n'est pas un nombre de victimes : « affecté » couvre du déplacement temporaire à la perte du logement.",
+          "Number of people affected, cumulative. This is not a casualty count: \u00ab affected \u00bb spans temporary displacement to loss of home.",
+        ),
+        x: tx("act4.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act4.key.mag_c",
+          "Une seule teinte : plus elle est marquée, plus le total est élevé. C'est une grandeur, pas un jugement.",
+          "A single hue: the stronger it is, the higher the total. A magnitude, not a judgement.",
+        ),
+        note: tx("act4.key.aff_note", SOURCE_AFF_FR, SOURCE_AFF_EN),
+        swatch: "magnitude",
+      };
+
   const charts =
     status === "ready"
       ? [
+          // ---------- Les visuels interactifs, en ouverture ----------------
+          // Deux dessins de la Home, un par indicateur, lisant exactement les
+          // mêmes jeux que le sélecteur : la foule pour les personnes
+          // affectées, la pile pour les pertes déclarées. Ils restent montés
+          // sur la page d'accueil ; on les ajoute ici, on ne les déplace pas.
+          //
+          // Ils ouvrent parce qu'un cumul à sept chiffres ne se ressent pas :
+          // le dessin lui donne une taille avant que les courbes ne le
+          // mettent en série.
+          {
+            id: "crowd",
+            empty: false,
+            tab: tx("act4.board.tab_foule", "Foule", "Crowd"),
+            title: tx(
+              "act4.viz.crowd_title",
+              "Les personnes affectées, territoire par territoire",
+              "People affected, territory by territory",
+            ),
+            finding: tx(
+              "act4.viz.crowd_find",
+              "Choisissez un territoire : la foule suit le nombre de personnes affectées.",
+              "Pick a territory: the crowd follows the number of people affected.",
+            ),
+            takeaway: tx(
+              "act4.viz.crowd_take",
+              "« Affecté » ne veut pas dire « victime » : le terme couvre du déplacement de quelques jours à la perte du logement. Le chiffre compte des situations très inégales.",
+              "« Affected » does not mean « casualty »: it spans a few days' displacement to the loss of a home. The figure counts very unequal situations.",
+            ),
+            hint: tx(
+              "act4.hint.crowd",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act4.key.crowd_c",
+                "La foule s'épaissit avec le nombre de personnes affectées du territoire choisi.",
+                "The crowd thickens with the chosen territory's number of people affected.",
+              ),
+              note: tx("act4.key.aff_note", SOURCE_AFF_FR, SOURCE_AFF_EN),
+              // Le dessin encode par un NOMBRE de silhouettes, pas une teinte.
+              swatch: "none",
+            },
+            node: <CrowdAffected embed />,
+          },
+          {
+            id: "lossviz",
+            empty: false,
+            tab: tx("act4.board.tab_pertes", "Pertes", "Losses"),
+            title: tx(
+              "act4.viz.loss_title",
+              "Les pertes économiques, territoire par territoire",
+              "Economic losses, territory by territory",
+            ),
+            finding: tx(
+              "act4.viz.loss_find",
+              "Choisissez un territoire : la pile suit ses pertes déclarées.",
+              "Pick a territory: the stack follows its reported losses.",
+            ),
+            takeaway: tx(
+              "act4.viz.loss_take",
+              "Des montants bruts, jamais rapportés à la taille de l'économie : la même somme ne pèse pas du tout le même poids d'un territoire à l'autre.",
+              "Raw amounts, never scaled to the size of the economy: the same sum carries a very different weight from one territory to the next.",
+            ),
+            hint: tx(
+              "act4.hint.loss",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act4.key.loss_viz_c",
+                "La pile monte avec les pertes déclarées du territoire choisi.",
+                "The stack rises with the chosen territory's reported losses.",
+              ),
+              note: tx("act4.key.loss_note", SOURCE_LOSS_FR, SOURCE_LOSS_EN),
+              swatch: "none",
+            },
+            node: <LossStack embed />,
+          },
           {
             id: "timeline",
             signature: true,
             empty: selEvents.length === 0,
-            tab: t("act4.board.tab_timeline"),
+            tab: tx("act4.board.tab_frise", "Frise", "Timeline"),
             title: `${t("act4.timeline_title")} · ${metricLabel}`,
             finding: t("act4.board.timeline_find"),
             takeaway: t("act4.board.timeline_take"),
+            legend: key,
+            hint: tx(
+              "act4.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act4b__scroll">
                 <EventTimeline
@@ -345,10 +451,16 @@ export default function Act4Impact() {
           {
             id: "annual",
             empty: annual.years.length < 2,
-            tab: t("act4.board.tab_annual"),
+            tab: tx("act4.board.tab_annees", "Années", "Years"),
             title: `${t("act4.board.annual_title")} · ${metricLabel}`,
             finding: t("act4.board.annual_find"),
             takeaway: t("act4.board.annual_take"),
+            legend: key,
+            hint: tx(
+              "act4.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <TrendChart
                 series={annual.series}
@@ -361,10 +473,16 @@ export default function Act4Impact() {
           {
             id: "rank",
             empty: selTotals.length === 0,
-            tab: t("act4.board.tab_rank"),
+            tab: tx("act4.board.tab_classement", "Classement", "Ranking"),
             title: `${t("act4.rank_title")} · ${metricLabel}`,
             finding: t("act4.board.rank_find"),
             takeaway: t("act4.board.rank_take"),
+            legend: { ...key, y: tx("act4.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act4.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act4b__scroll">
                 <RankBars data={selTotals} unit={selUnit} />
@@ -374,10 +492,16 @@ export default function Act4Impact() {
           {
             id: "map",
             empty: selTotals.length === 0,
-            tab: t("act4.board.tab_map"),
+            tab: tx("act4.board.tab_carte", "Carte", "Map"),
             title: `${t("act4.map_title")} · ${metricLabel}`,
             finding: t("act4.board.map_find"),
             takeaway: t("act4.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act4.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -391,6 +515,11 @@ export default function Act4Impact() {
                 >
                   <OceanMap
                     data={selTotals}
+                    // Deux cumuls, donc deux GRANDEURS : une seule teinte, du
+                    // plus faible au plus élevé, comme la pastille de la
+                    // colonne de lecture l'annonce.
+                    ramp="magnitude"
+                    mid={null}
                     unit={selUnit}
                     range={{ min: 0, max: selMax }}
                     logScale
@@ -431,10 +560,13 @@ export default function Act4Impact() {
       eyebrow={t("home.acts.a4_tag")}
       title={t("home.acts.a4_title")}
       thesis={t("act4.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 9, total: 12 }}
       labels={{
@@ -451,7 +583,6 @@ export default function Act4Impact() {
         conclusion: t("act4.board.conclusion"),
         backIntro: t("act4.board.back_intro"),
         reviseData: t("act4.board.revise_data"),
-        viewGroup: t("act4.board.group_view"),
       }}
       outro={{
         kicker: t("act4.outro.kicker"),

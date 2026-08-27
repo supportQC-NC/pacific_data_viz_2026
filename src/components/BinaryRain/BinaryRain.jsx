@@ -62,7 +62,7 @@ export default function BinaryRain({
       drops = Array.from({ length: cols }, () =>
         Math.floor((Math.random() * h) / fontSize),
       );
-      ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
+      ctx.font = `${fontSize}px "DM Mono", monospace`;
       ctx.textBaseline = "top";
     };
 

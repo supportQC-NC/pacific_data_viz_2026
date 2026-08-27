@@ -17,7 +17,7 @@
   }
 
   &__rank {
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-xs, 0.6875rem);
     color: var(--c-text-dim, rgba(255, 255, 255, 0.55));
     text-align: right;
@@ -49,7 +49,7 @@
   &__bar-fill { fill: var(--c-accent, #46d3e6); }
 
   &__val {
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-sm, 0.8125rem);
     color: var(--c-text, #fff);
     white-space: nowrap;
@@ -74,7 +74,7 @@
   gap: var(--sp-2, 0.5rem);
 }
 .croprank__select-lbl {
-  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-family: var(--font-mono, "DM Mono", monospace);
   font-size: var(--fs-xs, 0.6875rem);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -86,7 +86,7 @@
   border-radius: var(--r-pill, 999px);
   background: var(--c-surface, rgba(255, 255, 255, 0.04));
   color: var(--c-text, #fff);
-  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-family: var(--font-mono, "DM Mono", monospace);
   font-size: var(--fs-xs, 0.6875rem);
   cursor: pointer;
 }

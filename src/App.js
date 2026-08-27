@@ -66,7 +66,14 @@ function AppContent() {
         <Route path="/economie" element={<ActFlow actId="a9" hasDeck><Act9Eco /></ActFlow>} />
         <Route path="/sante" element={<ActFlow actId="a10"><Act10Sante /></ActFlow>} />
         <Route path="/synthese" element={<ActFlow actId="a11"><Act11Synthese /></ActFlow>} />
-        <Route path="/cyclones" element={<ActFlow actId="A12"><Act12Cyclones /></ActFlow>} />
+        {/* `a12` en minuscules — et non « A12 ». L'identifiant sert de clé dans
+            trois endroits à la fois : JOURNEY (numéro et voisins de l'escale),
+            les clés i18n `home.acts.a12_*`, et l'image `/intro/a12.jpg`.
+            Avec une majuscule, aucun des trois ne répondait : l'escale
+            s'annonçait « Acte 00 · Étape 00 / 12 » et affichait ses trois
+            chaînes sous forme de chemins bruts (`home.acts.A12_title`…).
+            C'était la seule des douze routes dans ce cas. */}
+        <Route path="/cyclones" element={<ActFlow actId="a12"><Act12Cyclones /></ActFlow>} />
 
         {/* --- Les 5 chapitres (nouvelle architecture, en parallèle) --- */}
         <Route path="/chapitre/humain" element={<Humain />} />

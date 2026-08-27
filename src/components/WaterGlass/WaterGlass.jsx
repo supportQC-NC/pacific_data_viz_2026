@@ -98,6 +98,11 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
 
   const water = useSelector(selectDataset("water"));
 
+  // « Épinglé » : le territoire est imposé par l'appelant. Sans `code`, le
+  // visuel embarqué se comporte comme sur la Home — sélection par défaut et
+  // commandes visibles — au lieu de ne rien afficher du tout.
+  const pinned = embed && Boolean(code);
+
   useEffect(() => {
     dispatch(loadDataset("water"));
   }, [dispatch]);
@@ -161,12 +166,12 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
   const [region, setRegion] = useState("all");
   const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
-    if (embed) return;
+    if (pinned) return;
     if (!list.length) return;
     if (!view || (view.kind === "country" && !byCode[view.code])) {
       setView({ kind: "country", code: byCode.FJ ? "FJ" : list[0].code });
     }
-  }, [list, view, byCode, embed]);
+  }, [list, view, byCode, pinned]);
   useEffect(() => {
     if (embed && code) setView({ kind: "country", code });
   }, [embed, code]);
@@ -376,7 +381,7 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
 
         {ready && sel && (
           <>
-          {!embed && (
+          {!pinned && (
           <div className="waterglass__toolbar">
             <span className="waterglass__field-label">
               {t("home.water.select_label")}
@@ -588,7 +593,7 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
             </div>
           </div>
 
-          {!embed && (
+          {!pinned && (
           <div className="waterglass__countrybar">
             <div className="waterglass__countries">
               {visibleList.map((o) => (

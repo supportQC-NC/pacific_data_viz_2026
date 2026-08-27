@@ -28,7 +28,7 @@ export default function AnnualBarsChart({ data = [], unit = "", color, format })
         type: "category",
         categories: years,
         labels: {
-          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "10px" },
+          style: { colors: tk.textMute, fontFamily: "DM Mono", fontSize: "10px" },
           formatter: (val, _ts, opts) => {
             const i = opts && opts.i != null ? opts.i : 0;
             return i % step === 0 ? val : "";
@@ -37,7 +37,7 @@ export default function AnnualBarsChart({ data = [], unit = "", color, format })
       }),
       yaxis: baseYaxis(tk, {
         labels: {
-          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+          style: { colors: tk.textMute, fontFamily: "DM Mono", fontSize: "11px" },
           formatter: (v) => fmtV(Number(v)),
         },
       }),

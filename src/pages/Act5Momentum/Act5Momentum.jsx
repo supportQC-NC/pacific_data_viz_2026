@@ -19,7 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
@@ -37,8 +37,13 @@ import ShareAreaChart from "../../components/charts/ShareAreaChart";
 import { fetchPowerMix } from "../../services/powerApi";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import CoverageChart from "../../components/charts/CoverageChart";
+// Les visuels de la Home qui portent les deux familles de vues de cette
+// escale : EnergyCell lit `renewables`, PowerMix lit le mix électrique —
+// exactement les deux jeux du sélecteur. Ils restent montés sur la page
+// d'accueil ; on les ajoute ici, on ne les déplace pas.
+import EnergyCell from "../../components/EnergyCell/EnergyCell";
+import PowerMix from "../../components/PowerMix/PowerMix";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import { fmt } from "../../components/charts/echartsBase";
 import "./Act5Momentum.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -197,8 +202,29 @@ function YearSlider({ label, years, index, onChange }) {
   );
 }
 
+// Deux jeux qui parlent d'électricité mais ne mesurent pas la même chose :
+// une PART dans la consommation finale d'un côté, une COMPOSITION de la
+// production de l'autre. On ne les additionne jamais.
+const SOURCE_RENEW_FR =
+  "Part des énergies renouvelables dans la consommation finale d'énergie, indicateur ODD 7.2.1, via le Pacific Data Hub. En pourcentage de l'énergie consommée, tous usages confondus.";
+const SOURCE_RENEW_EN =
+  "Renewable share of final energy consumption, SDG indicator 7.2.1, via the Pacific Data Hub. Percent of energy consumed, all uses together.";
+const SOURCE_MIX_FR =
+  "Mix de production électrique, via le Pacific Data Hub — répartition par filière. C'est la composition de l'électricité produite, pas de l'énergie consommée.";
+const SOURCE_MIX_EN =
+  "Electricity generation mix, via the Pacific Data Hub - breakdown by source. This is the composition of electricity produced, not of energy consumed.";
+
 export default function Act5Momentum() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const dispatch = useDispatch();
   const tk = useThemeTokens();
   const renew = useSelector(selectDataset("renewables"));
@@ -277,13 +303,6 @@ export default function Act5Momentum() {
         ? pointsAt(data, currentYear, lang, inRegion)
         : [],
     [data, currentYear, lang, inRegion],
-  );
-  const regionalMean = useMemo(
-    () =>
-      points.length
-        ? points.reduce((s, p) => s + p.value, 0) / points.length
-        : 0,
-    [points],
   );
   const overallMax = useMemo(
     () => (data ? Math.max(1, data.range.max) : 100),
@@ -616,35 +635,9 @@ export default function Act5Momentum() {
     [t],
   );
 
-  const kpiItems = useMemo(() => {
-    if (!ready || !points.length) return [];
-    const sorted = [...points].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    return [
-      {
-        key: "mean",
-        value: fmt(regionalMean, 1),
-        unit,
-        label: t("act5.board.kpi_mean"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmt(high.value, 1),
-        unit: high.name,
-        label: t("act5.board.kpi_high"),
-        tone: "positive",
-      },
-      {
-        key: "low",
-        value: fmt(low.value, 1),
-        unit: low.name,
-        label: t("act5.board.kpi_low"),
-        tone: "warm",
-      },
-    ];
-  }, [ready, points, regionalMean, unit, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const retry = useCallback(
     () => dispatch(loadDataset("renewables")),
@@ -679,23 +672,26 @@ export default function Act5Momentum() {
         ? "empty"
         : "ready";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act5.board.dataset_label")}
-        items={datasetItems}
         value={dataset}
         onChange={setDataset}
-        iconOnly
-        hideSpark
+        options={asOptions(datasetItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={setRegion}
-        dense
-        hideSpark
+        options={asOptions(regionItems)}
       />
       <YearSlider
         label={t("act1.f.year")}
@@ -721,9 +717,123 @@ export default function Act5Momentum() {
     t("act5.spotlight.n5"),
   ];
 
+  // Les deux familles de vues ne portent pas la même quantité : un
+  // pourcentage de consommation finale, ou une part de production par
+  // filière. Une clé unique pour l'escale mentirait sur l'une des deux.
+  const key =
+    dataset === "mix"
+      ? {
+          y: tx(
+            "act5.key.mix_y",
+            "Part de chaque filière dans l'électricité produite, en pourcentage. Les parts d'un territoire font 100 % entre elles.",
+            "Each source's share of electricity produced, in percent. A territory's shares add up to 100%.",
+          ),
+          x: tx("act5.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act5.key.mix_c",
+            "Une couleur par filière, stable d'une vue à l'autre : la teinte suit la source d'énergie, jamais son rang.",
+            "One colour per source, stable across views: the hue follows the energy source, never its rank.",
+          ),
+          note: tx("act5.key.mix_note", SOURCE_MIX_FR, SOURCE_MIX_EN),
+          swatch: "none",
+        }
+      : {
+          y: tx(
+            "act5.key.renew_y",
+            "Part des énergies renouvelables dans la consommation finale d'énergie, en pourcentage. Toute l'énergie consommée entre dans le dénominateur, pas seulement l'électricité.",
+            "Renewable share of final energy consumption, in percent. All consumed energy is in the denominator, not only electricity.",
+          ),
+          x: tx("act5.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act5.key.renew_c",
+            "Une seule teinte, du plus faible au plus élevé. Ici c'est le BAS de l'échelle qui alerte.",
+            "A single hue, lowest to highest. Here it is the BOTTOM of the scale that warns.",
+          ),
+          note: tx("act5.key.renew_note", SOURCE_RENEW_FR, SOURCE_RENEW_EN),
+          swatch: "magnitude",
+        };
+
   const charts =
     status === "ready" && currentYear != null
       ? [
+          // ---------- Les visuels interactifs, en ouverture ----------------
+          // Deux dessins de la Home, un par famille de vues : la pile pour la
+          // part renouvelable, le camembert vivant pour le mix électrique. Le
+          // sélecteur décide lequel est à l'écran — `mix_` d'un côté, tout le
+          // reste de l'autre, exactement la règle déjà en place pour les vues.
+          // Ils restent montés sur la page d'accueil ; on les ajoute ici, on
+          // ne les déplace pas.
+          {
+            id: "cell",
+            empty: false,
+            tab: tx("act5.board.tab_pile", "Pile", "Cell"),
+            title: tx(
+              "act5.viz.cell_title",
+              "La part renouvelable, territoire par territoire",
+              "The renewable share, territory by territory",
+            ),
+            finding: tx(
+              "act5.viz.cell_find",
+              "Choisissez un territoire : la charge suit sa part d'énergies renouvelables.",
+              "Pick a territory: the charge follows its renewable share.",
+            ),
+            takeaway: tx(
+              "act5.viz.cell_take",
+              "La part porte sur toute l'énergie consommée, pas seulement l'électricité : le transport et la cuisson pèsent dans le dénominateur autant que la prise de courant.",
+              "The share covers all energy consumed, not just electricity: transport and cooking weigh in the denominator as much as the wall socket does.",
+            ),
+            hint: tx(
+              "act5.hint.cell",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act5.key.cell_c",
+                "La charge monte avec la part renouvelable du territoire choisi.",
+                "The charge rises with the chosen territory's renewable share.",
+              ),
+              note: tx("act5.key.renew_note", SOURCE_RENEW_FR, SOURCE_RENEW_EN),
+              // Le dessin encode par un NIVEAU de charge, pas par une teinte.
+              swatch: "none",
+            },
+            node: <EnergyCell embed />,
+          },
+          {
+            id: "mix_viz",
+            empty: false,
+            tab: tx("act5.board.tab_mix_viz", "Mix", "Mix"),
+            title: tx(
+              "act5.viz.mix_title",
+              "Le mix électrique, territoire par territoire",
+              "The electricity mix, territory by territory",
+            ),
+            finding: tx(
+              "act5.viz.mix_find",
+              "Choisissez un territoire : la répartition suit ses filières de production.",
+              "Pick a territory: the breakdown follows its generation sources.",
+            ),
+            takeaway: tx(
+              "act5.viz.mix_take",
+              "Ce sont des parts de l'électricité PRODUITE. Un territoire peut afficher un mix très renouvelable et rester massivement dépendant du pétrole pour ses transports.",
+              "These are shares of electricity PRODUCED. A territory can post a very renewable mix and still depend massively on oil for transport.",
+            ),
+            hint: tx(
+              "act5.hint.mix",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act5.key.mix_viz_c",
+                "Une couleur par filière, stable d'un territoire à l'autre : la teinte suit la source d'énergie, jamais sa part.",
+                "One colour per source, stable across territories: the hue follows the energy source, never its share.",
+              ),
+              note: tx("act5.key.mix_note", SOURCE_MIX_FR, SOURCE_MIX_EN),
+              swatch: "none",
+            },
+            node: <PowerMix embed />,
+          },
           {
             id: "trend",
             signature: true,
@@ -732,6 +842,12 @@ export default function Act5Momentum() {
             title: t("act5.ren_title"),
             finding: t("act5.board.trend_find"),
             takeaway: t("act5.board.trend_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act5b__scroll">
                 <AnomalyTrend
@@ -770,10 +886,16 @@ export default function Act5Momentum() {
           {
             id: "lines",
             empty: series.length === 0,
-            tab: t("act5.board.tab_lines"),
+            tab: tx("act5.board.tab_trajectoires", "Trajectoires", "Paths"),
             title: t("act5.board.lines_title"),
             finding: t("act5.board.lines_find"),
             takeaway: t("act5.board.lines_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <TrendChart
                 series={series}
@@ -786,10 +908,16 @@ export default function Act5Momentum() {
           {
             id: "rank",
             empty: race.length === 0,
-            tab: t("act5.board.tab_rank"),
+            tab: tx("act5.board.tab_classement", "Classement", "Ranking"),
             title: t("act5.board.rank_title"),
             finding: t("act5.board.rank_find"),
             takeaway: t("act5.board.rank_take"),
+            legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <BarRace
                 series={race}
@@ -807,10 +935,16 @@ export default function Act5Momentum() {
           {
             id: "map",
             empty: points.length === 0,
-            tab: t("act5.board.tab_map"),
+            tab: tx("act5.board.tab_carte", "Carte", "Map"),
             title: `${t("act5.map_title")} · ${currentYear}`,
             finding: t("act5.board.map_find"),
             takeaway: t("act5.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act5.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -826,7 +960,11 @@ export default function Act5Momentum() {
                     data={points}
                     unit={unit}
                     range={{ min: 0, max: overallMax }}
-                    ramp="good"
+                    // Une PART en pourcentage : une grandeur bornée, sans
+                    // zéro chargé de sens. La rampe « good » ne fait partie
+                    // d'aucun des trois encodages du système.
+                    ramp="magnitude"
+                    mid={null}
                     lowLabel={t("act5.map_low")}
                     highLabel={t("act5.map_high")}
                     noTokenMsg={t("act1.map_no_token")}
@@ -838,10 +976,16 @@ export default function Act5Momentum() {
           {
             id: "evo",
             empty: series.length === 0,
-            tab: t("act5.board.tab_evo"),
+            tab: tx("act5.board.tab_evolution", "Évolution", "Change"),
             title: t("act5.evo_title"),
             finding: t("act5.board.evo_find"),
             takeaway: t("act5.board.evo_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act5b__scroll">
                 <EvolutionPanel
@@ -859,10 +1003,16 @@ export default function Act5Momentum() {
             empty:
               !mixReady ||
               mixBandSeries.every((sx) => sx.data.every((v) => !v)),
-            tab: t("act5.board.tab_mix_band"),
+            tab: tx("act5.board.tab_mix_bande", "Bande", "Band"),
             title: t("act5.mix.band_title"),
             finding: t("act5.board.mix_band_find"),
             takeaway: t("act5.board.mix_band_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <PowerMixChart
                 series={mixBandSeries}
@@ -874,10 +1024,16 @@ export default function Act5Momentum() {
           {
             id: "mix_detail",
             empty: !mixReady || mixDetailSeries.length === 0,
-            tab: t("act5.board.tab_mix_detail"),
+            tab: tx("act5.board.tab_mix_detail_1", "Détail", "Detail"),
             title: t("act5.mix.detail_title"),
             finding: t("act5.board.mix_detail_find"),
             takeaway: t("act5.board.mix_detail_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <StackedColsChart
                 series={mixDetailSeries}
@@ -889,10 +1045,16 @@ export default function Act5Momentum() {
           {
             id: "mix_compo",
             empty: !mixReady || mixCompo.categories.length === 0,
-            tab: t("act5.board.tab_mix_compo"),
+            tab: tx("act5.board.tab_mix_compo_1", "Composition", "Mix"),
             title: `${t("act5.mix.compo_title")} · ${compoYear ?? ""}`,
             finding: t("act5.board.mix_compo_find"),
             takeaway: t("act5.board.mix_compo_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div>
                 <div className="barrace__top">
@@ -928,19 +1090,49 @@ export default function Act5Momentum() {
           {
             id: "mix_tree",
             empty: !mixReady || mixTree.length === 0,
-            tab: t("act5.board.tab_mix_tree"),
+            tab: tx("act5.board.tab_mix_pave", "Pavage", "Treemap"),
             title: `${t("act5.mix.tree_title")} · ${mixYear ?? ""}`,
             finding: t("act5.board.mix_tree_find"),
             takeaway: t("act5.board.mix_tree_take"),
+            legend: {
+              y: tx(
+                "act5.key.part_y",
+                "La surface de chaque pavé porte la part de la filière.",
+                "Each tile's area carries that source's share.",
+              ),
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: <TreemapChart points={mixTree} unit={t("act5.mix.unit")} />,
           },
           {
             id: "mix_donut",
             empty: !mixReady,
-            tab: t("act5.board.tab_mix_donut"),
+            tab: tx("act5.board.tab_mix_anneau", "Anneau", "Donut"),
             title: `${t("act5.mix.donut_title")} · ${donutScope} · ${dYear ?? ""}`,
             finding: t("act5.board.mix_donut_find"),
             takeaway: t("act5.board.mix_donut_take"),
+            legend: {
+              y: tx(
+                "act5.key.part_y",
+                "La surface de chaque pavé porte la part de la filière.",
+                "Each tile's area carries that source's share.",
+              ),
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div>
                 <div className="act1viz__filters">
@@ -984,10 +1176,16 @@ export default function Act5Momentum() {
           {
             id: "mix_leader",
             empty: !mixReady || mixSourceLeader.length === 0,
-            tab: t("act5.board.tab_mix_leader"),
+            tab: tx("act5.board.tab_mix_tete", "Tête", "Leaders"),
             title: `${t("act5.mix.leader_title")} · ${mixYear ?? ""}`,
             finding: t("act5.board.mix_leader_find"),
             takeaway: t("act5.board.mix_leader_take"),
+            legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <SourceLeaderChart
                 points={mixSourceLeader}
@@ -998,19 +1196,31 @@ export default function Act5Momentum() {
           {
             id: "mix_funnel",
             empty: !mixReady || mixFunnel.length === 0,
-            tab: t("act5.board.tab_mix_funnel"),
+            tab: tx("act5.board.tab_mix_entonnoir", "Entonnoir", "Funnel"),
             title: `${t("act5.mix.funnel_title")} · ${mixYear ?? ""}`,
             finding: t("act5.board.mix_funnel_find"),
             takeaway: t("act5.board.mix_funnel_take"),
+            legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: <FunnelChart points={mixFunnel} unit={t("act5.mix.unit")} />,
           },
           {
             id: "mix_share_evo",
             empty: !mixReady || mixShareEvo.years.length === 0,
-            tab: t("act5.board.tab_mix_share_evo"),
+            tab: tx("act5.board.tab_mix_parts", "Parts", "Shares"),
             title: t("act5.mix.share_evo_title"),
             finding: t("act5.board.mix_share_evo_find"),
             takeaway: t("act5.board.mix_share_evo_take"),
+            legend: key,
+            hint: tx(
+              "act5.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <ShareAreaChart
                 series={mixShareEvo.series}
@@ -1053,10 +1263,13 @@ export default function Act5Momentum() {
       eyebrow={t("home.acts.a5_tag")}
       title={t("home.acts.a5_title")}
       thesis={t("act5.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={visibleCharts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 10, total: 12 }}
       labels={{
@@ -1073,7 +1286,6 @@ export default function Act5Momentum() {
         conclusion: t("act5.board.conclusion"),
         backIntro: t("act5.board.back_intro"),
         reviseData: t("act5.board.revise_data"),
-        viewGroup: t("act5.board.group_view"),
       }}
       outro={{
         kicker: t("act5.outro.kicker"),

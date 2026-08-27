@@ -1,0 +1,148 @@
+/* src/styles/_embedded-visuals.scss
+   ============================================================
+   MODE EMBARQUÉ DES VISUELS DE LA HOME
+   ------------------------------------------------------------
+   Les quinze visuels interactifs de la page d'accueil (le thermomètre,
+   la pluie, la pousse, le récif, la maison sur pilotis…) acceptent tous
+   une prop `embed` depuis l'origine, et tous posent bien une classe
+   `<bloc>--embed` sur leur racine. Douze d'entre eux n'avaient AUCUNE
+   règle en face de cette classe.
+
+   Conséquence, visible dès qu'on en embarquait un dans une escale : le
+   composant gardait son gabarit de SECTION DE PAGE — 6 rem de rembourrage
+   vertical, son propre fond, son filet de séparation, son en-tête
+   éditorial (titre + chapô). Dans un panneau de dashboard cet en-tête fait
+   doublon avec le titre de la vue, et le rembourrage vole au visuel la
+   hauteur qu'on venait justement de lui donner.
+
+   Plutôt que douze blocs quasi identiques dans douze feuilles, la remise à
+   zéro est écrite UNE fois et projetée sur les préfixes. Tous ces
+   composants partagent la même ossature BEM (`__inner`, `__head`,
+   `__lead`, `__source`) : c'est ce qui rend la boucle possible.
+
+   NE SONT PAS DANS LA LISTE : `sea` et `smoke`, dont le bloc embarqué est
+   déjà écrit dans leur propre feuille — ils y règlent en plus leur
+   grammaire de couleur, qui est propre à leur escale.
+   ============================================================ */
+
+$embedded-visuals:
+  "sky",       // SkyRain          → escale « ciel »
+  "plant",     // PlantGrowth      → escale « agriculture »
+  "cattle",    // CattleThrive     → escale « agriculture »
+  "forest",    // ForestCover      → escale « agriculture »
+  "reef",      // BiodiversityReef → escale « vivant »
+  "stilt",     // StiltHouse       → escale « territoire »
+  "pop",       // PopGrowth        → escale « territoire »
+  "coast",     // CoastlineShift   → escale « territoire »
+  "waterglass",// WaterGlass       → escale « santé »
+  "bac",       // TbBacilli        → escale « santé »
+  "crowd",     // CrowdAffected    → escale « impact »
+  "loss",      // LossStack        → escale « impact »
+  "energycell",// EnergyCell       → escale « momentum »
+  "power",     // PowerMix         → escale « momentum »
+  "beach";     // TourismBeach     → escale « économie »
+
+@each $b in $embedded-visuals {
+  .#{$b}--embed {
+    /* Le panneau porte déjà le fond, le cadre et l'espacement. */
+    padding: 0;
+    border: none;
+    border-bottom: none;
+    background: none;
+
+    /* Le visuel occupe la hauteur que l'escale lui donne, comme un
+       graphique — c'est ce qui rend les hauteurs de tracé égales d'une vue
+       à l'autre. */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    /* Le conteneur intermédiaire doit RELAYER la hauteur, sinon la chaîne
+       se coupe ici : la racine fait bien la hauteur du panneau, mais la
+       scène reste dimensionnée par son contenu (mesuré : 218 px de scène
+       dans 799 px de panneau). */
+    .#{$b}__inner {
+      width: 100%;
+      max-width: none;
+      padding-inline: 0;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* Certains visuels portent, en plus du dessin, une barre de sélection
+         et une rangée de pastilles par territoire (le verre d'eau, le
+         bacille). Sur la Home la page défile ; dans un panneau de hauteur
+         fixe, la rangée du bas passait sous le bord. On laisse donc le
+         contenu défiler à l'intérieur du panneau plutôt que de le rogner :
+         rien ne devient inatteignable. */
+      overflow: auto;
+    }
+
+    /* En-tête éditorial : doublon du titre de vue porté par la colonne
+       de lecture. */
+    .#{$b}__head {
+      display: none;
+    }
+
+    /* LE VISUEL PREND LA HAUTEUR DU PANNEAU.
+       Sur la Home, le dessin est dimensionné par sa largeur (`width: 100%;
+       height: auto`) : la page défile, la hauteur est libre. Dans une escale
+       elle ne l'est pas — le panneau a une hauteur fixe, la même pour toutes
+       les vues, et un dessin réglé sur la largeur y laissait un grand vide.
+       Mesuré sur l'escale « ciel » : 233 px de dessin dans 708 px de panneau.
+
+       On inverse donc la contrainte en mode embarqué : la scène occupe ce qui
+       reste de hauteur, et le SVG s'y ajuste par sa hauteur, la largeur
+       suivant son rapport d'aspect. */
+    .#{$b}__stage {
+      flex: 1 1 auto;
+      min-height: 0;
+      /* La rangée occupe TOUTE la hauteur de la scène. Sans cette ligne, la
+         hauteur de rangée reste dictée par le contenu : le `height: 100 %`
+         du dessin se résout alors contre une hauteur qu'il détermine
+         lui-même, et le dessin s'effondre (mesuré : 118 px). */
+      grid-template-rows: minmax(0, 1fr);
+
+      /* Sur la Home, la scène partage sa largeur en trois : commandes,
+         dessin, lecture chiffrée — le dessin au milieu en `auto`, donc à sa
+         taille intrinsèque. Embarqué, c'est le dessin le sujet : il prend
+         ce qui reste, les deux colonnes latérales gardent leur largeur
+         naturelle. Sans cela le dessin restait bridé à sa largeur d'origine
+         et ne profitait pas de la hauteur qu'on venait de lui donner. */
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    /* La figure qui porte le dessin s'étire sur la rangée — les colonnes
+       latérales (sélecteur, lecture chiffrée) restent centrées comme sur la
+       Home, c'est leur `align-items: center` d'origine. */
+    .#{$b}__viz {
+      align-self: stretch;
+      min-height: 0;
+      /* Chaque visuel plafonne sa figure sur la Home (`max-width: 420px`
+         pour l'averse, etc.) : une largeur de confort dans une page qui
+         défile. Dans un panneau, ce plafond est justement ce qui laissait
+         le dessin petit au milieu du vide. Le rapport d'aspect du viewBox
+         continue de le brider — il ne peut pas dépasser la hauteur. */
+      max-width: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* `stretch` et non `center` : centré, le dessin se réduit à sa largeur
+         intrinsèque et ignore la place qu'on vient de lui faire (mesuré :
+         420 px de dessin dans une figure de 700). */
+      align-items: stretch;
+    }
+
+    /* Aucun de ces quinze dessins ne surcharge `preserveAspectRatio` : à
+       hauteur ET largeur imposées, le contenu du viewBox se met donc à
+       l'échelle sans déformation et se centre tout seul. */
+    .#{$b}__svg {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+  }
+}

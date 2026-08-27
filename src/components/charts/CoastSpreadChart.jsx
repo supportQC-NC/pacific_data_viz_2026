@@ -39,7 +39,7 @@ export default function CoastSpreadChart({ rows = [], unit = "m/an" }) {
         labels: {
           rotate: -45,
           rotateAlways: true,
-          style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "11px" },
+          style: { colors: tk.textSoft, fontFamily: "Figtree", fontSize: "11px" },
         },
       }),
       yaxis: baseYaxis(tk, {

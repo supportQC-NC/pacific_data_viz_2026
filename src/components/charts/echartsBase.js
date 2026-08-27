@@ -5,8 +5,8 @@
 // à la charte (tokens du thème). Évite la duplication entre charts.
 // ============================================================
 
-export const MONO = "IBM Plex Mono";
-export const SANS = "Hanken Grotesk";
+export const MONO = "DM Mono";
+export const SANS = "Figtree";
 
 export const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : "—");
 
@@ -89,12 +89,13 @@ export const rampFor = (kind, tk) => {
 // Relevée de 11 à 12,5 px et passée en encre `textSoft` : à 11 px en
 // `textMute`, la légende s'effaçait avant la donnée sur la surface sombre.
 // Voir la note équivalente dans apexBase.js.
-export const AXIS_FS = 12.5;
+export const AXIS_FS = 13.5;
 
 // Style d'axe commun (lignes discrètes en pointillé).
 export const axisStyle = (tk) => ({
   axisLine: { lineStyle: { color: tk.line } },
-  axisLabel: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
+  // Encre pleine : la graduation EST la mesure (cf. apexBase).
+  axisLabel: { color: tk.text, fontFamily: MONO, fontSize: AXIS_FS },
   splitLine: { lineStyle: { color: tk.line, type: "dashed", opacity: 0.55 } },
   nameTextStyle: { color: tk.textSoft, fontSize: AXIS_FS },
 });

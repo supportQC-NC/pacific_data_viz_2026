@@ -1,0 +1,220 @@
+// src/components/ChartKey/ChartKey.scss
+// ============================================================
+// Colonne « comment lire ». Tokens uniquement → suit le thème.
+// Le parent décide OÙ elle se place ; ce fichier ne décrit que son intérieur.
+//
+// PARTI PRIS : une colonne ÉDITORIALE, pas un panneau technique.
+//
+// La première version empilait des micro-titres en capitales monospace et du
+// texte gris : lisible, mais elle ramenait exactement le ton « terminal »
+// qu'on venait de chasser du reste de l'escale. Or c'est la seule zone de
+// l'écran qui parle au lecteur avec des phrases — c'est elle, plus que le
+// tracé, qui donne le ton du produit.
+//
+// Trois décisions :
+//   • les intitulés passent en Newsreader, la police éditoriale des titres :
+//     « Comment lire » se lit comme une intention, pas comme un en-tête de
+//     tableau ;
+//   • la phrase à retenir devient une vraie exergue — c'est le message, il a
+//     le droit d'être le plus gros texte de la colonne ;
+//   • le monospace ne reste QUE sur la source, où il a du sens : c'est une
+//     référence, pas une phrase.
+//
+// La place existe : la colonne n'était remplie qu'à 16–30 % avant qu'on y
+// remonte le texte. On l'utilise pour respirer, pas pour en écrire plus.
+// ============================================================
+
+// En dessous de 1180 px, la colonne volerait au graphique la largeur qu'elle
+// prétend rentabiliser. Elle disparaît, et son contenu reste intégralement
+// accessible par le « + » qui ouvre la fiche de lecture.
+.chartkey {
+  display: none;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+  height: 100%;
+  padding: var(--sp-3) 0 var(--sp-2) var(--sp-8);
+  border-left: var(--border-hair) solid var(--c-line);
+}
+
+.chartkey__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+// Intitulé éditorial. Pas de capitales, pas de monospace : on nomme une
+// intention (« Comment lire »), on n'étiquette pas une colonne.
+.chartkey__head {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: var(--fw-med);
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.2;
+  color: var(--c-text-soft);
+}
+
+.chartkey__row {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-3);
+}
+
+// Le glyphe d'axe devient une petite pastille : il sert de puce et donne un
+// rythme à la colonne, sans peser plus que le texte qu'il introduit.
+.chartkey__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--r-pill);
+  border: var(--border-hair) solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1;
+  color: var(--c-text-mute);
+}
+
+.chartkey__txt {
+  padding-top: 2px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+// Pastille de la rampe divergente : elle MONTRE l'échelle. Peinte en
+// var(--c-div-*), donc identique à ce que le graphique affiche, et
+// automatiquement juste en thème clair comme en sombre.
+.chartkey__swatch {
+  justify-self: center;
+  width: 0.85rem;
+  height: 3rem;
+  margin-top: 2px;
+  border-radius: var(--r-pill);
+}
+
+/* POLARITÉ — deux pôles autour d'un centre neutre : le zéro a un sens. */
+.chartkey__swatch--polarity {
+  background: linear-gradient(
+    to top,
+    var(--c-div-1),
+    var(--c-div-5) 50%,
+    var(--c-div-9)
+  );
+}
+
+/* GRANDEUR — une seule teinte, du plus faible au plus fort. Les jetons `seq`
+   sont définis par thème : sur le fond sombre, la valeur haute est la teinte
+   CLAIRE ; sur le fond clair, la foncée. Dans les deux cas la saillance suit
+   la valeur, et la pastille se lit de bas (faible) en haut (fort). */
+.chartkey__swatch--magnitude {
+  background: linear-gradient(
+    to top,
+    var(--c-seq-100),
+    var(--c-seq-500) 50%,
+    var(--c-seq-900)
+  );
+}
+
+/* AUCUNE ÉCHELLE DE COULEUR — les visuels figuratifs (la plante, le récif,
+   l'averse) encodent par une hauteur, une densité, un remplissage : leurs
+   teintes sont représentatives, pas quantitatives. Afficher un dégradé à
+   côté d'eux ferait croire à une échelle qui n'existe pas. */
+.chartkey__swatch--none {
+  background: none;
+  border: 1px solid var(--c-line);
+  height: 1.6rem;
+}
+
+/* ORIENTÉ — même teinte, mais le foncé vaut « exposé ». */
+.chartkey__swatch--stress {
+  background: linear-gradient(to top, var(--c-ord-1), var(--c-ord-6));
+}
+
+/* ---------- L'exergue ----------
+   C'est le message de la vue. Seul élément accentué de la colonne : s'il y
+   en avait deux, il n'y en aurait aucun. Guillemet ouvrant en filigrane,
+   comme dans un article — il signale « ceci se lit », pas « ceci s'utilise ». */
+.chartkey__block--take {
+  position: relative;
+  padding-top: var(--sp-5);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+
+.chartkey__block--take .chartkey__head {
+  color: var(--c-div-9);
+}
+
+.chartkey__take {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: var(--fw-reg);
+  line-height: 1.45;
+  color: var(--c-text);
+}
+
+.chartkey__take::before {
+  content: "“";
+  position: absolute;
+  top: -1.1rem;
+  left: -0.85rem;
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  line-height: 1;
+  color: var(--c-div-9);
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.chartkey__hint {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--c-text-soft);
+}
+
+// La provenance tombe en bas de colonne : c'est une mention, pas une étape
+// de lecture. Monospace assumé — c'est une référence, pas une phrase.
+// `margin-top: auto` occupe la hauteur restante au lieu de laisser un blanc
+// au milieu.
+.chartkey__note {
+  margin-top: auto;
+  padding-top: var(--sp-4);
+  border-top: var(--border-hair) solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--c-text-mute);
+}
+
+@media (min-width: 1180px) {
+  .chartkey {
+    display: flex;
+  }
+}
+
+/* ---------- Le titre de la vue, en tête de colonne ----------
+   Police éditoriale et taille de titre : c'est le premier mot de la lecture,
+   il ne doit pas ressembler à une étiquette de légende. */
+.chartkey__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-4);
+  border-bottom: var(--border-hair) solid var(--c-line);
+}
+
+.chartkey__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 1.35vw, 1.45rem);
+  font-weight: var(--fw-semi);
+  line-height: 1.2;
+  color: var(--c-text);
+}

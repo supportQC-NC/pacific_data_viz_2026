@@ -22,8 +22,8 @@ import * as echarts from "echarts";
 import { paletteOf } from "../charts/echartsBase";
 import "./BarRace.scss";
 
-const MONO = "IBM Plex Mono";
-const SANS = "Hanken Grotesk";
+const MONO = "DM Mono";
+const SANS = "Figtree";
 
 function targetHeight(el) {
   const inDeck = el && el.closest && el.closest(".act1viz__chart");

@@ -66,7 +66,22 @@ export default function EChartLive({
       names.forEach((name, i) => {
         if (alive(chart)) chart.off(name, handlers[i]);
       });
-      if (alive(chart)) chart.dispose();
+      // `clear()` AVANT `dispose()`. ECharts programme ses propres frames
+      // d'animation ; si l'instance est détruite alors qu'un tracé est
+      // encore en file, son moteur de rendu déréférence un layerStack déjà
+      // nul et lève « Cannot read properties of null (reading 'layerStack') ».
+      // Le cas se produit quand on change d'onglet pendant l'animation
+      // d'entrée — et il est systématique en développement, où React monte,
+      // démonte puis remonte chaque effet. `clear()` vide les composants et
+      // arrête les animations en cours, ce qui rend la destruction sûre.
+      if (alive(chart)) {
+        try {
+          chart.clear();
+        } catch (err) {
+          /* noop */
+        }
+        chart.dispose();
+      }
       chartRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -83,7 +83,7 @@ export default function ChangeChart({
         labels: {
           style: {
             colors: tk.textSoft,
-            fontFamily: "Hanken Grotesk",
+            fontFamily: "Figtree",
             fontSize: "12px",
           },
         },

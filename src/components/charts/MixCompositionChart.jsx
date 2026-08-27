@@ -34,7 +34,7 @@ export default function MixCompositionChart({ series = [], categories = [], unit
         },
       }),
       yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "12px" } },
+        labels: { style: { colors: tk.textSoft, fontFamily: "Figtree", fontSize: "12px" } },
       }),
       tooltip: baseTooltip({
         shared: true,

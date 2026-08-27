@@ -132,6 +132,22 @@ export default function DumbbellChart({
   // EN HAUT, ce qu'attend un lecteur d'un classement.
   sort = "asc",
   barHeight = "55%",
+  // `fill` : occuper toute la hauteur du conteneur au lieu de la calculer
+  // depuis le nombre de lignes.
+  //
+  // Par défaut le composant impose une hauteur explicite (lignes × rowHeight
+  // + marges) : indispensable quand il y a plus de lignes que de place, pour
+  // qu'aucune ne soit coupée. Mais dans un panneau plein écran l'effet
+  // s'inverse — 21 territoires réclamaient 558 px dans un conteneur de
+  // 747 px, soit 189 px de vide sous le graphique, alors que les autres vues
+  // de l'escale occupaient toute la hauteur. Le passage d'un onglet à
+  // l'autre faisait sauter la zone de tracé.
+  //
+  // En mode `fill`, on ne pose PAS de hauteur : le wrapper ApexChart mesure
+  // le conteneur et les lignes se répartissent dessus. À réserver aux cas où
+  // le nombre de lignes tient confortablement (ici 21 lignes sur ~750 px,
+  // soit 35 px chacune — plus lisible que les 22 px imposés).
+  fill = false,
 }) {
   const tk = useThemeTokens();
 
@@ -165,7 +181,11 @@ export default function DumbbellChart({
     };
 
     return {
-      chart: { ...baseChart(tk, { type: "rangeBar" }), height },
+      // Sans `height`, `hasExplicitHeight()` renvoie false côté wrapper et
+      // celui-ci dimensionne le graphique sur le conteneur réel.
+      chart: fill
+        ? baseChart(tk, { type: "rangeBar" })
+        : { ...baseChart(tk, { type: "rangeBar" }), height },
       // Sens du dégradé. Sur un `rangeBar` horizontal, Apex applique
       // `gradientToColors` à GAUCHE et `colors` à DROITE — l'inverse de ce
       // qu'on lit dans l'API. Sans inversion, le trajet partait de la
@@ -209,12 +229,12 @@ export default function DumbbellChart({
         type: "numeric",
         title: { text: unit, style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: "12.5px" } },
         labels: {
-          style: { colors: tk.textSoft, fontFamily: MONO, fontSize: "12.5px" },
+          style: { colors: tk.text, fontFamily: MONO, fontSize: "13.5px" },
           formatter: (v) => fmtD(v),
         },
       }),
       yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: SANS, fontSize: "12.5px" } },
+        labels: { style: { colors: tk.text, fontFamily: SANS, fontSize: "13.5px" } },
       }),
       tooltip: baseTooltip({
         custom: ({ dataPointIndex }) => {
@@ -243,6 +263,7 @@ export default function DumbbellChart({
     rowHeight,
     sort,
     barHeight,
+    fill,
     startColor,
     endColor,
     refX,

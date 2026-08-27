@@ -21,6 +21,16 @@ export default function RiverChart({
   years = [],
   colors,
   compactLegend = false,
+  // EMPILEMENT — vrai par défaut, pour ne rien changer aux appelants
+  // existants. À passer à `false` dès que les séries ne s'additionnent pas.
+  //
+  // Empiler suppose que la somme des séries a un sens : additionner des
+  // effectifs, des GWh, des arrivées, oui. Additionner des grandeurs PAR
+  // HABITANT, non — la somme des t CO₂e/hab de Fidji et des Tonga ne
+  // correspond à rien, et l'axe finit par afficher des dizaines de tonnes
+  // pour une région dont la médiane est inférieure à 1. Le graphique
+  // devient alors faux, pas seulement discutable.
+  stack = true,
 }) {
   const tk = useThemeTokens();
   const [hidden, setHidden] = useState({});
@@ -46,7 +56,7 @@ export default function RiverChart({
     }));
 
     return {
-      chart: baseChart(tk, { type: "area", stacked: true }),
+      chart: baseChart(tk, { type: "area", stacked: stack }),
       colors: palette,
       stroke: { curve: "smooth", width: 1 },
       fill: {
@@ -72,7 +82,7 @@ export default function RiverChart({
         labels: {
           style: {
             colors: tk.textMute,
-            fontFamily: "IBM Plex Mono",
+            fontFamily: "DM Mono",
             fontSize: "11px",
           },
           formatter: (v) => fmt(Number(v), 1),
@@ -103,12 +113,12 @@ export default function RiverChart({
                 </div>`,
             )
             .join("");
-          return `<div style="padding:10px 12px;background:${tk.bg2};border:1px solid ${tk.line};border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:210px;max-height:340px;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.45);">
+          return `<div style="padding:10px 12px;background:${tk.bg2};border:1px solid ${tk.line};border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;min-width:210px;max-height:340px;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.45);">
             <div style="color:${tk.textMute};margin-bottom:6px;letter-spacing:0.08em;">${year}</div>${items}</div>`;
         },
       },
     };
-  }, [subAvg, years, palette, hidden, tk]);
+  }, [subAvg, years, palette, hidden, tk, stack]);
 
   return (
     <div className="riverchart">

@@ -7,6 +7,14 @@
 //   • compact : version inline légère (barres en marée) pour les fallbacks
 //     de sous-composants (carte, etc.), sans couvrir la page.
 //
+//   • inline (défaut / compact) : LA PIROGUE, en filigrane. C'est l'attente
+//     des graphiques, celle qu'on croise le plus souvent dans le voyage.
+//     Un balayage de barres et trois points clignotants disaient « système
+//     occupé » — un vocabulaire d'application, étranger au récit. La pirogue
+//     dit la même chose (ça avance) dans la langue du produit, et en
+//     filigrane elle n'attire pas l'œil : elle occupe la place que la donnée
+//     va prendre, sans prétendre être la donnée.
+//
 // Accessible (role=status, aria-live, aria-busy). Respecte
 // prefers-reduced-motion. Aucun style inline en JSX.
 // ============================================================
@@ -14,9 +22,8 @@
 import React from "react";
 import { useLang } from "../../store/context/langContext";
 import BinaryRain from "../BinaryRain/BinaryRain";
+import Vaa from "../Vaa/Vaa";
 import "./Loader.scss";
-
-const BARS = [0, 1, 2, 3, 4, 5, 6];
 
 export default function Loader({ label, fullscreen = false, compact = false, minimal = false }) {
   const { t } = useLang();
@@ -33,6 +40,11 @@ export default function Loader({ label, fullscreen = false, compact = false, min
         aria-busy="true"
         aria-label={text}
       >
+        {/* Même signe que l'attente des graphiques : le voyage ne change pas
+            de vocabulaire selon ce qu'on attend. */}
+        <span className="loader-overlay__vaa" aria-hidden="true">
+          <Vaa withWake />
+        </span>
         <span className="loader-overlay__minimal-label">{text}</span>
       </div>
     );
@@ -67,20 +79,10 @@ export default function Loader({ label, fullscreen = false, compact = false, min
       aria-live="polite"
       aria-busy="true"
     >
-      <div className="loader__viz" aria-hidden="true">
-        <span className="loader__scan" />
-        <div className="loader__bars">
-          {BARS.map((i) => (
-            <span key={i} className="loader__bar" />
-          ))}
-        </div>
-      </div>
-      <span className="loader__label">{text}</span>
-      <span className="loader__dots" aria-hidden="true">
-        <span />
-        <span />
-        <span />
+      <span className="loader__vaa" aria-hidden="true">
+        <Vaa withWake />
       </span>
+      <span className="loader__label">{text}</span>
     </div>
   );
 }

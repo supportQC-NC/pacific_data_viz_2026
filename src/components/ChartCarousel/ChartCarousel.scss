@@ -111,19 +111,43 @@
 }
 
 // --- Fondu du graphe à chaque changement (appliqué via key={index}) ---
+// Transition entre vues : OPACITÉ SEULE, aucune transformation.
+//
+// Le glissement de 8 px coûtait très cher pour ce qu'il apportait : pendant
+// toute la durée de l'animation — et, selon le mode de remplissage, après —
+// le panneau porte une transformation. Or un élément transformé devient le
+// référentiel de ses descendants en `position: fixed`. Tout plein écran
+// ouvert depuis un graphique (le globe et son bouton natif, une future
+// scène immersive) s'ancrait donc sur le panneau au lieu de la fenêtre, et
+// laissait la barre d'escale visible par-dessus.
+//
+// Supprimer la transformation supprime la classe entière de bugs, pour
+// toutes les escales et pour tout ce qu'on ajoutera plus tard. Le fondu
+// seul se remarque à peine.
 @keyframes chcarFade {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
+// `backwards` et NON `both`.
+//
+// Avec `both`, l'élément conserve après coup la valeur animée — ici
+// `transform: none` traduit en matrice IDENTITÉ. Or une transformation, même
+// neutre, fait de l'élément le référentiel des descendants en
+// `position: fixed`. Conséquence mesurée : la carte ouverte en plein écran
+// s'ancrait sur le panneau du graphique au lieu de la fenêtre, et laissait
+// la barre d'escale et le titre visibles au-dessus d'elle.
+//
+// `backwards` applique l'état de départ avant l'animation et rend l'élément
+// à son état naturel ensuite — donc `transform` réellement absent. L'état
+// d'arrivée du keyframe étant identique à l'état naturel (opacité 1,
+// aucune transformation), le rendu final ne change pas.
 .chcar-fade {
-  animation: chcarFade 0.38s var(--ease-out) both;
+  animation: chcarFade 0.38s var(--ease-out) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

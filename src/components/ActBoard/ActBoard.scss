@@ -1165,7 +1165,7 @@
     min-width: 0;
   }
 
-  .board__bar .chcar {
+  .escbar__views .chcar {
     flex: 0 1 auto;
     min-width: 0;
     // Marge basse de 20 px héritée du carrousel : dans une barre d'outils
@@ -1182,12 +1182,12 @@
      Les onglets se dimensionnent maintenant sur leur texte et restent
      groupés à gauche ; la largeur libérée va aux filtres, et surtout le
      regard n'a plus qu'un seul endroit à parcourir. */
-  .board__bar .chcar__track {
+  .escbar__views .chcar__track {
     justify-content: flex-start;
     gap: var(--sp-1);
   }
 
-  .board__bar .chcar__item {
+  .escbar__views .chcar__item {
     flex: 0 0 auto;
     padding: var(--sp-2) var(--sp-3);
     font-size: var(--fs-sm);
@@ -1201,12 +1201,12 @@
      couleur de plus, mais par sa PLACE et par un petit repère : il ouvre la
      rangée, et un filet le sépare des vues suivantes. Le regard comprend
      alors « celle-ci d'abord, puis les autres » sans qu'on le lui écrive. */
-  .board__bar .chcar__track {
+  .escbar__views .chcar__track {
     counter-reset: viz;
     align-items: stretch;
   }
 
-  .board__bar .chcar__item::before {
+  .escbar__views .chcar__item::before {
     content: counter(viz, decimal-leading-zero);
     margin-right: var(--sp-2);
     font-family: var(--font-mono);
@@ -1215,23 +1215,16 @@
     transition: color var(--t-fast) var(--ease-out);
   }
 
-  .board__bar .chcar__item.is-active::before {
+  .escbar__views .chcar__item.is-active::before {
     color: var(--c-text-soft);
   }
 
-  /* Le graphe signature ouvre la rangée : son numéro cède la place à
-     l'étoile, et un filet marque la césure avec « et aussi… ». */
-  .board__bar .chcar__item.is-signature::before {
-    content: none;
-  }
-
-  .board__bar .chcar__item.is-signature {
-    margin-right: var(--sp-4);
-    padding-right: var(--sp-4);
-    border-right: var(--border-hair) solid var(--c-line);
-  }
-
-  .board__bar .chcar__item.is-signature .chcar__star {
+  /* Le graphe signature n'ouvre plus forcément la rangée : une escale peut
+     commencer par une vue immersive. La numérotation reste donc SÉQUENTIELLE
+     sur toutes les vues — c'est elle qui donne le sens de lecture — et
+     l'étoile devient un marqueur supplémentaire, posé là où se trouve le
+     graphique qui porte le message. */
+  .escbar__views .chcar__item.is-signature .chcar__star {
     color: var(--c-text);
   }
 
@@ -1248,8 +1241,8 @@
      soulignement — trois signaux non chromatiques, qui ne peuvent entrer en
      collision avec aucune échelle de valeurs. Bonus d'accessibilité : l'état
      actif ne repose plus sur la seule teinte. */
-  .board__bar .chcar__indicator,
-  .board__bar .chcar__indicator.is-signature {
+  .escbar__views .chcar__indicator,
+  .escbar__views .chcar__indicator.is-signature {
     top: auto;
     bottom: 0;
     height: 2px;
@@ -1258,21 +1251,21 @@
     box-shadow: none;
   }
 
-  .board__bar .chcar__item {
+  .escbar__views .chcar__item {
     border-radius: var(--r-sm) var(--r-sm) 0 0;
   }
 
-  .board__bar .chcar__item.is-active {
+  .escbar__views .chcar__item.is-active {
     color: var(--c-text);
     background: color-mix(in srgb, var(--c-surface) 72%, transparent);
   }
 
-  .board__bar .chcar__item.is-active .chcar__star,
-  .board__bar .chcar__star {
+  .escbar__views .chcar__item.is-active .chcar__star,
+  .escbar__views .chcar__star {
     color: var(--c-text-mute);
   }
 
-  .board__bar .chcar__item.is-active .chcar__star {
+  .escbar__views .chcar__item.is-active .chcar__star {
     color: var(--c-text);
   }
 
@@ -1295,14 +1288,14 @@
   /* Filtre en MENU DÉROULANT (composant ChartFilter). Quatre cartes-boutons
      mangeaient toute la largeur restante de la barre et écrasaient les
      onglets à quelques pixels. */
-  .board__bar-filters .chfilter {
+  .escbar__views .board__bar-filters .chfilter {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
     white-space: nowrap;
   }
 
-  .board__bar-filters .chfilter__select {
+  .escbar__views .board__bar-filters .chfilter__select {
     min-width: 11rem;
   }
 
@@ -1451,7 +1444,7 @@
      l'autre. */
   .board__head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: baseline;
     column-gap: var(--sp-5);
     row-gap: var(--sp-1);
@@ -1513,50 +1506,6 @@
     color: var(--c-div-9);
   }
 
-  /* Les autres : repliés. Ce sont des consignes de lecture, pas le message
-     du graphique — les afficher tous ajouterait du texte partout. */
-  .board__take--fold {
-    padding-left: var(--sp-1);
-  }
-
-  .board__take-sum {
-    cursor: pointer;
-    list-style: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-2);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    color: var(--c-text-mute);
-    transition: color var(--t-fast) var(--ease-out);
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    &::before {
-      content: "+";
-      font-size: 0.9rem;
-      line-height: 1;
-    }
-
-    &:hover,
-    &:focus-visible {
-      color: var(--c-text-soft);
-    }
-  }
-
-  .board__take--fold[open] .board__take-sum::before {
-    content: "\2013";
-  }
-
-  .board__take--fold .board__take-text {
-    display: block;
-    padding-top: var(--sp-2);
-    max-width: 92ch;
-  }
 }
 
 /* ---------- FOCUS · largeurs intermédiaires ----------
@@ -1571,11 +1520,11 @@
     row-gap: var(--sp-2);
   }
 
-  .board--focus .board__bar .chcar {
+  .board--focus .escbar__views .chcar {
     flex: 1 1 100%;
   }
 
-  .board--focus .board__bar-filters {
+  .board--focus .escbar__views .board__bar-filters {
     flex: 1 1 auto;
     padding-left: 0;
     border-left: none;
@@ -1610,7 +1559,7 @@
       gap: var(--sp-2);
     }
 
-    .board__bar .chcar {
+    .escbar__views .chcar {
       flex: 1 1 100%;
     }
 
@@ -1621,8 +1570,8 @@
       min-width: 0;
     }
 
-    .board__bar-filters .chfilter,
-    .board__bar-filters .chfilter__selwrap {
+    .escbar__views .board__bar-filters .chfilter,
+    .escbar__views .board__bar-filters .chfilter__selwrap {
       width: 100%;
     }
 
@@ -1797,10 +1746,6 @@
   .board__chart {
     min-width: 0;
   }
-
-  .board__key {
-    display: none;
-  }
 }
 
 /* La colonne de lecture n'apparaît que s'il y a vraiment de la place :
@@ -1812,60 +1757,14 @@
     align-items: stretch;
   }
 
-  .board--focus .board__key {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-4);
-    align-self: center;
-    padding: var(--sp-5);
-    border-left: var(--border-hair) solid var(--c-line);
-  }
 
-  .board--focus .board__key-row {
-    display: grid;
-    grid-template-columns: 1.1rem minmax(0, 1fr);
-    align-items: start;
-    gap: var(--sp-3);
-  }
 
   /* Le glyphe d'axe : discret, il sert de puce, pas de décoration. */
-  .board--focus .board__key-axis {
-    font-family: var(--font-mono);
-    font-size: 0.95rem;
-    line-height: 1.35;
-    color: var(--c-text-mute);
-  }
 
-  .board--focus .board__key-txt {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--c-text-soft);
-  }
 
   /* Pastille de la rampe divergente : elle montre l'échelle au lieu de la
      décrire. Les deux pôles et le neutre, dans l'ordre de lecture. */
-  .board--focus .board__key-swatch {
-    width: 1rem;
-    height: 2.6rem;
-    margin-top: 2px;
-    border-radius: var(--r-pill);
-    background: linear-gradient(
-      to top,
-      var(--c-div-1),
-      var(--c-div-5) 50%,
-      var(--c-div-9)
-    );
-  }
 
-  .board--focus .board__key-note {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    line-height: 1.55;
-    color: var(--c-text-mute);
-    padding-top: var(--sp-3);
-    border-top: var(--border-hair) solid var(--c-line);
-  }
 }
 
 /* ============================================================
@@ -1971,4 +1870,350 @@
     grid-template-columns: minmax(0, 1fr) clamp(240px, 20vw, 320px);
     max-width: 1560px;
   }
+}
+
+/* ============================================================
+   FOCUS · LE « + » ET SA FICHE DE LECTURE
+   ------------------------------------------------------------
+   Remplace le dépliant « Comment lire ce graphique » qui vivait sous le
+   tracé. Replié, il n'apprenait rien ; déplié, il repoussait le graphique
+   hors de l'écran — la pire des deux situations à chaque instant.
+
+   Un « + » posé au bout de la ligne de titre, à l'endroit exact où l'œil
+   arrive après avoir lu le titre et le résumé. Il ouvre une fiche qui dit
+   tout d'un coup : ce qu'il faut retenir, ce que portent les deux axes, ce
+   que dit la couleur, comment manipuler, d'où vient le chiffre. Sur écran
+   étroit c'est le SEUL endroit où cette information existe (la colonne de
+   lecture latérale disparaît en dessous de 1180 px).
+   ============================================================ */
+
+.board--focus .board__more {
+  align-self: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--c-text);
+    border-color: var(--c-line-strong);
+    transform: rotate(90deg);
+  }
+}
+
+.board__read {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+
+.board__read-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--c-bg) 72%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+.board__read-panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 84vh;
+  overflow-y: auto;
+  padding: var(--sp-6);
+  background: var(--c-surface);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.board__read-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.board__read-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.board__read-title {
+  margin-top: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  line-height: 1.15;
+  color: var(--c-text);
+}
+
+.board__read-close {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-mute);
+  font-size: 1.1rem;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--c-text);
+    border-color: var(--c-line-strong);
+  }
+}
+
+/* Ce qu'il faut retenir : mis en avant, c'est la raison d'ouvrir la fiche. */
+.board__read-take {
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-5);
+  background: color-mix(in srgb, var(--c-bg-2) 70%, transparent);
+  border-left: 3px solid var(--c-div-9);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--c-text);
+}
+
+.board__read-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.board__read-row {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: baseline;
+
+  dt {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--c-text-mute);
+  }
+
+  dd {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--c-text-soft);
+  }
+}
+
+.board__read-note {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: var(--border-hair) solid var(--c-line);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 640px) {
+  .board__read {
+    padding: var(--sp-3);
+    align-items: flex-end;
+  }
+
+  .board__read-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-1);
+  }
+}
+
+
+/* ============================================================
+   FOCUS · PROFITER DE LA LARGEUR DISPONIBLE
+   ------------------------------------------------------------
+   Mesuré à 1604 px de viewport : `.container` plafonnait à 1440 px et
+   ajoutait 64 px de marge de chaque côté — 292 px de vide pendant que la
+   colonne de lecture était comprimée. Sur un dashboard lu sur ordinateur,
+   cette largeur perdue, c'est de l'information en moins.
+
+   `.board__work` gardait par ailleurs sa grille « rail 280 px + contenu »
+   alors que le rail n'est plus rendu en mode focus : la première piste
+   restait réservée, et vide.
+   ============================================================ */
+
+.board--focus .container {
+  max-width: min(2100px, 97vw);
+  padding-inline: var(--sp-6);
+}
+
+/* La grille « rail 280 px + contenu » n'a plus lieu d'être (le rail n'est
+   pas rendu en focus), mais il faut conserver la CHAÎNE FLEX qui permet au
+   graphique de prendre la hauteur restante : en `display: block`, la
+   colonne principale retombait sur la hauteur de son contenu et laissait
+   la moitié basse de l'écran vide. */
+.board--focus .board__work {
+  display: flex;
+  flex-direction: column;
+}
+
+.board--focus .board__main {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.board--focus .board__plot {
+  max-width: none;
+}
+
+@media (min-width: 1180px) {
+  .board--focus .board__plot {
+    /* La colonne de lecture grandit avec l'écran au lieu de rester figée. */
+    grid-template-columns: minmax(0, 1fr) clamp(230px, 19vw, 380px);
+    gap: var(--sp-6);
+  }
+}
+
+/* ============================================================
+   FOCUS · HAUTEUR DE TRACÉ CONSTANTE D'UNE VUE À L'AUTRE
+   ------------------------------------------------------------
+   Mesuré : la zone de tracé valait 747 px sur toutes les vues sauf la
+   DERNIÈRE, où elle tombait à 691 px. Le coupable n'est pas le graphique
+   mais le bouton « Lire la conclusion », rendu uniquement sur la dernière
+   vue et qui consommait une rangée du flux (48 px + gouttière).
+
+   Résultat : en parcourant les onglets, le graphique changeait de taille au
+   dernier — un saut visible qui donne l'impression que cette vue « ne prend
+   pas toute la hauteur ». Le bouton reste indispensable (c'est le seul
+   chemin vers la conclusion rédigée de l'escale), on le sort donc du flux :
+   ancré en bas à droite du panneau, au-dessus du tracé, dans une zone que
+   les graphiques laissent vide.
+   ============================================================ */
+
+.board--focus .board__main {
+  position: relative;
+}
+
+/* Le bouton de conclusion est sorti du flux pour que les hauteurs de tracé
+   restent égales d'une vue à l'autre. Il se pose donc PAR-DESSUS le bas de la
+   colonne de lecture, où la note de source est épinglée : sur l'escale
+   « ciel », la licence OSCAR passait littéralement sous le bouton. On réserve
+   la hauteur du bouton en pied de colonne. */
+.board--focus .chartkey {
+  padding-bottom: 3.25rem;
+}
+
+.board--focus .board__toconclude {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  margin: 0;
+  pointer-events: none;
+
+  /* Seul le bouton reste cliquable : son conteneur ne doit pas intercepter
+     le survol du graphique qui passe dessous. */
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.board--focus .board__conclude {
+  background: color-mix(in srgb, var(--c-surface) 82%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* Sous 1180 px la colonne de lecture disparaît et la place se fait rare :
+   le bouton reprend sa position dans le flux, où il ne gêne personne. */
+@media (max-width: 1179px) {
+  .board--focus .board__toconclude {
+    position: static;
+    pointer-events: auto;
+  }
+}
+
+/* ---------- FOCUS · la carte remplit son panneau ----------
+   `.omap__map` porte une hauteur fixe de 520 px, juste pour les pages qui
+   l'intègrent dans un flux de texte. Dans un panneau d'escale haut de 750 px,
+   cela laissait 230 px vides sous le globe — le même défaut que celui qu'on
+   vient de corriger sur l'haltère et sur la vue de fin.
+
+   On ne touche pas au composant : la règle est scopée au board, les pages
+   qui l'utilisent autrement gardent leur gabarit. */
+.board--focus .board__chart .omap {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.board--focus .board__chart .omap__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.board--focus .board__chart .omap__map {
+  height: 100%;
+}
+
+/* ---------- FOCUS · pas de doublon avec la colonne de lecture ----------
+   Au-dessus de 1180 px, la colonne « comment lire » porte déjà la phrase de
+   lecture et la consigne d'exploration. Les garder AUSSI en bandeau sous le
+   tracé et derrière la pastille de survol, c'est dire trois fois la même
+   chose et reprendre au graphique la hauteur qu'on vient de lui rendre.
+
+   En dessous, la colonne disparaît : le bandeau et la pastille reprennent
+   leur rôle, et la fiche « + » reste le recours complet. */
+@media (min-width: 1180px) {
+  .board--focus .board__take,
+  .board--focus .charthint {
+    display: none;
+  }
+}
+
+/* ---------- FOCUS · la tête du graphique disparaît au profit de la colonne
+   Au-dessus de 1180 px, la colonne de lecture porte le titre de la vue. Le
+   garder AUSSI en bande pleine largeur au-dessus du tracé, avec sa phrase de
+   résumé, c'était deux lignes de texte à traverser avant la donnée — et
+   autant de hauteur en moins pour elle.
+
+   En dessous, la colonne n'est pas rendue : la tête reprend son rôle. */
+@media (min-width: 1180px) {
+  .board--focus .board__head {
+    display: none;
+  }
+}
+
+/* La phrase de résumé, reléguée dans la fiche « + ». */
+.board__read-find {
+  margin-bottom: var(--sp-4);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--c-text-soft);
 }

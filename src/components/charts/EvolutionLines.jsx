@@ -132,7 +132,7 @@ export default function EvolutionLines({
         labels: {
           style: {
             colors: tk.textMute,
-            fontFamily: "IBM Plex Mono",
+            fontFamily: "DM Mono",
             fontSize: "11px",
           },
           formatter: yFmt,
@@ -154,7 +154,7 @@ export default function EvolutionLines({
                     style: {
                       background: "transparent",
                       color: tk.textMute,
-                      fontFamily: "IBM Plex Mono",
+                      fontFamily: "DM Mono",
                       fontSize: "10px",
                     },
                   },
@@ -194,7 +194,7 @@ export default function EvolutionLines({
               </div>`;
             })
             .join("");
-          return `<div style="padding:10px 12px;background:${tk.bg2};border:1px solid ${tk.line};border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:230px;max-height:340px;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.45);">
+          return `<div style="padding:10px 12px;background:${tk.bg2};border:1px solid ${tk.line};border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;min-width:230px;max-height:340px;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.45);">
             <div style="color:${tk.textMute};margin-bottom:6px;letter-spacing:0.08em;">${year}</div>${items}</div>`;
         },
       },

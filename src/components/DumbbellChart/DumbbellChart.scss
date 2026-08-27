@@ -16,7 +16,7 @@
   &__legend {
     display: flex;
     gap: var(--sp-4, 1rem);
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-xs, 0.6875rem);
     color: var(--c-text-dim, rgba(255, 255, 255, 0.6));
   }
@@ -53,14 +53,14 @@
   }
 
   &__vals {
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-sm, 0.8125rem);
     color: var(--c-text, #fff);
     white-space: nowrap; text-align: right;
   }
   &__unit { color: var(--c-text-dim, rgba(255,255,255,0.55)); font-size: var(--fs-xs, 0.6875rem); }
 
-  &__foot { font-family: var(--font-mono, "IBM Plex Mono", monospace); font-size: var(--fs-xs, 0.6875rem); margin: 0; }
+  &__foot { font-family: var(--font-mono, "DM Mono", monospace); font-size: var(--fs-xs, 0.6875rem); margin: 0; }
   &__foot-up { color: var(--c-accent, #46d3e6); }
   &__foot-down { color: var(--c-warm, #ff7a59); }
 
@@ -70,12 +70,12 @@
     border-radius: var(--r-pill, 999px);
     background: var(--c-surface, rgba(255,255,255,0.04));
     color: var(--c-text, #fff);
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-xs, 0.6875rem);
     cursor: pointer;
   }
   &__select-lbl {
-    font-family: var(--font-mono, "IBM Plex Mono", monospace);
+    font-family: var(--font-mono, "DM Mono", monospace);
     font-size: var(--fs-xs, 0.6875rem);
     letter-spacing: 0.06em;
     text-transform: uppercase;

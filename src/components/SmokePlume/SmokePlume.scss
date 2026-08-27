@@ -354,3 +354,36 @@
     justify-content: center;
   }
 }
+
+/* ============================================================
+   MODE EMBARQUÉ (`.smoke--embed`)
+   ------------------------------------------------------------
+   La classe était posée par le JSX depuis l'origine sans aucun style :
+   embarqué hors de la Home, le composant gardait son gabarit de section de
+   page — 6 rem de rembourrage, son propre fond, son filet, son en-tête
+   éditorial. Dans un panneau d'escale, tout cela fait doublon avec le titre
+   de la vue et écrase le visuel.
+
+   Ici on ne garde que le visuel. Le titre, la source et la clé de lecture
+   sont déjà portés par l'escale.
+   ============================================================ */
+
+.smoke--embed {
+  padding: 0;
+  border-bottom: none;
+  background: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .smoke__inner {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .smoke__head {
+    display: none;
+  }
+}

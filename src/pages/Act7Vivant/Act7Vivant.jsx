@@ -21,15 +21,30 @@ import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import CoverageChart from "../../components/charts/CoverageChart";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import BarRace from "../../components/BarRace/BarRace";
+// Le visuel de la Home qui porte l'indicateur de cette escale. Il reste
+// monté sur la page d'accueil : on l'ajoute ici, on ne le déplace pas.
+import BiodiversityReef from "../../components/BiodiversityReef/BiodiversityReef";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act7Vivant.scss";
+
+// Les deux indicateurs de l'escale sont de NATURES différentes — le premier
+// estime, le second dénombre — et chacun se lit contre sa propre référence.
+// La source est donc écrite par indicateur, jamais mutualisée.
+const SOURCE_RL_FR =
+  "Indice Liste Rouge de l'UICN, indicateur ODD 15.5.1, via le Pacific Data Hub. C'est une ESTIMATION agrégée sur les groupes évalués, pas un décompte d'espèces.";
+const SOURCE_RL_EN =
+  "IUCN Red List Index, SDG indicator 15.5.1, via the Pacific Data Hub. It is an aggregate ESTIMATE over assessed groups, not a species count.";
+const SOURCE_FISH_FR =
+  "FAOLEX / FAO, via le Pacific Data Hub — décompte CUMULATIF des mesures de gestion des pêches en vigueur. Un total qui monte dit une activité réglementaire, pas un état du stock.";
+const SOURCE_FISH_EN =
+  "FAOLEX / FAO, via the Pacific Data Hub - CUMULATIVE count of fisheries-management measures in force. A rising total shows regulatory activity, not stock health.";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
 
@@ -44,14 +59,6 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v, decimals) =>
-  !Number.isFinite(v)
-    ? "—"
-    : decimals === 0
-      ? String(Math.round(v))
-      : Math.abs(v) < 10
-        ? String(Math.round(v * 100) / 100).replace(".", ",")
-        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -128,6 +135,16 @@ function raceFrom(series, years, lang) {
 
 export default function Act7Vivant() {
   const { t, lang } = useLang();
+
+  // Repli littéral quand la clé n'est pas encore versée dans les dictionnaires
+  // (`t()` renvoie le chemin pointé, qui ne doit jamais atteindre l'écran).
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
@@ -252,6 +269,41 @@ export default function Act7Vivant() {
         B: fishB,
       };
 
+  // Ce que portent les axes et la couleur CHANGE avec l'indicateur : une
+  // estimation bornée 0-1 d'un côté, un cumul de textes réglementaires de
+  // l'autre. Une clé écrite pour l'escale entière mentirait sur l'un des deux.
+  const key = isRl
+    ? {
+        y: tx(
+          "act7.key.rl_y",
+          "Indice Liste Rouge, de 0 à 1. 1 signifie qu'aucune espèce évaluée n'est menacée ; plus l'indice descend, plus le risque d'extinction est élevé.",
+          "Red List Index, from 0 to 1. 1 means no assessed species is threatened; the lower it goes, the higher the extinction risk.",
+        ),
+        x: tx("act7.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act7.key.rl_c",
+          "Une seule teinte, du plus faible au plus élevé. Ici c'est le BAS de l'échelle qui alerte : un indice élevé est une bonne nouvelle.",
+          "A single hue, lowest to highest. Here it is the BOTTOM of the scale that warns: a high index is good news.",
+        ),
+        note: tx("act7.key.rl_note", SOURCE_RL_FR, SOURCE_RL_EN),
+        swatch: "magnitude",
+      }
+    : {
+        y: tx(
+          "act7.key.fish_y",
+          "Nombre de mesures de gestion des pêches en vigueur, en cumul. La courbe ne peut que monter ou rester plate : rien ne se retranche.",
+          "Number of fisheries-management measures in force, cumulative. The line can only rise or stay flat: nothing is ever subtracted.",
+        ),
+        x: tx("act7.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act7.key.fish_c",
+          "Une seule teinte : plus elle est marquée, plus le territoire a adopté de mesures. C'est une grandeur, sans jugement de valeur.",
+          "A single hue: the stronger it is, the more measures the territory has adopted. A magnitude, with no value judgement.",
+        ),
+        note: tx("act7.key.fish_note", SOURCE_FISH_FR, SOURCE_FISH_EN),
+        swatch: "magnitude",
+      };
+
   const titles = isRl
     ? {
         trend: t("act7.regional_rl_title"),
@@ -275,35 +327,9 @@ export default function Act7Vivant() {
       : { min: 0, max: 1 };
   }, [M.series]);
 
-  const kpiItems = useMemo(() => {
-    if (!M.rank.length) return [];
-    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    return [
-      {
-        key: "med",
-        value: fmtVal(M.med, metricDecimals),
-        unit: M.unit,
-        label: t("act7.board.kpi_med"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmtVal(high.value, metricDecimals),
-        unit: high.name,
-        label: t("act7.board.kpi_high"),
-        tone: "positive",
-      },
-      {
-        key: "low",
-        value: fmtVal(low.value, metricDecimals),
-        unit: low.name,
-        label: t("act7.board.kpi_low"),
-        tone: "negative",
-      },
-    ];
-  }, [M.rank, M.med, M.unit, metricDecimals, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
@@ -348,26 +374,29 @@ export default function Act7Vivant() {
         ? "loading"
         : "empty";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act7.board.metric_label")}
-        items={metricItems}
         value={metric}
         onChange={setMetric}
-        iconOnly
-        hideSpark
+        options={asOptions(metricItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={(k) => {
-          setRegion(k);
-          setCountry("all");
-        }}
-        dense
-        hideSpark
+        setRegion(k);
+        setCountry("all");
+      }}
+        options={asOptions(regionItems)}
       />
     </>
   );
@@ -390,6 +419,51 @@ export default function Act7Vivant() {
   const charts =
     status === "ready"
       ? [
+          // ---------- Le visuel interactif, en ouverture -------------------
+          // `BiodiversityReef` — le récif de la Home, en SVG et interactif
+          // (sélecteur de territoire, coraux qui blanchissent). C'est le seul
+          // visuel de la Home qui porte l'indicateur de cette escale. Il reste
+          // monté sur la page d'accueil ; on l'ajoute ici, on ne le déplace pas.
+          //
+          // Il ouvre l'escale parce qu'un indice entre 0 et 1 ne dit rien à
+          // qui ne l'a jamais manipulé : le récif lui donne une forme avant
+          // que les courbes ne le mettent en série.
+          {
+            id: "reef",
+            empty: false,
+            tab: tx("act7.board.tab_recif", "Récif", "Reef"),
+            title: tx(
+              "act7.viz.reef_title",
+              "Le vivant, territoire par territoire",
+              "Life, territory by territory",
+            ),
+            finding: tx(
+              "act7.viz.reef_find",
+              "Choisissez un territoire : le récif suit son indice Liste Rouge.",
+              "Pick a territory: the reef follows its Red List Index.",
+            ),
+            takeaway: tx(
+              "act7.viz.reef_take",
+              "L'indice Liste Rouge est une estimation, pas un décompte d'espèces. Le récif ne prétend pas montrer un lieu réel : il donne une échelle à un nombre qui n'en a pas d'évidente.",
+              "The Red List Index is an estimate, not a species count. The reef does not claim to show a real place: it gives a scale to a number that has no obvious one.",
+            ),
+            hint: tx(
+              "act7.hint.reef",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act7.key.reef_c",
+                "Le récif se garnit quand l'indice approche de 1 — aucune espèce évaluée menacée — et se vide quand il descend.",
+                "The reef fills out as the index nears 1 - no assessed species threatened - and empties as it falls.",
+              ),
+              note: tx("act7.key.rl_note", SOURCE_RL_FR, SOURCE_RL_EN),
+              // Le récif encode par un REMPLISSAGE, pas par une teinte.
+              swatch: "none",
+            },
+            node: <BiodiversityReef embed />,
+          },
           {
             id: "trend",
             signature: true,
@@ -398,6 +472,12 @@ export default function Act7Vivant() {
             title: titles.trend,
             finding: t("act7.board.trend_find"),
             takeaway: t("act7.board.trend_take"),
+            legend: key,
+            hint: tx(
+              "act7.hint.trend",
+              "Survolez une courbe pour suivre un territoire année par année.",
+              "Hover a line to follow one territory year by year.",
+            ),
             node: (
               <div className="act7b__fit">
                 <TrendLines
@@ -434,10 +514,16 @@ export default function Act7Vivant() {
           {
             id: "multiples",
             empty: M.series.length === 0,
-            tab: t("act7.board.tab_multiples"),
+            tab: tx("act7.board.tab_multiples_1", "Multiples", "Multiples"),
             title: titles.multiples,
             finding: t("act7.board.multiples_find"),
             takeaway: t("act7.board.multiples_take"),
+            legend: key,
+            hint: tx(
+              "act7.hint.multiples",
+              "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
+              "Every panel shares one scale: they compare at a glance.",
+            ),
             node: (
               <div className="act7b__scroll">
                 <SmallMultiples
@@ -457,6 +543,16 @@ export default function Act7Vivant() {
             title: t("act7.board.race_title"),
             finding: t("act7.board.race_find"),
             takeaway: t("act7.board.race_take"),
+            legend: {
+              ...key,
+              y: tx("act7.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act7.hint.race",
+              "Lancez l'animation : les barres se réordonnent au fil des années.",
+              "Press play: the bars reorder themselves year after year.",
+            ),
             node: (
               <BarRace
                 series={M.race}
@@ -475,10 +571,25 @@ export default function Act7Vivant() {
           {
             id: "change",
             empty: M.dumb.length === 0,
-            tab: t("act7.board.tab_change"),
+            tab: tx("act7.board.tab_evolution", "Évolution", "Change"),
             title: `${titles.change} · ${M.A}–${M.B}`,
             finding: t("act7.board.change_find"),
             takeaway: t("act7.board.change_take"),
+            legend: {
+              ...key,
+              y: tx("act7.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+              color: tx(
+                "act7.key.dumb_c",
+                "Le point clair marque la première année, le point foncé la dernière : la barre entre les deux est le chemin parcouru.",
+                "The light dot marks the first year, the dark dot the last: the bar between them is the distance travelled.",
+              ),
+            },
+            hint: tx(
+              "act7.hint.change",
+              "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
+              "Compare bar lengths: they show how much changed, not the level reached.",
+            ),
             node: (
               <div className="act7b__scroll">
                 <DumbbellChart
@@ -495,10 +606,22 @@ export default function Act7Vivant() {
           {
             id: "heat",
             empty: M.series.length === 0,
-            tab: t("act7.board.tab_heat"),
+            tab: tx("act7.board.tab_matrice", "Matrice", "Matrix"),
             title: titles.heat,
             finding: t("act7.board.heat_find"),
             takeaway: t("act7.board.heat_take"),
+            legend: {
+              y: tx("act7.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.x,
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act7.hint.heat",
+              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
+              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
+            ),
             node: (
               <div className="act7b__scroll">
                 <ApexYearHeatmap
@@ -518,10 +641,16 @@ export default function Act7Vivant() {
           {
             id: "map",
             empty: M.rank.length === 0,
-            tab: t("act7.board.tab_map"),
+            tab: tx("act7.board.tab_carte", "Carte", "Map"),
             title: `${t("act7.board.map_title")} · ${M.B}`,
             finding: t("act7.board.map_find"),
             takeaway: t("act7.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act7.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -537,7 +666,13 @@ export default function Act7Vivant() {
                     data={M.rank}
                     unit={M.unit}
                     range={mapRange}
-                    ramp="good"
+                    // Les deux indicateurs de l'escale sont des GRANDEURS :
+                    // un indice borné 0-1 et un cumul de mesures. Ni l'un ni
+                    // l'autre n'a de zéro chargé de sens, donc pas de rampe à
+                    // deux pôles. La rampe « good » ne fait partie d'aucun
+                    // des trois encodages du système.
+                    ramp="magnitude"
+                    mid={null}
                     lowLabel={t("act6.heatmap_low")}
                     highLabel={t("act6.heatmap_high")}
                     noTokenMsg={t("act1.map_no_token")}
@@ -575,10 +710,13 @@ export default function Act7Vivant() {
       eyebrow={t("act7.tag")}
       title={t("act7.title")}
       thesis={t("act7.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 6, total: 12 }}
       labels={{
@@ -595,7 +733,6 @@ export default function Act7Vivant() {
         conclusion: t("act7.board.conclusion"),
         backIntro: t("act7.board.back_intro"),
         reviseData: t("act7.board.revise_data"),
-        viewGroup: t("act7.board.group_view"),
       }}
       outro={{
         kicker: t("act7.outro.kicker"),

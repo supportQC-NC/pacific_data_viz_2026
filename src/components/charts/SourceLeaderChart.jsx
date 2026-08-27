@@ -29,7 +29,7 @@ export default function SourceLeaderChart({ points = [], unit = "" }) {
           const p = points[opts.dataPointIndex];
           return p && p.topName ? `${p.topName} · ${p.topShare}%` : "";
         },
-        style: { fontFamily: "Hanken Grotesk", fontSize: "12px", fontWeight: 700, colors: ["#ffffff"] },
+        style: { fontFamily: "Figtree", fontSize: "12px", fontWeight: 700, colors: ["#ffffff"] },
         dropShadow: { enabled: true, top: 0, left: 0, blur: 3, color: "#000000", opacity: 0.6 },
       },
       series: [{ name: unit, data: points.map((p) => p.total) }],
@@ -38,7 +38,7 @@ export default function SourceLeaderChart({ points = [], unit = "" }) {
         labels: { formatter: (v) => fmt(v), style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" } },
       }),
       yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "12px" } },
+        labels: { style: { colors: tk.textSoft, fontFamily: "Figtree", fontSize: "12px" } },
       }),
       tooltip: baseTooltip({
         y: { formatter: (v, opts) => {

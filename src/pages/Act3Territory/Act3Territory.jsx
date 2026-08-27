@@ -27,7 +27,7 @@ import { useLang } from "../../store/context/langContext";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { pictName, isPict } from "../../i18n/pictNames";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
@@ -42,7 +42,16 @@ import SlopeChart from "../../components/charts/SlopeChart";
 import CoastSpreadChart from "../../components/charts/CoastSpreadChart";
 import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
-import { median, fmt } from "../../components/charts/echartsBase";
+import { fmt } from "../../components/charts/echartsBase";
+// Les visuels de la Home qui portent les deux jeux de cette escale :
+// StiltHouse lit `seaLevel`, PopGrowth lit `population` — exactement les jeux
+// du sélecteur. Ils restent montés sur la page d'accueil ; on les ajoute ici,
+// on ne les déplace pas.
+//
+// `CoastlineShift`, le troisième visuel de cette escale sur la Home, n'est PAS
+// repris : le trait de côte est explicitement laissé en l'état.
+import StiltHouse from "../../components/StiltHouse/StiltHouse";
+import PopGrowth from "../../components/PopGrowth/PopGrowth";
 import "./Act3Territory.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -64,7 +73,20 @@ const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
 // Rattachement de chaque vue à un jeu — "sea" (mer), "population", ou "both"
 // (vues croisées qui restent visibles dans les deux). Modifiable librement.
+// Deux jeux de natures différentes : une anomalie signée autour d'une
+// référence, et un taux de croissance. Chacun sa source, chacun sa lecture.
+const SOURCE_SEA_FR =
+  "Anomalie du niveau de la mer, via le Pacific Data Hub — en mètres, par rapport à la référence 1993-2012. Le zéro est cette référence, pas le niveau absolu de l'océan.";
+const SOURCE_SEA_EN =
+  "Sea-level anomaly, via the Pacific Data Hub - in metres, against the 1993-2012 reference. Zero is that reference, not the ocean's absolute level.";
+const SOURCE_POP_FR =
+  "Taux de croissance de la population, via le Pacific Data Hub — en pourcentage par an. Un taux, pas un effectif : un petit territoire peut afficher un fort taux pour peu d'habitants.";
+const SOURCE_POP_EN =
+  "Population growth rate, via the Pacific Data Hub - percent per year. A rate, not a head count: a small territory can post a high rate on few people.";
+
 const DATASET_OF = {
+  stilt: "sea",
+  popviz: "population",
   band: "sea",
   slope: "sea",
   profile: "sea",
@@ -150,6 +172,15 @@ function YearSlider({ label, years, index, onChange }) {
 
 export default function Act3Territory() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const dispatch = useDispatch();
   const tk = useThemeTokens();
 
@@ -218,10 +249,6 @@ export default function Act3Territory() {
         ? pointsAt(sea.data, currentSeaYear, lang, inRegion)
         : [],
     [sea.data, currentSeaYear, lang, inRegion],
-  );
-  const seaMedian = useMemo(
-    () => median(seaPoints.map((p) => p.value)) ?? 0,
-    [seaPoints],
   );
 
   // Dernières valeurs par territoire.
@@ -362,84 +389,9 @@ export default function Act3Territory() {
   const popUnit = t("act3.unit");
 
   // Chiffres-chocs : 3 sur la mer (exposition) + 1 sur le peuplement.
-  const kpiItems = useMemo(() => {
-    if (!ready || !seaPoints.length) return [];
-    const sorted = [...seaPoints].sort((a, b) => a.value - b.value);
-    const top = sorted[sorted.length - 1];
-    const medFirst = median(
-      pointsAt(sea.data, firstSeaYear, lang, inRegion).map((p) => p.value),
-    );
-    const medLast = median(
-      pointsAt(sea.data, lastSeaYear, lang, inRegion).map((p) => p.value),
-    );
-    const rise =
-      Number.isFinite(medFirst) && Number.isFinite(medLast)
-        ? medLast - medFirst
-        : null;
-    const popLatest = Object.values(popLatestByArea);
-    const popMed = popLatest.length ? median(popLatest) : null;
-    const items = [
-      {
-        key: "sea",
-        value: `${seaMedian > 0 ? "+" : ""}${fmt(seaMedian, 2)}`,
-        unit: seaUnit,
-        label: t("act3.board.kpi_sea_median"),
-        tone: "accent",
-      },
-      {
-        key: "top",
-        value: `${top.value > 0 ? "+" : ""}${fmt(top.value, 2)}`,
-        unit: top.name,
-        label: t("act3.board.kpi_most_exposed"),
-        tone: "warm",
-      },
-    ];
-    if (rise != null) {
-      items.push({
-        key: "rise",
-        value: `${rise > 0 ? "+" : ""}${fmt(rise, 2)}`,
-        unit: firstSeaYear
-          ? `${t("act3.board.kpi_since")} ${firstSeaYear}`
-          : seaUnit,
-        label: t("act3.board.kpi_sea_rise"),
-        tone: rise > 0 ? "warm" : "positive",
-      });
-    }
-    if (popMed != null) {
-      items.push({
-        key: "pop",
-        value: `${popMed > 0 ? "+" : ""}${fmt(popMed, 1)}`,
-        unit: popUnit,
-        label: t("act3.board.kpi_pop_growth"),
-        tone: popMed > 0 ? "warm" : "positive",
-      });
-    }
-    const retreatN = coastRows.filter((d) => d.bal < 0).length;
-    if (coastRows.length) {
-      items.push({
-        key: "coast",
-        value: `${retreatN}/${coastRows.length}`,
-        unit: t("act3.board.kpi_coast_unit"),
-        label: t("act3.board.kpi_coast_retreat"),
-        tone: "warm",
-      });
-    }
-    return items;
-  }, [
-    ready,
-    seaPoints,
-    seaMedian,
-    sea.data,
-    firstSeaYear,
-    lastSeaYear,
-    lang,
-    inRegion,
-    popLatestByArea,
-    coastRows,
-    seaUnit,
-    popUnit,
-    t,
-  ]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const mapRange = useMemo(() => {
     if (!seaPoints.length) return { min: -0.2, max: 0.2 };
@@ -489,23 +441,26 @@ export default function Act3Territory() {
   const noGrowth = growthRows.length === 0;
   const noPath = pathRows.length < 1;
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act3.board.dataset_label")}
-        items={datasetItems}
         value={dataset}
         onChange={setDataset}
-        iconOnly
-        hideSpark
+        options={asOptions(datasetItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={setRegion}
-        dense
-        hideSpark
+        options={asOptions(regionItems)}
       />
       <YearSlider
         label={t("act1.f.year")}
@@ -534,17 +489,140 @@ export default function Act3Territory() {
     t("act3.spotlight.n5"),
   ];
 
+  // Ce que portent les axes et la couleur change avec le jeu : une anomalie
+  // signée d'un côté, un taux de l'autre. Le premier a un zéro chargé de sens
+  // — la référence 1993-2012 — donc une rampe à deux pôles ; le second n'en a
+  // pas, donc une seule teinte.
+  const key =
+    dataset === "population"
+      ? {
+          y: tx(
+            "act3.key.pop_y",
+            "Taux de croissance de la population, en pourcentage par an. C'est un rythme, pas un nombre d'habitants.",
+            "Population growth rate, percent per year. A pace, not a head count.",
+          ),
+          x: tx("act3.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act3.key.mag_c",
+            "Une seule teinte : plus elle est marquée, plus la valeur est élevée.",
+            "A single hue: the stronger it is, the higher the value.",
+          ),
+          note: tx("act3.key.pop_note", SOURCE_POP_FR, SOURCE_POP_EN),
+          swatch: "magnitude",
+        }
+      : {
+          y: tx(
+            "act3.key.sea_y",
+            "Anomalie du niveau de la mer, en mètres par rapport à la référence 1993-2012. Zéro = ce niveau de référence.",
+            "Sea-level anomaly, in metres against the 1993-2012 reference. Zero = that reference level.",
+          ),
+          x: tx("act3.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act3.key.sea_c",
+            "Bleu : au-dessous de la référence. Ambre : au-dessus. Le gris central, c'est la référence elle-même.",
+            "Blue: below the reference. Amber: above. The grey centre is the reference itself.",
+          ),
+          note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+          swatch: "polarity",
+        };
+
   const charts =
     status === "ready" && currentSeaYear != null
       ? [
+          // ---------- Les visuels interactifs, en ouverture ----------------
+          // Deux dessins de la Home, un par jeu, lisant exactement le même
+          // jeu que le sélecteur : la maison sur pilotis pour le niveau de la
+          // mer, la silhouette pour la population. Le sélecteur décide lequel
+          // est à l'écran, comme pour toutes les autres vues de l'escale.
+          //
+          // Ils ouvrent parce qu'une anomalie en mètres et un taux en pourcent
+          // sont deux abstractions : le dessin leur donne une échelle avant
+          // que les courbes ne les mettent en série.
+          {
+            id: "stilt",
+            empty: false,
+            tab: tx("act3.board.tab_pilotis", "Pilotis", "Stilts"),
+            title: tx(
+              "act3.viz.stilt_title",
+              "La montée des eaux, territoire par territoire",
+              "Rising seas, territory by territory",
+            ),
+            finding: tx(
+              "act3.viz.stilt_find",
+              "Choisissez un territoire : l'eau monte le long des pilotis à la mesure de son anomalie.",
+              "Pick a territory: the water climbs the stilts to match its anomaly.",
+            ),
+            takeaway: tx(
+              "act3.viz.stilt_take",
+              "Quelques centimètres sur un graphique ne se ressentent pas. Contre un pilotis, si — et c'est la même donnée.",
+              "A few centimetres on a chart cannot be felt. Against a stilt they can - and it is the same data.",
+            ),
+            hint: tx(
+              "act3.hint.stilt",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act3.key.stilt_c",
+                "La hauteur d'eau suit le niveau d'exposition du territoire choisi, dérivé de son anomalie du niveau de la mer.",
+                "The water height follows the chosen territory's exposure level, derived from its sea-level anomaly.",
+              ),
+              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+              // Le dessin encode par une HAUTEUR d'eau, pas par une teinte.
+              swatch: "none",
+            },
+            node: <StiltHouse embed />,
+          },
+          {
+            id: "popviz",
+            empty: false,
+            tab: tx("act3.board.tab_peuplement", "Peuplement", "People"),
+            title: tx(
+              "act3.viz.pop_title",
+              "La croissance de la population, territoire par territoire",
+              "Population growth, territory by territory",
+            ),
+            finding: tx(
+              "act3.viz.pop_find",
+              "Choisissez un territoire : la silhouette suit son taux de croissance.",
+              "Pick a territory: the figure follows its growth rate.",
+            ),
+            takeaway: tx(
+              "act3.viz.pop_take",
+              "Un taux élevé sur un petit territoire, c'est peu de personnes ; un taux faible sur un grand, c'est beaucoup. Le pourcentage ne dit pas le nombre.",
+              "A high rate on a small territory means few people; a low rate on a large one means many. The percentage does not tell you the count.",
+            ),
+            hint: tx(
+              "act3.hint.pop",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act3.key.pop_viz_c",
+                "La silhouette grandit avec le taux de croissance du territoire choisi.",
+                "The figure grows with the chosen territory's growth rate.",
+              ),
+              note: tx("act3.key.pop_note", SOURCE_POP_FR, SOURCE_POP_EN),
+              swatch: "none",
+            },
+            node: <PopGrowth embed />,
+          },
           {
             id: "band",
             signature: true,
             empty: noSeaSeries,
-            tab: t("act3.board.tab_band"),
+            tab: tx("act3.board.tab_montee", "Montée", "Rise"),
             title: t("act3.viz.band_title"),
             finding: t("act3.board.band_find"),
             takeaway: t("act3.board.band_take"),
+            legend: key,
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <AnomalyBandChart
                 series={seaSeries}
@@ -578,10 +656,24 @@ export default function Act3Territory() {
           {
             id: "slope",
             empty: slopeRows.length < 2,
-            tab: t("act3.board.tab_slope"),
+            tab: tx("act3.board.tab_rythme", "Rythme", "Pace"),
             title: t("act3.viz.slope_title"),
             finding: t("act3.board.slope_find"),
             takeaway: t("act3.board.slope_take"),
+            legend: {
+              ...key,
+              y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act3.key.slope_x",
+                "La pente de l'anomalie, en millimètres par an : le rythme de la montée, pas le niveau atteint.",
+                "The anomaly's slope, in millimetres per year: the pace of the rise, not the level reached.",
+              ),
+            },
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <SlopeChart
                 rows={slopeRows}
@@ -596,10 +688,20 @@ export default function Act3Territory() {
           {
             id: "profile",
             empty: noProfile,
-            tab: t("act3.board.tab_profile"),
+            tab: tx("act3.board.tab_exposition", "Exposition", "Exposure"),
             title: t("act3.viz.profile_title"),
             finding: t("act3.board.profile_find"),
             takeaway: t("act3.board.profile_take"),
+            legend: {
+              ...key,
+              y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <MirrorBars
                 rows={profileRows}
@@ -613,10 +715,16 @@ export default function Act3Territory() {
           {
             id: "growth",
             empty: noGrowth,
-            tab: t("act3.board.tab_pop"),
+            tab: tx("act3.board.tab_croissance", "Croissance", "Growth"),
             title: t("act3.viz.pop_title"),
             finding: t("act3.board.pop_find"),
             takeaway: t("act3.board.pop_take"),
+            legend: key,
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <ChangeChart
                 rows={growthRows}
@@ -629,10 +737,16 @@ export default function Act3Territory() {
           {
             id: "map",
             empty: noSeaPts,
-            tab: t("act3.board.tab_map"),
+            tab: tx("act3.board.tab_carte", "Carte", "Map"),
             title: `${t("act3.viz.map_title")} · ${currentSeaYear}`,
             finding: t("act3.board.map_find"),
             takeaway: t("act3.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act3.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -648,7 +762,14 @@ export default function Act3Territory() {
                     data={seaPoints}
                     unit={seaUnit}
                     range={mapRange}
-                    ramp="semantic"
+                    // L'anomalie a un ZÉRO CHARGÉ DE SENS — la référence
+                    // 1993-2012 — donc une rampe à deux pôles autour de lui.
+                    // La rampe « semantic » qu'elle employait est un
+                    // vert ↔ rouge, que la doctrine du projet écarte : les
+                    // deux pôles y sont la même couleur pour environ 8 % des
+                    // hommes, alors que ce sont justement les extrêmes qui
+                    // portent le propos.
+                    ramp="polarity"
                     mid={0}
                     lowLabel={t("act3.map_low")}
                     midLabel={t("act3.map_mid")}
@@ -718,10 +839,30 @@ export default function Act3Territory() {
           {
             id: "coastbal",
             empty: coastRows.length === 0,
-            tab: t("act3.board.tab_coastbal"),
+            tab: tx("act3.board.tab_bilan", "Bilan", "Balance"),
             title: t("act3.viz.coastbal_title"),
             finding: t("act3.board.coastbal_find"),
             takeaway: t("act3.board.coastbal_take"),
+            legend: {
+              y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act3.key.coastbal_x",
+                "Le bilan du trait de côte : ce qui s'est retiré d'un côté, ce qui s'est accumulé de l'autre.",
+                "The coastline balance: what receded on one side, what accreted on the other.",
+              ),
+              color: tx(
+                "act3.key.coastbal_c",
+                "Deux pôles autour de zéro : le retrait d'un côté, l'accumulation de l'autre. Zéro = un trait stable.",
+                "Two poles around zero: retreat on one side, accretion on the other. Zero = a stable coastline.",
+              ),
+              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+              swatch: "polarity",
+            },
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <CoastBalanceChart
                 rows={coastRows}
@@ -766,10 +907,24 @@ export default function Act3Territory() {
           {
             id: "spread",
             empty: spreadRows.length === 0,
-            tab: t("act3.board.tab_spread"),
+            tab: tx("act3.board.tab_dispersion", "Dispersion", "Spread"),
             title: t("act3.viz.spread_title"),
             finding: t("act3.board.spread_find"),
             takeaway: t("act3.board.spread_take"),
+            legend: {
+              ...key,
+              y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act3.key.spread_x",
+                "La dispersion des valeurs d'une année à l'autre : plus la barre est large, plus le signal est irrégulier.",
+                "How values scatter from year to year: the wider the bar, the noisier the signal.",
+              ),
+            },
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <CoastSpreadChart
                 rows={spreadRows}
@@ -780,10 +935,34 @@ export default function Act3Territory() {
           {
             id: "bubble",
             empty: bubbleGroups.every((g) => !g.points.length),
-            tab: t("act3.board.tab_bubble"),
+            tab: tx("act3.board.tab_pression", "Pression", "Pressure"),
             title: t("act3.viz.bubble_title"),
             finding: t("act3.board.bubble_find"),
             takeaway: t("act3.board.bubble_take"),
+            legend: {
+              y: tx(
+                "act3.key.bubble_y",
+                "La croissance de la population, en pourcentage par an.",
+                "Population growth, percent per year.",
+              ),
+              x: tx(
+                "act3.key.bubble_x",
+                "L'anomalie du niveau de la mer, en mètres.",
+                "Sea-level anomaly, in metres.",
+              ),
+              color: tx(
+                "act3.key.bubble_c",
+                "Croiser les deux LOCALISE les endroits où l'adaptation presse. Cela ne démontre aucune cause : ce sont deux mesures indépendantes posées sur le même territoire.",
+                "Crossing the two LOCATES where adaptation is urgent. It proves no cause: these are two independent measures laid over the same territory.",
+              ),
+              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <BubbleChart
                 groups={bubbleGroups}
@@ -797,10 +976,16 @@ export default function Act3Territory() {
           {
             id: "path",
             empty: noPath,
-            tab: t("act3.board.tab_path"),
+            tab: tx("act3.board.tab_trajectoire", "Trajectoire", "Path"),
             title: t("act3.viz.path_title"),
             finding: t("act3.board.path_find"),
             takeaway: t("act3.board.path_take"),
+            legend: key,
+            hint: tx(
+              "act3.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <DumbbellChart
                 rows={pathRows}
@@ -845,10 +1030,13 @@ export default function Act3Territory() {
       eyebrow={t("home.acts.a3_tag")}
       title={t("home.acts.a3_title")}
       thesis={t("act3.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={visibleCharts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       initialTab="coast"
       progress={{ index: 7, total: 12 }}
@@ -866,7 +1054,6 @@ export default function Act3Territory() {
         conclusion: t("act3.board.conclusion"),
         backIntro: t("act3.board.back_intro"),
         reviseData: t("act3.board.revise_data"),
-        viewGroup: t("act3.board.group_view"),
       }}
       outro={{
         kicker: t("act3.outro.kicker"),

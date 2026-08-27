@@ -55,18 +55,18 @@ export default function DualAxisChart({
       yaxis: [
         baseYaxis(tk, {
           seriesName: seaName,
-          title: { text: seaUnit, style: { color: tk.accent, fontFamily: "IBM Plex Mono", fontWeight: 400, fontSize: "11px" } },
+          title: { text: seaUnit, style: { color: tk.accent, fontFamily: "DM Mono", fontWeight: 400, fontSize: "11px" } },
           labels: {
-            style: { colors: tk.accent, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+            style: { colors: tk.accent, fontFamily: "DM Mono", fontSize: "11px" },
             formatter: (v) => fmt(Number(v), 2),
           },
         }),
         baseYaxis(tk, {
           seriesName: sstName,
           opposite: true,
-          title: { text: sstUnit, style: { color: tk.warm, fontFamily: "IBM Plex Mono", fontWeight: 400, fontSize: "11px" } },
+          title: { text: sstUnit, style: { color: tk.warm, fontFamily: "DM Mono", fontWeight: 400, fontSize: "11px" } },
           labels: {
-            style: { colors: tk.warm, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+            style: { colors: tk.warm, fontFamily: "DM Mono", fontSize: "11px" },
             formatter: (v) => fmt(Number(v), 2),
           },
         }),

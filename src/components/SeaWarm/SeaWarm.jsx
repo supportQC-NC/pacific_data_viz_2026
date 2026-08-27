@@ -30,6 +30,7 @@ import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import useCiel from "../../hooks/UseCiel";
+import Loader from "../Loader/Loader";
 import "./SeaWarm.scss";
 
 const SURFACE_Y = 138;
@@ -296,7 +297,11 @@ export default function SeaWarm({ embed = false, code = null } = {}) {
           <p className="sea__lead">{t("home.sea.lead")}</p>
         </header>
 
-        {loading && <p className="sea__state">{t("home.sea.loading")}</p>}
+        {/* Même attente que partout ailleurs : la pirogue en filigrane.
+            Le chargement de cette série est long (sonde de clé côté API),
+            et un simple « Chargement… » sur un panneau vide donnait
+            l'impression que rien ne se passait. */}
+        {loading && <Loader compact label={t("home.sea.loading")} />}
         {(failed || empty) && (
           <p className="sea__state sea__state--err">
             {t("home.sea.unavailable")}

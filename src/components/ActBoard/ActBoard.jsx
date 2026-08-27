@@ -24,6 +24,9 @@ import KpiRow from "../KpiRow/KpiRow";
 import Loader from "../Loader/Loader";
 import ActBar from "../ActBar/ActBar";
 import ChartCarousel from "../ChartCarousel/ChartCarousel";
+import EscaleBar from "../EscaleBar/EscaleBar";
+import ChartKey from "../ChartKey/ChartKey";
+import ChartHint from "../ChartHint/ChartHint";
 import "./ActBoard.scss";
 
 export default function ActBoard({
@@ -98,7 +101,19 @@ export default function ActBoard({
   // Les graphiques « Données & couverture » (méta : fiche du jeu, matrice de
   // couverture) sont sortis du carrousel et regroupés derrière un bouton ⓘ.
   const INFO_IDS = ["read", "coverage", "source", "data", "method"];
-  const mainCharts = charts.filter((c) => !INFO_IDS.includes(c.id));
+  // LA CARTE FERME TOUJOURS LA NAVIGATION.
+  // Elle situe, elle ne démontre pas : on l'a vue trois fois se retrouver au
+  // milieu du carrousel simplement parce que c'est là qu'elle avait été
+  // écrite dans le tableau. La règle est donc portée par le gabarit et non
+  // recopiée dans chaque escale — une vue ajoutée plus tard ne pourra plus la
+  // repousser par mégarde.
+  //
+  // Seul l'identifiant exact `map` est concerné : les escales qui portent
+  // plusieurs cartes (le trait de côte, par exemple) gardent les leurs à leur
+  // place dans le récit.
+  const mainCharts = charts
+    .filter((c) => !INFO_IDS.includes(c.id))
+    .sort((a, b) => (a.id === "map" ? 1 : 0) - (b.id === "map" ? 1 : 0));
   const infoCharts = charts.filter((c) => INFO_IDS.includes(c.id));
   const hasInfo = infoCharts.length > 0;
 
@@ -128,6 +143,11 @@ export default function ActBoard({
   const skipIntro = guided && status === "ready" && count > 0;
   const [step, setStep] = useState(skipIntro ? 1 : 0);
   const [infoOpen, setInfoOpen] = useState(false);
+  // Modale « comment lire ce graphique ». Elle remplace un dépliant posé
+  // sous le tracé : replié il ne disait rien, déplié il poussait le
+  // graphique hors de l'écran. Un bouton « + » discret, une fiche complète
+  // à la demande.
+  const [readOpen, setReadOpen] = useState(false);
   const [infoTab, setInfoTab] = useState(0);
   const infoActive = hasInfo
     ? infoCharts[Math.min(infoTab, infoCharts.length - 1)]
@@ -190,8 +210,42 @@ export default function ActBoard({
     return () => window.removeEventListener("keydown", onKey);
   }, [infoOpen]);
 
+  useEffect(() => {
+    if (!readOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setReadOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [readOpen]);
+
+  // On referme en changeant de vue : la fiche décrit le graphique affiché.
+  // On observe `tab` et non `idx` — `idx` n'est calculé que plus bas, et un
+  // tableau de dépendances est évalué pendant le rendu, donc avant lui.
+  useEffect(() => {
+    setReadOpen(false);
+  }, [tab]);
+
   const idx = Math.min(tab, Math.max(0, count - 1));
   const active = count ? mainCharts[idx] : null;
+
+  // Bouton « + » de la fiche de lecture. Défini ici parce qu'il est posé à
+  // DEUX endroits selon la largeur : dans la colonne de lecture quand elle
+  // existe (au-dessus de 1180 px, à côté du titre), et dans la tête du
+  // graphique en dessous, où la colonne n'est pas rendue.
+  const moreBtn =
+    focus && active && (active.takeaway || active.legend || active.hint) ? (
+      <button
+        type="button"
+        className="board__more"
+        onClick={() => setReadOpen(true)}
+        aria-haspopup="dialog"
+        aria-label={tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
+        title={tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
+      >
+        <span aria-hidden="true">+</span>
+      </button>
+    ) : null;
   const progressTxt = effProgress
     ? `${effProgress.index} / ${effProgress.total}`
     : null;
@@ -207,7 +261,7 @@ export default function ActBoard({
       }`}
     >
       {/* ---------- Barre d'acte persistante (préc · titre+progression · suiv) ---------- */}
-      {showActBar && (
+      {showActBar && !focus && (
         <ActBar
           prev={prevAct}
           next={nextAct}
@@ -310,11 +364,28 @@ export default function ActBoard({
                 ) : null
               )}
 
-              {/* Barre d'outils : onglets + filtres sur UNE ligne. Ils
-                  occupaient deux bandes distinctes (~154 px cumulés) au-dessus
-                  du graphique. */}
+              {/* UNE SEULE barre. Navigation entre ESCALES (chevrons,
+                  titre, progression) et navigation entre VUES (onglets,
+                  filtre, aide, données) partagent la même rangée. Avant,
+                  ces deux niveaux occupaient deux bandes pleine largeur
+                  superposées : deux en-têtes concurrents avant le premier
+                  chiffre, et une centaine de pixels pris au graphique. */}
               {focus && nav === "carousel" ? (
-                <div className="board__bar">
+                <EscaleBar
+                  prev={prevAct}
+                  next={nextAct}
+                  title={title}
+                  index={effProgress ? effProgress.index : undefined}
+                  total={effProgress ? effProgress.total : undefined}
+                  navAria={t("flow.nav_aria")}
+                  progressAria={t("flow.progress_aria")}
+                  onExit={guided ? exitJourney : null}
+                  exitLabel={
+                    guided
+                      ? tf("flow.exit_voyage", "Quitter le voyage", "Leave the voyage")
+                      : ""
+                  }
+                >
                   <ChartCarousel
                     charts={mainCharts}
                     index={idx}
@@ -329,39 +400,13 @@ export default function ActBoard({
                   {filters ? (
                     <div className="board__bar-filters">{filters}</div>
                   ) : null}
-                  {/* COMMENT JOUER AVEC LA DONNÉE.
-                      Plutôt qu'un mode d'emploi écrit sous chaque graphique
-                      — du texte que personne ne lit et qui mange la place du
-                      tracé — une pastille discrète qui livre l'info AU
-                      SURVOL, au moment où l'on se demande quoi faire.
-                      Le contenu est propre à chaque vue : survoler une case
-                      de heatmap et faire défiler un globe ne s'apprennent
-                      pas de la même façon. */}
                   {active && active.hint ? (
-                    <div className="board__hint">
-                      <button
-                        type="button"
-                        className="board__hint-btn"
-                        aria-describedby="board-hint-bubble"
-                      >
-                        <span aria-hidden="true">?</span>
-                        <span className="u-sr-only">
-                          {tf("board.explore", "Comment explorer", "How to explore")}
-                        </span>
-                      </button>
-                      <span
-                        className="board__hint-bubble"
-                        id="board-hint-bubble"
-                        role="tooltip"
-                      >
-                        {active.hint}
-                        {labels.switchHint ? (
-                          <em className="board__hint-keys">{labels.switchHint}</em>
-                        ) : null}
-                      </span>
-                    </div>
+                    <ChartHint
+                      text={active.hint}
+                      keys={labels.switchHint}
+                      label={tf("board.explore", "Comment explorer", "How to explore")}
+                    />
                   ) : null}
-
                   {hasInfo && (
                     <button
                       type="button"
@@ -374,7 +419,7 @@ export default function ActBoard({
                       <span aria-hidden="true">i</span>
                     </button>
                   )}
-                </div>
+                </EscaleBar>
               ) : null}
 
               <div className="board__work">
@@ -449,6 +494,7 @@ export default function ActBoard({
                       {active.finding ? (
                         <p className="board__finding">{active.finding}</p>
                       ) : null}
+                      {moreBtn}
                     </div>
                   )}
 
@@ -463,72 +509,62 @@ export default function ActBoard({
                         {active.node}
                       </div>
 
-                      {/* ---------- CLÉ DE LECTURE ----------
-                          Un graphique plein cadre n'est pas plus lisible
-                          qu'un graphique plus étroit dont on comprend les
-                          axes. La largeur gagnée sert donc à dire, en
-                          toutes lettres et à côté du tracé : ce que porte
-                          la verticale, ce que porte l'horizontale, ce que
-                          dit la couleur, d'où vient le chiffre.
-                          C'est l'ancienne « légende » sortie du graphique
-                          et remise au même rang que lui. */}
-                      {focus && active.legend ? (
-                        <aside className="board__key">
-                          {active.legend.y ? (
-                            <div className="board__key-row">
-                              <span className="board__key-axis" aria-hidden="true">↕</span>
-                              <span className="board__key-txt">{active.legend.y}</span>
-                            </div>
-                          ) : null}
-                          {active.legend.x ? (
-                            <div className="board__key-row">
-                              <span className="board__key-axis" aria-hidden="true">↔</span>
-                              <span className="board__key-txt">{active.legend.x}</span>
-                            </div>
-                          ) : null}
-                          {active.legend.color ? (
-                            <div className="board__key-row board__key-row--color">
-                              <span className="board__key-swatch" aria-hidden="true" />
-                              <span className="board__key-txt">{active.legend.color}</span>
-                            </div>
-                          ) : null}
-                          {active.legend.note ? (
-                            <p className="board__key-note">{active.legend.note}</p>
-                          ) : null}
-                        </aside>
+                      {/* Clé de lecture — brique ChartKey, partagée par
+                          toutes les escales : ce que porte la verticale, ce
+                          que porte l'horizontale, ce que dit la couleur,
+                          d'où vient le chiffre. */}
+                      {/* La colonne se rend dès qu'il y a QUELQUE CHOSE à
+                          dire — et il y a toujours au moins un titre. La
+                          conditionner à la présence d'une `legend` privait
+                          de titre toutes les escales qui n'en déclarent pas
+                          encore : l'en-tête est masqué au-dessus de 1180 px
+                          puisque la colonne est censée le porter, et sans
+                          colonne il ne restait aucun titre à l'écran.
+                          Les escales enrichissent ensuite leur `legend` :
+                          c'est purement additif. */}
+                      {focus ? (
+                        <ChartKey
+                          title={active.title}
+                          more={moreBtn}
+                          y={active.legend?.y}
+                          x={active.legend?.x}
+                          color={active.legend?.color}
+                          note={active.legend?.note}
+                          // L'encodage déclaré par la vue — « polarity » par
+                          // défaut, comme la majorité des vues du parcours.
+                          swatch={active.legend?.swatch}
+                          // La phrase de lecture et la consigne d'exploration
+                          // remontent dans la colonne : elles y sont visibles
+                          // et rassemblées, au lieu d'un bandeau sous le tracé
+                          // et d'une pastille de survol.
+                          takeaway={active.takeaway}
+                          hint={active.hint}
+                          labels={{
+                            read: tf("board.key_read", "Comment lire", "How to read"),
+                            takeaway: tf("board.key_take", "Ce qu'il faut retenir", "What to take away"),
+                            explore: tf("board.key_explore", "À vous de jouer", "Your turn"),
+                            y: tf("board.axis_y", "Axe vertical :", "Vertical axis:"),
+                            x: tf("board.axis_x", "Axe horizontal :", "Horizontal axis:"),
+                            color: tf("board.axis_c", "Couleur :", "Colour:"),
+                          }}
+                        />
                       ) : null}
                     </div>
                   )}
 
-                  {/* ---------- « À RETENIR » ----------
-                      Chaque acte rédige un `takeaway` par graphique — 95 au
-                      total dans l'application — et AUCUN n'était rendu.
-                      Ce ne sont pas des conclusions mais des CONSIGNES DE
-                      LECTURE (« la lecture juste se fait sur la durée »,
-                      « à confronter au film »…). D'où deux traitements :
-                        • graphe SIGNATURE → affiché, il porte le message ;
-                        • les autres       → repliés, disponibles à la
-                          demande, pour ne pas ajouter du texte partout.
-                      Les vues méta (fiche du jeu, couverture) n'en ont pas
-                      besoin : elles sont déjà entièrement explicatives. */}
-                  {active.takeaway && !active.bare ? (
-                    active.signature ? (
-                      <p className="board__take board__take--lead">
-                        {labels.takeawayKicker ? (
-                          <span className="board__take-kicker">
-                            {labels.takeawayKicker}
-                          </span>
-                        ) : null}
-                        <span className="board__take-text">{active.takeaway}</span>
-                      </p>
-                    ) : (
-                      <details className="board__take board__take--fold">
-                        <summary className="board__take-sum">
-                          {tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
-                        </summary>
-                        <span className="board__take-text">{active.takeaway}</span>
-                      </details>
-                    )
+                  {/* Seul le graphe SIGNATURE garde sa phrase à l'écran :
+                      elle porte le message de l'acte. Pour les autres vues,
+                      la consigne de lecture vit dans la fiche « + » — elle
+                      aide quand on la demande, elle n'encombre pas sinon. */}
+                  {active.takeaway && !active.bare && active.signature ? (
+                    <p className="board__take board__take--lead">
+                      {labels.takeawayKicker ? (
+                        <span className="board__take-kicker">
+                          {labels.takeawayKicker}
+                        </span>
+                      ) : null}
+                      <span className="board__take-text">{active.takeaway}</span>
+                    </p>
                   ) : null}
 
                   {/* Passage vers le TROISIÈME temps de l'acte. Sans ce
@@ -551,6 +587,86 @@ export default function ActBoard({
                   )}
                 </div>
               </div>
+
+              {readOpen && active && createPortal(
+                <div
+                  className="board__read"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
+                >
+                  <button
+                    type="button"
+                    className="board__read-scrim"
+                    aria-label={tf("board.close", "Fermer", "Close")}
+                    onClick={() => setReadOpen(false)}
+                  />
+                  <div className="board__read-panel" role="document">
+                    <header className="board__read-head">
+                      <div>
+                        <span className="board__read-eyebrow">
+                          {tf("board.how_to_read", "Comment lire ce graphique", "How to read this chart")}
+                        </span>
+                        {active.title ? (
+                          <h3 className="board__read-title">{active.title}</h3>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        className="board__read-close"
+                        onClick={() => setReadOpen(false)}
+                        aria-label={tf("board.close", "Fermer", "Close")}
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </header>
+
+                    {/* La phrase de résumé ne s'affiche plus au-dessus du
+                        tracé : elle est ici, pour qui veut le détail. */}
+                    {active.finding ? (
+                      <p className="board__read-find">{active.finding}</p>
+                    ) : null}
+
+                    {active.takeaway ? (
+                      <p className="board__read-take">{active.takeaway}</p>
+                    ) : null}
+
+                    {active.legend ? (
+                      <dl className="board__read-grid">
+                        {active.legend.y ? (
+                          <div className="board__read-row">
+                            <dt>{tf("board.axis_y", "Axe vertical", "Vertical axis")}</dt>
+                            <dd>{active.legend.y}</dd>
+                          </div>
+                        ) : null}
+                        {active.legend.x ? (
+                          <div className="board__read-row">
+                            <dt>{tf("board.axis_x", "Axe horizontal", "Horizontal axis")}</dt>
+                            <dd>{active.legend.x}</dd>
+                          </div>
+                        ) : null}
+                        {active.legend.color ? (
+                          <div className="board__read-row">
+                            <dt>{tf("board.axis_c", "Couleur", "Colour")}</dt>
+                            <dd>{active.legend.color}</dd>
+                          </div>
+                        ) : null}
+                        {active.hint ? (
+                          <div className="board__read-row">
+                            <dt>{tf("board.explore", "Explorer", "Explore")}</dt>
+                            <dd>{active.hint}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : null}
+
+                    {active.legend && active.legend.note ? (
+                      <p className="board__read-note">{active.legend.note}</p>
+                    ) : null}
+                  </div>
+                </div>,
+                document.body,
+              )}
 
               {infoOpen && hasInfo && createPortal(
                 <div

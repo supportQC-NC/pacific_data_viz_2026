@@ -279,3 +279,14 @@
 .pm-popup .mapboxgl-popup-tip {
   border-top-color: var(--c-surface);
 }
+// Rampe « magnitude » — la séquentielle du design system. Même source que la
+// peinture des colonnes (--c-seq-*), donc légende et carte ne peuvent pas
+// diverger, et le sens ne s'inverse pas d'un thème à l'autre.
+.omap__legend--magnitude .omap__legend-bar {
+  background: linear-gradient(
+    90deg,
+    var(--c-seq-100),
+    var(--c-seq-500),
+    var(--c-seq-900)
+  );
+}

@@ -19,7 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSante } from "../../services/santeApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
@@ -30,6 +30,12 @@ import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
 import RadarChart from "../../components/charts/RadarChart";
 import BarRace from "../../components/BarRace/BarRace";
+// Les visuels de la Home qui portent les deux jeux de cette escale :
+// WaterGlass lit `water`, TbBacilli lit `tuberculosis` — exactement les jeux
+// du sélecteur. Ils restent montés sur la page d'accueil ; on les ajoute ici,
+// on ne les déplace pas.
+import WaterGlass from "../../components/WaterGlass/WaterGlass";
+import TbBacilli from "../../components/TbBacilli/TbBacilli";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act10Sante.scss";
 
@@ -46,14 +52,6 @@ const REGION_OF = Object.entries(SUBREGIONS).reduce((acc, [r, codes]) => {
 }, {});
 const REGION_KEYS = ["all", "melanesia", "polynesia", "micronesia"];
 
-const fmtVal = (v, decimals) =>
-  !Number.isFinite(v)
-    ? "—"
-    : decimals === 0
-      ? String(Math.round(v))
-      : Math.abs(v) < 10
-        ? String(Math.round(v * 100) / 100).replace(".", ",")
-        : String(Math.round(v));
 
 function valueAt(values, year) {
   if (!values || !values.length) return null;
@@ -146,8 +144,30 @@ function subAverages(all, years, t) {
     .filter(Boolean);
 }
 
+// Deux indicateurs de santé de POLARITÉS OPPOSÉES : une part qui progresse
+// est une bonne nouvelle, une incidence qui progresse est une mauvaise. C'est
+// la raison d'être de la mention explicite dans chaque clé de lecture — la
+// couleur seule ne peut pas porter cette différence.
+const SOURCE_WATER_FR =
+  "Part de la population utilisant un service d'eau potable géré en toute sécurité, indicateur ODD 6.1.1, via le Pacific Data Hub. En pourcentage : HAUT = mieux.";
+const SOURCE_WATER_EN =
+  "Share of the population using safely managed drinking water, SDG indicator 6.1.1, via the Pacific Data Hub. Percent: HIGH = better.";
+const SOURCE_TB_FR =
+  "Incidence de la tuberculose, indicateur ODD 3.3.2, via le Pacific Data Hub — cas pour 100 000 habitants et par an. HAUT = pire.";
+const SOURCE_TB_EN =
+  "Tuberculosis incidence, SDG indicator 3.3.2, via the Pacific Data Hub - cases per 100,000 people per year. HIGH = worse.";
+
 export default function Act10Sante() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
@@ -298,36 +318,9 @@ export default function Act10Sante() {
     return xs.length ? { min: 0, max: Math.max(...xs) } : { min: 0, max: 1 };
   }, [M.series]);
 
-  const kpiItems = useMemo(() => {
-    if (!M.rank.length) return [];
-    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    const med = median(M.rank.map((r) => r.value));
-    return [
-      {
-        key: "med",
-        value: fmtVal(med, metricDecimals),
-        unit: M.unit,
-        label: t("act10.board.kpi_med"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmtVal(high.value, metricDecimals),
-        unit: high.name,
-        label: t("act10.board.kpi_high"),
-        tone: M.highTone,
-      },
-      {
-        key: "low",
-        value: fmtVal(low.value, metricDecimals),
-        unit: low.name,
-        label: t("act10.board.kpi_low"),
-        tone: M.lowTone,
-      },
-    ];
-  }, [M.rank, M.unit, M.highTone, M.lowTone, metricDecimals, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const retry = useCallback(() => {
     setState({ status: "loading", data: null });
@@ -370,26 +363,29 @@ export default function Act10Sante() {
         ? "loading"
         : "empty";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act10.board.metric_label")}
-        items={metricItems}
         value={metric}
         onChange={setMetric}
-        iconOnly
-        hideSpark
+        options={asOptions(metricItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={(k) => {
-          setRegion(k);
-          setCountry("all");
-        }}
-        dense
-        hideSpark
+        setRegion(k);
+        setCountry("all");
+      }}
+        options={asOptions(regionItems)}
       />
     </>
   );
@@ -409,9 +405,123 @@ export default function Act10Sante() {
     t("act10.spotlight.n5"),
   ];
 
+  // Les deux indicateurs de l'escale ne se lisent pas dans le même sens.
+  // Aucune rampe ne peut dire « bon » ou « mauvais » toute seule : on l'écrit.
+  const key = isWater
+    ? {
+        y: tx(
+          "act10.key.water_y",
+          "Part de la population desservie par un service d'eau potable géré en toute sécurité, en pourcentage. Ici, plus haut vaut mieux.",
+          "Share of the population served by safely managed drinking water, in percent. Here, higher is better.",
+        ),
+        x: tx("act10.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act10.key.water_c",
+          "Une seule teinte, du plus faible au plus élevé. C'est le BAS de l'échelle qui alerte : une part élevée est une bonne nouvelle.",
+          "A single hue, lowest to highest. It is the BOTTOM of the scale that warns: a high share is good news.",
+        ),
+        note: tx("act10.key.water_note", SOURCE_WATER_FR, SOURCE_WATER_EN),
+        swatch: "magnitude",
+      }
+    : {
+        y: tx(
+          "act10.key.tb_y",
+          "Incidence de la tuberculose, en cas pour 100 000 habitants et par an. Ici, plus haut vaut pire.",
+          "Tuberculosis incidence, cases per 100,000 people per year. Here, higher is worse.",
+        ),
+        x: tx("act10.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+        color: tx(
+          "act10.key.tb_c",
+          "Une seule teinte, du plus faible au plus élevé. C'est le HAUT de l'échelle qui alerte.",
+          "A single hue, lowest to highest. It is the TOP of the scale that warns.",
+        ),
+        note: tx("act10.key.tb_note", SOURCE_TB_FR, SOURCE_TB_EN),
+        swatch: "magnitude",
+      };
+
   const charts =
     status === "ready"
       ? [
+          // ---------- Les visuels interactifs, en ouverture ----------------
+          // Deux dessins de la Home, un par indicateur, lisant exactement les
+          // mêmes jeux que le sélecteur : le verre pour l'eau potable, le
+          // bacille pour la tuberculose. Ils restent montés sur la page
+          // d'accueil ; on les ajoute ici, on ne les déplace pas.
+          //
+          // Ils ouvrent parce qu'un pourcentage et une incidence pour 100 000
+          // sont deux abstractions : le dessin leur donne une taille avant
+          // que les courbes ne les mettent en série.
+          {
+            id: "glass",
+            empty: false,
+            tab: tx("act10.board.tab_verre", "Verre", "Glass"),
+            title: tx(
+              "act10.viz.glass_title",
+              "L'accès à l'eau potable, territoire par territoire",
+              "Access to safe water, territory by territory",
+            ),
+            finding: tx(
+              "act10.viz.glass_find",
+              "Choisissez un territoire : le verre se remplit à la mesure de sa population desservie.",
+              "Pick a territory: the glass fills to match its served population.",
+            ),
+            takeaway: tx(
+              "act10.viz.glass_take",
+              "Le verre se remplit à la part de la population desservie — pas à la quantité d'eau disponible. Un territoire bien arrosé peut avoir un verre au tiers plein.",
+              "The glass fills to the share of population served - not to how much water exists. A rain-soaked territory can have a one-third-full glass.",
+            ),
+            hint: tx(
+              "act10.hint.glass",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act10.key.glass_c",
+                "Le niveau d'eau suit la part de la population desservie par un service géré en toute sécurité.",
+                "The water level follows the share of the population served by a safely managed service.",
+              ),
+              note: tx("act10.key.water_note", SOURCE_WATER_FR, SOURCE_WATER_EN),
+              // Le dessin encode par un REMPLISSAGE, pas par une teinte.
+              swatch: "none",
+            },
+            node: <WaterGlass embed />,
+          },
+          {
+            id: "bacilli",
+            empty: false,
+            tab: tx("act10.board.tab_bacille", "Bacille", "Bacilli"),
+            title: tx(
+              "act10.viz.tb_title",
+              "L'incidence de la tuberculose, territoire par territoire",
+              "Tuberculosis incidence, territory by territory",
+            ),
+            finding: tx(
+              "act10.viz.tb_find",
+              "Choisissez un territoire : la colonie suit son incidence.",
+              "Pick a territory: the colony follows its incidence.",
+            ),
+            takeaway: tx(
+              "act10.viz.tb_take",
+              "Une incidence rapportée à 100 000 habitants : sur un territoire de quelques milliers de personnes, une poignée de cas suffit à faire un chiffre élevé.",
+              "An incidence per 100,000 people: on a territory of a few thousand, a handful of cases is enough to make the figure high.",
+            ),
+            hint: tx(
+              "act10.hint.tb",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act10.key.tb_viz_c",
+                "La colonie s'épaissit avec l'incidence du territoire choisi.",
+                "The colony thickens with the chosen territory's incidence.",
+              ),
+              note: tx("act10.key.tb_note", SOURCE_TB_FR, SOURCE_TB_EN),
+              swatch: "none",
+            },
+            node: <TbBacilli embed />,
+          },
           {
             id: "trend",
             signature: true,
@@ -420,6 +530,12 @@ export default function Act10Sante() {
             title: M.titles.trend,
             finding: t("act10.board.trend_find"),
             takeaway: t("act10.board.trend_take"),
+            legend: key,
+            hint: tx(
+              "act10.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act10b__fit">
                 <TrendLines
@@ -456,10 +572,16 @@ export default function Act10Sante() {
           {
             id: "multiples",
             empty: M.series.length === 0,
-            tab: t("act10.board.tab_multiples"),
+            tab: tx("act10.board.tab_multiples_1", "Multiples", "Multiples"),
             title: M.titles.multiples,
             finding: t("act10.board.multiples_find"),
             takeaway: t("act10.board.multiples_take"),
+            legend: key,
+            hint: tx(
+              "act10.hint.multiples",
+              "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
+              "Every panel shares one scale: they compare at a glance.",
+            ),
             node: (
               <div className="act10b__scroll">
                 <SmallMultiples
@@ -479,6 +601,12 @@ export default function Act10Sante() {
             title: M.titles.rank,
             finding: t("act10.board.race_find"),
             takeaway: t("act10.board.race_take"),
+            legend: { ...key, y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act10.hint.race",
+              "Lancez l'animation : les barres se réordonnent au fil des années.",
+              "Press play: the bars reorder themselves year after year.",
+            ),
             node: (
               <BarRace
                 series={M.race}
@@ -497,10 +625,25 @@ export default function Act10Sante() {
           {
             id: "change",
             empty: M.dumb.length === 0,
-            tab: t("act10.board.tab_change"),
+            tab: tx("act10.board.tab_evolution", "Évolution", "Change"),
             title: `${M.titles.change} · ${M.A}–${M.B}`,
             finding: t("act10.board.change_find"),
             takeaway: t("act10.board.change_take"),
+            legend: {
+              ...key,
+              y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+              color: tx(
+                "act10.key.dumb_c",
+                "Le point clair marque la première année, le point foncé la dernière : la barre entre les deux est le chemin parcouru.",
+                "The light dot marks the first year, the dark dot the last: the bar between them is the distance travelled.",
+              ),
+            },
+            hint: tx(
+              "act10.hint.change",
+              "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
+              "Compare bar lengths: they show how much changed, not the level reached.",
+            ),
             node: (
               <div className="act10b__scroll">
                 <DumbbellChart
@@ -517,10 +660,22 @@ export default function Act10Sante() {
           {
             id: "heat",
             empty: M.series.length === 0,
-            tab: t("act10.board.tab_heat"),
+            tab: tx("act10.board.tab_matrice", "Matrice", "Matrix"),
             title: M.titles.heat,
             finding: t("act10.board.heat_find"),
             takeaway: t("act10.board.heat_take"),
+            legend: {
+              y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.x,
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act10.hint.heat",
+              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
+              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
+            ),
             node: (
               <div className="act10b__scroll">
                 <ApexYearHeatmap
@@ -540,10 +695,24 @@ export default function Act10Sante() {
           {
             id: "radar",
             empty: M.sub.length < 2,
-            tab: t("act10.board.tab_radar"),
+            tab: tx("act10.board.tab_profil", "Profil", "Profile"),
             title: t("act10.board.radar_title"),
             finding: t("act10.board.radar_find"),
             takeaway: t("act10.board.radar_take"),
+            legend: {
+              ...key,
+              y: tx(
+                "act10.key.radar_y",
+                "Chaque branche est une sous-région ; la distance au centre porte la valeur.",
+                "Each spoke is a sub-region; distance from the centre carries the value.",
+              ),
+              x: tx("act10.key.radar_x", "Les sous-régions, tout autour.", "The sub-regions, all around."),
+            },
+            hint: tx(
+              "act10.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act10b__fit">
                 <RadarChart subAvg={M.sub} years={M.years} />
@@ -553,10 +722,16 @@ export default function Act10Sante() {
           {
             id: "map",
             empty: M.rank.length === 0,
-            tab: t("act10.board.tab_map"),
+            tab: tx("act10.board.tab_carte", "Carte", "Map"),
             title: `${t("act10.board.map_title")} · ${M.B}`,
             finding: t("act10.board.map_find"),
             takeaway: t("act10.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act10.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -572,7 +747,14 @@ export default function Act10Sante() {
                     data={M.rank}
                     unit={M.unit}
                     range={mapRange}
-                    ramp={M.ramp}
+                    // Les deux indicateurs sont des GRANDEURS : une part
+                    // et une incidence, sans zéro chargé de sens. La rampe
+                    // « good », qui n'appartient à aucun des trois encodages
+                    // du système, prétendait dire par la couleur ce que la
+                    // clé de lecture dit maintenant par écrit — et le disait
+                    // à l'envers dès qu'on basculait sur la tuberculose.
+                    ramp="magnitude"
+                    mid={null}
                     lowLabel={t("act6.heatmap_low")}
                     highLabel={t("act6.heatmap_high")}
                     noTokenMsg={t("act1.map_no_token")}
@@ -610,10 +792,13 @@ export default function Act10Sante() {
       eyebrow={t("act10.tag")}
       title={t("act10.title")}
       thesis={t("act10.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 8, total: 12 }}
       labels={{
@@ -630,7 +815,6 @@ export default function Act10Sante() {
         conclusion: t("act10.board.conclusion"),
         backIntro: t("act10.board.back_intro"),
         reviseData: t("act10.board.revise_data"),
-        viewGroup: t("act10.board.group_view"),
       }}
       outro={{
         kicker: t("act10.outro.kicker"),

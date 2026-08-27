@@ -117,6 +117,11 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
 
   const tb = useSelector(selectDataset("tuberculosis"));
 
+  // « Épinglé » : le territoire est imposé par l'appelant. Sans `code`, le
+  // visuel embarqué se comporte comme sur la Home — sélection par défaut et
+  // commandes visibles — au lieu de ne rien afficher du tout.
+  const pinned = embed && Boolean(code);
+
   useEffect(() => {
     dispatch(loadDataset("tuberculosis"));
   }, [dispatch]);
@@ -185,7 +190,7 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
   const [region, setRegion] = useState("all");
   const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
-    if (embed) return;
+    if (pinned) return;
     if (!list.length) return;
     if (!view || (view.kind === "country" && !byCode[view.code])) {
       // défaut : l'incidence la plus forte (champ le plus chargé)
@@ -194,7 +199,7 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
         code: extremes ? extremes.high.code : list[0].code,
       });
     }
-  }, [list, view, byCode, extremes, embed]);
+  }, [list, view, byCode, extremes, pinned]);
   useEffect(() => {
     if (embed && code) setView({ kind: "country", code });
   }, [embed, code]);
@@ -378,7 +383,7 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
 
         {ready && sel && (
           <>
-            {!embed && (
+            {!pinned && (
             <div className="bac__toolbar">
               <span className="bac__field-label">
                 {t("home.tb.select_label")}
@@ -636,7 +641,7 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
               </div>
             </div>
 
-            {!embed && (
+            {!pinned && (
             <div className="bac__countrybar">
               <div className="bac__countries">
                 {visibleList.map((o) => (

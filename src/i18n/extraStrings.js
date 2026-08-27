@@ -8,11 +8,22 @@ const EXTRA_STRINGS = {
   fr: {
     header: { nav_recit: "Le Récit" },
     home: {
-      // Titre de l'acte 02. « Un océan suivi de près » décrivait notre
-      // dispositif d'observation ; celui-ci décrit ce qui arrive à l'océan.
-      // Le titre nomme le sujet, la question posée en tête du board dit ce
-      // qu'on y cherche — deux niveaux, pas deux titres concurrents.
-      acts: { a2_title: "Un océan qui change" },
+      acts: {
+        // Titre de l'escale 02. « Un océan suivi de près » décrivait notre
+        // dispositif d'observation ; celui-ci décrit ce qui arrive à l'océan.
+        // Le titre nomme le sujet, la question posée en tête du board dit ce
+        // qu'on y cherche — deux niveaux, pas deux titres concurrents.
+        a2_title: "Un océan qui change",
+
+        // Escale 04 (cyclones). C'était la SEULE des douze dont le titre
+        // dupliquait le nom : l'en-tête annonçait « Acte 04 — Cyclones »
+        // puis le grand titre répétait « Cyclones ». Toutes les autres
+        // suivent la règle « le nom situe, le titre raconte » — « Acte 12 —
+        // Synthèse / La voie tracée », « Lire le ciel »…
+        // Ici la donnée est une archive : quarante-sept saisons de
+        // trajectoires relevées depuis 1977.
+        a12_title: "La mémoire des tempêtes",
+      },
       // ⚠️ UN SEUL objet `home` par langue. Une deuxième clé du même nom dans
       // le même littéral écrase silencieusement la première (le dernier gagne
       // en JS) — c'est ce qui avait fait disparaître ces trois légendes.
@@ -131,7 +142,10 @@ const EXTRA_STRINGS = {
     },
     home: {
       // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
-      acts: { a2_title: "An ocean in motion" },
+      acts: {
+        a2_title: "An ocean in motion",
+        a12_title: "What the storms left behind",
+      },
       begin: "Discover",
       sources: "The sources",
       tb: { value_caption: "Local incidence" },

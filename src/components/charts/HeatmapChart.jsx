@@ -124,8 +124,12 @@ export default function HeatmapChart({
         orient: "vertical",
         right: 8,
         top: "middle",
-        itemWidth: 16,
-        itemHeight: 16,
+        // Chaque palier est CLIQUABLE : un clic masque sa bande. Même
+        // raison que pour l'échelle continue — un contrôle doit avoir la
+        // taille d'un contrôle.
+        itemWidth: 24,
+        itemHeight: 22,
+        itemGap: 8,
         // Les bornes vont du plus fort (en haut) au plus faible : on encadre
         // avec les libellés de la page, jusqu'ici inutilisés en mode discret.
         text: [labels.high, labels.low],
@@ -138,26 +142,52 @@ export default function HeatmapChart({
       // sans cela le pas central de la rampe divergente ne tombe pas sur 0
       // et ne peut pas signifier « à la normale ».
       const bound = Math.max(Math.abs(min), Math.abs(max)) || 1;
+      // L'ÉCHELLE EST UN INSTRUMENT, PAS UNE LÉGENDE.
+      //
+      // `calculable` rend ses deux poignées glissantes : on restreint la
+      // plage affichée et les cellules hors plage s'effacent. C'est
+      // l'interaction la plus puissante d'une matrice — isoler « au-dessus
+      // de +0,5 » fait apparaître une bascule qu'aucun tri ne montrerait —
+      // et elle était rendue à 18 px de large, indiscernable d'une légende
+      // décorative. Personne ne saisit une poignée qu'il n'a pas vue.
+      //
+      // On lui donne donc la taille d'un contrôle : barre large, poignées
+      // débordantes, graduations lisibles. `hoverLink` complète le geste —
+      // survoler une hauteur de la barre allume les cellules correspondantes
+      // dans la matrice, ce qui apprend l'échelle sans rien lire.
       visualMap = {
         type: "continuous",
         min: isPolarity ? -bound : 0,
         max: isPolarity ? bound : Math.max(1, Math.ceil(max)),
         calculable: true,
+        hoverLink: true,
         orient: "vertical",
-        right: 8,
+        right: 12,
         top: "middle",
-        itemHeight: 170,
-        itemWidth: 18,
+        itemHeight: 320,
+        itemWidth: 26,
+        handleSize: "140%",
+        precision: dec,
         text: [labels.high, labels.low],
-        textStyle: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
+        textStyle: { color: tk.text, fontFamily: MONO, fontSize: AXIS_FS },
+        textGap: 12,
         formatter: (v) => `${Number(v) > 0 ? "+" : ""}${lab(v)}`,
         inRange: { color: ramp },
+        // Ce qui sort de la plage ne disparaît pas tout à fait : il s'efface
+        // vers la surface. On garde la trace de la matrice complète, sinon on
+        // ne sait plus ce qu'on a écarté.
+        //
+        // Couleur OPAQUE obligatoire : avec `tk.line`, semi-transparent, le
+        // décor de l'escale remontait à travers les cellules écartées et
+        // leurs bordures se détachaient en clair — les valeurs exclues
+        // devenaient plus visibles que celles qu'on avait choisi de garder.
+        outOfRange: { color: tk.bg2 },
       };
     }
     const step = Math.max(1, Math.ceil(years.length / 12));
     return {
-      // Marge droite élargie : la légende de valeurs a grandi.
-      grid: { left: 8, right: 124, top: 12, bottom: 40, containLabel: true },
+      // Marge droite élargie : l'échelle est devenue un instrument manipulable.
+      grid: { left: 8, right: 150, top: 12, bottom: 40, containLabel: true },
       tooltip: {
         position: "top",
         ...tooltipStyle(tk),
@@ -168,13 +198,13 @@ export default function HeatmapChart({
         type: "category",
         data: years,
         splitArea: { show: false },
-        axisLabel: { color: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS, interval: step - 1 },
+        axisLabel: { color: tk.text, fontFamily: MONO, fontSize: AXIS_FS, interval: step - 1 },
         axisLine: { lineStyle: { color: tk.line } },
       },
       yAxis: {
         type: "category",
         data: names,
-        axisLabel: { color: tk.textSoft, fontFamily: SANS, fontSize: AXIS_FS },
+        axisLabel: { color: tk.text, fontFamily: SANS, fontSize: AXIS_FS },
         axisLine: { lineStyle: { color: tk.line } },
         splitArea: { show: false },
       },

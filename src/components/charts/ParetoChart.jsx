@@ -58,7 +58,7 @@ export default function ParetoChart({
           hideOverlappingLabels: true,
           style: {
             colors: tk.textSoft,
-            fontFamily: "Hanken Grotesk",
+            fontFamily: "Figtree",
             fontSize: "11px",
           },
         },
@@ -69,7 +69,7 @@ export default function ParetoChart({
           labels: {
             style: {
               colors: tk.textMute,
-              fontFamily: "IBM Plex Mono",
+              fontFamily: "DM Mono",
               fontSize: "11px",
             },
             formatter: (v) => fmtV(Number(v)),
@@ -84,7 +84,7 @@ export default function ParetoChart({
           labels: {
             style: {
               colors: tk.accent,
-              fontFamily: "IBM Plex Mono",
+              fontFamily: "DM Mono",
               fontSize: "11px",
             },
             formatter: (v) => `${Math.round(Number(v))} %`,

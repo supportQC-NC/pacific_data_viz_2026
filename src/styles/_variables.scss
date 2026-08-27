@@ -16,9 +16,9 @@
 
 /* ---------- Tokens non chromatiques (communs) ---------- */
 :root {
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-body: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", system-ui, -apple-system, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", monospace;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -129,37 +129,53 @@
   --c-series-7: #8d58c0; /* violet */
   --c-series-8: #ba3d47; /* rouge */
 
-  /* Rampe SÉQUENTIELLE (magnitude continue : heatmap « abs », choroplèthe).
-     Une seule teinte, clair → sombre. Le pas le plus clair vaut « ~zéro » et a
-     le droit de se fondre dans la surface. */
-  --c-seq-100: #e1e7fe;
-  --c-seq-200: #c4cefd;
-  --c-seq-300: #a7b6fc;
-  --c-seq-400: #8999f6;
-  --c-seq-500: #6f7de9;
-  --c-seq-600: #5965cb;
-  --c-seq-700: #4751a4;
-  --c-seq-800: #353d7e;
-  --c-seq-900: #272d5e;
+  /* Les rampes SÉQUENTIELLE et ORDINALE ne sont PLUS ici : elles dépendent
+     du thème, comme la divergente. Voir les blocs [data-theme] plus bas et
+     la note « RAMPES ORIENTÉES » qui explique pourquoi.
 
-  /* Rampe ORDINALE (bandes discrètes ordonnées : heatmap « rank », paliers).
-     Plage resserrée : chaque pas reste lisible sur les DEUX surfaces
-     (2,09:1 au bout clair sur blanc, 2,43:1 au bout sombre sur navy). */
-  --c-ord-1: #a6b1e6;
-  --c-ord-2: #8e9be2;
-  --c-ord-3: #7685e3;
-  --c-ord-4: #626fd9;
-  --c-ord-5: #5661b0;
-  --c-ord-6: #4a5388;
-
-  /* Seconde rampe séquentielle, quand deux échelles de magnitude coexistent.
-     Teinte du slot 2, même construction. */
+     Seconde rampe séquentielle, quand deux échelles de magnitude coexistent.
+     Teinte du slot 2, même construction. Actuellement déclarée mais non
+     consommée : aucun composant ne la lit (elle n'est même pas exposée par
+     useThemeTokens). Conservée telle quelle, à corriger le jour où on la
+     branche vraiment. */
   --c-seq2-100: #fee1d7;
   --c-seq2-300: #faa085;
   --c-seq2-500: #d75f39;
   --c-seq2-700: #96391a;
   --c-seq2-900: #561f0e;
 }
+
+/* ---------- RAMPES ORIENTÉES : POURQUOI ELLES DÉPENDENT DU THÈME ----------
+
+   Une rampe séquentielle ou ordinale encode une grandeur ORIENTÉE : le pas
+   le plus fort doit être le plus visible, parce que c'est lui qui porte le
+   signal — les émissions les plus élevées, la tuberculose la plus forte, le
+   niveau de mer le plus haut.
+
+   « Le plus visible » ne veut pas dire « le plus sombre ». Cela veut dire
+   « le plus éloigné de la surface ». Sur du papier blanc, c'est le pas le
+   plus sombre ; sur le navy #121828, c'est le pas le plus CLAIR.
+
+   Ces deux rampes étaient invariantes par thème et construites pour du
+   blanc. Sur le thème sombre — qui est le DÉFAUT du produit — elles se
+   lisaient donc à l'envers. Mesuré avant correction :
+
+       séquentielle sur navy : valeur basse 14,37:1 · valeur haute 1,37:1
+       ordinale     sur navy : valeur basse  8,47:1 · valeur haute 2,43:1
+
+   Autrement dit : sur une heatmap d'émissions, l'œil était attiré par les
+   territoires les plus SOBRES, et les plus émetteurs disparaissaient dans le
+   fond. Le graphique disait exactement le contraire de la donnée.
+
+   La rampe divergente avait déjà été corrigée de cette façon ; ces deux-ci
+   ne l'avaient pas été.
+
+   INVARIANT DE SENS, quel que soit le thème :
+       --c-seq-100 / --c-ord-1  = valeur la PLUS BASSE, proche de la surface
+       --c-seq-900 / --c-ord-6  = valeur la PLUS HAUTE, la plus détachée
+
+   L'ordre des tokens ne change donc jamais : seules les valeurs changent.
+   Aucun composant consommateur n'est à modifier. */
 
 /* ---------- Thème DARK (défaut) ----------
    Near-black à cast lavande, accents lumineux et CONTRASTÉS. */
@@ -196,6 +212,31 @@
   --grad-abyss: radial-gradient(120% 90% at 50% -10%, #1a2238 0%, #0c1322 46%, #050811 100%);
   --shadow-glow: 0 0 44px -8px var(--c-accent-glow);
   --shadow-soft: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+
+  /* Rampe SÉQUENTIELLE — surface SOMBRE : on s'éloigne du navy à mesure que
+     la valeur monte. Contrastes mesurés : 2,03:1 au pas le plus bas (il
+     doit rester distinct du fond, sinon une valeur faible ressemble à un
+     trou dans la matrice) jusqu'à 12,84:1 au plus haut. */
+  --c-seq-100: #3b4593;
+  --c-seq-200: #4e58a1;
+  --c-seq-300: #616aae;
+  --c-seq-400: #747dbc;
+  --c-seq-500: #8790c9;
+  --c-seq-600: #9aa2d7;
+  --c-seq-700: #adb5e4;
+  --c-seq-800: #c0c7f2;
+  --c-seq-900: #d3daff;
+
+  /* Rampe ORDINALE — surface SOMBRE. Les quatre contrôles du validateur
+     passent sur cette surface : clarté monotone, écarts ΔL ≥ 0,06,
+     plancher de contraste du pas le plus proche du fond (2,27:1), teinte
+     unique (étalement 2°). */
+  --c-ord-1: #414c96;
+  --c-ord-2: #5b66ab;
+  --c-ord-3: #757fc0;
+  --c-ord-4: #8e99d5;
+  --c-ord-5: #a8b2ea;
+  --c-ord-6: #c2ccff;
 
   /* Rampe DIVERGENTE — lavande ↔ rouge, centre gris neutre.
      Pour les grandeurs à VRAIE polarité autour d'un zéro qui a un sens
@@ -284,6 +325,28 @@
   --grad-abyss: radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #eef1f7 50%, #e1e6f0 100%);
   --shadow-glow: 0 0 30px -10px var(--c-accent-glow);
   --shadow-soft: 0 24px 60px -32px rgba(18, 26, 48, 0.24);
+
+  /* Rampe SÉQUENTIELLE — surface CLAIRE : valeurs d'origine, elles étaient
+     déjà justes ici. Le pas le plus clair vaut « ~zéro » et a le droit de
+     se fondre dans le papier. */
+  --c-seq-100: #e1e7fe;
+  --c-seq-200: #c4cefd;
+  --c-seq-300: #a7b6fc;
+  --c-seq-400: #8999f6;
+  --c-seq-500: #6f7de9;
+  --c-seq-600: #5965cb;
+  --c-seq-700: #4751a4;
+  --c-seq-800: #353d7e;
+  --c-seq-900: #272d5e;
+
+  /* Rampe ORDINALE — surface CLAIRE : valeurs d'origine (2,09:1 au pas le
+     plus clair). */
+  --c-ord-1: #a6b1e6;
+  --c-ord-2: #8e9be2;
+  --c-ord-3: #7685e3;
+  --c-ord-4: #626fd9;
+  --c-ord-5: #5661b0;
+  --c-ord-6: #4a5388;
 
   /* Rampe DIVERGENTE, version surface claire : mêmes teintes, profil de
      clarté INVERSÉ (pôles sombres, ils ressortent sur du blanc).

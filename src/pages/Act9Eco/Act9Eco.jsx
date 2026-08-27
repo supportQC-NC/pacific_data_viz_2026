@@ -19,7 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchEco } from "../../services/ecoApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
-import DatasetSwitcher from "../../components/DatasetSwitcher/DatasetSwitcher";
+import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
@@ -35,6 +35,12 @@ import CoverageChart from "../../components/charts/CoverageChart";
 import TreemapChart from "../../components/charts/TreemapChart";
 import ParetoChart from "../../components/charts/ParetoChart";
 import DonutChart from "../../components/charts/DonutChart";
+// Le visuel de la Home qui porte un des deux jeux de cette escale :
+// TourismBeach lit `tourism`, exactement le jeu du sélecteur. Il reste monté
+// sur la page d'accueil ; on l'ajoute ici, on ne le déplace pas.
+// Les recettes fiscales n'ont pas de visuel sur la Home : on n'en invente
+// pas un pour la symétrie.
+import TourismBeach from "../../components/TourismBeach/TourismBeach";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act9Eco.scss";
 
@@ -219,8 +225,28 @@ function subAverages(all, years, t) {
     .filter(Boolean);
 }
 
+// Deux mesures économiques de natures différentes : un flux de visiteurs et
+// une recette publique. Elles ne se comparent pas entre elles.
+const SOURCE_TOUR_FR =
+  "Arrivées de touristes internationaux, via le Pacific Data Hub — un décompte d'arrivées, pas de personnes : un même visiteur revenu deux fois compte deux fois.";
+const SOURCE_TOUR_EN =
+  "International tourist arrivals, via the Pacific Data Hub - a count of arrivals, not of people: one visitor returning twice counts twice.";
+const SOURCE_TAX_FR =
+  "Recettes fiscales, via le Pacific Data Hub — en part du PIB. Une part qui monte peut venir d'une recette qui monte comme d'un PIB qui baisse.";
+const SOURCE_TAX_EN =
+  "Tax revenue, via the Pacific Data Hub - as a share of GDP. A rising share can come from rising revenue or from falling GDP.";
+
 export default function Act9Eco() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
   const [state, setState] = useState({ status: "loading", data: null });
   const [region, setRegion] = useState("all");
@@ -606,36 +632,9 @@ export default function Act9Eco() {
     };
   }, [M.series, M.years, M.B, M.unit, tk, t]);
 
-  const kpiItems = useMemo(() => {
-    if (!M.rank.length) return [];
-    const sorted = [...M.rank].sort((a, b) => a.value - b.value);
-    const high = sorted[sorted.length - 1];
-    const low = sorted[0];
-    const med = median(M.rank.map((r) => r.value));
-    return [
-      {
-        key: "med",
-        value: fmtVal(med),
-        unit: M.unit,
-        label: t("act9.board.kpi_med"),
-        tone: "accent",
-      },
-      {
-        key: "high",
-        value: fmtVal(high.value),
-        unit: high.name,
-        label: t("act9.board.kpi_high"),
-        tone: "positive",
-      },
-      {
-        key: "low",
-        value: fmtVal(low.value),
-        unit: low.name,
-        label: t("act9.board.kpi_low"),
-        tone: "warm",
-      },
-    ];
-  }, [M.rank, M.unit, t]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
+  // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
+  // touché ; les chiffres seront remontés ailleurs.
 
   const cmpLabels = { up: t("act6.compare_up"), down: t("act6.compare_down") };
 
@@ -681,26 +680,29 @@ export default function Act9Eco() {
         ? "loading"
         : "empty";
 
+  // Les deux sélecteurs de l'escale passent en menus déroulants. Les listes
+  // d'items existantes ({ id, label, … }) sont réutilisées telles quelles :
+  // on ne les redéfinit pas, on les adapte à la forme attendue.
+  const asOptions = (items) =>
+    (items || []).map((it) => ({ value: it.id, label: it.label }));
+
   const filtersEl = (
     <>
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act9.board.metric_label")}
-        items={metricItems}
         value={metric}
         onChange={setMetric}
-        iconOnly
-        hideSpark
+        options={asOptions(metricItems)}
       />
-      <DatasetSwitcher
+      <ChartFilter
         label={t("act1.filter.title")}
-        items={regionItems}
+        hideLabel
         value={region}
         onChange={(k) => {
-          setRegion(k);
-          setCountry("all");
-        }}
-        dense
-        hideSpark
+        setRegion(k);
+        setCountry("all");
+      }}
+        options={asOptions(regionItems)}
       />
     </>
   );
@@ -720,9 +722,90 @@ export default function Act9Eco() {
     t("act9.spotlight.n5"),
   ];
 
+  // Ce que portent les axes change avec l'indicateur : un décompte d'arrivées
+  // ou une part du PIB. Les deux sont des GRANDEURS — pas de zéro chargé de
+  // sens, donc une seule teinte.
+  const key =
+    metric === "tax"
+      ? {
+          y: tx(
+            "act9.key.tax_y",
+            "Recettes fiscales, en part du PIB. C'est un rapport : il bouge quand la recette bouge, mais aussi quand le PIB bouge.",
+            "Tax revenue as a share of GDP. It is a ratio: it moves when revenue moves, but also when GDP does.",
+          ),
+          x: tx("act9.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act9.key.mag_c",
+            "Une seule teinte : plus elle est marquée, plus la valeur est élevée. C'est une grandeur, pas un jugement.",
+            "A single hue: the stronger it is, the higher the value. A magnitude, not a judgement.",
+          ),
+          note: tx("act9.key.tax_note", SOURCE_TAX_FR, SOURCE_TAX_EN),
+          swatch: "magnitude",
+        }
+      : {
+          y: tx(
+            "act9.key.tour_y",
+            "Arrivées de touristes internationaux. Ce sont des arrivées, pas des personnes : un visiteur revenu deux fois compte deux fois.",
+            "International tourist arrivals. These are arrivals, not people: a visitor returning twice counts twice.",
+          ),
+          x: tx("act9.key.year_x", "Les années, de la plus ancienne à la plus récente.", "Years, oldest to most recent."),
+          color: tx(
+            "act9.key.mag_c",
+            "Une seule teinte : plus elle est marquée, plus la valeur est élevée. C'est une grandeur, pas un jugement.",
+            "A single hue: the stronger it is, the higher the value. A magnitude, not a judgement.",
+          ),
+          note: tx("act9.key.tour_note", SOURCE_TOUR_FR, SOURCE_TOUR_EN),
+          swatch: "magnitude",
+        };
+
   const charts =
     status === "ready"
       ? [
+          // ---------- Le visuel interactif, en ouverture -------------------
+          // `TourismBeach` — la plage de la Home, en SVG et interactive
+          // (sélecteur de territoire, parasols qui se multiplient). Elle lit
+          // `tourism`, exactement le jeu du sélecteur, et n'apparaît donc que
+          // sur cet indicateur.
+          //
+          // Elle ouvre parce qu'un décompte à six chiffres ne se ressent pas :
+          // le dessin lui donne une densité avant que les courbes ne le
+          // mettent en série.
+          metric === "tour" && {
+            id: "beach",
+            empty: false,
+            tab: tx("act9.board.tab_plage", "Plage", "Beach"),
+            title: tx(
+              "act9.viz.beach_title",
+              "Les arrivées de touristes, territoire par territoire",
+              "Tourist arrivals, territory by territory",
+            ),
+            finding: tx(
+              "act9.viz.beach_find",
+              "Choisissez un territoire : la plage se remplit à la mesure de ses arrivées.",
+              "Pick a territory: the beach fills up to match its arrivals.",
+            ),
+            takeaway: tx(
+              "act9.viz.beach_take",
+              "Des arrivées, pas des personnes ni des nuitées : un visiteur revenu deux fois compte deux fois, et une escale d'une journée compte autant qu'un séjour d'un mois.",
+              "Arrivals, not people or nights: a visitor returning twice counts twice, and a day stop counts the same as a month-long stay.",
+            ),
+            hint: tx(
+              "act9.hint.beach",
+              "Changez de territoire avec le sélecteur sous le visuel.",
+              "Switch territory with the selector below the visual.",
+            ),
+            legend: {
+              color: tx(
+                "act9.key.beach_c",
+                "La plage se densifie avec le nombre d'arrivées du territoire choisi.",
+                "The beach gets busier with the chosen territory's number of arrivals.",
+              ),
+              note: tx("act9.key.tour_note", SOURCE_TOUR_FR, SOURCE_TOUR_EN),
+              // Le dessin encode par une DENSITÉ, pas par une teinte.
+              swatch: "none",
+            },
+            node: <TourismBeach embed />,
+          },
           {
             id: "trend",
             signature: true,
@@ -731,6 +814,12 @@ export default function Act9Eco() {
             title: M.titles.trend,
             finding: t("act9.board.trend_find"),
             takeaway: t("act9.board.trend_take"),
+            legend: key,
+            hint: tx(
+              "act9.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act9b__fit">
                 <TrendLines
@@ -745,10 +834,16 @@ export default function Act9Eco() {
           {
             id: "multiples",
             empty: M.series.length === 0,
-            tab: t("act9.board.tab_multiples"),
+            tab: tx("act9.board.tab_multiples_1", "Multiples", "Multiples"),
             title: M.titles.multiples,
             finding: t("act9.board.multiples_find"),
             takeaway: t("act9.board.multiples_take"),
+            legend: key,
+            hint: tx(
+              "act9.hint.multiples",
+              "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
+              "Every panel shares one scale: they compare at a glance.",
+            ),
             node: (
               <div className="act9b__scroll">
                 <SmallMultiples
@@ -767,7 +862,7 @@ export default function Act9Eco() {
           {
             id: "compo",
             empty: !M.stack || M.stack.length === 0,
-            tab: t("act9.board.tab_compo"),
+            tab: tx("act9.board.tab_composition", "Composition", "Mix"),
             title: M.titles.compo,
             finding: M.compoFind,
             takeaway: M.compoTake,
@@ -784,10 +879,29 @@ export default function Act9Eco() {
           metric === "tour" && {
             id: "tree",
             empty: tourTree.length === 0,
-            tab: t("act9.board.tab_tree"),
+            tab: tx("act9.board.tab_pavage", "Pavage", "Treemap"),
             title: t("act9.tour_tree_title"),
             finding: t("act9.board.tree_find"),
             takeaway: t("act9.board.tree_take"),
+            legend: {
+              y: tx(
+                "act9.key.part_y",
+                "La surface de chaque pavé porte la part du territoire dans le total.",
+                "Each tile's area carries that territory's share of the total.",
+              ),
+              color: tx(
+                "act9.key.entity_c",
+                "Une couleur par territoire, stable d'une vue à l'autre : la teinte suit le territoire, jamais son rang.",
+                "One colour per territory, stable across views: the hue follows the territory, never its rank.",
+              ),
+              note: key.note,
+              swatch: "none",
+            },
+            hint: tx(
+              "act9.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act9b__fit">
                 <TreemapChart points={tourTree} unit={t("act9.tour_unit")} />
@@ -797,10 +911,24 @@ export default function Act9Eco() {
           metric === "tour" && {
             id: "pareto",
             empty: tourPareto.length < 2,
-            tab: t("act9.board.tab_pareto"),
+            tab: tx("act9.board.tab_concentration", "Concentration", "Concentration"),
             title: t("act9.tour_pareto_title"),
             finding: t("act9.board.pareto_find"),
             takeaway: t("act9.board.pareto_take"),
+            legend: {
+              ...key,
+              y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act9.key.pareto_x",
+                "Le cumul des territoires, du plus grand au plus petit : où passe la moitié du total.",
+                "Territories accumulated largest to smallest: where half the total is reached.",
+              ),
+            },
+            hint: tx(
+              "act9.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act9b__fit">
                 <ParetoChart
@@ -814,10 +942,29 @@ export default function Act9Eco() {
           metric === "tax" && {
             id: "donut",
             empty: taxDonut.values.length === 0,
-            tab: t("act9.board.tab_donut"),
+            tab: tx("act9.board.tab_anneau", "Anneau", "Donut"),
             title: t("act9.tax_donut_title"),
             finding: t("act9.board.donut_find"),
             takeaway: t("act9.board.donut_take"),
+            legend: {
+              y: tx(
+                "act9.key.part_y",
+                "La surface de chaque pavé porte la part du territoire dans le total.",
+                "Each tile's area carries that territory's share of the total.",
+              ),
+              color: tx(
+                "act9.key.entity_c",
+                "Une couleur par territoire, stable d'une vue à l'autre : la teinte suit le territoire, jamais son rang.",
+                "One colour per territory, stable across views: the hue follows the territory, never its rank.",
+              ),
+              note: key.note,
+              swatch: "none",
+            },
+            hint: tx(
+              "act9.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act9b__fit">
                 <DonutChart
@@ -837,6 +984,12 @@ export default function Act9Eco() {
             title: M.titles.rank,
             finding: t("act9.board.race_find"),
             takeaway: t("act9.board.race_take"),
+            legend: { ...key, y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            hint: tx(
+              "act9.hint.race",
+              "Lancez l'animation : les barres se réordonnent au fil des années.",
+              "Press play: the bars reorder themselves year after year.",
+            ),
             node: (
               <BarRace
                 series={M.race}
@@ -854,10 +1007,25 @@ export default function Act9Eco() {
           {
             id: "change",
             empty: M.dumb.length === 0,
-            tab: t("act9.board.tab_change"),
+            tab: tx("act9.board.tab_evolution", "Évolution", "Change"),
             title: `${M.titles.change} · ${M.A}–${M.B}`,
             finding: t("act9.board.change_find"),
             takeaway: t("act9.board.change_take"),
+            legend: {
+              ...key,
+              y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.y,
+              color: tx(
+                "act9.key.dumb_c",
+                "Le point clair marque la première année, le point foncé la dernière : la barre entre les deux est le chemin parcouru.",
+                "The light dot marks the first year, the dark dot the last: the bar between them is the distance travelled.",
+              ),
+            },
+            hint: tx(
+              "act9.hint.change",
+              "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
+              "Compare bar lengths: they show how much changed, not the level reached.",
+            ),
             node: (
               <DumbbellChart
                 rows={M.dumb}
@@ -871,10 +1039,22 @@ export default function Act9Eco() {
           {
             id: "heat",
             empty: M.series.length === 0,
-            tab: t("act9.board.tab_heat"),
+            tab: tx("act9.board.tab_matrice", "Matrice", "Matrix"),
             title: M.titles.heat,
             finding: t("act9.board.heat_find"),
             takeaway: t("act9.board.heat_take"),
+            legend: {
+              y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: key.x,
+              color: key.color,
+              note: key.note,
+              swatch: key.swatch,
+            },
+            hint: tx(
+              "act9.hint.heat",
+              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
+              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
+            ),
             node: (
               <div className="act9b__fit">
                 <ApexChart options={heatOptions} />
@@ -884,10 +1064,24 @@ export default function Act9Eco() {
           {
             id: "radar",
             empty: M.sub.length < 2,
-            tab: t("act9.board.tab_radar"),
+            tab: tx("act9.board.tab_profil", "Profil", "Profile"),
             title: t("act9.board.radar_title"),
             finding: t("act9.board.radar_find"),
             takeaway: t("act9.board.radar_take"),
+            legend: {
+              ...key,
+              y: tx(
+                "act9.key.radar_y",
+                "Chaque branche est une sous-région ; la distance au centre porte la valeur.",
+                "Each spoke is a sub-region; distance from the centre carries the value.",
+              ),
+              x: tx("act9.key.radar_x", "Les sous-régions, tout autour.", "The sub-regions, all around."),
+            },
+            hint: tx(
+              "act9.hint.hover",
+              "Survolez le tracé pour lire une valeur précise.",
+              "Hover the plot to read a single value.",
+            ),
             node: (
               <div className="act9b__fit">
                 <RadarChart subAvg={M.sub} years={M.years} />
@@ -897,10 +1091,16 @@ export default function Act9Eco() {
           {
             id: "map",
             empty: M.rank.length === 0,
-            tab: t("act9.board.tab_map"),
+            tab: tx("act9.board.tab_carte", "Carte", "Map"),
             title: `${t("act9.board.map_title")} · ${M.B}`,
             finding: t("act9.board.map_find"),
             takeaway: t("act9.board.map_take"),
+            legend: { color: key.color, note: key.note, swatch: key.swatch },
+            hint: tx(
+              "act9.hint.map",
+              "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
+              "Spin the globe and hover a territory to read its value.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -916,7 +1116,12 @@ export default function Act9Eco() {
                     data={M.rank}
                     unit={M.unit}
                     range={mapRange}
-                    ramp="good"
+                    // Un décompte d'arrivées ou une part du PIB : deux
+                    // GRANDEURS, sans zéro chargé de sens. La rampe
+                    // « good » ne fait partie d'aucun des trois encodages
+                    // du système.
+                    ramp="magnitude"
+                    mid={null}
                     lowLabel={t("act6.heatmap_low")}
                     highLabel={t("act6.heatmap_high")}
                     noTokenMsg={t("act1.map_no_token")}
@@ -976,10 +1181,13 @@ export default function Act9Eco() {
       eyebrow={t("act9.tag")}
       title={t("act9.title")}
       thesis={t("act9.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       filters={filtersEl}
       charts={charts}
+      // Disposition du template d'escale : barre unique (navigation entre
+      // escales ET entre vues sur une seule rangée), décor de l'escale en
+      // fond, colonne de lecture à droite, hauteurs de tracé égales d'une
+      // vue à l'autre. Voir ActBoard.scss § FOCUS. Modèle : escale 02.
+      focus
       nav="carousel"
       progress={{ index: 11, total: 12 }}
       labels={{
@@ -996,7 +1204,6 @@ export default function Act9Eco() {
         conclusion: t("act9.board.conclusion"),
         backIntro: t("act9.board.back_intro"),
         reviseData: t("act9.board.revise_data"),
-        viewGroup: t("act9.board.group_view"),
       }}
       outro={{
         kicker: t("act9.outro.kicker"),

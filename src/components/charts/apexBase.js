@@ -69,7 +69,7 @@ export const baseGrid = (tk, extra = {}) => ({
 // plus contrastée. La donnée peut perdre quelques pixels de hauteur ; sa
 // légende, non.
 export const CHROME_FS = "12.5px";
-export const AXIS_FS = "12.5px";
+export const AXIS_FS = "13.5px";
 
 export const baseLegend = (tk, extra = {}) => ({
   show: true,
@@ -87,10 +87,14 @@ export const baseXaxis = (tk, extra = {}) => ({
   axisBorder: { show: true, color: tk.line },
   axisTicks: { show: true, color: tk.line },
   labels: {
-    style: { colors: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
+    // Encre PLEINE. Les graduations sont la mesure elle-même : à contraste
+    // réduit, on lit la forme de la courbe sans jamais savoir ce qu'elle
+    // vaut. Les intitulés d'axe, eux, restent en retrait — ce sont des
+    // étiquettes, pas des chiffres.
+    style: { colors: tk.text, fontFamily: MONO, fontSize: AXIS_FS },
   },
   title: {
-    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: AXIS_FS },
+    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: "12px" },
   },
   crosshairs: { stroke: { color: tk.line, dashArray: 3 } },
   tooltip: { enabled: false },
@@ -101,10 +105,10 @@ export const baseYaxis = (tk, extra = {}) => ({
   axisBorder: { show: false, color: tk.line },
   axisTicks: { show: false, color: tk.line },
   labels: {
-    style: { colors: tk.textSoft, fontFamily: MONO, fontSize: AXIS_FS },
+    style: { colors: tk.text, fontFamily: MONO, fontSize: AXIS_FS },
   },
   title: {
-    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: AXIS_FS },
+    style: { color: tk.textSoft, fontFamily: MONO, fontWeight: 400, fontSize: "12px" },
   },
   ...extra,
 });

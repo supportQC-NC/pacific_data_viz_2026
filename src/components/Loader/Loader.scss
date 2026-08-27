@@ -256,3 +256,99 @@ $progress-w: 220px;
   .loader__bar { transform: scaleY(0.6); }
   .loader__scan { display: none; }
 }
+/* ============================================================
+   ATTENTE EN LIGNE — LA PIROGUE EN FILIGRANE
+   ------------------------------------------------------------
+   Remplace le balayage de barres et les trois points. Deux raisons :
+
+   1. C'est l'attente qu'on croise le plus, celle des graphiques. Un motif
+      « système occupé » y installe un vocabulaire d'application, alors que
+      tout le reste raconte une traversée.
+   2. En filigrane, elle n'attire pas l'œil. Une attente ne doit pas être
+      plus visible que ce qu'elle annonce : elle tient la place que la
+      donnée va prendre, sans prétendre être la donnée.
+
+   Le tangage est lent et de faible amplitude — assez pour dire que ça
+   avance, pas assez pour qu'on le regarde.
+   ============================================================ */
+
+.loader__vaa {
+  display: block;
+  width: clamp(96px, 14vw, 168px);
+  opacity: 0.22;
+  animation: loaderVaaDrift 3.6s var(--ease-soft) infinite;
+}
+
+.loader--compact .loader__vaa {
+  width: clamp(72px, 9vw, 112px);
+}
+
+@keyframes loaderVaaDrift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1.2deg);
+  }
+}
+
+/* La coque du composant partagé se remplit avec le fond de page ; sur un
+   panneau elle créerait une découpe opaque. En filigrane, on la laisse
+   traverser. */
+.loader__vaa .vaacraft__hull {
+  fill: none;
+}
+
+.loader__vaa .vaacraft__shadow {
+  display: none;
+}
+
+.loader__label {
+  animation: loaderLabelPulse 2.4s var(--ease-soft) infinite;
+}
+
+@keyframes loaderLabelPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader__vaa,
+  .loader__label {
+    animation: none;
+  }
+}
+
+/* Attente plein écran d'une escale : même pirogue, posée au-dessus du
+   libellé, sur l'image de l'escale. */
+.loader-overlay--minimal {
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.loader-overlay__vaa {
+  display: block;
+  width: clamp(120px, 16vw, 200px);
+  opacity: 0.3;
+  animation: loaderVaaDrift 3.6s var(--ease-soft) infinite;
+}
+
+.loader-overlay__vaa .vaacraft__hull {
+  fill: none;
+}
+
+.loader-overlay__vaa .vaacraft__shadow {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-overlay__vaa {
+    animation: none;
+  }
+}

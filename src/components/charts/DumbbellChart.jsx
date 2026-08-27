@@ -55,14 +55,14 @@ export default function DumbbellChart({ rows = [], unit = "", startLabel = "", e
       grid: baseGrid(tk),
       xaxis: baseXaxis(tk, {
         type: "numeric",
-        title: { text: unit, style: { color: tk.textMute, fontFamily: "IBM Plex Mono", fontWeight: 400, fontSize: "11px" } },
+        title: { text: unit, style: { color: tk.textMute, fontFamily: "DM Mono", fontWeight: 400, fontSize: "11px" } },
         labels: {
-          style: { colors: tk.textMute, fontFamily: "IBM Plex Mono", fontSize: "11px" },
+          style: { colors: tk.textMute, fontFamily: "DM Mono", fontSize: "11px" },
           formatter: (v) => fmt(Number(v), decimals),
         },
       }),
       yaxis: baseYaxis(tk, {
-        labels: { style: { colors: tk.textSoft, fontFamily: "Hanken Grotesk", fontSize: "12px" } },
+        labels: { style: { colors: tk.textSoft, fontFamily: "Figtree", fontSize: "12px" } },
       }),
       tooltip: baseTooltip({
         custom: ({ dataPointIndex }) => {

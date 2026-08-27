@@ -80,6 +80,11 @@ export default function EnergyCell({ embed = false, code = null } = {}) {
 
   const energy = useSelector(selectDataset("renewables"));
 
+  // « Épinglé » : le territoire est imposé par l'appelant. Sans `code`, le
+  // visuel embarqué se comporte comme sur la Home — sélection par défaut et
+  // commandes visibles — au lieu de ne rien afficher du tout.
+  const pinned = embed && Boolean(code);
+
   useEffect(() => {
     dispatch(loadDataset("renewables"));
   }, [dispatch]);
@@ -127,7 +132,7 @@ export default function EnergyCell({ embed = false, code = null } = {}) {
 
   const [selected, setSelected] = useState(null);
   useEffect(() => {
-    if (embed) return;
+    if (pinned) return;
     if (!list.length) return;
     if (!selected || !byCode[selected]) {
       setSelected(byCode.FJ ? "FJ" : list[0].code);
@@ -301,7 +306,7 @@ export default function EnergyCell({ embed = false, code = null } = {}) {
 
         {ready && sel && (
           <div className={`energycell__stage ${embed ? "energycell__stage--embed" : ""}`}>
-            {!embed && (
+            {!pinned && (
             <div className="energycell__controls">
               <label className="energycell__field">
                 <span className="energycell__field-label">
