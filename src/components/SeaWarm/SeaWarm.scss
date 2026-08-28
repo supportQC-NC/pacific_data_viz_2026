@@ -57,23 +57,47 @@
   color: var(--c-warm);
 }
 
-/* ---------------- Scène (3 colonnes) ---------------- */
+/* ---------------- Scène (2 colonnes) ----------------
+   Trois colonnes de largeur comparable — commandes, dessin, lecture — ne
+   disaient pas laquelle regarder. Il n'y a pourtant qu'un objet dans cette
+   section : l'instrument. Les commandes sont entrées dedans (voir
+   `.sea__overlay`), et ce qui reste à côté n'est plus qu'une légende
+   chiffrée. */
 .sea__stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: var(--sp-12);
   align-items: center;
 }
 
-.sea__controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-6);
-  justify-self: end;
+/* ---------------- La surcouche de commandes ----------------
+   Elle doit recouvrir EXACTEMENT le SVG, et rien d'autre : le rapport du
+   viewBox (320 × 300) lui donne sa hauteur, sans quoi elle déborderait sur la
+   légende posée sous le dessin et les pastilles descendraient trop bas.
+
+   Elle est transparente au pointeur, sauf sur les contrôles eux-mêmes : un
+   rectangle plein posé sur le dessin avalerait tout survol. */
+.sea__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 320px;
+  aspect-ratio: 320 / 300;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
 }
+
+/* LE TERRITOIRE, DANS LE CIEL. En haut à gauche : c'est par là que la lecture
+   commence, et c'est la seule zone que le dessin laisse franchement vide — la
+   tige ne démarre qu'à 47 % de la largeur. */
 .sea__field {
+  position: absolute;
+  left: 4%;
+  top: 4%;
+  width: 44%;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -90,8 +114,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: 0 var(--sp-4);
-  height: 52px;
+  padding: 0 var(--sp-3);
+  height: 46px;
   border: var(--border-hair) solid var(--c-line-strong);
   border-radius: var(--r-md);
   background: var(--c-surface);
@@ -140,19 +164,159 @@
   font-size: var(--fs-sm);
   pointer-events: none;
 }
+/* LES DEUX EXTRÊMES, À LA HAUTEUR QU'ILS DÉSIGNENT.
+   Le plus chaud EN HAUT, le plus frais EN BAS, du côté des graduations : sur
+   un thermomètre, la chaleur monte. La position des deux pastilles porte donc
+   la même information que leur libellé — on peut les lire sans les lire.
+
+   Leur bord gauche tombe à 68,5 % de la largeur, juste après le dernier
+   chiffre des graduations (x ≈ 210 dans le viewBox) : elles longent l'échelle
+   sans jamais la couvrir. */
 .sea__chips {
+  position: absolute;
+  right: 2.5%;
+  top: 4%;
+  bottom: 5%;
+  width: 29%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: space-between;
   gap: var(--sp-2);
 }
-.sea__chip {
-  display: inline-flex;
+
+/* Le groupe pastille + liste : c'est lui qui porte le survol, pas le bouton,
+   sinon la liste se referme dès qu'on quitte la pastille pour l'atteindre. */
+.sea__chipwrap {
+  position: relative;
+}
+
+/* COMPTEUR D'EX ÆQUO. Il n'apparaît qu'au-delà d'un territoire : afficher
+   « 1 » sur chaque pastille ajouterait du bruit pour ne rien dire. */
+/* Le libellé tient sa propre ligne, sur toute la largeur de la carte. */
+.sea__chip-lab {
+  grid-column: 1 / -1;
+  line-height: 1.2;
+}
+
+.sea__chip-count {
+  grid-column: 2;
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--r-pill);
+  background: var(--c-line);
+  color: var(--c-text);
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LA LISTE DES EX ÆQUO.
+   Elle s'ouvre du côté où il y a de la place : la pastille du haut la déroule
+   vers le bas, celle du bas vers le haut. Et elle est ancrée à DROITE, parce
+   que les pastilles longent le bord droit du cadre — alignée à gauche, la
+   liste sortirait du dessin. */
+.sea__ties {
+  position: absolute;
+  bottom: calc(100% + var(--sp-2));
+  right: 0;
+  z-index: 5;
+  min-width: 14rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 35%);
+}
+
+.sea__chipwrap--warm .sea__ties {
+  top: calc(100% + var(--sp-2));
+  bottom: auto;
+}
+
+.sea__ties-head {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--c-text-mute);
+}
+
+.sea__ties-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.sea__ties-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  border: var(--border-hair) solid var(--c-line);
-  border-radius: var(--r-pill);
+  width: 100%;
+  padding: var(--sp-2);
+  border: 0;
+  border-radius: var(--r-sm);
   background: transparent;
+  color: var(--c-text-soft);
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--c-bg-2);
+    color: var(--c-text);
+  }
+
+  &.is-on {
+    background: var(--c-bg-2);
+    color: var(--c-text);
+  }
+}
+
+.sea__ties-flag {
+  width: 1.1rem;
+  height: auto;
+  border-radius: 2px;
+}
+
+.sea__ties-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea__ties-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text-mute);
+}
+/* Posée sur l'eau ou sur le ciel, la pastille a besoin de son propre fond :
+   en transparent, son libellé se serait dilué dans le bleu profond de la mer.
+   Elle passe donc de la pilule à la petite carte — le libellé tient sa ligne,
+   la valeur et le compteur d'ex æquo la suivent dessous, ce qui la fait tenir
+   dans la bande étroite laissée libre à droite des graduations. */
+.sea__chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px var(--sp-2);
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
   color: var(--c-text-soft);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -164,7 +328,9 @@
     background var(--t-fast) var(--ease-out);
 
   em {
+    grid-column: 1;
     font-style: normal;
+    font-size: var(--fs-sm);
     font-weight: var(--fw-bold);
     color: var(--c-accent);
   }
@@ -179,15 +345,25 @@
   }
 }
 
-/* ---- Colonne 2 : l'océan + thermomètre ---- */
+/* La couleur de la valeur reprend celle du mercure : corail au-dessus de la
+   médiane, lavande en dessous. Un repère de plus qu'on n'a pas à lire. */
+.sea__chipwrap--warm .sea__chip em {
+  color: var(--c-warm);
+}
+.sea__chipwrap--cool .sea__chip em {
+  color: var(--c-accent);
+}
+
+/* ---- L'instrument : l'océan, le thermomètre, la surcouche ---- */
 .sea__viz {
+  position: relative;
   margin: 0;
   justify-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 360px;
+  max-width: 480px;
 }
 .sea__svg {
   display: block;
@@ -226,45 +402,164 @@
 }
 
 /* Thermomètre */
-.sea__glass-fill {
+/* ---------- LE THERMOMÈTRE, RENDU COMME UN INSTRUMENT ----------
+   Le dessin portait un tube plat, un trait de reflet et six graduations
+   muettes. Ce qui manque à un pictogramme pour devenir un instrument tient
+   en trois choses : de la MATIÈRE (le verre a une épaisseur, le liquide un
+   reflet), une ÉCHELLE (des traits en face de valeurs) et une IDENTITÉ (on
+   sait ce qu'on mesure).
+
+   La teinte du mercure, elle, ne bouge pas : ambre au-dessus de la normale,
+   bleu au-dessous, comme la matrice, le globe et l'haltère de la même
+   escale. Un mercure rouge serait plus « vrai » et ferait de cette vue la
+   seule à parler une autre langue. */
+
+/* LE CORPS DE VERRE. Une tige et un réservoir d'un seul tenant, translucides
+   sur le fond de la scène — c'est ce qui distingue du verre d'un tube plein. */
+.sea__stem {
   fill: var(--c-surface);
-  fill-opacity: 0.55;
+  fill-opacity: 0.5;
 }
+
+/* L'ARÊTE PRISMATIQUE. Sur l'objet réel, la face avant du verre est taillée
+   en prisme : c'est elle qui grossit la colonne de mercure, sans quoi un
+   filet de quelques dixièmes de millimètre serait invisible. Ici elle se
+   traduit par une bande centrale plus claire, qui donne au dessin sa lecture
+   de « verre taillé » plutôt que de « tuyau ». */
+.sea__prism {
+  fill: var(--c-surface);
+  fill-opacity: 0.75;
+}
+
+/* L'ÉTRANGLEMENT du capillaire, juste au-dessus du réservoir. C'est le détail
+   qui fait qu'un thermomètre MÉDICAL retient son maximum au lieu de
+   redescendre — et il faut le secouer pour le remettre à zéro. */
+.sea__neck {
+  fill: var(--c-surface);
+  fill-opacity: 0.95;
+  stroke: var(--c-text-soft);
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+}
+
 .sea__glass {
   stroke: var(--c-text-soft);
-  stroke-width: 2.4;
+  stroke-width: 1.6;
+  stroke-opacity: 0.7;
 }
-.sea__shine {
-  stroke: var(--c-text);
-  stroke-width: 2;
-  stroke-linecap: round;
-  opacity: 0.25;
+
+/* Reflet spéculaire le long de l'arête et du réservoir : c'est lui qui donne
+   au verre son épaisseur. Posé PAR-DESSUS le mercure, comme la paroi qu'il
+   représente. */
+.sea__merc-shine {
+  fill: #fff;
+  opacity: 0.3;
 }
+
+.sea__bulb-shine {
+  fill: #fff;
+  opacity: 0.22;
+}
+
 .sea__merc--warm {
   fill: var(--c-warm);
 }
+
 .sea__merc--cool {
   fill: var(--c-accent);
 }
-.sea__ticks line {
-  stroke: var(--c-text-soft);
-  stroke-width: 1.6;
-  stroke-linecap: round;
+
+/* LE CODE DU TERRITOIRE, DANS LA BOULE.
+   Il se pose sur le mercure : le fond de page ne convient donc pas comme
+   couleur d'encre, c'est celle du RÉSERVOIR qu'il faut contraster. Les
+   jetons `--c-bg` et le mercure s'inversent ensemble d'un thème à l'autre —
+   mercure clair sur fond sombre, mercure foncé sur fond clair — de sorte que
+   la même règle tient dans les deux. */
+.sea__bulb-code {
+  fill: var(--c-bg);
+  font-family: var(--font-mono);
+  /* Le réservoir d'un thermomètre médical est une capsule étroite : deux
+     lettres y tiennent, pas plus, et à cette taille. */
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+  paint-order: stroke;
 }
+
+/* Graduations : deux longueurs, deux poids. Les majeures portent un chiffre,
+   les mineures rythment l'intervalle. */
+.sea__tick {
+  stroke: var(--c-text-soft);
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+  /* Bouts francs, pas arrondis : sur un instrument, une graduation est un
+     trait gravé. */
+  stroke-linecap: butt;
+}
+
+.sea__tick--major {
+  stroke-width: 1.5;
+  stroke-opacity: 0.9;
+}
+
+.sea__tick-lab {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  /* Chiffres à chasse fixe : sur une échelle, les valeurs doivent s'aligner
+     colonne par colonne. C'est exactement le cas que `tabular-nums` sert. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* LA NORMALE — une référence, pas une valeur. Elle traverse le tube au lieu
+   de l'effleurer, et porte son nom du côté opposé aux graduations pour ne
+   pas se lire comme l'une d'elles. */
 .sea__zero {
+  stroke: var(--c-text);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.sea__zero-tag {
+  fill: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-anchor: end;
+}
+
+/* LA MÉDIANE RÉGIONALE — le seuil qui commande la couleur du mercure.
+   Elle est donc tracée plus fort que la normale : trait plein contre
+   pointillés, encre pleine contre encre atténuée. Le lecteur doit pouvoir
+   répondre d'un coup d'œil à « pourquoi cette couleur ? ». */
+.sea__median-line {
   stroke: var(--c-text);
   stroke-width: 2;
   stroke-linecap: round;
 }
-.sea__zero-tag {
+
+.sea__median-tag {
   fill: var(--c-text-soft);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 8.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-anchor: end;
 }
 
-/* ---- Colonne 3 : lecture ---- */
+.sea__median-val {
+  fill: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-anchor: end;
+}
+
+/* ---- La lecture ---- */
 .sea__readout {
   display: flex;
   flex-direction: column;
@@ -368,13 +663,33 @@
     gap: var(--sp-8);
     text-align: center;
   }
-  .sea__controls,
   .sea__readout {
     justify-self: center;
     max-width: 420px;
     align-items: center;
   }
+
+  /* La surcouche ne tient plus : à cette largeur, la bande libre à droite des
+     graduations ferait 80 px. Les commandes redescendent donc SOUS le dessin,
+     dans le flux, plutôt que de l'écraser. */
+  .sea__overlay {
+    position: static;
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-4);
+    width: 100%;
+    margin-top: var(--sp-6);
+  }
+  .sea__field,
   .sea__chips {
+    position: static;
+    width: 100%;
+    max-width: 360px;
+  }
+  .sea__chips {
+    flex-direction: row;
     justify-content: center;
   }
   .sea__val,
@@ -437,11 +752,13 @@
     fill: var(--c-div-1);
   }
 
-  .sea__val--warm .sea__val-num {
+  .sea__val--warm .sea__val-num,
+  .sea__chipwrap--warm .sea__chip em {
     color: var(--c-div-9);
   }
 
-  .sea__val--cool .sea__val-num {
+  .sea__val--cool .sea__val-num,
+  .sea__chipwrap--cool .sea__chip em {
     color: var(--c-div-1);
   }
 }

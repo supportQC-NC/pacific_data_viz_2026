@@ -30,7 +30,16 @@ const EXTRA_STRINGS = {
       begin: "Découvrir", // remplace « Commencer l'expérience »
       sources: "Les sources",
       tb: { value_caption: "Incidence locale" },
-      sea: { value_caption: "Anomalie locale · vs normale 1971–2000" },
+      sea: {
+        value_caption: "Anomalie locale · vs normale 1971–2000",
+        // Étiquette du repère tracé SUR le thermomètre. Distincte de
+        // `median_label`, qui est la phrase de la légende sous le dessin :
+        // sur le tube il n'y a la place que d'un mot.
+        median_tag: "médiane",
+        // En-tête de la liste des territoires à égalité, au survol des
+        // pastilles « le plus chaud » / « le plus froid ».
+        ties_head: "{n} territoires à égalité",
+      },
       coast: { rate_caption: "Taux annuel · médiane des segments" },
     },
     chapters: {
@@ -149,7 +158,11 @@ const EXTRA_STRINGS = {
       begin: "Discover",
       sources: "The sources",
       tb: { value_caption: "Local incidence" },
-      sea: { value_caption: "Local anomaly · vs 1971–2000 normal" },
+      sea: {
+        value_caption: "Local anomaly · vs 1971–2000 normal",
+        median_tag: "median",
+        ties_head: "{n} territories tied",
+      },
       coast: { rate_caption: "Annual rate · median of segments" },
     },
     chapters: {

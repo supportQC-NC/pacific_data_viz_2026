@@ -375,10 +375,17 @@ export default function Act2Ocean() {
               "Switch islands with the selector below the thermometer.",
             ),
             legend: {
+              // DEUX ENCODAGES, DEUX SEUILS — il faut dire les deux, sinon le
+              // lecteur croit que la couleur redit la hauteur.
+              y: tx(
+                "act2.key.sea_y",
+                "La hauteur du mercure, c'est l'écart de l'île à SA normale 1971-2000. Le trait plein marque la médiane des vingt-et-un territoires.",
+                "The mercury height is the island's gap from ITS own 1971-2000 normal. The solid line marks the median of the twenty-one territories.",
+              ),
               color: tx(
-                "act2.key.sea_c",
-                "Le mercure monte quand l'eau dépasse sa normale, descend quand elle passe dessous.",
-                "High mercury: the water is above its normal. Low: below it.",
+                "act2.key.sea_c2",
+                "La teinte bascule au passage de cette médiane : ambre au-dessus, bleu en dessous. Elle situe l'île parmi ses voisines, pas contre sa propre normale — que tout le Pacifique dépasse désormais.",
+                "The hue flips as it crosses that median: amber above, blue below. It places the island among its neighbours, not against its own normal - which the whole Pacific now exceeds.",
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
