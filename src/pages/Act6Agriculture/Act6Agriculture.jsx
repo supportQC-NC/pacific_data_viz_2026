@@ -56,6 +56,7 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ChangeChart from "../../components/charts/ChangeChart";
 import TrendChart from "../../components/charts/TrendChart";
 import SlopeChart from "../../components/charts/SlopeChart";
+import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import { useDispatch, useSelector } from "react-redux";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import "./Act6Agriculture.scss";
@@ -510,7 +511,15 @@ export default function Act6Agriculture() {
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Les deux menus siégeaient dans la barre de l'escale, sous l'étiquette
+  // « Données ». Ils y pesaient sur toute la largeur, poussaient les onglets
+  // et laissaient croire à un réglage d'ensemble alors qu'ils ne servent pas
+  // à toutes les vues de la même façon.
+  //
+  // Chaque graphique porte donc les siennes, dans sa colonne de lecture — là
+  // où l'on voit ce qu'elles changent. L'en-tête n'a plus que la navigation.
+  const boardControls = (
     <>
       <ChartFilter
         label={t("act6.board.dataset_label")}
@@ -595,9 +604,163 @@ export default function Act6Agriculture() {
             swatch: "magnitude",
           };
 
+  // ---------- LES TROIS VISUELS DE L'ESCALE ----------------------------
+  // Ils occupaient chacun leur onglet. Or la barre énumère les ÉTAPES du
+  // raisonnement — tendance, matrice, carte — et trois dessins qui répondent
+  // à la même question n'en font pas trois. Regroupés sous une seule entrée,
+  // ils libèrent la barre, et le choix passe DANS le panneau.
+  //
+  // Chaque dessin garde son titre, sa phrase et sa clé de lecture : la
+  // colonne de droite reste exacte, ce qu'une fusion aurait perdu.
+  //
+  // La bascule suit le SÉLECTEUR DE MESURE, comme toutes les autres vues :
+  // les deux dessins de production ensemble, celui des sols seul. Face à un
+  // seul choix, `VizSwitch` ne s'affiche pas — un sélecteur à une option est
+  // un mensonge sur l'interface.
+  const VIZ = {
+    plant: {
+              id: "plant",
+              empty: false,
+              tab: tx("act6.board.tab_pousse", "Pousse", "Growth"),
+              title: tx(
+                "act6.viz.plant_title",
+                "Le rendement des cultures, territoire par territoire",
+                "Crop yield, territory by territory",
+              ),
+              finding: tx(
+                "act6.viz.plant_find",
+                "Choisissez un territoire : la plante suit son rendement.",
+                "Pick a territory: the plant follows its yield.",
+              ),
+              takeaway: tx(
+                "act6.viz.plant_take",
+                "Une plante plus haute ne dit pas une meilleure agriculture : elle dit plus de kilos par hectare déclaré. Le pourquoi n'est pas dans ce chiffre.",
+                "A taller plant does not mean better farming: it means more kilos per declared hectare. The why is not in this number.",
+              ),
+              hint: tx(
+                "act6.hint.plant",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act6.key.plant_c",
+                  "La plante grandit avec le rendement du territoire choisi, et se rétracte quand il baisse.",
+                  "The plant grows with the chosen territory's yield, and shrinks when it falls.",
+                ),
+                note: tx("act6.key.crop_note", SOURCE_CROP_FR, SOURCE_CROP_EN),
+                // La plante encode par une HAUTEUR, pas par une teinte.
+                swatch: "none",
+              },
+              node: <PlantGrowth embed />,
+            },
+    cattle: {
+              id: "cattle",
+              empty: false,
+              tab: tx("act6.board.tab_betail", "Bétail", "Livestock"),
+              title: tx(
+                "act6.viz.cattle_title",
+                "Le rendement de l'élevage, territoire par territoire",
+                "Livestock yield, territory by territory",
+              ),
+              finding: tx(
+                "act6.viz.cattle_find",
+                "Choisissez un territoire : l'animal suit son rendement.",
+                "Pick a territory: the animal follows its yield.",
+              ),
+              takeaway: tx(
+                "act6.viz.cattle_take",
+                "Des kilos par animal, pas un nombre d'animaux : un troupeau qui rétrécit peut très bien afficher un rendement qui monte.",
+                "Kilos per animal, not a head count: a shrinking herd can perfectly well post a rising yield.",
+              ),
+              hint: tx(
+                "act6.hint.cattle",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act6.key.cattle_c",
+                  "L'animal s'étoffe avec le rendement du territoire choisi.",
+                  "The animal fills out with the chosen territory's yield.",
+                ),
+                note: tx("act6.key.live_note", SOURCE_LIVE_FR, SOURCE_LIVE_EN),
+                swatch: "none",
+              },
+              node: <CattleThrive embed />,
+            },
+    forest: {
+              id: "forest",
+              empty: false,
+              tab: tx("act6.board.tab_sols", "Sols", "Land"),
+              title: tx(
+                "act6.viz.forest_title",
+                "L'occupation des sols, territoire par territoire",
+                "Land cover, territory by territory",
+              ),
+              finding: tx(
+                "act6.viz.forest_find",
+                "Choisissez un territoire : le couvert suit son indice d'occupation des sols.",
+                "Pick a territory: the cover follows its land-cover index.",
+              ),
+              takeaway: tx(
+                "act6.viz.forest_take",
+                "Base 100 en 2015 : ce visuel montre un écart à cette année-là, pas une surface. Deux territoires au même niveau n'ont pas la même forêt.",
+                "Base 100 in 2015: this shows a gap from that year, not an area. Two territories at the same level do not have the same forest.",
+              ),
+              hint: tx(
+                "act6.hint.forest",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act6.key.forest_c",
+                  "Le couvert se densifie quand l'indice dépasse sa base 2015, et s'éclaircit quand il passe dessous.",
+                  "The cover thickens when the index rises above its 2015 base, and thins when it falls below.",
+                ),
+                note: tx("act6.key.land_note", SOURCE_LAND_FR, SOURCE_LAND_EN),
+                swatch: "none",
+              },
+              node: <ForestCover embed />,
+            },
+  };
+
+  // SUR LA VUE DU VISUEL, LA BASCULE EST LE SÉLECTEUR DE JEU.
+  // Ses trois options — cultures, élevage, sols — sont exactement celles du
+  // menu « Données ». Afficher les deux côte à côte aurait dit deux fois la
+  // même chose, et laissé le lecteur se demander lequel commande. La bascule
+  // pilote donc `dataset` directement, et le dessin suit.
+  const VIZ_OF = { crop: "plant", livestock: "cattle", soil: "forest" };
+  const vizItems = [
+    { id: "crop", label: tx("act6.viz.sw_plant", "Cultures", "Crops") },
+    { id: "livestock", label: tx("act6.viz.sw_cattle", "Élevage", "Livestock") },
+    { id: "soil", label: tx("act6.viz.sw_forest", "Sols", "Land") },
+  ];
+  const activeViz = VIZ[VIZ_OF[dataset] || "plant"];
+
   const charts =
     status === "ready" && currentYear != null
       ? [
+          {
+            ...activeViz,
+            id: "viz",
+            // L'onglet porte le nom du dessin affiché — « Pousse », « Verre »,
+            // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
+            // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
+            // catégorie à laquelle il appartient.
+            node: (
+              <div className="vizpane">
+                <VizSwitch
+                  items={vizItems}
+                  value={dataset}
+                  onChange={setDataset}
+                  label={tx("act6.viz.sw_label", "Visuel", "Visual")}
+                />
+                <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
           // ---------- Les visuels interactifs, en ouverture ----------------
           // Trois dessins de la Home, un par jeu de données de l'escale, et
           // c'est exactement le même jeu qu'ils lisent — `cropYield`,
@@ -610,112 +773,6 @@ export default function Act6Agriculture() {
           // le dessin lui donne une taille avant que les courbes ne le
           // mettent en série.
           {
-            id: "plant",
-            empty: false,
-            tab: tx("act6.board.tab_pousse", "Pousse", "Growth"),
-            title: tx(
-              "act6.viz.plant_title",
-              "Le rendement des cultures, territoire par territoire",
-              "Crop yield, territory by territory",
-            ),
-            finding: tx(
-              "act6.viz.plant_find",
-              "Choisissez un territoire : la plante suit son rendement.",
-              "Pick a territory: the plant follows its yield.",
-            ),
-            takeaway: tx(
-              "act6.viz.plant_take",
-              "Une plante plus haute ne dit pas une meilleure agriculture : elle dit plus de kilos par hectare déclaré. Le pourquoi n'est pas dans ce chiffre.",
-              "A taller plant does not mean better farming: it means more kilos per declared hectare. The why is not in this number.",
-            ),
-            hint: tx(
-              "act6.hint.plant",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act6.key.plant_c",
-                "La plante grandit avec le rendement du territoire choisi, et se rétracte quand il baisse.",
-                "The plant grows with the chosen territory's yield, and shrinks when it falls.",
-              ),
-              note: tx("act6.key.crop_note", SOURCE_CROP_FR, SOURCE_CROP_EN),
-              // La plante encode par une HAUTEUR, pas par une teinte.
-              swatch: "none",
-            },
-            node: <PlantGrowth embed />,
-          },
-          {
-            id: "cattle",
-            empty: false,
-            tab: tx("act6.board.tab_betail", "Bétail", "Livestock"),
-            title: tx(
-              "act6.viz.cattle_title",
-              "Le rendement de l'élevage, territoire par territoire",
-              "Livestock yield, territory by territory",
-            ),
-            finding: tx(
-              "act6.viz.cattle_find",
-              "Choisissez un territoire : l'animal suit son rendement.",
-              "Pick a territory: the animal follows its yield.",
-            ),
-            takeaway: tx(
-              "act6.viz.cattle_take",
-              "Des kilos par animal, pas un nombre d'animaux : un troupeau qui rétrécit peut très bien afficher un rendement qui monte.",
-              "Kilos per animal, not a head count: a shrinking herd can perfectly well post a rising yield.",
-            ),
-            hint: tx(
-              "act6.hint.cattle",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act6.key.cattle_c",
-                "L'animal s'étoffe avec le rendement du territoire choisi.",
-                "The animal fills out with the chosen territory's yield.",
-              ),
-              note: tx("act6.key.live_note", SOURCE_LIVE_FR, SOURCE_LIVE_EN),
-              swatch: "none",
-            },
-            node: <CattleThrive embed />,
-          },
-          {
-            id: "forest",
-            empty: false,
-            tab: tx("act6.board.tab_sols", "Sols", "Land"),
-            title: tx(
-              "act6.viz.forest_title",
-              "L'occupation des sols, territoire par territoire",
-              "Land cover, territory by territory",
-            ),
-            finding: tx(
-              "act6.viz.forest_find",
-              "Choisissez un territoire : le couvert suit son indice d'occupation des sols.",
-              "Pick a territory: the cover follows its land-cover index.",
-            ),
-            takeaway: tx(
-              "act6.viz.forest_take",
-              "Base 100 en 2015 : ce visuel montre un écart à cette année-là, pas une surface. Deux territoires au même niveau n'ont pas la même forêt.",
-              "Base 100 in 2015: this shows a gap from that year, not an area. Two territories at the same level do not have the same forest.",
-            ),
-            hint: tx(
-              "act6.hint.forest",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act6.key.forest_c",
-                "Le couvert se densifie quand l'indice dépasse sa base 2015, et s'éclaircit quand il passe dessous.",
-                "The cover thickens when the index rises above its 2015 base, and thins when it falls below.",
-              ),
-              note: tx("act6.key.land_note", SOURCE_LAND_FR, SOURCE_LAND_EN),
-              swatch: "none",
-            },
-            node: <ForestCover embed />,
-          },
-          {
             id: "small",
             signature: true,
             empty: vSeries.length === 0,
@@ -723,6 +780,7 @@ export default function Act6Agriculture() {
             title: t("act6.trend_title"),
             finding: t("act6.board.small_find"),
             takeaway: t("act6.board.small_take"),
+            controls: boardControls,
             legend: key,
             hint: tx(
               "act6.hint.multiples",
@@ -748,6 +806,7 @@ export default function Act6Agriculture() {
             title: t("act6.read_title"),
             finding: t("act6.board.read_find"),
             takeaway: t("act6.board.read_take"),
+            controls: boardControls,
             node: (
               <DataSpotlight
                 rows={spotlightRows}
@@ -771,6 +830,7 @@ export default function Act6Agriculture() {
             title: t("act6.regional_title"),
             finding: t("act6.board.regional_find"),
             takeaway: t("act6.board.regional_take"),
+            controls: boardControls,
             legend: key,
             hint: tx(
               "act6.hint.hover",
@@ -798,6 +858,7 @@ export default function Act6Agriculture() {
             title: `${kind === "crop" ? t("act6.crop_rank_title") : t("act6.animal_rank_title")} · ${currentYear}`,
             finding: t("act6.board.crops_find"),
             takeaway: t("act6.board.crops_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
@@ -821,6 +882,7 @@ export default function Act6Agriculture() {
             title: `${t("act6.compare_title")} · ${firstYear}–${lastYear}`,
             finding: t("act6.board.change_find"),
             takeaway: t("act6.board.change_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
@@ -854,6 +916,7 @@ export default function Act6Agriculture() {
             title: t("act6.board.stability_title"),
             finding: t("act6.board.stability_find"),
             takeaway: t("act6.board.stability_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
@@ -886,6 +949,7 @@ export default function Act6Agriculture() {
             title: t("act6.board.race_title"),
             finding: t("act6.board.race_find"),
             takeaway: t("act6.board.race_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
@@ -934,6 +998,7 @@ export default function Act6Agriculture() {
             title: t("act6.heatmap_title"),
             finding: t("act6.board.heat_find"),
             takeaway: t("act6.board.heat_take"),
+            controls: boardControls,
             legend: {
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.x,
@@ -969,6 +1034,7 @@ export default function Act6Agriculture() {
             title: `${t("act6.map_title")} · ${currentYear}`,
             finding: t("act6.board.map_find"),
             takeaway: t("act6.board.map_take"),
+            controls: boardControls,
             legend: { color: key.color, note: key.note, swatch: key.swatch },
             hint: tx(
               "act6.hint.map",
@@ -1014,6 +1080,7 @@ export default function Act6Agriculture() {
             title: t("act6.explorer_title"),
             finding: t("act6.board.explorer_find"),
             takeaway: t("act6.board.explorer_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
@@ -1046,6 +1113,7 @@ export default function Act6Agriculture() {
             title: t("act6.land.change_title"),
             finding: t("act6.board.land_change_find"),
             takeaway: t("act6.board.land_change_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
@@ -1076,6 +1144,7 @@ export default function Act6Agriculture() {
             title: t("act6.land.lines_title"),
             finding: t("act6.board.land_lines_find"),
             takeaway: t("act6.board.land_lines_take"),
+            controls: boardControls,
             legend: key,
             hint: tx(
               "act6.hint.hover",
@@ -1098,6 +1167,7 @@ export default function Act6Agriculture() {
             title: t("act6.land.slope_title"),
             finding: t("act6.board.land_slope_find"),
             takeaway: t("act6.board.land_slope_take"),
+            controls: boardControls,
             legend: {
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
@@ -1130,6 +1200,7 @@ export default function Act6Agriculture() {
             title: t("act6.coverage_title"),
             finding: t("act6.board.coverage_find"),
             takeaway: t("act6.board.coverage_take"),
+            controls: boardControls,
             node: (
               <CoverageChart
                 series={vSeries}
@@ -1146,9 +1217,15 @@ export default function Act6Agriculture() {
 
   // Le jeu choisi décide des VUES : Sol → ses 3 vues d'occupation ; Culture /
   // Élevage → toutes les vues de production.
-  const SOIL_IDS = ["forest", "land_change", "land_lines", "land_slope"];
+  const SOIL_IDS = ["land_change", "land_lines", "land_slope"];
+  // L'entrée des visuels reste à l'écran dans les deux familles : c'est la
+  // bascule du panneau qui choisit le dessin, pas le carrousel.
   const visibleCharts = charts.filter((c) =>
-    dataset === "soil" ? SOIL_IDS.includes(c.id) : !SOIL_IDS.includes(c.id),
+    c.id === "viz"
+      ? true
+      : dataset === "soil"
+        ? SOIL_IDS.includes(c.id)
+        : !SOIL_IDS.includes(c.id),
   );
 
   return (
@@ -1159,7 +1236,8 @@ export default function Act6Agriculture() {
       eyebrow={t("act6.tag")}
       title={t("act6.title")}
       thesis={t("act6.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={visibleCharts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en

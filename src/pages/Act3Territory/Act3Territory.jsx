@@ -52,6 +52,7 @@ import PopGrowth from "../../components/PopGrowth/PopGrowth";
 // Le dernier des visuels de la Home, celui du trait de côte. Il lit
 // `coastlineByTerritory` — le même agrégat que la vue « Bilan » ci-dessous.
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
+import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import "./Act3Territory.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -89,9 +90,8 @@ const SOURCE_POP_EN =
   "Population growth rate, via the Pacific Data Hub - percent per year. A rate, not a head count: a small territory can post a high rate on few people.";
 
 const DATASET_OF = {
-  stilt: "sea",
-  coastviz: "sea",
-  popviz: "population",
+  // `viz` n'y figure pas : l'entrée des visuels reste à l'écran dans les deux
+  // familles, et c'est la bascule du panneau qui choisit le dessin.
   band: "sea",
   slope: "sea",
   profile: "sea",
@@ -155,13 +155,28 @@ function rankIndex(byArea) {
 }
 
 /* ---------- Filtres globaux ---------- */
-function YearSlider({ label, years, index, onChange }) {
+// Curseur d'année. Il porte aussi la LECTURE ANIMÉE, parce qu'il remplace la
+// frise que la carte affichait sous elle : sans le bouton, déplacer la
+// commande dans la colonne aurait fait perdre le déroulé automatique des
+// années, qui est la meilleure façon de lire cette carte.
+function YearSlider({ label, years, index, onChange, playing, onTogglePlay, playLabel, pauseLabel }) {
   if (!years.length) return null;
   return (
     <div className="act1f act1f--year">
       <span className="act1f__lbl">
         {label} <strong>{years[index] ?? ""}</strong>
       </span>
+      {typeof onTogglePlay === "function" ? (
+        <button
+          type="button"
+          className="act1f__play"
+          onClick={onTogglePlay}
+          aria-label={playing ? pauseLabel : playLabel}
+          title={playing ? pauseLabel : playLabel}
+        >
+          {playing ? "⏸" : "▶"}
+        </button>
+      ) : null}
       <input
         className="act1f__range"
         type="range"
@@ -179,6 +194,9 @@ export default function Act3Territory() {
   const { t, lang } = useLang();
 
   // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  // Quel dessin est à l'écran, quand l'escale en porte plusieurs.
+  const [viz, setViz] = useState("stilt");
+
   const tx = useCallback(
     (key, fr, en) => {
       const v = t(key);
@@ -467,15 +485,6 @@ export default function Act3Territory() {
         onChange={setRegion}
         options={asOptions(regionItems)}
       />
-      <YearSlider
-        label={t("act1.f.year")}
-        years={seaYears}
-        index={yearIdx}
-        onChange={(i) => {
-          setPlaying(false);
-          setYearIdx(i);
-        }}
-      />
     </>
   );
 
@@ -531,9 +540,184 @@ export default function Act3Territory() {
           swatch: "polarity",
         };
 
+  // LE CURSEUR D'ANNÉE NE PILOTE QUE LE GLOBE.
+  // Il siégeait dans la barre de l'escale, à côté des filtres de jeu et de
+  // sous-région — qui, eux, agissent sur toutes les vues. Deux conséquences :
+  // il laissait croire qu'il recalculait l'ensemble du tableau de bord, et il
+  // prenait aux onglets une largeur qu'ils n'avaient pas (sur cette escale,
+  // les derniers se retrouvaient tronqués).
+  //
+  // Vérifié avant de le déplacer : `currentYear`, dérivé de `yearIdx`, n'a
+  // qu'un seul consommateur — les points de la carte. Aucune autre vue ne
+  // change quand on le tire.
+  const mapYearControl = (
+    <YearSlider
+      label={t("act1.f.year")}
+      years={seaYears}
+      index={yearIdx}
+      // `scrubYear` arrête la lecture avant de déplacer l'année : tirer le
+      // curseur pendant l'animation, c'est reprendre la main.
+      onChange={scrubYear}
+      playing={playing}
+      onTogglePlay={togglePlay}
+      playLabel={t("act1.race.play")}
+      pauseLabel={t("act1.race.pause")}
+    />
+  );
+
+  // ---------- LES TROIS VISUELS DE L'ESCALE ----------------------------
+  // Ils occupaient chacun leur onglet — et deux d'entre eux s'affichaient en
+  // même temps, aux deux bouts de la barre. Or celle-ci énumère les ÉTAPES du
+  // raisonnement ; des dessins qui répondent tous à « à quoi ça ressemble ? »
+  // n'en font qu'une. Regroupés sous une seule entrée, le choix passe DANS le
+  // panneau, à côté de ce qu'il change.
+  //
+  // Chaque dessin garde son titre, sa phrase et sa clé de lecture : la
+  // colonne de droite reste exacte, ce qu'une fusion aurait perdu. L'onglet
+  // porte le nom du dessin affiché — « Pilotis », « Rivage » — comme sur les
+  // escales 01 et 02, et non une catégorie.
+  //
+  // La bascule suit le SÉLECTEUR DE JEU, comme toutes les autres vues : la
+  // maison et le rivage pour la mer, la silhouette pour la population. Face à
+  // un seul choix, `VizSwitch` ne s'affiche pas.
+  const VIZ = {
+    stilt: {
+              id: "stilt",
+              empty: false,
+              tab: tx("act3.board.tab_pilotis", "Pilotis", "Stilts"),
+              title: tx(
+                "act3.viz.stilt_title",
+                "La montée des eaux, territoire par territoire",
+                "Rising seas, territory by territory",
+              ),
+              finding: tx(
+                "act3.viz.stilt_find",
+                "Choisissez un territoire : l'eau monte le long des pilotis à la mesure de son anomalie.",
+                "Pick a territory: the water climbs the stilts to match its anomaly.",
+              ),
+              takeaway: tx(
+                "act3.viz.stilt_take",
+                "Quelques centimètres sur un graphique ne se ressentent pas. Contre un pilotis, si — et c'est la même donnée.",
+                "A few centimetres on a chart cannot be felt. Against a stilt they can - and it is the same data.",
+              ),
+              hint: tx(
+                "act3.hint.stilt",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act3.key.stilt_c",
+                  "La hauteur d'eau suit le niveau d'exposition du territoire choisi, dérivé de son anomalie du niveau de la mer.",
+                  "The water height follows the chosen territory's exposure level, derived from its sea-level anomaly.",
+                ),
+                note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+                // Le dessin encode par une HAUTEUR d'eau, pas par une teinte.
+                swatch: "none",
+              },
+              node: <StiltHouse embed />,
+            },
+    popviz: {
+              id: "popviz",
+              empty: false,
+              tab: tx("act3.board.tab_peuplement", "Peuplement", "People"),
+              title: tx(
+                "act3.viz.pop_title",
+                "La croissance de la population, territoire par territoire",
+                "Population growth, territory by territory",
+              ),
+              finding: tx(
+                "act3.viz.pop_find",
+                "Choisissez un territoire : la silhouette suit son taux de croissance.",
+                "Pick a territory: the figure follows its growth rate.",
+              ),
+              takeaway: tx(
+                "act3.viz.pop_take",
+                "Un taux élevé sur un petit territoire, c'est peu de personnes ; un taux faible sur un grand, c'est beaucoup. Le pourcentage ne dit pas le nombre.",
+                "A high rate on a small territory means few people; a low rate on a large one means many. The percentage does not tell you the count.",
+              ),
+              hint: tx(
+                "act3.hint.pop",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act3.key.pop_viz_c",
+                  "La silhouette grandit avec le taux de croissance du territoire choisi.",
+                  "The figure grows with the chosen territory's growth rate.",
+                ),
+                note: tx("act3.key.pop_note", SOURCE_POP_FR, SOURCE_POP_EN),
+                swatch: "none",
+              },
+              node: <PopGrowth embed />,
+            },
+    coastviz: {
+              id: "coastviz",
+              empty: false,
+              tab: tx("act3.board.tab_rivage", "Rivage", "Shore"),
+              title: tx(
+                "act3.viz.coastviz_title",
+                "Le rivage qui recule ou qui avance, territoire par territoire",
+                "The shore retreating or advancing, territory by territory",
+              ),
+              finding: tx(
+                "act3.viz.coastviz_find",
+                "Choisissez un territoire : le rivage suit son bilan côtier médian.",
+                "Pick a territory: the shore follows its median coastal balance.",
+              ),
+              takeaway: tx(
+                "act3.viz.coastviz_take",
+                "Une médiane par territoire cache des rivages opposés : la Nouvelle-Calédonie affiche −0,02 m/an, avec 4 % de son littoral en recul et 10 % en avancée. Le total ne dit rien du village qui perd sa plage.",
+                "One median per territory hides opposite shores: New Caledonia posts −0.02 m/yr, with 4% of its coastline retreating and 10% advancing. The total says nothing about the village losing its beach.",
+              ),
+              hint: tx(
+                "act3.hint.coastviz",
+                "Changez de territoire avec le sélecteur sous le visuel, puis passez à la vue satellite pour voir les segments un par un.",
+                "Switch territory with the selector below the visual, then move to the satellite view to see the segments one by one.",
+              ),
+              legend: {
+                color: tx(
+                  "act3.key.coastviz_c",
+                  "Le rivage se retire quand le bilan médian du territoire est négatif, et gagne sur la mer quand il est positif.",
+                  "The shore pulls back when the territory's median balance is negative, and gains on the sea when it is positive.",
+                ),
+                note: tx("act3.key.coast_note", SOURCE_COAST_FR, SOURCE_COAST_EN),
+                // Le dessin encode par un DÉPLACEMENT du rivage, pas une teinte.
+                swatch: "none",
+              },
+              node: <CoastlineShift embed />,
+            },
+  };
+
+  const vizIds =
+    dataset === "population" ? ["popviz"] : ["stilt", "coastviz"];
+  const vizItems = [
+    { id: "stilt", label: tx("act3.viz.sw_stilt", "Pilotis", "Stilts") },
+    { id: "coastviz", label: tx("act3.viz.sw_coast", "Rivage", "Shore") },
+    { id: "popviz", label: tx("act3.viz.sw_pop", "Peuplement", "People") },
+  ].filter((o) => vizIds.includes(o.id));
+  const vizKey = vizIds.includes(viz) ? viz : vizIds[0];
+  const activeViz = VIZ[vizKey];
+
   const charts =
     status === "ready" && currentSeaYear != null
       ? [
+          {
+            ...activeViz,
+            id: "viz",
+            node: (
+              <div className="vizpane">
+                <VizSwitch
+                  items={vizItems}
+                  value={vizKey}
+                  onChange={setViz}
+                  label={tx("act3.viz.sw_label", "Visuel", "Visual")}
+                />
+                <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
           // ---------- Les visuels interactifs, en ouverture ----------------
           // Deux dessins de la Home, un par jeu, lisant exactement le même
           // jeu que le sélecteur : la maison sur pilotis pour le niveau de la
@@ -543,77 +727,6 @@ export default function Act3Territory() {
           // Ils ouvrent parce qu'une anomalie en mètres et un taux en pourcent
           // sont deux abstractions : le dessin leur donne une échelle avant
           // que les courbes ne les mettent en série.
-          {
-            id: "stilt",
-            empty: false,
-            tab: tx("act3.board.tab_pilotis", "Pilotis", "Stilts"),
-            title: tx(
-              "act3.viz.stilt_title",
-              "La montée des eaux, territoire par territoire",
-              "Rising seas, territory by territory",
-            ),
-            finding: tx(
-              "act3.viz.stilt_find",
-              "Choisissez un territoire : l'eau monte le long des pilotis à la mesure de son anomalie.",
-              "Pick a territory: the water climbs the stilts to match its anomaly.",
-            ),
-            takeaway: tx(
-              "act3.viz.stilt_take",
-              "Quelques centimètres sur un graphique ne se ressentent pas. Contre un pilotis, si — et c'est la même donnée.",
-              "A few centimetres on a chart cannot be felt. Against a stilt they can - and it is the same data.",
-            ),
-            hint: tx(
-              "act3.hint.stilt",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act3.key.stilt_c",
-                "La hauteur d'eau suit le niveau d'exposition du territoire choisi, dérivé de son anomalie du niveau de la mer.",
-                "The water height follows the chosen territory's exposure level, derived from its sea-level anomaly.",
-              ),
-              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
-              // Le dessin encode par une HAUTEUR d'eau, pas par une teinte.
-              swatch: "none",
-            },
-            node: <StiltHouse embed />,
-          },
-          {
-            id: "popviz",
-            empty: false,
-            tab: tx("act3.board.tab_peuplement", "Peuplement", "People"),
-            title: tx(
-              "act3.viz.pop_title",
-              "La croissance de la population, territoire par territoire",
-              "Population growth, territory by territory",
-            ),
-            finding: tx(
-              "act3.viz.pop_find",
-              "Choisissez un territoire : la silhouette suit son taux de croissance.",
-              "Pick a territory: the figure follows its growth rate.",
-            ),
-            takeaway: tx(
-              "act3.viz.pop_take",
-              "Un taux élevé sur un petit territoire, c'est peu de personnes ; un taux faible sur un grand, c'est beaucoup. Le pourcentage ne dit pas le nombre.",
-              "A high rate on a small territory means few people; a low rate on a large one means many. The percentage does not tell you the count.",
-            ),
-            hint: tx(
-              "act3.hint.pop",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act3.key.pop_viz_c",
-                "La silhouette grandit avec le taux de croissance du territoire choisi.",
-                "The figure grows with the chosen territory's growth rate.",
-              ),
-              note: tx("act3.key.pop_note", SOURCE_POP_FR, SOURCE_POP_EN),
-              swatch: "none",
-            },
-            node: <PopGrowth embed />,
-          },
           {
             id: "band",
             signature: true,
@@ -747,6 +860,7 @@ export default function Act3Territory() {
             finding: t("act3.board.map_find"),
             takeaway: t("act3.board.map_take"),
             legend: { color: key.color, note: key.note, swatch: key.swatch },
+            controls: mapYearControl,
             hint: tx(
               "act3.hint.map",
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
@@ -780,11 +894,13 @@ export default function Act3Territory() {
                     midLabel={t("act3.map_mid")}
                     highLabel={t("act3.map_high")}
                     noTokenMsg={t("act1.map_no_token")}
+                    // La frise de la carte est retirée : la commande d'année
+                    // vit désormais dans la colonne de lecture, et deux
+                    // curseurs pour une même valeur se contredisent dès qu'on
+                    // en bouge un. `OceanMap` ne monte sa frise que si on lui
+                    // passe `onTogglePlay` — on ne le fait plus.
                     years={seaYears}
                     yearIndex={yearIdx}
-                    playing={playing}
-                    onTogglePlay={togglePlay}
-                    onScrub={scrubYear}
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -802,42 +918,6 @@ export default function Act3Territory() {
           // et c'est là qu'il éclaire. Il précède la vue satellite — on
           // comprend d'abord ce que « recul » et « avancée » veulent dire sur
           // un rivage dessiné, puis on va les voir mesurés sur le globe.
-          {
-            id: "coastviz",
-            empty: false,
-            tab: tx("act3.board.tab_rivage", "Rivage", "Shore"),
-            title: tx(
-              "act3.viz.coastviz_title",
-              "Le rivage qui recule ou qui avance, territoire par territoire",
-              "The shore retreating or advancing, territory by territory",
-            ),
-            finding: tx(
-              "act3.viz.coastviz_find",
-              "Choisissez un territoire : le rivage suit son bilan côtier médian.",
-              "Pick a territory: the shore follows its median coastal balance.",
-            ),
-            takeaway: tx(
-              "act3.viz.coastviz_take",
-              "Une médiane par territoire cache des rivages opposés : la Nouvelle-Calédonie affiche −0,02 m/an, avec 4 % de son littoral en recul et 10 % en avancée. Le total ne dit rien du village qui perd sa plage.",
-              "One median per territory hides opposite shores: New Caledonia posts −0.02 m/yr, with 4% of its coastline retreating and 10% advancing. The total says nothing about the village losing its beach.",
-            ),
-            hint: tx(
-              "act3.hint.coastviz",
-              "Changez de territoire avec le sélecteur sous le visuel, puis passez à la vue satellite pour voir les segments un par un.",
-              "Switch territory with the selector below the visual, then move to the satellite view to see the segments one by one.",
-            ),
-            legend: {
-              color: tx(
-                "act3.key.coastviz_c",
-                "Le rivage se retire quand le bilan médian du territoire est négatif, et gagne sur la mer quand il est positif.",
-                "The shore pulls back when the territory's median balance is negative, and gains on the sea when it is positive.",
-              ),
-              note: tx("act3.key.coast_note", SOURCE_COAST_FR, SOURCE_COAST_EN),
-              // Le dessin encode par un DÉPLACEMENT du rivage, pas une teinte.
-              swatch: "none",
-            },
-            node: <CoastlineShift embed />,
-          },
           {
             id: "coast",
             empty: false,

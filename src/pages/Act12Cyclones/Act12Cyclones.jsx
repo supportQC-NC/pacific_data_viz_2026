@@ -37,6 +37,9 @@ import {
   baseYaxis,
   baseTooltip,
   MONO,
+  // La rampe séquentielle du thème, réexportée par `apexBase` : c'est elle que
+  // les matrices des autres escales emploient pour une grandeur.
+  apexRamp as seqRampOf,
 } from "../../components/charts/apexBase";
 import { fetchCyclones, STAGES } from "../../services/cycloneApi";
 import "./Act12Cyclones.scss";
@@ -64,6 +67,15 @@ const PER_CYCLONE_MS = 1300;
 const DRAW_MIN = 1200;
 const DRAW_MAX = 16000;
 const SEASON_DWELL_MS = 1200;
+
+// La source, écrite une fois et épinglée en pied de la colonne de lecture.
+// La portée est aussi importante que l'origine : ce jeu ne recense QUE les
+// systèmes passés dans la zone de responsabilité de Météo-France
+// Nouvelle-Calédonie. Un cyclone qui ne l'a pas traversée n'y figure pas.
+const SOURCE_FR =
+  "Météo-France Nouvelle-Calédonie, via Georep — trajectoires des systèmes tropicaux de la zone de responsabilité, saisons 1977-2024. Barème de stades officiel. Une saison court de juillet à juin.";
+const SOURCE_EN =
+  "Meteo-France New Caledonia, via Georep - tracks of tropical systems in its area of responsibility, 1977-2024 seasons. Official stage scale. A season runs July to June.";
 
 // Couleurs de stade (--cy-*) en valeurs concrètes pour ApexCharts.
 function readStageColors() {
@@ -176,6 +188,16 @@ function ProvenancePanel({ t }) {
 
 export default function Act12Cyclones() {
   const { t, lang } = useLang();
+
+  // Repli littéral tant que la clé n'est pas versée dans les dictionnaires :
+  // `t()` renvoie le chemin pointé, qui ne doit jamais atteindre l'écran.
+  const tx = useCallback(
+    (key, fr, en) => {
+      const v = t(key);
+      return v && v !== key ? v : lang === "en" ? en : fr;
+    },
+    [t, lang],
+  );
   const tk = useThemeTokens();
 
   const [res, setRes] = useState(null);
@@ -315,32 +337,8 @@ export default function Act12Cyclones() {
     }));
   }, [view, seasons]);
 
-  const busiest = useMemo(
-    () =>
-      bySeason.reduce(
-        (best, r) => (r.count > (best?.count ?? -1) ? r : best),
-        null,
-      ),
-    [bySeason],
-  );
 
-  const mostIntense = useMemo(() => {
-    if (!view.length) return null;
-    return [...view].sort(
-      (a, b) =>
-        (b.stageRank ?? -1) - (a.stageRank ?? -1) ||
-        (b.maxWind ?? 0) - (a.maxWind ?? 0),
-    )[0];
-  }, [view]);
 
-  const maxWind = useMemo(
-    () =>
-      view.reduce(
-        (mx, cy) => (cy.maxWind != null && cy.maxWind > mx ? cy.maxWind : mx),
-        0,
-      ),
-    [view],
-  );
 
   // ---- Intensification (TENDANCE long terme — toujours sur TOUTES les données) ----
   // Part de cyclones atteignant le stade « cyclone tropical » ou plus (rang ≥ 3),
@@ -386,6 +384,35 @@ export default function Act12Cyclones() {
       grid[mo][dec] = (grid[mo][dec] || 0) + 1;
     });
     const decades = [...decSet].sort((a, b) => a - b);
+
+    // COMBIEN D'ANNÉES DANS CHAQUE COLONNE — et pourquoi il faut le dire.
+    //
+    // Les colonnes sont des décennies, mais les deux extrêmes n'en sont pas :
+    // le jeu commence en 1977 et s'arrête en 2024. La première colonne couvre
+    // donc trois ans, la dernière cinq, les autres dix. Une case y compte
+    // mécaniquement deux fois moins de systèmes — non parce que la saison est
+    // plus calme, mais parce qu'elle a été observée moins longtemps.
+    //
+    // Étiquetées « 1970s » et « 2020s », ces colonnes se lisaient comme les
+    // autres, et la matrice donnait à voir un creux aux deux bouts qui n'est
+    // qu'un artefact de découpage. On étiquette donc chaque colonne par la
+    // PLAGE RÉELLEMENT COUVERTE, lue dans les données elles-mêmes.
+    const yearsSeen = {};
+    view.forEach((cy) => {
+      if (cy.startTime == null) return;
+      const y = new Date(cy.startTime).getFullYear();
+      const dec = Math.floor(y / 10) * 10;
+      if (!yearsSeen[dec]) yearsSeen[dec] = new Set();
+      yearsSeen[dec].add(y);
+    });
+    const decLabel = (dec) => {
+      const ys = yearsSeen[dec] ? [...yearsSeen[dec]].sort((a, b) => a - b) : [];
+      if (!ys.length) return `${dec}s`;
+      const lo = ys[0];
+      const hi = ys[ys.length - 1];
+      // Décennie pleine : l'étiquette courte suffit et reste lisible.
+      return lo === dec && hi === dec + 9 ? `${dec}s` : `${lo}–${hi}`;
+    };
     const monthLabels = order.map((mo) => {
       try {
         return new Date(2001, mo, 1).toLocaleDateString(
@@ -400,7 +427,7 @@ export default function Act12Cyclones() {
     const series = order
       .map((mo, i) => ({
         name: monthLabels[i],
-        data: decades.map((dec) => ({ x: `${dec}s`, y: grid[mo][dec] || 0 })),
+        data: decades.map((dec) => ({ x: decLabel(dec), y: grid[mo][dec] || 0 })),
       }))
       .reverse();
     return { series, hasData: decades.length > 0 };
@@ -474,52 +501,10 @@ export default function Act12Cyclones() {
     [exposureRaw, lang],
   );
 
-  // ---- KPI ----
-  const kpiItems = useMemo(() => {
-    if (status !== "ready") return [];
-
-    // Équivalent grand public de la vitesse du vent : les nœuds parlent peu.
-    // On ajoute la conversion en note de la carte vent — km/h en FR, mph en EN.
-    // 1 nœud = 1,852 km/h = 1,15078 mph.
-    const windNote = maxWind
-      ? lang === "en"
-        ? `≈ ${Math.round(maxWind * 1.15078)} mph`
-        : `≈ ${Math.round(maxWind * 1.852)} km/h`
-      : null;
-
-    return [
-      {
-        key: "total",
-        value: view.length,
-        unit: t("act12.kpi.cyclones_unit"),
-        label: `${t("act12.kpi.total")}`,
-        // label: `${t("act12.kpi.total")} · ${res.firstSeason} → ${res.lastSeason}`,
-        tone: "accent",
-      },
-      {
-        key: "intense",
-        value: mostIntense ? mostIntense.name : "—",
-        unit: mostIntense ? stageLabels[mostIntense.stage] : "",
-        label: t("act12.kpi.intense"),
-        tone: "warm",
-      },
-      {
-        key: "busy",
-        value: busiest ? busiest.count : "—",
-        unit: busiest ? busiest.season : "",
-        label: t("act12.kpi.busy"),
-        tone: "neutral",
-      },
-      {
-        key: "wind",
-        value: maxWind ? `${Math.round(maxWind)}` : "—",
-        unit: t("act12.map.kt"),
-        label: t("act12.kpi.wind"),
-        note: windNote, // ← ex. « ≈ 278 km/h »
-        tone: "warm",
-      },
-    ];
-  }, [status, res, view, mostIntense, busiest, maxWind, stageLabels, t, lang]);
+  // Chiffres-clés RETIRÉS de cet écran, comme sur toutes les autres
+  // escales : le sujet du tableau de bord, c'est le graphique. Le
+  // composant KpiRow n'est pas touché ; les chiffres seront remontés
+  // ailleurs.
 
   // ---- Libellés carte (i18n) ----
   const mapLabels = useMemo(
@@ -564,6 +549,15 @@ export default function Act12Cyclones() {
         },
       },
       // Effectif en bout de barre, SUR LE FOND (pas de boîte blanche illisible).
+      // LE CHIFFRE POSÉ DANS LA BARRE.
+      // Il était écrit en encre claire, à même la barre — illisible sur les
+      // stades peints en teintes claires, et invisible dès qu'une barre trop
+      // courte le laissait déborder sur le fond.
+      //
+      // Une pastille discrète de la couleur du fond règle les deux cas d'un
+      // coup : le chiffre reste lisible quelle que soit la couleur du stade,
+      // et quelle que soit la longueur de la barre. C'est le seul réglage qui
+      // ne dépende ni de l'une ni de l'autre.
       dataLabels: {
         enabled: true,
         textAnchor: "start",
@@ -574,7 +568,16 @@ export default function Act12Cyclones() {
           fontWeight: 700,
           colors: [tk.text],
         },
-        background: { enabled: false },
+        background: {
+          enabled: true,
+          foreColor: tk.text,
+          backgroundColor: tk.bg,
+          borderColor: "transparent",
+          borderRadius: 4,
+          padding: 4,
+          opacity: 0.82,
+          dropShadow: { enabled: false },
+        },
         formatter: (v) => `${v}`,
       },
       legend: { show: false },
@@ -787,7 +790,10 @@ export default function Act12Cyclones() {
           data: sea.map((s, i) => ({ x: s, y: intensify.roll[i] })),
         },
       ],
-      colors: [tk.textMute, tk.warm],
+      // La courbe de tendance passe de `tk.warm` — un jeton d'INTERFACE, employé
+      // ailleurs pour des états — à l'accent du système, celui que portent les
+      // courbes de référence des autres escales.
+      colors: [tk.textMute, tk.accent],
       stroke: { width: [0, 3.5], curve: "smooth" },
       fill: {
         type: ["solid", "gradient"],
@@ -862,19 +868,20 @@ export default function Act12Cyclones() {
     // Domaine des valeurs (cyclones formés dans une case mois × décennie).
     const allVals = calendar.series.flatMap((s) => s.data.map((d) => d.y));
     const maxV = Math.max(1, ...allVals);
-    // 0 = vert SOMBRE/calme (hors-saison) — s'efface dans le fond.
-    const calm = rgbToHex(
-      mixRgb(
-        hexToRgb(tk.positive) || [37, 224, 154],
-        hexToRgb(tk.bg) || [2, 9, 18],
-        0.74,
-      ),
-    );
-    // Activité : rampe MONOCHROME ROUGE (sans orange). 1 cyclone = rouge pâle,
-    // de plus en plus saturé/profond à mesure que la saison est active.
-    const neg = hexToRgb(tk.negative) || [255, 77, 109];
-    const pale = mixRgb(neg, [255, 255, 255], 0.52); // rouge pâle (peu de cyclones)
-    const deep = mixRgb(neg, [0, 0, 0], 0.3); // rouge profond (saison très active)
+    // COMBIEN DE CYCLONES DANS CETTE CASE : une GRANDEUR, pas une polarité.
+    // La matrice opposait un VERT « calme » à une rampe ROUGE d'activité —
+    // deux teintes que près d'un homme sur douze ne distingue pas, et un
+    // vocabulaire que cette escale était seule à employer. Un mois sans
+    // cyclone n'est d'ailleurs pas « bon » : c'est zéro, une valeur comme une
+    // autre au bas de l'échelle.
+    //
+    // On prend donc la rampe SÉQUENTIELLE du thème, la même que les matrices
+    // des escales 01 et 02 : une seule teinte, du plus faible au plus fort,
+    // et un zéro qui se lit comme un fond.
+    const SEQ = seqRampOf(tk);
+    const calm = tk.bg2;
+    const pale = hexToRgb(SEQ[2]) || [90, 100, 170];
+    const deep = hexToRgb(SEQ[8]) || [211, 218, 255];
     const ranges = [{ from: 0, to: 0, color: calm }];
     for (let v = 1; v <= maxV; v += 1) {
       const t = maxV > 1 ? (v - 1) / (maxV - 1) : 0;
@@ -883,8 +890,14 @@ export default function Act12Cyclones() {
     return {
       chart: baseChart(tk, { type: "heatmap" }),
       series: calendar.series,
-      colors: [tk.positive],
+      colors: [SEQ[4]],
       dataLabels: { enabled: false },
+      // ÉCART DE SURFACE, PAS TRAIT DE GRILLE. Sans consigne, ApexCharts cerne
+      // chaque case d'un liseré blanc : la grille devient alors plus visible
+      // que les valeurs qu'elle sépare. On peint ce liseré de la couleur du
+      // fond — les cases se touchent sans se confondre, et le regard ne voit
+      // plus que la donnée.
+      stroke: { width: 2, colors: [tk.bg] },
       plotOptions: {
         heatmap: {
           radius: 2,
@@ -994,6 +1007,16 @@ export default function Act12Cyclones() {
           },
         },
         labels: {
+          // GRADUATIONS ENTIÈRES. Vent en nœuds et pression en hectopascals
+          // sont relevés en nombres entiers ; les décimales qu'affichait cet
+          // axe ne venaient pas de la mesure mais du placement automatique des
+          // graduations — « 898,63 hPa » est une position de trait, pas une
+          // pression observée. Les arrondir ne perd rien et cesse de promettre
+          // une précision que le jeu n'a pas.
+          // Les graduations sont espacées d'une quinzaine d'unités : aucun
+          // risque que deux d'entre elles se confondent une fois arrondies.
+          formatter: (v) =>
+            v == null || Number.isNaN(Number(v)) ? "" : String(Math.round(v)),
           style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
         },
         axisBorder: { show: true, color: tk.line },
@@ -1011,6 +1034,16 @@ export default function Act12Cyclones() {
           },
         },
         labels: {
+          // GRADUATIONS ENTIÈRES. Vent en nœuds et pression en hectopascals
+          // sont relevés en nombres entiers ; les décimales qu'affichait cet
+          // axe ne venaient pas de la mesure mais du placement automatique des
+          // graduations — « 898,63 hPa » est une position de trait, pas une
+          // pression observée. Les arrondir ne perd rien et cesse de promettre
+          // une précision que le jeu n'a pas.
+          // Les graduations sont espacées d'une quinzaine d'unités : aucun
+          // risque que deux d'entre elles se confondent une fois arrondies.
+          formatter: (v) =>
+            v == null || Number.isNaN(Number(v)) ? "" : String(Math.round(v)),
           style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
         },
       },
@@ -1041,6 +1074,25 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_map"),
             title: t("act12.viz.map_title"),
             finding: t("act12.viz.map_find"),
+            legend: {
+              x: tx(
+                "act12.key.map_x",
+                "Les trajectoires réellement enregistrées, saison par saison. Rien n'est interpolé entre deux points.",
+                "The tracks as recorded, season by season. Nothing is interpolated between two points.",
+              ),
+              color: tx(
+              "act12.key.stage_c",
+              "Une couleur par stade du barème officiel, la même que sur la carte : du plus calme au plus intense.",
+              "One colour per stage of the official scale, the same as on the map: calmest to most intense.",
+            ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.map",
+              "Lancez l'animation pour dérouler les saisons, ou tirez le curseur pour vous arrêter sur l'une d'elles.",
+              "Press play to run through the seasons, or drag the slider to stop on one.",
+            ),
             node: (
               <ErrorBoundary
                 fallback={
@@ -1077,14 +1129,58 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_intensify"),
             title: t("act12.viz.intensify_title"),
             finding: t("act12.viz.intensify_find"),
+            legend: {
+              y: tx(
+                "act12.key.intensify_y",
+                "Le nombre de systèmes par saison, et la moyenne glissante qui en donne la tendance.",
+                "Systems per season, with the rolling mean that gives the trend.",
+              ),
+              x: tx("act12.key.season_x", "Les saisons, de 1977 à 2024. Une saison court de juillet à juin.", "Seasons, 1977 to 2024. A season runs July to June."),
+              color: tx(
+                "act12.key.trend_c",
+                "Les barres portent le compte brut ; la courbe, la tendance. Deux lectures d'une même donnée, pas deux mesures.",
+                "Bars carry the raw count; the line carries the trend. Two readings of one measure, not two measures.",
+              ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.hover",
+              "Survolez le tracé pour lire une saison précise.",
+              "Hover the plot to read a single season.",
+            ),
             empty: !intensify.seasons.length,
             node: <ApexChart key="intensify" options={intensifyLineOptions} />,
           },
           {
             id: "windpress",
-            tab: t("act12.board.tab_windpress"),
+            tab: tx("act12.board.tab_signature", "Signature", "Signature"),
             title: t("act12.viz.wp_title"),
             finding: t("act12.viz.wp_find"),
+            legend: {
+              y: tx(
+                "act12.key.wp_y",
+                "La pression au centre, en hectopascals. Elle DESCEND quand le système se creuse : plus bas sur l'axe veut dire plus fort.",
+                "Central pressure in hectopascals. It FALLS as the system deepens: lower on the axis means stronger.",
+              ),
+              x: tx(
+                "act12.key.wp_x",
+                "Le vent maximal soutenu. Vent et pression mesurent la même intensité par deux moyens : le nuage de points montre à quel point ils s'accordent.",
+                "Maximum sustained wind. Wind and pressure measure one intensity two ways: the scatter shows how closely they agree.",
+              ),
+              color: tx(
+              "act12.key.stage_c",
+              "Une couleur par stade du barème officiel, la même que sur la carte : du plus calme au plus intense.",
+              "One colour per stage of the official scale, the same as on the map: calmest to most intense.",
+            ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.hover",
+              "Survolez le tracé pour lire une saison précise.",
+              "Hover the plot to read a single season.",
+            ),
             empty: !windPress.some((s) => s.data.length),
             node: <ApexChart key="windpress" options={windPressOptions} />,
           },
@@ -1093,6 +1189,26 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_exposure"),
             title: t("act12.viz.exposure_title"),
             finding: t("act12.viz.exposure_find"),
+            legend: {
+              y: tx("act12.key.terr_y", "Un territoire par ligne.", "One territory per row."),
+              x: tx(
+                "act12.key.exposure_x",
+                "Le nombre de systèmes passés à moins de 300 km. C'est une mesure DÉRIVÉE — le croisement des trajectoires et des territoires — pas un champ du jeu de données.",
+                "Systems that passed within 300 km. This is a DERIVED measure - tracks crossed with territories - not a field of the dataset.",
+              ),
+              color: tx(
+              "act12.key.stage_c",
+              "Une couleur par stade du barème officiel, la même que sur la carte : du plus calme au plus intense.",
+              "One colour per stage of the official scale, the same as on the map: calmest to most intense.",
+            ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.hover",
+              "Survolez le tracé pour lire une saison précise.",
+              "Hover the plot to read a single season.",
+            ),
             empty: !exposure.length,
             node: <ApexChart key="exposure" options={exposureBarOptions} />,
           },
@@ -1101,22 +1217,79 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_stage"),
             title: t("act12.viz.bystage_title"),
             finding: t("act12.viz.bystage_find"),
+            legend: {
+              y: tx("act12.key.stage_y", "Un stade du barème par ligne.", "One scale stage per row."),
+              x: tx("act12.key.count_x", "Le nombre de systèmes.", "Number of systems."),
+              color: tx(
+              "act12.key.stage_c",
+              "Une couleur par stade du barème officiel, la même que sur la carte : du plus calme au plus intense.",
+              "One colour per stage of the official scale, the same as on the map: calmest to most intense.",
+            ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.hover",
+              "Survolez le tracé pour lire une saison précise.",
+              "Hover the plot to read a single season.",
+            ),
             empty: !res.count,
             node: <ApexChart key="stage" options={stageBarOptions} />,
           },
           {
             id: "season",
-            tab: t("act12.board.tab_season"),
+            tab: tx("act12.board.tab_saisons", "Saisons", "Seasons"),
             title: t("act12.viz.season_title"),
             finding: t("act12.viz.season_find"),
+            legend: {
+              y: tx("act12.key.count_y", "Le nombre de systèmes de la saison.", "Number of systems in the season."),
+              x: tx("act12.key.season_x", "Les saisons, de 1977 à 2024. Une saison court de juillet à juin.", "Seasons, 1977 to 2024. A season runs July to June."),
+              color: tx(
+                "act12.key.season_c",
+                "Chaque barre prend la couleur du stade le plus fort atteint cette saison-là.",
+                "Each bar takes the colour of the strongest stage reached that season.",
+              ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "none",
+            },
+            hint: tx(
+              "act12.hint.hover",
+              "Survolez le tracé pour lire une saison précise.",
+              "Hover the plot to read a single season.",
+            ),
             empty: !bySeason.length,
             node: <ApexChart key="season" options={seasonBarOptions} />,
           },
           {
             id: "month",
-            tab: t("act12.board.tab_month"),
+            tab: tx("act12.board.tab_calendrier", "Calendrier", "Calendar"),
             title: t("act12.viz.month_title"),
             finding: t("act12.viz.month_find"),
+            legend: {
+              y: tx("act12.key.decade_y", "Une décennie par ligne.", "One decade per row."),
+              x: tx(
+                "act12.key.month_x",
+                "Les mois, de juillet à juin — l'ordre d'une saison, pas celui du calendrier civil.",
+                "Months, July to June - the order of a season, not of the civil calendar.",
+              ),
+              caveat: tx(
+                "act12.key.decade_warn",
+                "Attention aux deux colonnes des extrémités : le jeu commence en 1977 et s'arrête en 2024. Elles couvrent trois et cinq ans quand les autres en couvrent dix — leurs cases comptent donc moins de systèmes sans que la saison ait été plus calme. Leur étiquette porte la plage réelle.",
+                "Watch the two end columns: the record starts in 1977 and stops in 2024. They cover three and five years where the others cover ten - their cells hold fewer systems without the season having been calmer. Their labels carry the real span.",
+              ),
+              color: tx(
+                "act12.key.month_c",
+                "Une seule teinte : plus elle est marquée, plus de systèmes se sont formés dans cette case. Un mois vide n'est pas une bonne nouvelle, c'est un zéro.",
+                "A single hue: the stronger it is, the more systems formed in that cell. An empty month is not good news, it is a zero.",
+              ),
+              note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              swatch: "magnitude",
+            },
+            hint: tx(
+              "act12.hint.month",
+              "Balayez une ligne : elle dit quand la saison se concentre, décennie après décennie.",
+              "Read a row across: it shows when the season concentrates, decade after decade.",
+            ),
             empty: !calendar.hasData,
             node: <ApexChart key="month" options={calendarHeatOptions} />,
           },
@@ -1138,9 +1311,12 @@ export default function Act12Cyclones() {
       eyebrow={t("home.acts.a12_tag")}
       title={t("home.acts.a12_title")}
       thesis={t("act12.thesis")}
-      kpis={kpiItems}
-      kpiTitle={t("act1.stats.title")}
       charts={charts}
+      // Disposition du template d'escale : barre unique, décor en fond,
+      // colonne de lecture à droite, hauteurs de tracé égales. Voir
+      // ActBoard.scss § FOCUS. (Sans rapport avec la variable locale
+      // `focus`, qui cadre la carte sur une sous-région.)
+      focus
       nav="carousel"
       initialTab="map"
       progress={{ index: 4, total: 12 }}
@@ -1158,7 +1334,6 @@ export default function Act12Cyclones() {
         conclusion: t("act12.board.conclusion"),
         backIntro: t("act12.board.back_intro"),
         reviseData: t("act12.board.revise_data"),
-        viewGroup: t("act12.board.group_view"),
       }}
       outro={{
         kicker: t("act12.outro.kicker"),

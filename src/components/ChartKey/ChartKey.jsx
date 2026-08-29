@@ -39,15 +39,18 @@ export default function ChartKey({
   y,
   x,
   color,
+  caveat,
   note,
   takeaway,
   hint,
+  controls,
   swatch = "polarity",
   labels = {},
 }) {
-  if (!title && !y && !x && !color && !note && !takeaway && !hint) return null;
+  if (!title && !y && !x && !color && !note && !takeaway && !hint && !controls)
+    return null;
 
-  const hasAxes = y || x || color;
+  const hasAxes = y || x || color || caveat;
 
   return (
     <aside className="chartkey">
@@ -113,6 +116,25 @@ export default function ChartKey({
               </span>
             </div>
           ) : null}
+
+          {/* UNE MISE EN GARDE DE MÉTHODE, quand la vue en appelle une.
+              Certaines lectures sont justes en apparence et fausses en fait :
+              une colonne qui couvre cinq ans à côté de colonnes qui en
+              couvrent dix, un total qui dépend autant de la déclaration que du
+              phénomène. Ces réserves vivaient dans la fiche « + », que
+              personne n'ouvre avant de regarder. Elles se lisent maintenant
+              avec les axes, là où elles changent la lecture. */}
+          {caveat ? (
+            <div className="chartkey__row chartkey__row--caveat">
+              <span className="chartkey__glyph" aria-hidden="true">
+                !
+              </span>
+              <span className="chartkey__txt">
+                <span className="u-sr-only">{labels.caveat || "À savoir :"} </span>
+                {caveat}
+              </span>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
@@ -120,6 +142,20 @@ export default function ChartKey({
         <section className="chartkey__block chartkey__block--take">
           <h3 className="chartkey__head">{labels.takeaway || "À retenir"}</h3>
           <p className="chartkey__take">{takeaway}</p>
+        </section>
+      ) : null}
+
+      {/* LES COMMANDES PROPRES À CETTE VUE.
+          Un filtre qui n'agit que sur UN graphique n'a rien à faire dans la
+          barre de l'escale : il y prend la place des onglets, et il laisse
+          croire qu'il pilote tout le tableau de bord. Posé ici, à côté du
+          tracé qu'il change, sa portée se lit d'elle-même.
+          Les filtres qui agissent sur TOUTES les vues restent dans la barre :
+          c'est leur portée qui décide de leur place. */}
+      {controls ? (
+        <section className="chartkey__block chartkey__block--controls">
+          <h3 className="chartkey__head">{labels.controls || "Régler"}</h3>
+          {controls}
         </section>
       ) : null}
 

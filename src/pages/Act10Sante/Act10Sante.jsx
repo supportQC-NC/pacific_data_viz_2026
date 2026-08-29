@@ -36,6 +36,7 @@ import BarRace from "../../components/BarRace/BarRace";
 // on ne les déplace pas.
 import WaterGlass from "../../components/WaterGlass/WaterGlass";
 import TbBacilli from "../../components/TbBacilli/TbBacilli";
+import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act10Sante.scss";
 
@@ -161,6 +162,9 @@ export default function Act10Sante() {
   const { t, lang } = useLang();
 
   // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  // Quel dessin est à l'écran, quand l'escale en porte plusieurs.
+  const [viz, setViz] = useState("glass");
+
   const tx = useCallback(
     (key, fr, en) => {
       const v = t(key);
@@ -439,9 +443,117 @@ export default function Act10Sante() {
         swatch: "magnitude",
       };
 
+  // ---------- LES VISUELS DE L'ESCALE ----------------------------
+  // Ils occupaient chacun leur onglet dans la barre. Or celle-ci
+  // énumère les ÉTAPES du raisonnement — tendance, matrice, carte —,
+  // et deux dessins qui répondent à la même question n'en font pas
+  // deux. Regroupés sous une seule entrée, ils libèrent la barre et
+  // le choix passe DANS le panneau, à côté de ce qu'il change.
+  //
+  // Chaque dessin garde son titre, sa phrase et sa clé de lecture :
+  // la colonne de droite reste exacte, ce qu'une fusion aurait perdu.
+  const VIZ = {
+    glass: {
+              id: "glass",
+              empty: false,
+              tab: tx("act10.board.tab_verre", "Verre", "Glass"),
+              title: tx(
+                "act10.viz.glass_title",
+                "L'accès à l'eau potable, territoire par territoire",
+                "Access to safe water, territory by territory",
+              ),
+              finding: tx(
+                "act10.viz.glass_find",
+                "Choisissez un territoire : le verre se remplit à la mesure de sa population desservie.",
+                "Pick a territory: the glass fills to match its served population.",
+              ),
+              takeaway: tx(
+                "act10.viz.glass_take",
+                "Le verre se remplit à la part de la population desservie — pas à la quantité d'eau disponible. Un territoire bien arrosé peut avoir un verre au tiers plein.",
+                "The glass fills to the share of population served - not to how much water exists. A rain-soaked territory can have a one-third-full glass.",
+              ),
+              hint: tx(
+                "act10.hint.glass",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act10.key.glass_c",
+                  "Le niveau d'eau suit la part de la population desservie par un service géré en toute sécurité.",
+                  "The water level follows the share of the population served by a safely managed service.",
+                ),
+                note: tx("act10.key.water_note", SOURCE_WATER_FR, SOURCE_WATER_EN),
+                // Le dessin encode par un REMPLISSAGE, pas par une teinte.
+                swatch: "none",
+              },
+              node: <WaterGlass embed />,
+            },
+    bacilli: {
+              id: "bacilli",
+              empty: false,
+              tab: tx("act10.board.tab_bacille", "Bacille", "Bacilli"),
+              title: tx(
+                "act10.viz.tb_title",
+                "L'incidence de la tuberculose, territoire par territoire",
+                "Tuberculosis incidence, territory by territory",
+              ),
+              finding: tx(
+                "act10.viz.tb_find",
+                "Choisissez un territoire : la colonie suit son incidence.",
+                "Pick a territory: the colony follows its incidence.",
+              ),
+              takeaway: tx(
+                "act10.viz.tb_take",
+                "Une incidence rapportée à 100 000 habitants : sur un territoire de quelques milliers de personnes, une poignée de cas suffit à faire un chiffre élevé.",
+                "An incidence per 100,000 people: on a territory of a few thousand, a handful of cases is enough to make the figure high.",
+              ),
+              hint: tx(
+                "act10.hint.tb",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act10.key.tb_viz_c",
+                  "La colonie s'épaissit avec l'incidence du territoire choisi.",
+                  "The colony thickens with the chosen territory's incidence.",
+                ),
+                note: tx("act10.key.tb_note", SOURCE_TB_FR, SOURCE_TB_EN),
+                swatch: "none",
+              },
+              node: <TbBacilli embed />,
+            },
+  };
+
+  const vizItems = [
+    { id: "glass", label: tx("act10.viz.sw_glass", "Eau", "Water") },
+    { id: "bacilli", label: tx("act10.viz.sw_bacilli", "Tuberculose", "TB") },
+  ];
+  const activeViz = VIZ[viz] || VIZ.glass;
+
   const charts =
     status === "ready"
       ? [
+          {
+            ...activeViz,
+            id: "viz",
+            // L'onglet porte le nom du dessin affiché — « Pousse », « Verre »,
+            // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
+            // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
+            // catégorie à laquelle il appartient.
+            node: (
+              <div className="vizpane">
+                <VizSwitch
+                  items={vizItems}
+                  value={viz}
+                  onChange={setViz}
+                  label={tx("act10.viz.sw_label", "Visuel", "Visual")}
+                />
+                <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
           // ---------- Les visuels interactifs, en ouverture ----------------
           // Deux dessins de la Home, un par indicateur, lisant exactement les
           // mêmes jeux que le sélecteur : le verre pour l'eau potable, le
@@ -451,77 +563,6 @@ export default function Act10Sante() {
           // Ils ouvrent parce qu'un pourcentage et une incidence pour 100 000
           // sont deux abstractions : le dessin leur donne une taille avant
           // que les courbes ne les mettent en série.
-          {
-            id: "glass",
-            empty: false,
-            tab: tx("act10.board.tab_verre", "Verre", "Glass"),
-            title: tx(
-              "act10.viz.glass_title",
-              "L'accès à l'eau potable, territoire par territoire",
-              "Access to safe water, territory by territory",
-            ),
-            finding: tx(
-              "act10.viz.glass_find",
-              "Choisissez un territoire : le verre se remplit à la mesure de sa population desservie.",
-              "Pick a territory: the glass fills to match its served population.",
-            ),
-            takeaway: tx(
-              "act10.viz.glass_take",
-              "Le verre se remplit à la part de la population desservie — pas à la quantité d'eau disponible. Un territoire bien arrosé peut avoir un verre au tiers plein.",
-              "The glass fills to the share of population served - not to how much water exists. A rain-soaked territory can have a one-third-full glass.",
-            ),
-            hint: tx(
-              "act10.hint.glass",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act10.key.glass_c",
-                "Le niveau d'eau suit la part de la population desservie par un service géré en toute sécurité.",
-                "The water level follows the share of the population served by a safely managed service.",
-              ),
-              note: tx("act10.key.water_note", SOURCE_WATER_FR, SOURCE_WATER_EN),
-              // Le dessin encode par un REMPLISSAGE, pas par une teinte.
-              swatch: "none",
-            },
-            node: <WaterGlass embed />,
-          },
-          {
-            id: "bacilli",
-            empty: false,
-            tab: tx("act10.board.tab_bacille", "Bacille", "Bacilli"),
-            title: tx(
-              "act10.viz.tb_title",
-              "L'incidence de la tuberculose, territoire par territoire",
-              "Tuberculosis incidence, territory by territory",
-            ),
-            finding: tx(
-              "act10.viz.tb_find",
-              "Choisissez un territoire : la colonie suit son incidence.",
-              "Pick a territory: the colony follows its incidence.",
-            ),
-            takeaway: tx(
-              "act10.viz.tb_take",
-              "Une incidence rapportée à 100 000 habitants : sur un territoire de quelques milliers de personnes, une poignée de cas suffit à faire un chiffre élevé.",
-              "An incidence per 100,000 people: on a territory of a few thousand, a handful of cases is enough to make the figure high.",
-            ),
-            hint: tx(
-              "act10.hint.tb",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act10.key.tb_viz_c",
-                "La colonie s'épaissit avec l'incidence du territoire choisi.",
-                "The colony thickens with the chosen territory's incidence.",
-              ),
-              note: tx("act10.key.tb_note", SOURCE_TB_FR, SOURCE_TB_EN),
-              swatch: "none",
-            },
-            node: <TbBacilli embed />,
-          },
           {
             id: "trend",
             signature: true,

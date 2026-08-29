@@ -1,0 +1,79 @@
+// src/components/VizSwitch/VizSwitch.scss
+// ============================================================
+// Contrôle segmenté posé DANS le panneau, au-dessus du dessin qu'il change.
+// Il doit se voir sans peser : c'est le dessin le sujet, pas le sélecteur.
+// ============================================================
+
+.vizswitch {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 0 0 auto;
+  padding-bottom: var(--sp-3);
+}
+
+.vizswitch__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+/* Le rail. Un filet et un fond retenu : l'ensemble se lit comme un groupe,
+   ce qu'une rangée de boutons isolés ne fait pas. */
+.vizswitch__track {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--c-bg-2) 70%, transparent);
+}
+
+.vizswitch__item {
+  padding: var(--sp-2) var(--sp-4);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--c-text);
+  }
+
+  /* L'option retenue est PLEINE, pas seulement colorée : sur un fond de photo
+     floutée, une simple différence de teinte ne suffit pas à dire laquelle des
+     deux est active. */
+  &.is-on {
+    background: var(--c-surface);
+    color: var(--c-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Le panneau qui porte la bascule et le dessin : la bascule garde sa hauteur,
+   le dessin prend tout le reste — c'est ce qui maintient les hauteurs de tracé
+   égales d'une vue à l'autre. */
+.vizpane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.vizpane__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}

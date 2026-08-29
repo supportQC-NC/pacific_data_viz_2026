@@ -308,7 +308,16 @@ export default function Act2Ocean() {
   const noPts = currentYear != null && pointsFor(currentYear).length === 0;
   const noPath = pathRows.length === 0;
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue du visuel en est exemptée : le dessin a son propre sélecteur de
+  // territoire et ignore ces filtres.
+  const boardControls = (
     <ChartFilter
       label={t("act1.filter.title")}
       hideLabel
@@ -375,10 +384,17 @@ export default function Act2Ocean() {
               "Switch islands with the selector below the thermometer.",
             ),
             legend: {
+              // DEUX ENCODAGES, DEUX SEUILS — il faut dire les deux, sinon le
+              // lecteur croit que la couleur redit la hauteur.
+              y: tx(
+                "act2.key.sea_y",
+                "La hauteur du mercure, c'est l'écart de l'île à SA normale 1971-2000. Le trait plein marque la médiane des vingt-et-un territoires.",
+                "The mercury height is the island's gap from ITS own 1971-2000 normal. The solid line marks the median of the twenty-one territories.",
+              ),
               color: tx(
-                "act2.key.sea_c",
-                "Le mercure monte quand l'eau dépasse sa normale, descend quand elle passe dessous.",
-                "High mercury: the water is above its normal. Low: below it.",
+                "act2.key.sea_c2",
+                "La teinte bascule au passage de cette médiane : ambre au-dessus, bleu en dessous. Elle situe l'île parmi ses voisines, pas contre sa propre normale — que tout le Pacifique dépasse désormais.",
+                "The hue flips as it crosses that median: amber above, blue below. It places the island among its neighbours, not against its own normal - which the whole Pacific now exceeds.",
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
@@ -424,6 +440,7 @@ export default function Act2Ocean() {
               "Survolez la courbe : chaque point donne l'année et le nombre d'îles concernées.",
               "Hover the line: each point gives the year and how many islands are involved.",
             ),
+            controls: boardControls,
             node: (
               <ShareAboveChart
                 series={regionSeries}
@@ -478,6 +495,7 @@ export default function Act2Ocean() {
               "Cliquez « médiane » ou « dispersion » pour masquer une couche et isoler l'autre.",
               "Click \u00ab median \u00bb or \u00ab spread \u00bb to hide one layer and isolate the other.",
             ),
+            controls: boardControls,
             node: (
               <AnomalyBandChart
                 series={regionSeries}
@@ -544,6 +562,7 @@ export default function Act2Ocean() {
               "Faites glisser les deux poignées de l'échelle, à droite : la matrice ne garde que la plage choisie. Isolez les années au-dessus de +0,5 °C, la bascule des années 1990 saute aux yeux. Survolez une case pour la valeur exacte.",
               "Drag the two handles on the scale to the right: the matrix keeps only the range you pick. Isolate the years above +0.5 °C and the 1990s shift jumps out. Hover a cell for the exact value.",
             ),
+            controls: boardControls,
             node: (
               <HeatmapChart
                 series={regionSeries}
@@ -608,6 +627,7 @@ export default function Act2Ocean() {
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <DumbbellChart
                 rows={pathRows}
@@ -670,6 +690,7 @@ export default function Act2Ocean() {
               ),
               note: tx("act2.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               // La carte vit dans le flux, comme les autres vues : elle
               // réagit au filtre de sous-région et au curseur d'années, donc
@@ -798,7 +819,8 @@ export default function Act2Ocean() {
       // elle sert vraiment — le repère « référence 0 » sur les graphiques,
       // la légende « sous / au-dessus de la normale », et la fiche ⓘ.
 
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={charts}
       // On arrive sur le VISUEL INTERACTIF : c'est la porte d'entrée la plus
       // manipulable de l'escale. Sans cela, ActBoard choisirait le graphe

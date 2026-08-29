@@ -33,6 +33,7 @@ import CoverageChart from "../../components/charts/CoverageChart";
 // on les ajoute ici, on ne les déplace pas.
 import CrowdAffected from "../../components/CrowdAffected/CrowdAffected";
 import LossStack from "../../components/LossStack/LossStack";
+import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import "./Act4Impact.scss";
 
 const OceanMap = lazy(() => import("../../components/OceanMap/OceanMap"));
@@ -129,6 +130,9 @@ export default function Act4Impact() {
   const { t, lang } = useLang();
 
   // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  // Quel dessin est à l'écran, quand l'escale en porte plusieurs.
+  const [viz, setViz] = useState("crowd");
+
   const tx = useCallback(
     (key, fr, en) => {
       const v = t(key);
@@ -319,9 +323,117 @@ export default function Act4Impact() {
         swatch: "magnitude",
       };
 
+  // ---------- LES VISUELS DE L'ESCALE ----------------------------
+  // Ils occupaient chacun leur onglet dans la barre. Or celle-ci
+  // énumère les ÉTAPES du raisonnement — tendance, matrice, carte —,
+  // et deux dessins qui répondent à la même question n'en font pas
+  // deux. Regroupés sous une seule entrée, ils libèrent la barre et
+  // le choix passe DANS le panneau, à côté de ce qu'il change.
+  //
+  // Chaque dessin garde son titre, sa phrase et sa clé de lecture :
+  // la colonne de droite reste exacte, ce qu'une fusion aurait perdu.
+  const VIZ = {
+    crowd: {
+              id: "crowd",
+              empty: false,
+              tab: tx("act4.board.tab_foule", "Foule", "Crowd"),
+              title: tx(
+                "act4.viz.crowd_title",
+                "Les personnes affectées, territoire par territoire",
+                "People affected, territory by territory",
+              ),
+              finding: tx(
+                "act4.viz.crowd_find",
+                "Choisissez un territoire : la foule suit le nombre de personnes affectées.",
+                "Pick a territory: the crowd follows the number of people affected.",
+              ),
+              takeaway: tx(
+                "act4.viz.crowd_take",
+                "« Affecté » ne veut pas dire « victime » : le terme couvre du déplacement de quelques jours à la perte du logement. Le chiffre compte des situations très inégales.",
+                "« Affected » does not mean « casualty »: it spans a few days' displacement to the loss of a home. The figure counts very unequal situations.",
+              ),
+              hint: tx(
+                "act4.hint.crowd",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act4.key.crowd_c",
+                  "La foule s'épaissit avec le nombre de personnes affectées du territoire choisi.",
+                  "The crowd thickens with the chosen territory's number of people affected.",
+                ),
+                note: tx("act4.key.aff_note", SOURCE_AFF_FR, SOURCE_AFF_EN),
+                // Le dessin encode par un NOMBRE de silhouettes, pas une teinte.
+                swatch: "none",
+              },
+              node: <CrowdAffected embed />,
+            },
+    lossviz: {
+              id: "lossviz",
+              empty: false,
+              tab: tx("act4.board.tab_pertes", "Pertes", "Losses"),
+              title: tx(
+                "act4.viz.loss_title",
+                "Les pertes économiques, territoire par territoire",
+                "Economic losses, territory by territory",
+              ),
+              finding: tx(
+                "act4.viz.loss_find",
+                "Choisissez un territoire : la pile suit ses pertes déclarées.",
+                "Pick a territory: the stack follows its reported losses.",
+              ),
+              takeaway: tx(
+                "act4.viz.loss_take",
+                "Des montants bruts, jamais rapportés à la taille de l'économie : la même somme ne pèse pas du tout le même poids d'un territoire à l'autre.",
+                "Raw amounts, never scaled to the size of the economy: the same sum carries a very different weight from one territory to the next.",
+              ),
+              hint: tx(
+                "act4.hint.loss",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act4.key.loss_viz_c",
+                  "La pile monte avec les pertes déclarées du territoire choisi.",
+                  "The stack rises with the chosen territory's reported losses.",
+                ),
+                note: tx("act4.key.loss_note", SOURCE_LOSS_FR, SOURCE_LOSS_EN),
+                swatch: "none",
+              },
+              node: <LossStack embed />,
+            },
+  };
+
+  const vizItems = [
+    { id: "crowd", label: tx("act4.viz.sw_crowd", "Personnes", "People") },
+    { id: "lossviz", label: tx("act4.viz.sw_lossviz", "Pertes", "Losses") },
+  ];
+  const activeViz = VIZ[viz] || VIZ.crowd;
+
   const charts =
     status === "ready"
       ? [
+          {
+            ...activeViz,
+            id: "viz",
+            // L'onglet porte le nom du dessin affiché — « Pousse », « Verre »,
+            // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
+            // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
+            // catégorie à laquelle il appartient.
+            node: (
+              <div className="vizpane">
+                <VizSwitch
+                  items={vizItems}
+                  value={viz}
+                  onChange={setViz}
+                  label={tx("act4.viz.sw_label", "Visuel", "Visual")}
+                />
+                <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
           // ---------- Les visuels interactifs, en ouverture ----------------
           // Deux dessins de la Home, un par indicateur, lisant exactement les
           // mêmes jeux que le sélecteur : la foule pour les personnes
@@ -331,77 +443,6 @@ export default function Act4Impact() {
           // Ils ouvrent parce qu'un cumul à sept chiffres ne se ressent pas :
           // le dessin lui donne une taille avant que les courbes ne le
           // mettent en série.
-          {
-            id: "crowd",
-            empty: false,
-            tab: tx("act4.board.tab_foule", "Foule", "Crowd"),
-            title: tx(
-              "act4.viz.crowd_title",
-              "Les personnes affectées, territoire par territoire",
-              "People affected, territory by territory",
-            ),
-            finding: tx(
-              "act4.viz.crowd_find",
-              "Choisissez un territoire : la foule suit le nombre de personnes affectées.",
-              "Pick a territory: the crowd follows the number of people affected.",
-            ),
-            takeaway: tx(
-              "act4.viz.crowd_take",
-              "« Affecté » ne veut pas dire « victime » : le terme couvre du déplacement de quelques jours à la perte du logement. Le chiffre compte des situations très inégales.",
-              "« Affected » does not mean « casualty »: it spans a few days' displacement to the loss of a home. The figure counts very unequal situations.",
-            ),
-            hint: tx(
-              "act4.hint.crowd",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act4.key.crowd_c",
-                "La foule s'épaissit avec le nombre de personnes affectées du territoire choisi.",
-                "The crowd thickens with the chosen territory's number of people affected.",
-              ),
-              note: tx("act4.key.aff_note", SOURCE_AFF_FR, SOURCE_AFF_EN),
-              // Le dessin encode par un NOMBRE de silhouettes, pas une teinte.
-              swatch: "none",
-            },
-            node: <CrowdAffected embed />,
-          },
-          {
-            id: "lossviz",
-            empty: false,
-            tab: tx("act4.board.tab_pertes", "Pertes", "Losses"),
-            title: tx(
-              "act4.viz.loss_title",
-              "Les pertes économiques, territoire par territoire",
-              "Economic losses, territory by territory",
-            ),
-            finding: tx(
-              "act4.viz.loss_find",
-              "Choisissez un territoire : la pile suit ses pertes déclarées.",
-              "Pick a territory: the stack follows its reported losses.",
-            ),
-            takeaway: tx(
-              "act4.viz.loss_take",
-              "Des montants bruts, jamais rapportés à la taille de l'économie : la même somme ne pèse pas du tout le même poids d'un territoire à l'autre.",
-              "Raw amounts, never scaled to the size of the economy: the same sum carries a very different weight from one territory to the next.",
-            ),
-            hint: tx(
-              "act4.hint.loss",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act4.key.loss_viz_c",
-                "La pile monte avec les pertes déclarées du territoire choisi.",
-                "The stack rises with the chosen territory's reported losses.",
-              ),
-              note: tx("act4.key.loss_note", SOURCE_LOSS_FR, SOURCE_LOSS_EN),
-              swatch: "none",
-            },
-            node: <LossStack embed />,
-          },
           {
             id: "timeline",
             signature: true,

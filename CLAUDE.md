@@ -116,6 +116,13 @@ Copy `.env.example` → `.env.local`. `REACT_APP_MAPBOX_TOKEN` is required for t
 `/recit` is a third, separate narrative entry point. When asked to change "the story", clarify
 which of these three is meant — they share chart components but not page code.
 
+**Routes do not match the French names.** `/territory` (not `/territoire`), `/economie`,
+`/cyclones` for the escale titled *La mémoire des tempêtes*. Check `App.js` before assuming.
+
+The act **ids** are lowercase (`a1` … `a12`). One of them was `A12` and that single capital
+broke the escale: the id keys `JOURNEY`, the i18n `home.acts.a12_*` and `/intro/a12.jpg`, so
+the page announced "Acte 00 · Étape 00 / 12" and printed three raw i18n paths.
+
 ### `journeyContext.js` is the single source of truth for narrative order
 
 `JOURNEY` (act id → route, in narrative order) and `MOVEMENTS` (5 narrative groupings)
@@ -123,6 +130,16 @@ drive act **numbering**, progress, and prev/next links everywhere. To reorder th
 edit `JOURNEY` only — numbers recompute app-wide. **Never hardcode an act number** in a
 component; use `numberOf(id)` / `padOf(id)`. Note the act *ids* are not in narrative order
 (`a8` is act 03, `a12` is act 04) — that decoupling is intentional.
+
+### Spacing and type
+
+`_variables.scss` defines the spacing scale. **`--sp-5` was missing** while 40 call sites
+across 7 files used it: `gap: var(--sp-5)` resolved to `normal` and the gaps silently
+collapsed. It is now `1.25rem`. When adding a step, check every rung of the scale exists.
+
+Type: **Newsreader** (display, 200–800), **Figtree** (body, 300–900), **DM Mono** (300/400/500),
+loaded in `public/index.html`. Axis *values* carry `tk.text` at 13.5px; axis *titles* stay
+`tk.textSoft` at 12px — the value is the data, the title is the label.
 
 ### Theming: CSS custom properties → JS tokens
 
@@ -137,8 +154,9 @@ Consequence: a hardcoded hex inside a chart is a bug, because it won't follow th
 
 ### Chart layer
 
-61 components in `components/charts/` plus chart-bearing components elsewhere, over
-ECharts, ApexCharts, D3, and Mapbox GL.
+32 files in `components/charts/`, plus chart-bearing components among the 77
+directories of `components/` — over ECharts, ApexCharts, D3, and Mapbox GL.
+(25 pages, 10 services.)
 
 - `charts/echartsBase.js` — ECharts option fragments (`axisStyle`, `tooltipStyle`,
   `paletteOf`) **and** the shared math helpers (`fmt`, `median`, `quantile`, `valAt`).
@@ -147,6 +165,62 @@ ECharts, ApexCharts, D3, and Mapbox GL.
   math helpers from `echartsBase` rather than redefining them, so charts need one import.
 
 New charts should compose these bases, not rebuild options from scratch.
+
+### The escale template
+
+Acts are now called **escales** in the UI. Every one of the eleven `ActBoard`
+escales renders in **focus mode** (`focus` prop) and shares one layout, built
+from these pieces:
+
+| Piece | Role |
+|---|---|
+| `EscaleBar` | one merged bar: escale prev/next + title + progress, then the view tabs. Replaces the old double header (ActBar + toolbar). |
+| `ChartKey` | the reading column on the right: view title, *how to read* (↕ / ↔ / colour swatch), a `caveat` slot for method warnings, the takeaway, an *explore* hint, per-view `controls`, and the source pinned to the bottom. |
+| `ChartHint` | the "?" pill, kept for the sub-1180 layout. |
+| `VizSwitch` | segmented control **inside** the panel, when an escale carries several Home visuals. |
+| `EscaleImmersion` | full-screen portal variant. Currently unused — kept for future escales. |
+
+Rules the template enforces, so pages don't have to:
+
+- **The map closes the navigation** — `ActBoard` sorts `id: "map"` last, *unless*
+  the escale declares it `signature` (escale 04 does: the animated cyclone tracks
+  are the demonstration, not a locator).
+- **`INFO_IDS`** (`read`, `coverage`, `source`, `data`, `method`) leave the
+  carousel and go behind the ⓘ button.
+- **`ChartKey` is hidden below 1180px** — it would take from the plot the width it
+  claims to earn. `ActBoard` therefore mirrors the view title, the finding and the
+  `controls` into `.board__head` under that width. **Anything you put in the column
+  must have that fallback, or it becomes unreachable on narrow screens.**
+
+**Filters belong to the chart they drive, not to the bar.** A control that only
+changes one view sits in that view's `controls` (rendered in the reading column);
+one that changes every view stays in the escale bar. Escale 10 shows both cases at
+once: its year slider is global on the *mix* dataset and map-only on the *renewable*
+one, so it moves between the two places. Escales 01, 02, 03, 05 and 07 have an
+empty bar — navigation only.
+
+Visual views take **no** filter: the Home drawings carry their own territory
+selector and ignore the escale's filters.
+
+### The Home visuals live in the escales
+
+The seventeen interactive SVG drawings (`SeaWarm`, `SmokePlume`, `PlantGrowth`,
+`CattleThrive`, `ForestCover`, `SkyRain`, `BiodiversityReef`, `StiltHouse`,
+`PopGrowth`, `CoastlineShift`, `WaterGlass`, `TbBacilli`, `CrowdAffected`,
+`LossStack`, `EnergyCell`, `PowerMix`, `TourismBeach`) each read exactly one
+escale's dataset. **They are no longer mounted on the Home** — `home__signatures`
+is gone. Each is the opening view of its escale, and several in one escale are
+grouped under a single tab with a `VizSwitch`.
+
+They render with the `embed` prop, which emits `<block>--embed`. The layout reset
+for that class lives once in **`styles/_embedded-visuals.scss`**, projected over the
+block prefixes: without it a drawing keeps its full-page section template inside a
+dashboard panel.
+
+> **Gotcha, learned the hard way.** That partial hides `<block>__head` (the
+> editorial header duplicates the view title). Any SVG element you name
+> `<block>__head` inherits `display: none` — a cow's head vanished this way, leaving
+> only its outline. Same risk for `__inner`, `__stage`, `__viz`, `__svg`.
 
 ### Data services
 
@@ -184,13 +258,17 @@ visible in the UI means a missing translation, not a rendering bug.
 
 ## Known repo hygiene issues
 
+- **`npm run build` currently FAILS.** `src/data/datasetSources.js` declares
+  `disastersAffected` **twice** — line ~306 (UNDRR / Sendai, rich, marked "jeu officiel du
+  Challenge") and line ~525 (UNSD, terser, no licence). JavaScript keeps the second; the first
+  is dead code. `no-dupe-keys` is an error, so CRA refuses to build. **Which one is
+  authoritative is an editorial decision — ask before deleting either.** The dev server
+  tolerates it, which is why it went unnoticed.
 - **`.env.example` is tracked and contains what looks like a live SSH root password and host.**
   It is in git history. Treat as compromised: rotate the credential and purge it from history.
-- **61 `.css` + 60 `.css.map` files are committed next to their `.scss` sources.** They are
-  stale compiled artifacts — CRA compiles the `.scss` directly, and nothing imports them.
-  They should be gitignored. Editing a `.css` file here has no effect; edit the `.scss`.
-- `components/charts/RiverChart copy.jsx` and `components/RiverChart/` duplicate
-  `charts/RiverChart.jsx`, including a copy of the 18-color `BRAND` array in each.
+  *(Unchanged — still true.)*
+- The "61 `.css` + 60 `.css.map` committed next to their `.scss`" is **no longer true**: only
+  `src/App.css` remains. CRA compiles the `.scss` directly; editing a `.css` here has no effect.
 
 ## Dataviz conventions
 
@@ -202,24 +280,37 @@ This is what keeps 12 acts reading as one product. Use `rampFor(kind, tk)` from
 
 | `kind` | For | Ramp | Legend must say |
 |---|---|---|---|
-| `magnitude` | grandeur with no value judgement (population, arrivals, counts) | sequential lavender, light→dark | "low → high" |
-| `stress` (default) | oriented quantity — **dark is always worse** (emissions, TB, sea level) | ordinal lavender | "spared → exposed" |
-| `polarity` | true polarity around a meaningful zero (anomaly vs normal, change vs base) | diverging lavender ↔ red, neutral grey centre | "below ← 0 → above" |
+| `magnitude` | grandeur with no value judgement (population, arrivals, counts) | sequential lavender (`--c-seq-*`) | "low → high" |
+| `stress` (default) | oriented quantity — **dark is always worse** (emissions, TB, sea level) | ordinal lavender (`--c-ord-*`) | "spared → exposed" |
+| `polarity` | true polarity around a meaningful zero (anomaly vs normal, change vs base) | diverging **blue ↔ amber** (`--c-div-*`), neutral grey centre | "below ← 0 → above" |
 
 Two hard rules behind this:
 
 - **Never green ↔ red.** Measured at **ΔE 4.1** under deuteranopia — the two poles are the
   *same colour* for ~8% of men — while reading ΔE 33.9 to normal vision. That gap is exactly
-  why it survives everywhere: whoever picks it cannot see the problem. Lavender ↔ red
-  measures 22.7.
+  why it survives everywhere: whoever picks it cannot see the problem.
+
+  The diverging ramp is now **blue ↔ amber**, not lavender ↔ red. Candidates were measured
+  on protan/deutan/tritan; blue ↔ amber won, then had its chroma pulled back 24% because the
+  saturated version read as an alert. Final worst-case CVD **ΔE 20.5**; poles at 7.89:1 and
+  8.18:1 on the dark surface, 5.41:1 and 5.40:1 on the light one.
 - **Polarity is a property of the indicator, not of the number.** High water access is good;
   high TB incidence is bad. `services/syntheseApi.js` already declares this per indicator
   (`dir: "up" | "down" | "abs"`) — reuse that, don't re-derive it. A value that is positive
   for humans is not necessarily positive for the environment.
 
-The diverging ramp is the one palette that is **not** theme-invariant: on the navy surface its
-poles must be *light*, or the extreme values — the ones that matter most — sink into the
-background. Both modes are defined in `_variables.scss`.
+**No ramp is theme-invariant any more.** The diverging one never was — on the navy surface
+its poles must be *light*, or the extreme values sink into the background. But the sequential
+and ordinal ramps were, and that was a bug: their salience read **inverted** on dark. Measured
+before the fix — `--c-seq-100` (the *lowest* value) at 14.37:1 on navy against `--c-seq-900`
+(the *highest*) at 1.37:1. The low end shouted, the high end vanished.
+
+`scripts/validate_palette.js` passes such a ramp: it checks monotonicity and the light end, not
+whether salience follows value. **The validator cannot catch this — you have to look.**
+
+All three ramps are therefore declared inside the two theme blocks of `_variables.scss`. The
+invariant to preserve: **token 100/1 is the lowest value and 900/6 the highest, in both
+themes** — on dark that means the high end is the *light* token, on light the dark one.
 
 ### Series colour follows the entity
 
@@ -231,18 +322,29 @@ filtered array, and never `i % palette.length`.
 
 ### Remaining violations
 
-An audit against the `dataviz` skill found these; when touching charts, don't propagate them:
+Re-audited against the sources. Most of the earlier list is **fixed** — don't re-report it:
+`BarRace`, `ProfileRadar`, `RiverChart` and `TrendLines` now fall back to neutral ink past the
+palette cap instead of `i % length`, and the duplicates `charts/RiverChart copy.jsx` and
+`components/RiverChart/` no longer exist. Gridlines are dashed globally
+(`apexBase.js` `strokeDashArray: 4`, `echartsBase.js` `type: "dashed"`).
+
+What is still open:
 
 - **No dual-axis charts.** `charts/DualAxisChart.jsx` and `charts/ParetoChart.jsx` use two
   y-scales. `EvolutionLines` has an `index` mode (base 100 + reference line) that is the
   correct one-axis replacement.
-- **Still cycling `i % palette.length`** (gives two entities the same colour):
-  `components/BarRace/BarRace.jsx:59`, `charts/ProfileRadar.jsx:49-51` (a radar is an
-  all-pairs form — cap 3), `charts/RiverChart.jsx:145` plus its own 18-hue `BRAND` copy at
-  line 16, `components/TrendLines/TrendLines.jsx:121,222,292`, `pages/Act9Eco/Act9Eco.jsx:346`.
-  Fix each with `territoryColors` or an explicit stable map.
-- **Gridlines are solid hairlines.** `apexBase.js:56` and `echartsBase.js:43` set dashed grids
-  globally.
+- **`OceanMap` still ships a `semantic` ramp — green ↔ red** — and the two coastline maps of
+  escale 07 are its last callers. The escale was explicitly left alone by the entrant; the
+  ramp is the doctrine violation, not the views.
+- **`stress` has no inverted form.** Indicators where *low* is worse (Red List Index, safe
+  water) are painted `magnitude` and the reading key says in words which end warns. A ramp
+  that could carry that orientation would remove the words.
+- **Stale colour words in the copy.** Ramps changed; sentences did not always follow. Three
+  were caught on escale 03 (`heat_find`, `heat_take`, `map_sub` still said "rouge") and one on
+  escale 04. **`fr.json:1020` and its English twin still name red on views not yet re-read.**
+  A legend naming a colour absent from the screen is worse than no legend — check the copy
+  whenever you touch a ramp.
+
 - Hero/stat figures use proportional figures; reserve `tabular-nums` for axis ticks and table
   rows.
 

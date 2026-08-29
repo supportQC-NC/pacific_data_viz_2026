@@ -30,7 +30,16 @@ const EXTRA_STRINGS = {
       begin: "Découvrir", // remplace « Commencer l'expérience »
       sources: "Les sources",
       tb: { value_caption: "Incidence locale" },
-      sea: { value_caption: "Anomalie locale · vs normale 1971–2000" },
+      sea: {
+        value_caption: "Anomalie locale · vs normale 1971–2000",
+        // Étiquette du repère tracé SUR le thermomètre. Distincte de
+        // `median_label`, qui est la phrase de la légende sous le dessin :
+        // sur le tube il n'y a la place que d'un mot.
+        median_tag: "médiane",
+        // En-tête de la liste des territoires à égalité, au survol des
+        // pastilles « le plus chaud » / « le plus froid ».
+        ties_head: "{n} territoires à égalité",
+      },
       coast: { rate_caption: "Taux annuel · médiane des segments" },
     },
     chapters: {
@@ -114,6 +123,30 @@ const EXTRA_STRINGS = {
     // Sortie du voyage guidé, depuis la barre d'acte.
     flow: { exit_voyage: "Quitter le voyage" },
     // Barre de voyage du Récit (chaque acte = une escale).
+    // La phrase de la vue « calendrier » décrivait un vert-rouge qui n'existe
+    // plus : la matrice compte des cyclones, une grandeur, et emploie
+    // désormais la rampe à une seule teinte des autres escales. Une légende
+    // qui nomme des couleurs absentes est pire qu'une absence de légende.
+    // La rampe divergente du projet est BLEU ↔ AMBRE depuis qu'elle a été
+    // mesurée : le vert-rouge d'origine était illisible pour près d'un homme
+    // sur douze, et le lavande-rouge qui l'a remplacé a été adouci en ambre.
+    // Ces phrases nommaient encore le rouge. Une légende qui désigne une
+    // couleur absente de l'écran est pire qu'une absence de légende.
+    act8: {
+      board: {
+        heat_find:
+          "Territoires × années : l'intensité dit l'écart à la normale — bleu en dessous, ambre au-dessus.",
+        heat_take:
+          "La matrice distingue d'un coup d'œil ce qui oscille de ce qui s'installe — bleu sous la normale, ambre au-dessus.",
+      },
+      map_sub: "Anomalie par territoire — bleu sous la référence, ambre au-dessus",
+    },
+    act12: {
+      viz: {
+        month_find:
+          "Genèse des cyclones par mois (saison australe, juillet → juin, en lignes) et par tranche d'années (en colonnes). Plus une case est marquée, plus de cyclones s'y sont formés. Le cœur de saison se concentre de décembre à avril.",
+      },
+    },
     recit: {
       voyage_exit: "Quitter le voyage",
       voyage_next: "Escale suivante",
@@ -149,7 +182,11 @@ const EXTRA_STRINGS = {
       begin: "Discover",
       sources: "The sources",
       tb: { value_caption: "Local incidence" },
-      sea: { value_caption: "Local anomaly · vs 1971–2000 normal" },
+      sea: {
+        value_caption: "Local anomaly · vs 1971–2000 normal",
+        median_tag: "median",
+        ties_head: "{n} territories tied",
+      },
       coast: { rate_caption: "Annual rate · median of segments" },
     },
     chapters: {
@@ -220,6 +257,21 @@ const EXTRA_STRINGS = {
         bio: "Biodiversity — species",
         q1: "Island by island: what does the land produce to feed people?",
         q2: "Island by island: what's left of the life around it?",
+      },
+    },
+    act8: {
+      board: {
+        heat_find:
+          "Territories × years: intensity carries the gap from the normal — blue below, amber above.",
+        heat_take:
+          "The matrix tells at a glance what oscillates from what settles in — blue below the normal, amber above.",
+      },
+      map_sub: "Anomaly per territory — blue below reference, amber above",
+    },
+    act12: {
+      viz: {
+        month_find:
+          "Cyclone genesis by month (austral season, July → June, rows) and by span of years (columns). The stronger a cell, the more cyclones formed then. The season peaks from December to April.",
       },
     },
   },

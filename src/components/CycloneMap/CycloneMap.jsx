@@ -240,6 +240,28 @@ export default function CycloneMap({
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
+
+  // REDIMENSIONNEMENT DU CONTENEUR.
+  // Mapbox fixe la taille de son canevas au montage et ne la revoit que si on
+  // le lui demande. Dans un panneau d'escale, la hauteur arrive APRÈS — le
+  // temps que la mise en page se pose — et le canevas restait à sa taille
+  // d'origine : mesuré ici, 640 px de dessin dans 817 px de conteneur, avec un
+  // globe rendu pour une boîte qui n'existait plus.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    let last = 0;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0] ? entries[0].contentRect.height : 0;
+      // Seuil : on ignore les variations d'un pixel, on ne réagit qu'aux vrais
+      // changements de gabarit.
+      if (Math.abs(h - last) < 24) return;
+      last = h;
+      if (mapRef.current) mapRef.current.resize();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const popupRef = useRef(null);
   const rafRef = useRef(0);
   const colorsRef = useRef(resolveStageColors());

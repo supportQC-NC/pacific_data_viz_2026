@@ -35,29 +35,55 @@ import "./PlantGrowth.scss";
 
 const BASE_X = 120;
 const BASE_Y = 268;
-const STEM_TOP = 84;
 
-/* Feuilles le long de la tige : hauteur + côté + classe couleur. */
+/* ============================================================
+   LA PLANTE POUSSE LE LONG DE SA TIGE
+   ------------------------------------------------------------
+   Auparavant, tout le dessin était mis à l'échelle : 46 % à 100 % en hauteur,
+   80 % à 100 % en largeur — DEUX facteurs différents. Un rendement faible ne
+   donnait donc pas une jeune pousse mais une plante ÉCRASÉE : tige aplatie,
+   feuilles restées longues et devenues plates, fleur ovale. C'est ce que
+   voulait dire « les proportions sont bizarres » : rien n'était faux, tout
+   était déformé.
+
+   Une plante ne se déforme pas, elle s'allonge. On dessine donc une tige de
+   longueur fixe et l'on n'en RÉVÈLE qu'une partie, avec le tracé en pointillé
+   (`stroke-dasharray`). La donnée pilote la longueur poussée, jamais l'échelle.
+
+   Tout le reste suit cette tige :
+     • les feuilles se posent SUR elle, à une fraction donnée de sa longueur,
+       et n'apparaissent que lorsque la pousse les a dépassées ;
+     • leur inclinaison suit la TANGENTE de la tige à cet endroit, comme une
+       vraie feuille sur une vraie pousse ;
+     • la fleur voyage sur la pointe : elle est toujours au sommet de ce qui a
+       poussé, jamais suspendue dans le vide.
+
+   Les proportions ne bougent plus : une jeune pousse est une petite plante
+   entière, pas une grande plante compressée.
+   ============================================================ */
+
+/* Tige : deux courbes douces, un léger contre-galbe — une tige rectiligne
+   fait mât, pas plante. */
+const STEM_D = "M120,268 C110,222 130,178 118,140 C108,108 124,84 120,58";
+
+/* Feuilles : `at` = position le long de la tige, de 0 (au sol) à 1 (pointe).
+   `dir` = côté. Elles alternent en montant, comme une phyllotaxie simple. */
 const LEAVES = [
-  { y: 240, dir: -1, cls: "plant__leaf-a" },
-  { y: 222, dir: 1, cls: "plant__leaf-b" },
-  { y: 202, dir: -1, cls: "plant__leaf-b" },
-  { y: 182, dir: 1, cls: "plant__leaf-a" },
-  { y: 162, dir: -1, cls: "plant__leaf-a" },
-  { y: 142, dir: 1, cls: "plant__leaf-b" },
-  { y: 122, dir: -1, cls: "plant__leaf-b" },
-  { y: 104, dir: 1, cls: "plant__leaf-a" },
+  { at: 0.14, dir: 1, size: 1.0, cls: "plant__leaf-a" },
+  { at: 0.24, dir: -1, size: 1.05, cls: "plant__leaf-b" },
+  { at: 0.36, dir: 1, size: 1.0, cls: "plant__leaf-b" },
+  { at: 0.47, dir: -1, size: 0.92, cls: "plant__leaf-a" },
+  { at: 0.58, dir: 1, size: 0.86, cls: "plant__leaf-a" },
+  { at: 0.69, dir: -1, size: 0.78, cls: "plant__leaf-b" },
+  { at: 0.79, dir: 1, size: 0.7, cls: "plant__leaf-b" },
+  { at: 0.88, dir: -1, size: 0.62, cls: "plant__leaf-a" },
 ];
-function leafPath({ y, dir }) {
-  const x = BASE_X;
-  const tip = x + dir * 52;
-  return `M${x},${y} Q${x + dir * 30},${y - 20} ${tip},${y - 4} Q${x + dir * 34},${y + 14} ${x},${y} Z`;
-}
-function veinPath({ y, dir }) {
-  const x = BASE_X;
-  const tip = x + dir * 48;
-  return `M${x},${y} Q${x + dir * 28},${y - 7} ${tip},${y - 3}`;
-}
+
+/* La feuille est dessinée UNE fois, pointant vers la droite, ancrée en (0,0).
+   C'est la transformation qui la place, l'oriente et la dimensionne — donc
+   une seule forme à soigner, et huit feuilles cohérentes. */
+const LEAF_D = "M0,0 C13,-12 34,-13 48,0 C34,13 13,12 0,0 Z";
+const VEIN_D = "M3,0 C16,-4 32,-4 44,0";
 
 /* Touffes d'herbe à la base (statiques). */
 const GRASS = [
@@ -67,15 +93,35 @@ const GRASS = [
   "M148,268 Q150,254 145,246",
 ];
 
-/* Petite fleur : 6 pétales (radius 6,5 autour du sommet de tige). */
-const FLOWER_R = 6.5;
-const PETALS = Array.from({ length: 6 }, (_, k) => {
-  const a = (k * Math.PI) / 3;
-  return [
-    +(BASE_X + FLOWER_R * Math.cos(a)).toFixed(2),
-    +(STEM_TOP + FLOWER_R * Math.sin(a)).toFixed(2),
-  ];
-});
+/* ============================================================
+   LA FLEUR — un bourgeon qui s'ouvre, pas une pastille fixe
+   ------------------------------------------------------------
+   Elle était faite de six petits disques posés à distance fixe du centre :
+   toujours la même forme, toujours la même taille, et bien trop menue à côté
+   de feuilles de cinquante pixels. Elle ne racontait rien de la croissance.
+
+   Un pétale est maintenant une vraie forme, dessinée pointant vers le haut
+   depuis le centre. C'est son ANGLE qui fait tout le travail :
+
+     • rendement bas  → les six pétales restent presque superposés à la
+       verticale, resserrés et étroits : un bourgeon, pas une fleur ratée ;
+     • rendement haut → ils s'écartent jusqu'à 60° les uns des autres, se
+       rempliss et s'élargissent : la corolle s'ouvre.
+
+   Deux sépales verts enveloppent le bourgeon et s'effacent à mesure qu'il
+   s'ouvre, comme sur une vraie plante — c'est ce détail qui fait lire
+   « bourgeon » plutôt que « fleur mal dessinée ».
+   ============================================================ */
+
+/* Pétale dessiné depuis le centre (0,0), pointant vers le haut. */
+const PETAL_D = "M0,0 C-6.5,-4 -7,-12 0,-17 C7,-12 6.5,-4 0,0 Z";
+/* Sépale : plus court, plus étroit, il coiffe le bourgeon. */
+const SEPAL_D = "M0,0 C-4.5,-3 -5,-9 0,-13 C5,-9 4.5,-3 0,0 Z";
+
+const PETAL_COUNT = 6;
+const PETALS = Array.from({ length: PETAL_COUNT }, (_, i) => i);
+/* Trois sépales, répartis pour envelopper le bourgeon fermé. */
+const SEPALS = [-38, 0, 38];
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -187,9 +233,18 @@ export default function PlantGrowth({ embed = false, code = null } = {}) {
 
   /* ----------- Animation : croissance ----------- */
   const plantRef = useRef(null);
+  // La tige et sa longueur de tracé, mesurée une seule fois : c'est elle qui
+  // porte toute la croissance.
+  const stemRef = useRef(null);
+  const stemLenRef = useRef(0);
   const numberRef = useRef(null);
   const leafRefs = useRef([]);
   const budRef = useRef(null);
+  // Pétales, sépales et cœur : la fleur s'ouvre en faisant tourner ses
+  // pétales, il faut donc les atteindre un par un.
+  const petalRefs = useRef([]);
+  const sepalGroupRef = useRef(null);
+  const coreRef = useRef(null);
   const animObj = useRef({ v: 0, val: 0 });
   const startedRef = useRef(false);
 
@@ -202,37 +257,136 @@ export default function PlantGrowth({ embed = false, code = null } = {}) {
         );
 
       const swing = reduced ? 0 : 1;
-      const sway = 2.4 * (0.5 + 0.5 * v) * swing * Math.sin(phase * 0.8);
-      const sy = 0.46 + 0.54 * v; // minimum garanti : 46 % de hauteur
-      const sx = 0.8 + 0.2 * v;
+
+      // LA POUSSE — une fraction de la tige révélée, pas une mise à l'échelle.
+      // Un plancher de 26 % garantit qu'il y a toujours une pousse à regarder :
+      // le rendement le plus faible du Pacifique reste une plante, pas un
+      // moignon.
+      const grow = 0.26 + 0.74 * v;
+
+      const stem = stemRef.current;
+      if (stem) {
+        // La longueur du tracé est demandée au navigateur une seule fois : le
+        // chemin ne change jamais, seule la part révélée bouge.
+        if (!stemLenRef.current) stemLenRef.current = stem.getTotalLength();
+        const L = stemLenRef.current;
+        stem.style.strokeDasharray = `${L}`;
+        // Le tracé part du sol : décaler le pointillé révèle donc du BAS vers
+        // le haut, dans le sens où pousse une plante.
+        stem.style.strokeDashoffset = `${(L * (1 - grow)).toFixed(2)}`;
+      }
+
+      // Balancement : une rotation de quelques degrés au pied, appliquée à
+      // l'ensemble. C'est le seul mouvement d'ensemble — et il ne déforme rien,
+      // contrairement à l'ancienne mise à l'échelle à deux facteurs.
+      const sway = 2.2 * (0.45 + 0.55 * v) * swing * Math.sin(phase * 0.8);
       if (plantRef.current)
         plantRef.current.setAttribute(
           "transform",
-          `translate(${BASE_X} ${BASE_Y}) rotate(${sway.toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(${-BASE_X} ${-BASE_Y})`,
+          `rotate(${sway.toFixed(2)} ${BASE_X} ${BASE_Y})`,
         );
+
+      // Point et tangente à une fraction donnée de la tige. La tangente est
+      // prise sur un court segment autour du point : c'est ce qui permet aux
+      // feuilles de s'incliner comme la tige, au lieu de rester horizontales.
+      const at = (f) => {
+        if (!stem || !stemLenRef.current) return null;
+        const L = stemLenRef.current;
+        const d = Math.max(0.5, Math.min(L - 0.5, L * f));
+        const p0 = stem.getPointAtLength(d - 0.5);
+        const p1 = stem.getPointAtLength(d + 0.5);
+        return {
+          x: (p0.x + p1.x) / 2,
+          y: (p0.y + p1.y) / 2,
+          // Angle de la tangente, en degrés. Vers le haut ≈ −90.
+          a: (Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180) / Math.PI,
+        };
+      };
 
       leafRefs.current.forEach((node, i) => {
         if (!node) return;
-        const flutter = reduced
-          ? 0
-          : 3 * (0.4 + 0.6 * v) * Math.sin(phase * 1.7 + i * 0.9);
-        // Les 1-2 feuilles basses restent visibles même à v=0 (vraie pousse).
-        const appear = clamp01((v - (i - 1.5) / LEAVES.length) * 1.8);
+        const lf = LEAVES[i];
+        const pt = at(lf.at);
+        if (!pt) return;
+
+        // Une feuille ne sort que lorsque la pousse a dépassé son point
+        // d'attache, et met un court instant à se déployer. C'est ce décalage
+        // qui donne la sensation de croissance : elles ne s'allument pas
+        // toutes ensemble.
+        const open = clamp01((grow - lf.at) / 0.1);
+        if (open <= 0) {
+          node.setAttribute("opacity", "0");
+          return;
+        }
+        // Frémissement propre à chaque feuille, jamais synchrone.
+        const flutter = reduced ? 0 : 4 * open * Math.sin(phase * 1.6 + i * 1.1);
+        // La feuille s'écarte de la tige de 58° ; le côté est donné par `dir`.
+        const angle = pt.a + lf.dir * 58 + flutter * lf.dir;
+        const sc = (0.62 + 0.38 * v) * lf.size * open;
         node.setAttribute(
           "transform",
-          `rotate(${flutter.toFixed(2)} ${BASE_X} ${LEAVES[i].y})`,
+          `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)}) rotate(${angle.toFixed(2)}) scale(${sc.toFixed(3)})`,
         );
-        node.setAttribute("opacity", appear.toFixed(3));
+        node.setAttribute("opacity", open.toFixed(3));
       });
 
-      // Fleur : toujours présente, petite, grandit un peu avec le rendement.
+      // LA FLEUR VOYAGE SUR LA POINTE, ET ELLE S'OUVRE.
+      //
+      // Elle était clouée au sommet du dessin — donc suspendue au-dessus du
+      // vide dès que la plante était petite — et gardée identique du plus
+      // faible au plus fort rendement. Elle est maintenant toujours présente,
+      // mais sous la forme que son rendement mérite : un bourgeon fermé en
+      // bas, une corolle ouverte en haut.
       if (budRef.current) {
-        const fs = 0.78 + 0.32 * v;
-        const fsw = reduced ? 0 : 2 * Math.sin(phase * 0.8 + 0.4);
-        budRef.current.setAttribute(
-          "transform",
-          `translate(${BASE_X} ${STEM_TOP}) rotate(${fsw.toFixed(2)}) scale(${fs.toFixed(3)}) translate(${-BASE_X} ${-STEM_TOP})`,
-        );
+        const tip = at(grow);
+        if (tip) {
+          // Ouverture ADOUCIE aux deux bouts : le bourgeon reste bourgeon un
+          // moment, la fleur s'épanouit franchement à la fin. Une progression
+          // linéaire donnait une corolle à moitié ouverte sur toute la plage,
+          // c'est-à-dire ni l'un ni l'autre.
+          const open = v * v * (3 - 2 * v);
+          // Assez grande pour tenir tête aux feuilles : à pleine ouverture,
+          // la corolle fait environ la longueur d'une feuille.
+          const fs = 0.8 + 0.65 * open;
+          const fsw = reduced ? 0 : 3 * Math.sin(phase * 0.8 + 0.4);
+          budRef.current.setAttribute(
+            "transform",
+            `translate(${tip.x.toFixed(2)} ${tip.y.toFixed(2)}) rotate(${fsw.toFixed(2)}) scale(${fs.toFixed(3)})`,
+          );
+          budRef.current.setAttribute("opacity", "1");
+
+          // L'OUVERTURE. Fermés, les six pétales se superposent à la verticale
+          // et restent étroits ; ouverts, ils s'écartent de 60° et
+          // s'élargissent. Un seul paramètre, deux états lisibles.
+          const spread = (360 / PETAL_COUNT) * open;
+          petalRefs.current.forEach((node, i) => {
+            if (!node) return;
+            const a = (i - (PETAL_COUNT - 1) / 2) * spread;
+            const px = 0.62 + 0.38 * open;
+            const py = 0.72 + 0.28 * open;
+            node.setAttribute(
+              "transform",
+              `rotate(${a.toFixed(2)}) scale(${px.toFixed(3)} ${py.toFixed(3)})`,
+            );
+          });
+
+          // Les sépales enveloppent le bourgeon puis s'effacent derrière la
+          // corolle — c'est ce détail qui fait lire « bourgeon » plutôt que
+          // « fleur mal dessinée ».
+          if (sepalGroupRef.current)
+            sepalGroupRef.current.setAttribute(
+              "opacity",
+              (1 - clamp01(open * 1.5)).toFixed(3),
+            );
+
+          // Le cœur n'apparaît qu'une fois la corolle ouverte : sur un
+          // bourgeon fermé, il n'est pas visible.
+          if (coreRef.current)
+            coreRef.current.setAttribute(
+              "opacity",
+              clamp01((open - 0.35) / 0.4).toFixed(3),
+            );
+        }
       }
     },
     [reduced, nf],
@@ -412,14 +566,21 @@ export default function PlantGrowth({ embed = false, code = null } = {}) {
                   ))}
                 </g>
 
-                {/* Plante (mise à l'échelle selon le rendement) */}
+                {/* LA PLANTE. Le groupe ne porte QU'UNE ROTATION de
+                    balancement : plus aucune mise à l'échelle d'ensemble, donc
+                    plus aucune déformation. La croissance vit dans la tige. */}
                 <g ref={plantRef}>
+                  {/* La tige, révélée du sol vers la pointe. */}
                   <path
+                    ref={stemRef}
                     className="plant__stem"
-                    d="M120,268 C115,208 125,146 120,84"
+                    d={STEM_D}
                     fill="none"
                   />
 
+                  {/* Les feuilles. Chacune est la MÊME forme, placée et
+                      orientée par sa transformation — une seule silhouette à
+                      soigner, huit feuilles cohérentes. */}
                   {LEAVES.map((lf, i) => (
                     <g
                       key={i}
@@ -428,28 +589,37 @@ export default function PlantGrowth({ embed = false, code = null } = {}) {
                       }}
                       opacity="0"
                     >
-                      <path className={`plant__leaf ${lf.cls}`} d={leafPath(lf)} />
-                      <path className="plant__vein" d={veinPath(lf)} fill="none" />
+                      <path className={`plant__leaf ${lf.cls}`} d={LEAF_D} />
+                      <path className="plant__vein" d={VEIN_D} fill="none" />
                     </g>
                   ))}
 
-                  {/* Petite fleur, toujours présente */}
+                  {/* La fleur, portée par la pointe de ce qui a poussé.
+                      Les sépales sont dessinés AVANT les pétales : sur un
+                      bourgeon fermé, ce sont eux qu'on voit, et ils passent
+                      derrière la corolle quand elle s'ouvre. */}
                   <g ref={budRef} className="plant__bud">
-                    {PETALS.map(([cx, cy], i) => (
-                      <circle
+                    <g ref={sepalGroupRef} className="plant__sepals">
+                      {SEPALS.map((a, i) => (
+                        <path
+                          key={i}
+                          className="plant__sepal"
+                          d={SEPAL_D}
+                          transform={`rotate(${a})`}
+                        />
+                      ))}
+                    </g>
+                    {PETALS.map((i) => (
+                      <path
                         key={i}
+                        ref={(n) => {
+                          petalRefs.current[i] = n;
+                        }}
                         className="plant__petal"
-                        cx={cx}
-                        cy={cy}
-                        r="4.4"
+                        d={PETAL_D}
                       />
                     ))}
-                    <circle
-                      className="plant__core"
-                      cx={BASE_X}
-                      cy={STEM_TOP}
-                      r="4.2"
-                    />
+                    <circle ref={coreRef} className="plant__core" cx="0" cy="0" r="3.6" />
                   </g>
                 </g>
               </svg>

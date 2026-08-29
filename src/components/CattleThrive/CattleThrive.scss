@@ -213,55 +213,127 @@
   stroke-width: 1;
 }
 
-/* Contour + détails (cornes, oreilles, queue). */
+/* ---- LA ROBE ----
+   Le corps était un aplat d'encre pleine que la valeur remplissait de gauche
+   à droite. Il est maintenant peint d'un seul tenant : c'est sa FORME qui
+   porte la donnée, plus son taux de remplissage. */
+.cattle__body {
+  fill: var(--c-text);
+}
+
+/* Les taches ne codent rien. Elles étaient pourtant l'élément le plus
+   contrasté du dessin — l'œil allait d'abord à ce qui ne dit rien. Elles
+   restent, parce qu'une robe unie n'est pas une robe, mais elles reculent. */
+.cattle__spot {
+  fill: var(--c-bg);
+  opacity: 0.72;
+}
+
 .cattle__outline {
   stroke: var(--c-text-soft);
-  stroke-width: 2.6;
+  stroke-width: 2.2;
   stroke-linejoin: round;
 }
-.cattle__decor {
-  stroke: var(--c-text-soft);
-  stroke-width: 2.4;
+
+/* ---- L'ANIMAL MÉDIAN ----
+   Un contour, sans remplissage : il se lit comme une référence et jamais
+   comme une seconde bête. Le pointillé dit « ce n'est pas un individu, c'est
+   un repère ». */
+.cattle__ghost {
+  stroke: var(--c-text-mute);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 4;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.45;
 }
-.cattle__eye {
-  fill: var(--c-text-soft);
+
+/* ---- LES MEMBRES ----
+   Tracés à bouts ronds : le coude et le jarret se lisent, ce que quatre
+   rectangles ne permettaient pas. Ceux du fond sont assombris — c'est le seul
+   effet de profondeur du dessin, et il suffit. */
+.cattle__leg path {
+  stroke: var(--c-text);
+  stroke-width: 14;
+  stroke-linecap: round;
 }
-.cattle__nostril2 {
+
+.cattle__leg--far path {
+  stroke: var(--c-text-soft);
+  stroke-width: 12;
+  opacity: 0.75;
+}
+
+.cattle__hoof {
   fill: var(--c-text-soft);
 }
 
-/* Mamelle (déco). */
-.cattle__udder {
-  fill: var(--c-warm-soft);
+.cattle__leg--far .cattle__hoof {
+  fill: var(--c-text-mute);
+  opacity: 0.6;
 }
-.cattle__teat {
-  stroke: var(--c-warm-soft);
+
+/* ---- LA QUEUE ----
+   Un fil de fer avant ; elle a maintenant un toupet, qui est ce qui fait lire
+   « queue de bovin » et non « trait ». */
+.cattle__tail path {
+  stroke: var(--c-text-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.cattle__tuft {
+  fill: var(--c-text-soft);
+  stroke: none;
+}
+
+/* La tête est de la même robe que le corps : c'est une seule bête.
+   Elle s'appelle `face` et non `head` : `cattle__head` désigne déjà l'en-tête
+   éditorial du composant, que le partiel des visuels embarqués MASQUE — la
+   tête de l'animal héritait de ce `display: none` et disparaissait, ne
+   laissant que son contour. */
+.cattle__face {
+  fill: var(--c-text);
+}
+
+.cattle__outline--head {
+  stroke-width: 2;
+}
+
+.cattle__ear {
+  fill: var(--c-text-soft);
+}
+
+.cattle__horn {
+  stroke: var(--c-text-soft);
   stroke-width: 3;
   stroke-linecap: round;
 }
 
-/* Vache vide (fond léger). */
-.cattle__bodyfill {
-  fill: var(--c-surface);
-  fill-opacity: 0.16;
-}
-
-/* Robe Holstein (révélée par le remplissage). */
-.cattle__coat {
-  fill: var(--c-text);
-}
-.cattle__spot {
+.cattle__eye {
   fill: var(--c-bg);
 }
 
-/* Médiane du Pacifique (discrète). */
-.cattle__median {
-  stroke: var(--c-text-mute);
-  stroke-width: 1.4;
-  stroke-dasharray: 4 5;
-  opacity: 0.5;
+.cattle__nostril {
+  fill: var(--c-bg);
+  opacity: 0.7;
+}
+
+/* Mamelle : décorative, elle suit l'état de chair sans le porter.
+   Elle prend la teinte des ombres du dessin, pas une couleur à elle : le rose
+   d'origine était la seule couleur d'une bête en noir et blanc, et c'est ce
+   qui la faisait sauter aux yeux avant tout le reste. */
+.cattle__udder path {
+  fill: var(--c-text-soft);
+  opacity: 0.6;
+}
+
+.cattle__teat {
+  stroke: var(--c-text-soft);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  opacity: 0.6;
 }
 
 /* ---- Colonne 3 : lecture ---- */

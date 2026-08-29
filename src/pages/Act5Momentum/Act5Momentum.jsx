@@ -43,6 +43,7 @@ import CoverageChart from "../../components/charts/CoverageChart";
 // d'accueil ; on les ajoute ici, on ne les déplace pas.
 import EnergyCell from "../../components/EnergyCell/EnergyCell";
 import PowerMix from "../../components/PowerMix/PowerMix";
+import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import "./Act5Momentum.scss";
 
@@ -218,6 +219,8 @@ export default function Act5Momentum() {
   const { t, lang } = useLang();
 
   // Repli littéral tant que la clé n'est pas versée dans les dictionnaires.
+  // Quel dessin est à l'écran, quand l'escale en porte plusieurs.
+
   const tx = useCallback(
     (key, fr, en) => {
       const v = t(key);
@@ -231,6 +234,17 @@ export default function Act5Momentum() {
 
   const [region, setRegion] = useState("all");
   const [dataset, setDataset] = useState("renew");
+
+  const [viz, setViz] = useState("cell");
+  // LE DESSIN SUIT LE JEU CHOISI, par défaut seulement.
+  // Les deux visuels restent accessibles dans les deux familles — le camembert
+  // du mix est trop parlant pour dépendre d'un filtre — mais ouvrir sur la
+  // pile alors qu'on vient de demander le mix électrique fait contredire la
+  // barre par le panneau. Le lecteur garde la main : un clic sur la bascule
+  // écrase ce choix jusqu'au prochain changement de jeu.
+  useEffect(() => {
+    setViz(dataset === "mix" ? "mix_viz" : "cell");
+  }, [dataset]);
   const [yearIdx, setYearIdx] = useState(null);
   const [mix, setMix] = useState({ status: "loading", data: null });
 
@@ -693,12 +707,22 @@ export default function Act5Momentum() {
         onChange={setRegion}
         options={asOptions(regionItems)}
       />
-      <YearSlider
+      {/* LE CURSEUR D'ANNÉE N'EST PAS TOUJOURS UN FILTRE GLOBAL.
+          Sur la famille « mix électrique », il recalcule la bande, le détail,
+          la composition, le pavage et l'anneau : il pilote bien tout le
+          tableau, sa place est ici.
+          Sur la famille « part renouvelable », il ne touche QUE les colonnes
+          du globe — la tendance, les trajectoires et le classement portent
+          sur toute la période. Il descend alors dans la colonne de lecture de
+          la carte, avec la vue qu'il change. */}
+      {dataset === "mix" ? (
+        <YearSlider
         label={t("act1.f.year")}
         years={years}
         index={yearIdx}
         onChange={(i) => setYearIdx(i)}
-      />
+        />
+      ) : null}
     </>
   );
 
@@ -753,9 +777,129 @@ export default function Act5Momentum() {
           swatch: "magnitude",
         };
 
+  // ---------- LES VISUELS DE L'ESCALE ----------------------------
+  // Ils occupaient chacun leur onglet dans la barre. Or celle-ci
+  // énumère les ÉTAPES du raisonnement — tendance, matrice, carte —,
+  // et deux dessins qui répondent à la même question n'en font pas
+  // deux. Regroupés sous une seule entrée, ils libèrent la barre et
+  // le choix passe DANS le panneau, à côté de ce qu'il change.
+  //
+  // Chaque dessin garde son titre, sa phrase et sa clé de lecture :
+  // la colonne de droite reste exacte, ce qu'une fusion aurait perdu.
+  const VIZ = {
+    cell: {
+              id: "cell",
+              empty: false,
+              tab: tx("act5.board.tab_pile", "Pile", "Cell"),
+              title: tx(
+                "act5.viz.cell_title",
+                "La part renouvelable, territoire par territoire",
+                "The renewable share, territory by territory",
+              ),
+              finding: tx(
+                "act5.viz.cell_find",
+                "Choisissez un territoire : la charge suit sa part d'énergies renouvelables.",
+                "Pick a territory: the charge follows its renewable share.",
+              ),
+              takeaway: tx(
+                "act5.viz.cell_take",
+                "La part porte sur toute l'énergie consommée, pas seulement l'électricité : le transport et la cuisson pèsent dans le dénominateur autant que la prise de courant.",
+                "The share covers all energy consumed, not just electricity: transport and cooking weigh in the denominator as much as the wall socket does.",
+              ),
+              hint: tx(
+                "act5.hint.cell",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act5.key.cell_c",
+                  "La charge monte avec la part renouvelable du territoire choisi.",
+                  "The charge rises with the chosen territory's renewable share.",
+                ),
+                note: tx("act5.key.renew_note", SOURCE_RENEW_FR, SOURCE_RENEW_EN),
+                // Le dessin encode par un NIVEAU de charge, pas par une teinte.
+                swatch: "none",
+              },
+              node: <EnergyCell embed />,
+            },
+    mix_viz: {
+              id: "mix_viz",
+              empty: false,
+              tab: tx("act5.board.tab_mix_viz", "Mix", "Mix"),
+              title: tx(
+                "act5.viz.mix_title",
+                "Le mix électrique, territoire par territoire",
+                "The electricity mix, territory by territory",
+              ),
+              finding: tx(
+                "act5.viz.mix_find",
+                "Choisissez un territoire : la répartition suit ses filières de production.",
+                "Pick a territory: the breakdown follows its generation sources.",
+              ),
+              takeaway: tx(
+                "act5.viz.mix_take",
+                "Ce sont des parts de l'électricité PRODUITE. Un territoire peut afficher un mix très renouvelable et rester massivement dépendant du pétrole pour ses transports.",
+                "These are shares of electricity PRODUCED. A territory can post a very renewable mix and still depend massively on oil for transport.",
+              ),
+              hint: tx(
+                "act5.hint.mix",
+                "Changez de territoire avec le sélecteur sous le visuel.",
+                "Switch territory with the selector below the visual.",
+              ),
+              legend: {
+                color: tx(
+                  "act5.key.mix_viz_c",
+                  "Une couleur par filière, stable d'un territoire à l'autre : la teinte suit la source d'énergie, jamais sa part.",
+                  "One colour per source, stable across territories: the hue follows the energy source, never its share.",
+                ),
+                note: tx("act5.key.mix_note", SOURCE_MIX_FR, SOURCE_MIX_EN),
+                swatch: "none",
+              },
+              node: <PowerMix embed />,
+            },
+  };
+
+  const vizItems = [
+    { id: "cell", label: tx("act5.viz.sw_cell", "Part", "Share") },
+    { id: "mix_viz", label: tx("act5.viz.sw_mix_viz", "Mix", "Mix") },
+  ];
+  const activeViz = VIZ[viz] || VIZ.cell;
+
+  // Commande d'année de la carte, quand elle ne pilote qu'elle (voir le
+  // commentaire dans `filtersEl`).
+  const mapYearControl =
+    dataset === "mix" ? null : (
+      <YearSlider
+        label={t("act1.f.year")}
+        years={years}
+        index={yearIdx}
+        onChange={(i) => setYearIdx(i)}
+      />
+    );
+
   const charts =
     status === "ready" && currentYear != null
       ? [
+          {
+            ...activeViz,
+            id: "viz",
+            // L'onglet porte le nom du dessin affiché — « Pousse », « Verre »,
+            // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
+            // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
+            // catégorie à laquelle il appartient.
+            node: (
+              <div className="vizpane">
+                <VizSwitch
+                  items={vizItems}
+                  value={viz}
+                  onChange={setViz}
+                  label={tx("act5.viz.sw_label", "Visuel", "Visual")}
+                />
+                <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
           // ---------- Les visuels interactifs, en ouverture ----------------
           // Deux dessins de la Home, un par famille de vues : la pile pour la
           // part renouvelable, le camembert vivant pour le mix électrique. Le
@@ -763,77 +907,6 @@ export default function Act5Momentum() {
           // reste de l'autre, exactement la règle déjà en place pour les vues.
           // Ils restent montés sur la page d'accueil ; on les ajoute ici, on
           // ne les déplace pas.
-          {
-            id: "cell",
-            empty: false,
-            tab: tx("act5.board.tab_pile", "Pile", "Cell"),
-            title: tx(
-              "act5.viz.cell_title",
-              "La part renouvelable, territoire par territoire",
-              "The renewable share, territory by territory",
-            ),
-            finding: tx(
-              "act5.viz.cell_find",
-              "Choisissez un territoire : la charge suit sa part d'énergies renouvelables.",
-              "Pick a territory: the charge follows its renewable share.",
-            ),
-            takeaway: tx(
-              "act5.viz.cell_take",
-              "La part porte sur toute l'énergie consommée, pas seulement l'électricité : le transport et la cuisson pèsent dans le dénominateur autant que la prise de courant.",
-              "The share covers all energy consumed, not just electricity: transport and cooking weigh in the denominator as much as the wall socket does.",
-            ),
-            hint: tx(
-              "act5.hint.cell",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act5.key.cell_c",
-                "La charge monte avec la part renouvelable du territoire choisi.",
-                "The charge rises with the chosen territory's renewable share.",
-              ),
-              note: tx("act5.key.renew_note", SOURCE_RENEW_FR, SOURCE_RENEW_EN),
-              // Le dessin encode par un NIVEAU de charge, pas par une teinte.
-              swatch: "none",
-            },
-            node: <EnergyCell embed />,
-          },
-          {
-            id: "mix_viz",
-            empty: false,
-            tab: tx("act5.board.tab_mix_viz", "Mix", "Mix"),
-            title: tx(
-              "act5.viz.mix_title",
-              "Le mix électrique, territoire par territoire",
-              "The electricity mix, territory by territory",
-            ),
-            finding: tx(
-              "act5.viz.mix_find",
-              "Choisissez un territoire : la répartition suit ses filières de production.",
-              "Pick a territory: the breakdown follows its generation sources.",
-            ),
-            takeaway: tx(
-              "act5.viz.mix_take",
-              "Ce sont des parts de l'électricité PRODUITE. Un territoire peut afficher un mix très renouvelable et rester massivement dépendant du pétrole pour ses transports.",
-              "These are shares of electricity PRODUCED. A territory can post a very renewable mix and still depend massively on oil for transport.",
-            ),
-            hint: tx(
-              "act5.hint.mix",
-              "Changez de territoire avec le sélecteur sous le visuel.",
-              "Switch territory with the selector below the visual.",
-            ),
-            legend: {
-              color: tx(
-                "act5.key.mix_viz_c",
-                "Une couleur par filière, stable d'un territoire à l'autre : la teinte suit la source d'énergie, jamais sa part.",
-                "One colour per source, stable across territories: the hue follows the energy source, never its share.",
-              ),
-              note: tx("act5.key.mix_note", SOURCE_MIX_FR, SOURCE_MIX_EN),
-              swatch: "none",
-            },
-            node: <PowerMix embed />,
-          },
           {
             id: "trend",
             signature: true,
@@ -940,6 +1013,7 @@ export default function Act5Momentum() {
             finding: t("act5.board.map_find"),
             takeaway: t("act5.board.map_take"),
             legend: { color: key.color, note: key.note, swatch: key.swatch },
+            controls: mapYearControl,
             hint: tx(
               "act5.hint.map",
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
@@ -1259,7 +1333,11 @@ export default function Act5Momentum() {
   // sinon depuis un menu qu'il fallait deviner : il est trop parlant pour
   // dépendre d'un filtre. Chacun garde sa propre sélection de territoire —
   // c'est son interaction, on n'y touche pas.
-  const VIZ_IDS = ["cell", "mix_viz"];
+  // L'entrée des visuels reste à l'écran quelle que soit la famille : les deux
+  // dessins y sont réunis, et c'est la bascule du panneau qui choisit lequel.
+  // (Les identifiants `cell` et `mix_viz` ne sont plus des vues : ils vivent
+  // maintenant dans la table VIZ.)
+  const VIZ_IDS = ["viz"];
   const visibleCharts = charts.filter((c) =>
     VIZ_IDS.includes(c.id)
       ? true

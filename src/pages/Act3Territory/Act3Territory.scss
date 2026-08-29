@@ -138,3 +138,24 @@
     flex-basis: 100%;
   }
 }
+/* Bouton de lecture du curseur d'année, quand la commande vit dans la colonne
+   de lecture plutôt que sous la carte. */
+.act1f__play {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-inline-end: var(--sp-2);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-bg-2);
+  color: var(--c-text);
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--c-accent);
+  }
+}

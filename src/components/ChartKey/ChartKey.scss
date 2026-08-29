@@ -90,6 +90,21 @@
 // Pastille de la rampe divergente : elle MONTRE l'échelle. Peinte en
 // var(--c-div-*), donc identique à ce que le graphique affiche, et
 // automatiquement juste en thème clair comme en sombre.
+/* La mise en garde se distingue des axes sans crier : même gabarit de ligne,
+   encre un cran plus soutenue, glyphe en italique. Elle informe, elle
+   n'alarme pas — ce n'est pas une erreur, c'est une limite de lecture. */
+.chartkey__row--caveat {
+  .chartkey__glyph {
+    font-style: italic;
+    font-weight: var(--fw-bold);
+    color: var(--c-text-soft);
+  }
+
+  .chartkey__txt {
+    color: var(--c-text-soft);
+  }
+}
+
 .chartkey__swatch {
   justify-self: center;
   width: 0.85rem;
@@ -134,6 +149,14 @@
 /* ORIENTÉ — même teinte, mais le foncé vaut « exposé ». */
 .chartkey__swatch--stress {
   background: linear-gradient(to top, var(--c-ord-1), var(--c-ord-6));
+}
+
+/* Les commandes propres à une vue : elles doivent respirer, sans concurrencer
+   le texte de lecture qui les entoure. */
+.chartkey__block--controls {
+  > *:not(.chartkey__head) {
+    margin-top: var(--sp-2);
+  }
 }
 
 /* ---------- L'exergue ----------

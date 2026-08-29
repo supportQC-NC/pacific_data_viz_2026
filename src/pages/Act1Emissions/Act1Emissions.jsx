@@ -378,7 +378,16 @@ export default function Act1Emissions() {
   const noScatter = scatterGroups.length === 0;
   const noVol = volGroups.length === 0;
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue du visuel en est exemptée : le dessin a son propre sélecteur de
+  // territoire et ignore ces filtres.
+  const boardControls = (
     <ChartFilter
       label={t("act1.filter.title")}
       hideLabel
@@ -466,6 +475,7 @@ export default function Act1Emissions() {
               x: tx("act1.key.race_x", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <BarRace
                 series={regionSeries}
@@ -519,6 +529,7 @@ export default function Act1Emissions() {
               x: tx("act1.key.rank_x", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: <FunnelChart points={rankFunnel} unit={t("act1.unit")} />,
           },
           {
@@ -538,6 +549,7 @@ export default function Act1Emissions() {
               x: tx("act1.key.trend_x", "Une année par point", "One point per year"),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <div className="chartview">
                 <ChartFilter
@@ -613,6 +625,7 @@ export default function Act1Emissions() {
               ),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <EvolutionLines
                 series={regionSeries}
@@ -642,6 +655,7 @@ export default function Act1Emissions() {
               color: tx("act1.key.scatter_c", "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.", "One hue per sub-region: Melanesia, Polynesia, Micronesia."),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <ScatterChart
                 groups={scatterGroups}
@@ -669,6 +683,7 @@ export default function Act1Emissions() {
               color: tx("act1.key.denom_c", "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.", "One hue per sub-region: Melanesia, Polynesia, Micronesia."),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <ScatterChart
                 groups={volGroups}
@@ -686,6 +701,7 @@ export default function Act1Emissions() {
             title: t("act1.viz.heat_title"),
             finding: t("act1.board.heat_find"),
             takeaway: t("act1.board.heat_take"),
+            controls: boardControls,
             node: (
               <HeatmapChart
                 series={regionSeries}
@@ -724,6 +740,7 @@ export default function Act1Emissions() {
               color: tx("act1.key.map_c", "Plus la colonne est haute et claire, plus le territoire émet par habitant. Échelle logarithmique : les écarts vont du simple au décuple.", "The taller and lighter the column, the more the territory emits per person. Logarithmic scale: the gaps run from one to tenfold."),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
+            controls: boardControls,
             node: (
               <ErrorBoundary
                 fallback={
@@ -797,7 +814,8 @@ export default function Act1Emissions() {
       // Chiffres-clés retirés de cet écran, comme sur l'escale 02 : le sujet
       // du dashboard, c'est le graphique. Le composant KpiRow reste intact,
       // ils seront remontés ailleurs.
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={charts}
       // Disposition du template : barre unique, colonne de lecture, décor de
       // l'escale, hauteurs égales. Voir ActBoard.scss § FOCUS.

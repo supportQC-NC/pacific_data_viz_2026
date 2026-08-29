@@ -236,11 +236,25 @@
   stroke-linecap: round;
   opacity: 0.35;
 }
+/* ---- La fleur ----
+   Les pétales se superposent quand le bourgeon est fermé : une opacité juste
+   en dessous de 1 fait apparaître leur empilement, ce qui donne au bourgeon sa
+   densité, et se remarque à peine une fois la corolle ouverte. */
 .plant__petal {
   fill: var(--c-warm-soft);
+  opacity: 0.92;
 }
+
 .plant__core {
   fill: var(--c-warm);
+}
+
+/* Les sépales sont VÉGÉTAUX, pas floraux : ils prennent le vert de la tige.
+   C'est ce qui fait lire « bourgeon pas encore ouvert » plutôt que « fleur
+   incomplète ». */
+.plant__sepal {
+  fill: var(--c-positive);
+  opacity: 0.85;
 }
 
 /* ---- Colonne 3 : lecture ---- */

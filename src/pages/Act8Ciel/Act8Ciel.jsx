@@ -557,7 +557,16 @@ export default function Act8Ciel() {
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue du visuel en est exemptée : le dessin a son propre sélecteur de
+  // territoire et ignore ces filtres.
+  const boardControls = (
     <>
       <ChartFilter
         label={t("act8.board.group_measure")}
@@ -654,6 +663,7 @@ export default function Act8Ciel() {
             "Survolez la courbe pour lire une année précise, et changez de mesure en haut de l'écran.",
             "Hover the line to read a single year, and switch measure at the top of the screen.",
           ),
+          controls: boardControls,
           node: (
             <div className="act8b__fit">
               <AnomalyTrend
@@ -681,6 +691,7 @@ export default function Act8Ciel() {
             "Survolez une courbe pour suivre un territoire année par année.",
             "Hover a line to follow one territory year by year.",
           ),
+          controls: boardControls,
           node: (
             <div className="act8b__fit">
               <TrendLines
@@ -718,6 +729,7 @@ export default function Act8Ciel() {
             "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
             "Compare bar lengths: they show how much changed, not the level reached.",
           ),
+          controls: boardControls,
           node: (
             <div className="act8b__scroll">
               <DumbbellChart
@@ -748,6 +760,7 @@ export default function Act8Ciel() {
             "Lancez l'animation : les barres se réordonnent au fil des années.",
             "Press play: the bars reorder themselves year after year.",
           ),
+          controls: boardControls,
           node: (
             <BarRace
               series={M.race}
@@ -829,6 +842,7 @@ export default function Act8Ciel() {
               "Chaque vignette a la même échelle : on peut les comparer entre elles du regard.",
               "Every panel shares one scale: you can compare them at a glance.",
             ),
+            controls: boardControls,
             node: (
               <div className="act8b__scroll">
                 <SmallMultiples
@@ -860,6 +874,7 @@ export default function Act8Ciel() {
               "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
               "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
             ),
+            controls: boardControls,
             node: (
               <div className="act8b__scroll">
                 <ApexYearHeatmap
@@ -900,6 +915,7 @@ export default function Act8Ciel() {
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
               "Spin the globe and hover a territory to read its value.",
             ),
+            controls: boardControls,
             node: (
               <ErrorBoundary
                 fallback={
@@ -946,7 +962,8 @@ export default function Act8Ciel() {
       eyebrow={t("act8.tag")}
       title={t("act8.title")}
       thesis={t("act8.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={charts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en

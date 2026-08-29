@@ -111,9 +111,16 @@ export default function ActBoard({
   // Seul l'identifiant exact `map` est concerné : les escales qui portent
   // plusieurs cartes (le trait de côte, par exemple) gardent les leurs à leur
   // place dans le récit.
+  //
+  // EXCEPTION — la carte SIGNATURE ne se déplace pas. Sur l'escale des
+  // cyclones, la carte n'est pas un repère géographique posé après coup :
+  // c'est le graphique qui porte la démonstration, les trajectoires animées
+  // saison par saison. Une escale qui déclare sa carte comme signature dit
+  // qu'elle ouvre le récit, et le gabarit la laisse là où elle est.
+  const mapMovesLast = (c) => c.id === "map" && !c.signature;
   const mainCharts = charts
     .filter((c) => !INFO_IDS.includes(c.id))
-    .sort((a, b) => (a.id === "map" ? 1 : 0) - (b.id === "map" ? 1 : 0));
+    .sort((a, b) => (mapMovesLast(a) ? 1 : 0) - (mapMovesLast(b) ? 1 : 0));
   const infoCharts = charts.filter((c) => INFO_IDS.includes(c.id));
   const hasInfo = infoCharts.length > 0;
 
@@ -494,6 +501,18 @@ export default function ActBoard({
                       {active.finding ? (
                         <p className="board__finding">{active.finding}</p>
                       ) : null}
+                      {/* LES COMMANDES DE LA VUE, EN REPLI.
+                          Elles vivent dans la colonne de lecture — mais celle-ci
+                          disparaît sous 1180 px, où elle volerait au graphique
+                          la largeur qu'elle prétend rentabiliser. Sans ce repli,
+                          les filtres deviendraient donc INATTEIGNABLES sur les
+                          écrans étroits : on aurait échangé un en-tête chargé
+                          contre un tableau de bord qu'on ne peut plus régler. */}
+                      {active.controls ? (
+                        <div className="board__head-controls">
+                          {active.controls}
+                        </div>
+                      ) : null}
                       {moreBtn}
                     </div>
                   )}
@@ -529,6 +548,8 @@ export default function ActBoard({
                           y={active.legend?.y}
                           x={active.legend?.x}
                           color={active.legend?.color}
+                          caveat={active.legend?.caveat}
+                          controls={active.controls}
                           note={active.legend?.note}
                           // L'encodage déclaré par la vue — « polarity » par
                           // défaut, comme la majorité des vues du parcours.

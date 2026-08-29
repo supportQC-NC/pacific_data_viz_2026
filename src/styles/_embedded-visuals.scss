@@ -20,9 +20,12 @@
    composants partagent la même ossature BEM (`__inner`, `__head`,
    `__lead`, `__source`) : c'est ce qui rend la boucle possible.
 
-   NE SONT PAS DANS LA LISTE : `sea` et `smoke`, dont le bloc embarqué est
-   déjà écrit dans leur propre feuille — ils y règlent en plus leur
-   grammaire de couleur, qui est propre à leur escale.
+   `sea` et `smoke` ont EN PLUS leur propre bloc embarqué dans leur feuille,
+   où ils règlent leur grammaire de couleur — propre à leur escale. Ils
+   figurent quand même dans cette liste : leur bloc ne traitait que la
+   couleur, pas la mise en page, et le thermomètre se retrouvait dessiné à
+   265 px de large au milieu d'un panneau de plus de mille. Les deux jeux de
+   règles se complètent sans se contredire.
    ============================================================ */
 
 $embedded-visuals:
@@ -40,7 +43,9 @@ $embedded-visuals:
   "loss",      // LossStack        → escale « impact »
   "energycell",// EnergyCell       → escale « momentum »
   "power",     // PowerMix         → escale « momentum »
-  "beach";     // TourismBeach     → escale « économie »
+  "beach",     // TourismBeach     → escale « économie »
+  "sea",       // SeaWarm          → escale « océan »
+  "smoke";     // SmokePlume       → escale « émissions »
 
 @each $b in $embedded-visuals {
   .#{$b}--embed {

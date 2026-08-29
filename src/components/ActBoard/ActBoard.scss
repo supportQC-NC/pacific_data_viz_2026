@@ -2173,6 +2173,35 @@
   height: 100%;
 }
 
+/* ---------- FOCUS · la carte des CYCLONES remplit son panneau ----------
+   Même défaut que pour les autres cartes, et même remède : `.cmap__map` porte
+   une hauteur fixe de 540 px, taillée pour une page qui défile. Dans un
+   panneau d'escale, cela laissait plus de deux cents pixels vides sous le
+   globe, et la légende des stades flottait loin du dessin qu'elle décrit.
+
+   La règle est scopée au tableau de bord : le plein écran et les autres
+   usages de ce composant gardent leur gabarit. */
+.board--focus .board__chart .cmap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.board--focus .board__chart .cmap__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.board--focus .board__chart .cmap__map {
+  height: 100%;
+}
+
+/* La légende des stades reste en pied, sans grignoter la carte. */
+.board--focus .board__chart .cmap__legend {
+  flex: 0 0 auto;
+}
+
 /* ---------- FOCUS · le globe du TRAIT DE CÔTE SATELLITE ----------
    Cette vue-là n'expose pas la carte directement : elle l'enveloppe dans
    `.act6coast`, avec sa propre légende recul/avancée sous le tracé. Cette
@@ -2201,6 +2230,24 @@
    globe. */
 .board--focus .board__chart .act6coast__legend {
   flex: 0 0 auto;
+}
+
+/* Les commandes repliées dans l'en-tête, sous 1180 px : une rangée, à la
+   suite du titre et de la phrase. */
+.board__head-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+/* Au-dessus, la colonne les porte : les afficher deux fois serait pire que
+   de les avoir laissés dans la barre. */
+@media (min-width: 1180px) {
+  .board--focus .board__head-controls {
+    display: none;
+  }
 }
 
 /* ---------- FOCUS · pas de doublon avec la colonne de lecture ----------
