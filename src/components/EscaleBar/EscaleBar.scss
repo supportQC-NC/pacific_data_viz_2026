@@ -123,12 +123,31 @@
 }
 
 /* ---------- Où je suis ---------- */
+/* LE TITRE PEUT CÉDER — MAIS PAS TANT QU'IL Y A DE LA PLACE.
+   Il était `flex: 0 0 auto` en `nowrap` : il ne rendait jamais un pixel, et
+   toute la place manquante était prise aux onglets — qui sortaient de la
+   barre sans le dire, la piste masquant sa barre de défilement. Depuis que
+   les titres sont des QUESTIONS ils ont gagné dix à vingt caractères, et
+   l'escale la plus chargée en poussait un hors de l'écran.
+
+   Mais le laisser rétrécir librement le rabotait à 161 px sur l'escale
+   Économie — une question coupée au tiers ne pose plus rien. Or ses onze
+   onglets débordent de toute façon : lui prendre sa largeur ne les faisait
+   pas tenir, seulement défiler un peu moins.
+   D'où l'arbitrage : au-dessus de 1400 px, la question reste ENTIÈRE et la
+   piste défile (son dégradé de bord le dit désormais). En dessous, les
+   libellés des flèches disparaissent déjà, la place est comptée, et c'est le
+   titre qui cède — texte entier au survol (attribut `title`). */
 .escbar__where {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   display: flex;
   align-items: baseline;
   gap: var(--sp-3);
   min-width: 0;
+
+  @media (min-width: 1401px) {
+    flex: 0 0 auto;
+  }
 }
 
 .escbar__title {
@@ -138,6 +157,9 @@
   line-height: 1.1;
   color: var(--c-text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .escbar__progress {

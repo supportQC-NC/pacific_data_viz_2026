@@ -255,7 +255,16 @@ export default function Act4Impact() {
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue des visuels en est exemptée : les dessins ont leur propre
+  // sélecteur de territoire et ignorent ces filtres.
+  const boardControls = (
     <>
       <ChartFilter
         label={t("act4.board.metric_label")}
@@ -368,6 +377,7 @@ export default function Act4Impact() {
                 // Le dessin encode par un NOMBRE de silhouettes, pas une teinte.
                 swatch: "none",
               },
+              controls: boardControls,
               node: <CrowdAffected embed />,
             },
     lossviz: {
@@ -403,6 +413,7 @@ export default function Act4Impact() {
                 note: tx("act4.key.loss_note", SOURCE_LOSS_FR, SOURCE_LOSS_EN),
                 swatch: "none",
               },
+              controls: boardControls,
               node: <LossStack embed />,
             },
   };
@@ -458,6 +469,7 @@ export default function Act4Impact() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act4b__scroll">
                 <EventTimeline
@@ -503,6 +515,7 @@ export default function Act4Impact() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <TrendChart
                 series={annual.series}
@@ -525,6 +538,7 @@ export default function Act4Impact() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act4b__scroll">
                 <RankBars data={selTotals} unit={selUnit} />
@@ -544,6 +558,7 @@ export default function Act4Impact() {
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
               "Spin the globe and hover a territory to read its value.",
             ),
+            controls: boardControls,
             node: (
               <ErrorBoundary
                 fallback={
@@ -602,7 +617,8 @@ export default function Act4Impact() {
       eyebrow={t("home.acts.a4_tag")}
       title={t("home.acts.a4_title")}
       thesis={t("act4.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={charts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en

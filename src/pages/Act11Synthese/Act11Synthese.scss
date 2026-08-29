@@ -519,100 +519,11 @@
 }
 
 /* ============ Studio de pondérations (curseurs) ============ */
-.wstudio {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  &__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-  }
-  &__row {
-    display: grid;
-    grid-template-columns: minmax(7rem, 9rem) 1fr auto;
-    align-items: center;
-    gap: var(--sp-3);
-  }
-  &__name {
-    font-size: var(--fs-sm);
-    color: var(--c-text-soft);
-    line-height: 1.2;
-  }
-  &__val {
-    font-family: var(--font-mono);
-    font-size: var(--fs-sm);
-    color: var(--c-text);
-    font-variant-numeric: tabular-nums;
-    min-width: 2.5rem;
-    text-align: right;
-  }
-  // Curseur : piste remplie jusqu'à --w-pct, dégradé sobre.
-  &__range {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(
-      to right,
-      var(--c-accent) 0%,
-      var(--c-accent) var(--w-pct, 50%),
-      color-mix(in srgb, var(--c-text) 12%, transparent) var(--w-pct, 50%),
-      color-mix(in srgb, var(--c-text) 12%, transparent) 100%
-    );
-    cursor: pointer;
-    outline: none;
-    &::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--c-accent);
-      border: 2px solid var(--c-bg);
-      transition: transform 0.15s var(--ease-out);
-    }
-    &::-webkit-slider-thumb:hover {
-      transform: scale(1.15);
-    }
-    &::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--c-accent);
-      border: 2px solid var(--c-bg);
-      cursor: pointer;
-    }
-  }
-  &__reset {
-    align-self: flex-start;
-    margin-top: var(--sp-2);
-    padding: var(--sp-2) var(--sp-4);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-text-soft);
-    background: transparent;
-    border: 1px solid color-mix(in srgb, var(--c-text) 14%, transparent);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
-    &:hover {
-      color: var(--c-text);
-      border-color: var(--c-accent);
-    }
-  }
-}
-
-
+/* Le studio de pondération a été retiré de la synthèse (le lecteur ne
+   repondère plus l'indice lui-même) : ses styles n'ont plus de balise à
+   habiller. Ils sont supprimés ici plutôt que laissés à dormir — le composant
+   `WeightStudio` l'a été aussi, et un style orphelin invite à recâbler un
+   contrôle dont on ne veut plus. */
 /* ===== Ajustements synthèse — à coller à la fin de Act11Synthese.scss ===== */
 
 /* 1) Visuel : on retire le cadre sombre et on ne coupe plus les graphiques */

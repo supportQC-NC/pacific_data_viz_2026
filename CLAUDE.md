@@ -218,6 +218,80 @@ call sites depending on the escale: it really is global, and it stays in the bar
 Visual views take **no** filter: the Home drawings carry their own territory
 selector and ignore the escale's filters.
 
+### The voyage has a threshold
+
+"Découvrir" (both the hero button and `ClosingCta`, which share `beginExperience`)
+no longer navigates straight to `/recit`. It opens **`components/VoyageSetup`**, a
+portal dialog asking two things the app used to guess:
+
+- **Language** — was inferred from `navigator.language`, so an English reader on a
+  French machine started in French. Options are self-labelled ("Français" /
+  "English"), never translated.
+- **Display** — was inferred from `prefers-color-scheme`, so a light system opened a
+  story composed for darkness. **Dark is preselected on open regardless of the system
+  setting**, and the card says why.
+
+Two behaviours to preserve if you touch it:
+
+- **Choices apply live.** Clicking a card calls `setLang`/`setTheme` immediately — the
+  page behind the translucent panel rethemes, the panel itself changes language. The
+  entering state is captured in a ref so Esc / scrim / "Pas encore" restores lang *and*
+  theme exactly.
+- **The theme swatches hardcode hex.** They must show the theme they *offer*, not the
+  active one; `var(--c-*)` would paint both chips identically and the "Clair" card
+  would render dark. This is the one place in the app where a literal colour is
+  correct — the values mirror the two blocks of `_variables.scss`.
+
+Strings live under `home.setup.*` in `extraStrings.js`.
+
+### Escale 12 (`/synthese`): 22 scenes, and no reader-set weights
+
+Two scenes were removed from the GSAP sequence (24 → 22):
+
+- **"La distribution"** (the `StressSwarm` beeswarm) — it asked the reader to read a
+  density of points, an analyst's gesture inside a narrative that shows rankings and
+  maps everywhere else. What it said is carried by "Les plus exposés". The component
+  survives in `components/charts/StressSwarm/` with no caller.
+- **"À vous de juger"** (`WeightStudio`) — sliders letting the reader reweight each
+  dimension of the composite index from 0 to 2. The intent was honest; the effect was
+  not, since any ranking could be manufactured and nothing on screen distinguished it
+  from the data's own. Component, state (`weights`/`setWeight`/`resetWeights`) and
+  `.wstudio` styles are gone.
+
+**`composite` is now a plain equal-weight mean.** The numbers are unchanged — the
+weights defaulted to 1, so `wsum/wtot` was already `sum/count`.
+
+Three strings promised the weighting and were corrected in `extraStrings.js`
+(`act11.thesis`, `act11.outro.text`, both languages). `act11.story.studio_*`,
+`act11.story.swarm_*`, `act11.calc.*` and `act11.guide_*` are now unused; the last two
+groups were already dead — **nothing renders them**.
+
+### Every escale title is a question
+
+The twelve titles name no subject any more — each one asks something the
+escale's own indicators can settle ("La mer monte-t-elle là où l'on vit ?",
+"Plus de cyclones, ou des cyclones plus forts ?"). The dashboard is the answer;
+the `thesis` under it says with what. Two rules when editing one:
+
+- **The question must be answerable by that escale's data alone.** No causes
+  where there are only correlations, no future where there are only past
+  series.
+- **`home.acts.<id>_title` is the single source.** Five pages used to read
+  their own `act6.title` … `act10.title`, so a neighbour's prev/next arrow could
+  announce a different title than the escale showed on arrival. They all read
+  the shared key now; the `actN.title` entries are dead but left in the dicts.
+
+The strings live in `i18n/extraStrings.js` (one `home.acts` object per language),
+not in the JSON dicts.
+
+Consequence on layout: questions run ten to twenty characters longer than the old
+titles. `.escbar__where` keeps the question **whole above 1400px** and lets it
+ellipsise below (full text on `title` hover). The view tabs scroll instead —
+`.chcar__track` now carries an 18px edge mask, because its scrollbar is hidden and
+a clipped tab used to look like the last one. **Six escales hide tabs at 1600px**
+(Économie the worst, ~371px ≈ four tabs). That predates the questions; the mask
+only makes it visible.
+
 ### The Home visuals live in the escales
 
 The seventeen interactive SVG drawings (`SeaWarm`, `SmokePlume`, `PlantGrowth`,
@@ -283,12 +357,13 @@ dictionaries — without ever printing a dotted path on screen.
 
 ## Known repo hygiene issues
 
-- **`npm run build` currently FAILS.** `src/data/datasetSources.js` declares
-  `disastersAffected` **twice** — line ~306 (UNDRR / Sendai, rich, marked "jeu officiel du
-  Challenge") and line ~525 (UNSD, terser, no licence). JavaScript keeps the second; the first
-  is dead code. `no-dupe-keys` is an error, so CRA refuses to build. **Which one is
-  authoritative is an editorial decision — ask before deleting either.** The dev server
-  tolerates it, which is why it went unnoticed.
+- **`npm run build` passes.** It used to fail: `src/data/datasetSources.js` declared
+  `disastersAffected` twice, and `no-dupe-keys` is an error under CRA. The second entry (UNSD)
+  was removed and the first kept — the PDH/UNDRR Sendai record, marked "jeu officiel du
+  Challenge", which is what the service actually queries and what the contest's
+  "at least one Pacific Data Hub dataset" rule needs. A comment at the old site records the
+  choice. The dev server tolerated the duplicate, which is why it went unnoticed for so long:
+  **run the production build before believing the app compiles.**
 - **`.env.example` is tracked and contains what looks like a live SSH root password and host.**
   It is in git history. Treat as compromised: rotate the credential and purge it from history.
   *(Unchanged — still true.)*

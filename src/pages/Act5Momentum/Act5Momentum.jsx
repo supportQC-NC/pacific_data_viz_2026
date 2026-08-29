@@ -691,16 +691,34 @@ export default function Act5Momentum() {
   // on ne les redéfinit pas, on les adapte à la forme attendue.
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
+  // Les listes de l'anneau portent leur valeur sous `v` et non `id` — deux
+  // conventions cohabitent dans cette page. Un seul convertisseur les aurait
+  // silencieusement vidées de leur valeur.
+  const asOptionsV = (items) =>
+    (items || []).map((it) => ({ value: it.v, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue des visuels en est exemptée : les dessins ont leur propre
+  // sélecteur de territoire et ignorent ces filtres.
+  const datasetControl = (
+    <ChartFilter
+      label={t("act5.board.dataset_label")}
+      hideLabel
+      value={dataset}
+      onChange={setDataset}
+      options={asOptions(datasetItems)}
+    />
+  );
+
+  const boardControls = (
     <>
-      <ChartFilter
-        label={t("act5.board.dataset_label")}
-        hideLabel
-        value={dataset}
-        onChange={setDataset}
-        options={asOptions(datasetItems)}
-      />
+      {datasetControl}
       <ChartFilter
         label={t("act1.filter.title")}
         hideLabel
@@ -822,6 +840,7 @@ export default function Act5Momentum() {
                 // Le dessin encode par un NIVEAU de charge, pas par une teinte.
                 swatch: "none",
               },
+              controls: boardControls,
               node: <EnergyCell embed />,
             },
     mix_viz: {
@@ -857,6 +876,7 @@ export default function Act5Momentum() {
                 note: tx("act5.key.mix_note", SOURCE_MIX_FR, SOURCE_MIX_EN),
                 swatch: "none",
               },
+              controls: boardControls,
               node: <PowerMix embed />,
             },
   };
@@ -922,6 +942,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act5b__scroll">
                 <AnomalyTrend
@@ -970,6 +991,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <TrendChart
                 series={series}
@@ -992,6 +1014,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <BarRace
                 series={race}
@@ -1014,7 +1037,14 @@ export default function Act5Momentum() {
             finding: t("act5.board.map_find"),
             takeaway: t("act5.board.map_take"),
             legend: { color: key.color, note: key.note, swatch: key.swatch },
-            controls: mapYearControl,
+            // Les commandes de l\'escale, PLUS celle qui n\'agit que sur cette
+            // vue. L\'ordre compte : le réglage général d\'abord.
+            controls: (
+              <>
+                {boardControls}
+                {mapYearControl}
+              </>
+            ),
             hint: tx(
               "act5.hint.map",
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
@@ -1061,6 +1091,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act5b__scroll">
                 <EvolutionPanel
@@ -1088,6 +1119,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <PowerMixChart
                 series={mixBandSeries}
@@ -1109,6 +1141,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <StackedColsChart
                 series={mixDetailSeries}
@@ -1130,8 +1163,14 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
-              <div>
+              // La barre de lecture (play / retour / année) et le tracé
+              // vivaient dans un div sans mise en page : le tracé prenait
+              // 100 % de la hauteur, la barre s'ajoutait par-dessus, et le
+              // panneau débordait de 49 px. En colonne, la barre garde sa
+              // hauteur et le tracé prend le reste.
+              <div className="act5stack">
                 <div className="barrace__top">
                   <button
                     type="button"
@@ -1184,6 +1223,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: <TreemapChart points={mixTree} unit={t("act5.mix.unit")} />,
           },
           {
@@ -1208,28 +1248,44 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            // LES TROIS MENUS DE L'ANNEAU MONTENT DANS LA COLONNE.
+            // Ils vivaient DANS le graphique, en une rangée posée au-dessus du
+            // tracé — pendant que les commandes de l'escale, elles, étaient
+            // déjà dans la colonne. Deux endroits pour la même fonction sur un
+            // seul écran, et une rangée qui prenait au tracé la hauteur qu'on
+            // venait de lui rendre.
+            controls: (
+              <>
+                {/* La famille reste accessible : sans elle, on entre dans
+                    l'anneau sans pouvoir revenir à l'autre moitié de
+                    l'escale. Les trois autres menus sont ceux de l'anneau —
+                    ils ont leur propre état, distinct du filtre général. */}
+                {datasetControl}
+                <ChartFilter
+                  label={t("act1.filter.title")}
+                  hideLabel
+                  value={dRegion}
+                  onChange={setDRegion}
+                  options={asOptionsV(regionOpts)}
+                />
+                <ChartFilter
+                  label={t("act5.mix.donut_terr")}
+                  hideLabel
+                  value={dTerr}
+                  onChange={setDTerr}
+                  options={asOptionsV(dTerrOpts)}
+                />
+                <ChartFilter
+                  label={t("act1.f.year")}
+                  hideLabel
+                  value={String(dYear ?? "")}
+                  onChange={(v) => setDYear(Number(v))}
+                  options={asOptionsV(dYearOpts)}
+                />
+              </>
+            ),
             node: (
-              <div>
-                <div className="act1viz__filters">
-                  <Select
-                    label={t("act1.filter.title")}
-                    options={regionOpts}
-                    value={dRegion}
-                    onChange={setDRegion}
-                  />
-                  <Select
-                    label={t("act5.mix.donut_terr")}
-                    options={dTerrOpts}
-                    value={dTerr}
-                    onChange={setDTerr}
-                  />
-                  <Select
-                    label={t("act1.f.year")}
-                    options={dYearOpts}
-                    value={String(dYear ?? "")}
-                    onChange={(v) => setDYear(Number(v))}
-                  />
-                </div>
+              <div className="act5donut">
                 {donut.series.length ? (
                   <DonutChart
                     key={`${dRegion}-${dTerr}-${dYear}`}
@@ -1261,6 +1317,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <SourceLeaderChart
                 points={mixSourceLeader}
@@ -1281,6 +1338,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: <FunnelChart points={mixFunnel} unit={t("act5.mix.unit")} />,
           },
           {
@@ -1296,6 +1354,7 @@ export default function Act5Momentum() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <ShareAreaChart
                 series={mixShareEvo.series}
@@ -1355,7 +1414,8 @@ export default function Act5Momentum() {
       eyebrow={t("home.acts.a5_tag")}
       title={t("home.acts.a5_title")}
       thesis={t("act5.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={visibleCharts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en

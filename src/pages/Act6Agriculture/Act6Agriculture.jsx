@@ -1071,7 +1071,12 @@ const SOIL_IDS = ["land_change", "land_lines"];
       onRetry={retry}
       back={{ to: "/", label: t("act1.back") }}
       eyebrow={t("act6.tag")}
-      title={t("act6.title")}
+      // UNE SEULE SOURCE POUR LE TITRE DE L'ESCALE.
+      // Cette page lisait `act6.title`, pendant que les flèches
+      // « escale précédente / suivante » des voisines annoncent, elles,
+      // `home.acts.a6_title`. Deux clés pour un seul titre : le voisin
+      // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
+      title={t("home.acts.a6_title")}
       thesis={t("act6.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

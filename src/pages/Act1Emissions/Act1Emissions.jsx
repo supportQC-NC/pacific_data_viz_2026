@@ -37,7 +37,7 @@ import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import BarRace from "../../components/BarRace/BarRace";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
-import FunnelChart from "../../components/charts/FunnelChart";
+import RankChart from "../../components/charts/RankChart";
 import RiverChart from "../../components/charts/RiverChart";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import SmokePlume from "../../components/SmokePlume/SmokePlume";
@@ -205,18 +205,36 @@ export default function Act1Emissions() {
     return m;
   }, [allSeries, tk]);
 
-  // Classement en FUNNEL : du plus gros émetteur au plus petit. Chaque
-  // territoire garde la MÊME couleur que dans la vue Évolution.
-  const rankFunnel = useMemo(
+  // CLASSEMENT — BARRES + REPÈRE MÉDIANE, PLUS UN ENTONNOIR.
+  //
+  // L'entonnoir encode des ÉTAPES d'un même flux, chacune sous-ensemble de la
+  // précédente (son en-tête le dit : il a été écrit pour les volumes par
+  // source d'énergie). Ici les barres sont des territoires indépendants : la
+  // forme qui se rétrécit suggérait une déperdition qui n'existe pas, et deux
+  // largeurs voisines s'y comparent mal.
+  //
+  // Des barres depuis un axe zéro se comparent, elles. Et la MÉDIANE
+  // régionale, tracée en repère, fait dire au graphique ce que l'escale
+  // affirme : une longue file de territoires très bas, un ou deux au-dessus.
+  //
+  // Chaque territoire garde la couleur qu'il porte dans les autres vues —
+  // `RankChart` accepte une couleur par point, la continuité est préservée.
+  const rankRows = useMemo(
     () =>
-      [...pointsFor(currentYear)]
-        .sort((a, b) => b.value - a.value)
-        .map((p) => ({
-          label: p.name,
-          value: p.value,
-          color: colorByArea[p.area] || tk.textMute,
-        })),
+      pointsFor(currentYear).map((p) => ({
+        name: p.name,
+        value: p.value,
+        color: colorByArea[p.area] || tk.textMute,
+      })),
     [pointsFor, currentYear, colorByArea, tk],
+  );
+
+  // La médiane porte sur les territoires EFFECTIVEMENT classés cette année-là
+  // — ceux que `pointsFor` a retenus. La calculer sur un autre ensemble
+  // placerait le repère ailleurs que le milieu des barres affichées.
+  const rankMedian = useMemo(
+    () => median(rankRows.map((r) => r.value)) ?? 0,
+    [rankRows],
   );
 
   // Vue Tendance : aire empilée par territoire. Options du filtre pays
@@ -527,10 +545,34 @@ export default function Act1Emissions() {
             legend: {
               y: tx("act1.key.rank_y", "Un territoire par barre, du plus émetteur au plus sobre", "One territory per bar, from biggest emitter to lowest"),
               x: tx("act1.key.rank_x", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
+              color: tx(
+                "act1.key.rank_c",
+                "Une couleur par territoire, la même que dans les autres vues. Le trait pointillé marque la médiane régionale de l'année affichée.",
+                "One colour per territory, the same as in the other views. The dashed line marks the regional median for the year shown.",
+              ),
+              // CE QUE LE CLASSEMENT NE DIT PAS DE LUI-MÊME.
+              // Il porte sur UNE année — celle du curseur — et non sur la
+              // période entière ; et un territoire sans mesure cette année-là
+              // en disparaît au lieu d'être compté zéro. Le nombre de barres
+              // change donc d'une année à l'autre, ce qui se remarque sans
+              // s'expliquer si on ne le dit pas.
+              caveat: tx(
+                "act1.key.rank_caveat",
+                "Le classement porte sur la seule année choisie au curseur, pas sur la période. Un territoire sans mesure cette année-là n'apparaît pas — une absence n'est pas un zéro.",
+                "The ranking covers only the year set on the slider, not the whole period. A territory with no measurement that year is absent — a gap is not a zero.",
+              ),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
             controls: boardControls,
-            node: <FunnelChart points={rankFunnel} unit={t("act1.unit")} />,
+            node: (
+              <RankChart
+                points={rankRows}
+                unit={t("act1.unit")}
+                median={rankMedian}
+                refLabel={t("act1.ref_median")}
+                sort="desc"
+              />
+            ),
           },
           {
             id: "trend",

@@ -26,6 +26,7 @@ import PacificTeaser from "../../components/PacificTeaser/PacificTeaser";
 import Territories from "../../components/Territories/Territories";
 import DataMethod from "../../components/DataMethod/DataMethod";
 import ClosingCta from "../../components/ClosingCta/ClosingCta";
+import VoyageSetup from "../../components/VoyageSetup/VoyageSetup";
 import "./Home.scss";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -55,7 +56,20 @@ export default function Home() {
   // Le délai correspond à la rampe d'accélération du canvas : assez pour voir
   // les traînées se former, assez court pour ne pas faire attendre.
   // `prefers-reduced-motion` court-circuite la plongée et navigue tout de suite.
-  const beginExperience = () => {
+  // ---------- LE SEUIL, PUIS LE VOYAGE ----------
+  // « Découvrir » partait droit vers /recit, en laissant deux choix se faire
+  // tout seuls : la langue, devinée depuis `navigator.language`, et le thème,
+  // deviné depuis `prefers-color-scheme`. Un lecteur anglophone sur un poste
+  // français commençait donc en français, et un poste réglé en clair ouvrait
+  // en clair un récit composé pour l'obscurité.
+  // On les DEMANDE désormais, une fois, avant la première scène — et le
+  // plongeon dans les étoiles n'a lieu qu'après validation.
+  const [setupOpen, setSetupOpen] = useState(false);
+
+  const beginExperience = () => setSetupOpen(true);
+
+  const startVoyage = () => {
+    setSetupOpen(false);
     const reducedNow =
       typeof window !== "undefined" &&
       window.matchMedia &&
@@ -332,6 +346,14 @@ export default function Home() {
       <DataMethod />
 
       <ClosingCta onGuided={beginExperience} />
+
+      {/* Les DEUX portes d'entrée du voyage — le bouton du hero et celui du
+          pied de page — passent par `beginExperience`, donc par ce seuil. */}
+      <VoyageSetup
+        open={setupOpen}
+        onConfirm={startVoyage}
+        onCancel={() => setSetupOpen(false)}
+      />
     </main>
   );
 }

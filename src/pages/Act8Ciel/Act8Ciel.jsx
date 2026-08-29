@@ -964,7 +964,12 @@ export default function Act8Ciel() {
       onRetry={retry}
       back={{ to: "/", label: t("act1.back") }}
       eyebrow={t("act8.tag")}
-      title={t("act8.title")}
+      // UNE SEULE SOURCE POUR LE TITRE DE L'ESCALE.
+      // Cette page lisait `act8.title`, pendant que les flèches
+      // « escale précédente / suivante » des voisines annoncent, elles,
+      // `home.acts.a8_title`. Deux clés pour un seul titre : le voisin
+      // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
+      title={t("home.acts.a8_title")}
       thesis={t("act8.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

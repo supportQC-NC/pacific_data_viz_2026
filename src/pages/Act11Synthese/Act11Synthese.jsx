@@ -25,7 +25,6 @@ import ParadoxScatterLive from "../../components/charts/PardoxScatterLive";
 import VulnMatrix from "../../components/charts/VulnMatrix";
 import ProfileRadar from "../../components/charts/ProfileRadar";
 import TrendChart from "../../components/charts/TrendChart";
-import StressSwarm from "../../components/charts/StressSwarm/StressSwarm";
 import SlopeChart from "../../components/charts/SlopeChart";
 import ArcParadox from "../../components/charts/ArcParadox/ArcParadox";
 import RadialRank from "../../components/charts/RadialRank/RadialRank";
@@ -135,40 +134,6 @@ function medianLinesBySub(ind, t) {
 }
 
 /* ---------- Barre comparative (DOM pur) ---------- */
-/* ---------- Studio de pondérations (curseurs interactifs) ---------- */
-function WeightStudio({ inds = [], weights = {}, onChange, onReset, labels = {} }) {
-  return (
-    <div className="wstudio">
-      <ul className="wstudio__list">
-        {inds.map((it) => {
-          const w = Number.isFinite(weights[it.k]) ? weights[it.k] : 1;
-          const pct = (w / 2) * 100;
-          return (
-            <li className="wstudio__row" key={it.k}>
-              <span className="wstudio__name">{it.label}</span>
-              <input
-                className="wstudio__range"
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                value={w}
-                onChange={(e) => onChange(it.k, parseFloat(e.target.value))}
-                style={{ "--w-pct": `${pct}%` }}
-                aria-label={it.label}
-              />
-              <span className="wstudio__val">{w.toFixed(1)}×</span>
-            </li>
-          );
-        })}
-      </ul>
-      <button type="button" className="wstudio__reset" onClick={onReset}>
-        {labels.reset}
-      </button>
-    </div>
-  );
-}
-
 /* ---------- KPI animé (GSAP) ---------- */
 function Kpi({ value, prefix = "", suffix = "", label, tone = "accent" }) {
   const ref = useRef(null);
@@ -238,19 +203,6 @@ export default function Act11Synthese() {
   const [focus, setFocus] = useState(null);
   const [powerMix, setPowerMix] = useState({ status: "idle", data: null });
   const [agriProd, setAgriProd] = useState({ status: "idle", data: null });
-  // Pondérations interactives : un poids 0..2 par indicateur de vulnérabilité.
-  // 1 = poids normal ; 0 = on retire l'indicateur ; 2 = on le double.
-  const [weights, setWeights] = useState(() =>
-    VULN.reduce((o, k) => ({ ...o, [k]: 1 }), {}),
-  );
-  const setWeight = useCallback(
-    (k, v) => setWeights((w) => ({ ...w, [k]: v })),
-    [],
-  );
-  const resetWeights = useCallback(
-    () => setWeights(VULN.reduce((o, k) => ({ ...o, [k]: 1 }), {})),
-    [],
-  );
 
   useEffect(() => {
     let alive = true;
@@ -331,25 +283,28 @@ export default function Act11Synthese() {
   // Couverture minimale : un territoire n'est noté que s'il dispose d'au moins
   // MIN_COVER indicateurs de vulnérabilité — sinon on compare 3 indicateurs à 6.
   const MIN_COVER = 2;
+  // INDICE COMPOSITE — MOYENNE À POIDS ÉGAUX.
+  // Il portait un poids réglable par dimension, piloté depuis le studio de
+  // pondération. Le studio est retiré : chaque dimension pèse pareil, pour
+  // tous les lecteurs. C'est un choix de construction, pas une neutralité —
+  // la méthode de la scène le dit —, mais c'est un choix assumé une fois,
+  // au lieu d'un classement que chacun pouvait refaçonner à sa guise.
   const composite = useMemo(() => {
-    const acc = {}; // area -> { wsum, wtot, count }
+    const acc = {}; // area -> { sum, count }
     VULN.forEach((k) => {
-      const w = Number.isFinite(weights[k]) ? weights[k] : 1;
-      if (w <= 0) return; // indicateur désactivé par l'utilisateur
       Object.entries(normByInd[k] || {}).forEach(([a, v]) => {
         if (!isPict(a) || !Number.isFinite(v)) return;
-        const cell = (acc[a] = acc[a] || { wsum: 0, wtot: 0, count: 0 });
-        cell.wsum += v * w;
-        cell.wtot += w;
+        const cell = (acc[a] = acc[a] || { sum: 0, count: 0 });
+        cell.sum += v;
         cell.count += 1;
       });
     });
     const out = {};
     Object.entries(acc).forEach(([a, c]) => {
-      if (c.count >= MIN_COVER && c.wtot > 0) out[a] = c.wsum / c.wtot;
+      if (c.count >= MIN_COVER) out[a] = c.sum / c.count;
     });
     return out;
-  }, [normByInd, weights]);
+  }, [normByInd]);
 
   const activeVuln = useMemo(
     () => VULN.filter((k) => data && data[k] && data[k].status === "live"),
@@ -1083,22 +1038,15 @@ export default function Act11Synthese() {
         ),
       });
     }
-    list.push({
-      kind: "split",
-      eyebrow: t("act11.story.swarm_k"),
-      title: t("act11.story.swarm_title"),
-      text: t("act11.story.swarm_text"),
-      method: t("act11.story.swarm_m"),
-      hint: t("act11.story.focus_hint"),
-      visual: (
-        <StressSwarm
-          rows={matrixRows}
-          axes={indLabels}
-          searchLabel={t("act11.swarm.search")}
-          hintLabel={t("act11.swarm.hint")}
-        />
-      ),
-    });
+    // SCÈNE « LA DISTRIBUTION » (l'essaim) RETIRÉE.
+    // Elle posait chaque territoire en cercle sur l'axe de vulnérabilité pour
+    // montrer le peloton et ses écarts. La forme demande au lecteur de lire
+    // une densité de points — un geste d'analyste, pas de lecteur — au milieu
+    // d'un récit qui, partout ailleurs, montre un classement ou une carte.
+    // Ce qu'elle disait (qui se détache, vers le haut comme vers le bas) est
+    // repris par le top des plus exposés, deux scènes plus loin.
+    // `StressSwarm` reste dans components/charts/ : aucune autre page ne
+    // l'appelle, mais rien n'oblige à le supprimer pour cette décision-ci.
     list.push({
       kind: "split",
       eyebrow: t("act11.story.top_k"),
@@ -1241,23 +1189,15 @@ export default function Act11Synthese() {
         ),
       });
     }
-    list.push({
-      kind: "split",
-      eyebrow: t("act11.story.studio_k"),
-      title: t("act11.story.studio_title"),
-      text: t("act11.story.studio_text"),
-      method: t("act11.story.studio_m"),
-      hint: t("act11.story.studio_hint"),
-      visual: (
-        <WeightStudio
-          inds={activeVuln.map((k) => ({ k, label: t(`act11.ind_${k}`) }))}
-          weights={weights}
-          onChange={setWeight}
-          onReset={resetWeights}
-          labels={{ reset: t("act11.story.studio_reset") }}
-        />
-      ),
-    });
+    // SCÈNE « À VOUS DE JUGER » (le studio de pondération) RETIRÉE.
+    // Elle laissait le lecteur régler le poids de chaque dimension — eau,
+    // santé, mer, vivant — de 0 à 2, et voir le classement se recomposer.
+    // L'intention était honnête (« aucune pondération n'est neutre »), l'effet
+    // ne l'était pas : on pouvait fabriquer n'importe quel classement, y
+    // compris celui qu'on était venu chercher, et repartir avec, sans que
+    // rien à l'écran distingue ce classement-là de celui des données.
+    // L'indice reste donc à poids égaux — un choix, énoncé dans la méthode,
+    // pas une vérité, et le même pour tous les lecteurs.
 
     // ── Verdict ──────────────────────────────────────────────────
     list.push({
@@ -1284,10 +1224,6 @@ export default function Act11Synthese() {
     scatterGroups,
     medianX,
     medianY,
-    activeVuln,
-    weights,
-    setWeight,
-    resetWeights,
     slopeRows,
     topExposed,
     contextRecap,

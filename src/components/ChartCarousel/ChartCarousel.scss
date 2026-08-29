@@ -22,10 +22,23 @@
   }
 
   // Piste pleine largeur ; scroll en repli si trop étroit.
+  //
+  // Le repli était MUET : la barre de défilement est masquée, et sur les
+  // escales les plus chargées un onglet sortait de la piste sans rien laisser
+  // paraître — invisible et, faute de savoir qu'on peut défiler, inatteignable.
+  // Le dégradé de bord ne s'affiche que là où il reste quelque chose : coupé
+  // net, l'onglet paraissait entier ; estompé, il annonce sa suite.
   &__track {
     position: relative;
     display: flex;
     width: 100%;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 18px,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none;

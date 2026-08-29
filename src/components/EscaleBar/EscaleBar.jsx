@@ -99,7 +99,13 @@ export default function EscaleBar({
 
         {/* ---- OÙ JE SUIS ---- */}
         <div className="escbar__where">
-          {title ? <span className="escbar__title">{title}</span> : null}
+          {/* `title` natif : le libellé peut être tronqué quand l'escale
+              porte beaucoup d'onglets, la question reste lisible au survol. */}
+          {title ? (
+            <span className="escbar__title" title={title}>
+              {title}
+            </span>
+          ) : null}
           {hasProgress ? (
             <span
               className="escbar__progress"

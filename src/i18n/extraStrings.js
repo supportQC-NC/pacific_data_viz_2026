@@ -7,27 +7,127 @@
 const EXTRA_STRINGS = {
   fr: {
     header: { nav_recit: "Le Récit" },
+    // ⚠️ UN SEUL objet `act11` par langue (même règle que `home`).
+    act11: {
+      // La thèse promettait une lecture « que vous pouvez explorer ET
+      // PONDÉRER vous-même ». Le studio de pondération est retiré de la
+      // synthèse : la promesse ne tient plus, et une promesse non tenue en
+      // ouverture d'un dernier acte est pire qu'une promesse plus modeste.
+      thesis:
+        "Onze actes pour une même idée, et une note d'espoir : les territoires du Pacifique émettent très peu de CO₂ par habitant, encaissent beaucoup — mais gardent des marges de manœuvre réelles. Ce dernier acte rassemble les preuves en une lecture claire, relative au Pacifique, que vous pouvez parcourir scène après scène.",
+      outro: {
+        // La sortie promettait elle aussi de vous « laisser ajuster ce qui
+        // compte le plus ». Ce que l'indice fait vraiment, désormais, c'est
+        // peser chaque dimension pareil — et le dire.
+        text: "Rien de tout cela n'est joué d'avance. Cet indice n'invente aucune donnée : il rassemble des mesures officielles, les met sur une même échelle et pèse chaque dimension pareil. Il ne tranche pas — il montre où agir en premier, et ouvre la conversation plutôt que de la clore.",
+      },
+    },
     home: {
       acts: {
-        // Titre de l'escale 02. « Un océan suivi de près » décrivait notre
-        // dispositif d'observation ; celui-ci décrit ce qui arrive à l'océan.
-        // Le titre nomme le sujet, la question posée en tête du board dit ce
-        // qu'on y cherche — deux niveaux, pas deux titres concurrents.
-        a2_title: "Un océan qui change",
+        // ------------------------------------------------------------------
+        // CHAQUE TITRE D'ESCALE EST UNE QUESTION.
+        //
+        // Les douze titres nommaient un sujet — « Un océan qui change »,
+        // « Lire le ciel », « Cyclones ». Un sujet annoncé ne promet rien : le
+        // lecteur arrive sur un tableau de bord sans savoir ce qu'il vient y
+        // chercher, et ne sait pas davantage, en repartant, s'il l'a trouvé.
+        //
+        // Une question, elle, fixe le contrat. Elle dit ce que les données
+        // savent répondre, et le tableau devient la réponse plutôt qu'une
+        // collection de graphiques. C'est aussi la seule formulation qui
+        // interdit d'annoncer plus que ce qu'on mesure.
+        //
+        // Règle appliquée aux douze : la question ne porte QUE sur ce que les
+        // indicateurs de l'escale peuvent trancher. Rien sur les causes quand
+        // on n'a que des corrélations ; rien sur l'avenir quand on n'a que des
+        // séries passées. « La mer monte-t-elle là où l'on vit ? » se répond
+        // avec l'anomalie du niveau marin croisée à la croissance de la
+        // population — les deux jeux de l'escale, pas un de plus.
+        //
+        // La `thesis` reste dessous : la question ouvre, elle dit avec quoi on
+        // y répond. Deux niveaux, pas deux titres concurrents.
+        // ------------------------------------------------------------------
 
-        // Escale 04 (cyclones). C'était la SEULE des douze dont le titre
-        // dupliquait le nom : l'en-tête annonçait « Acte 04 — Cyclones »
-        // puis le grand titre répétait « Cyclones ». Toutes les autres
-        // suivent la règle « le nom situe, le titre raconte » — « Acte 12 —
-        // Synthèse / La voie tracée », « Lire le ciel »…
-        // Ici la donnée est une archive : quarante-sept saisons de
-        // trajectoires relevées depuis 1977.
-        a12_title: "La mémoire des tempêtes",
+        // 01 · Émissions — CO₂ par habitant sur une cinquantaine d'années.
+        //
+        // « Qui pèse vraiment sur le climat ? » désignait un coupable, et
+        // ouvrait donc les douze escales sur une accusation — alors que la
+        // conclusion de celle-ci est l'inverse.
+        //
+        // La question posée est celle de la RÉGION, pas du classement : sa
+        // réponse — très peu — est le socle sur lequel tiennent les onze
+        // escales suivantes, puisque tout le récit part de là. Le classement
+        // territoire par territoire reste dans les vues ; il répond au
+        // « combien chacun », pas au « que pèse l'ensemble ».
+        a1_title: "Que pèse le Pacifique dans le climat ?",
+
+        // 02 · Océan — écart à la normale 1971–2000, territoire par territoire.
+        a2_title: "De combien l'océan s'est-il réchauffé ?",
+
+        // 03 · Ciel — pluies et températures face à leurs normales respectives.
+        a8_title: "Le climat s'écarte-t-il de ses normales ?",
+
+        // 04 · Cyclones — 212 phénomènes depuis 1977 : un décompte ET des
+        // intensités. La question porte sur les deux, car l'archive permet de
+        // distinguer « plus souvent » de « plus fort ».
+        a12_title: "Plus de cyclones, ou des cyclones plus forts ?",
+
+        // 05 · Agriculture — rendements (kg/ha, kg/animal) et couverture des sols.
+        a6_title: "Nos terres produisent-elles plus, ou moins ?",
+
+        // 06 · Vivant — Indice Liste Rouge (ce qu'on perd) en regard des
+        // mesures de gestion des pêches (ce qu'on protège).
+        a7_title: "Protège-t-on plus vite qu'on ne perd ?",
+
+        // 07 · Territoire — anomalie du niveau de la mer croisée à la
+        // croissance de la population.
+        a3_title: "La mer monte-t-elle là où l'on vit ?",
+
+        // 08 · Santé — eau potable gérée en sécurité et incidence de la
+        // tuberculose, deux polarités inverses.
+        a10_title: "L'eau potable protège-t-elle la santé ?",
+
+        // 09 · Impact — personnes affectées et pertes économiques directes.
+        a4_title: "Qui encaisse le choc des catastrophes ?",
+
+        // 10 · Momentum — part renouvelable et production par source.
+        a5_title: "Jusqu'où va l'électricité renouvelable ?",
+
+        // 11 · Économie — arrivées de visiteurs et fiscalité environnementale.
+        a9_title: "L'économie paie-t-elle son empreinte ?",
+
+        // 12 · Synthèse — la thèse des onze escales : peu d'émissions, beaucoup
+        // d'encaisse, mais des marges réelles.
+        a11_title: "Quelles marges de manœuvre reste-t-il ?",
       },
       // ⚠️ UN SEUL objet `home` par langue. Une deuxième clé du même nom dans
       // le même littéral écrase silencieusement la première (le dernier gagne
       // en JS) — c'est ce qui avait fait disparaître ces trois légendes.
       begin: "Découvrir", // remplace « Commencer l'expérience »
+
+      // LE SEUIL DU VOYAGE — deux réglages avant la première scène.
+      // Voir components/VoyageSetup pour le pourquoi.
+      setup: {
+        kicker: "Avant de partir",
+        title: "Deux réglages pour le voyage",
+        sub: "Ils s'appliquent tout de suite : ce que vous voyez derrière ce panneau est ce que vous obtiendrez.",
+        lang: "Langue",
+        display: "Affichage",
+        recommended: "recommandé",
+        dark: "Sombre",
+        // La recommandation dit POURQUOI. « Meilleure expérience » sans
+        // raison se lit comme un argument de vente ; ici la raison est
+        // vérifiable à l'écran, derrière le panneau.
+        dark_note:
+          "Le récit est dessiné pour l'obscurité : ciel étoilé, cartes de nuit, trajectoires lumineuses.",
+        light: "Clair",
+        light_note:
+          "Entièrement pris en charge — chaque graphique a ses couleurs propres pour ce mode.",
+        start: "Commencer le voyage",
+        cancel: "Pas encore",
+        later:
+          "Vous pourrez changer de langue et d'affichage à tout moment, depuis l'en-tête.",
+      },
       sources: "Les sources",
       tb: { value_caption: "Incidence locale" },
       sea: {
@@ -188,13 +288,51 @@ const EXTRA_STRINGS = {
       voyage_progress: "Voyage progress",
       voyage_leg: "Leg",
     },
+    act11: {
+      thesis:
+        "Eleven acts for one idea, with a note of hope: Pacific territories emit very little CO₂ per capita and absorb a great deal — yet keep real room to act. This final act gathers the evidence into one clear reading, relative to the Pacific, that you can walk through scene by scene.",
+      outro: {
+        text: "None of this is set in stone. This index invents no data: it gathers official measurements, puts them on one scale and weighs every dimension alike. It doesn't rule — it shows where to act first, and opens the conversation rather than closing it.",
+      },
+    },
     home: {
       // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
       acts: {
-        a2_title: "An ocean in motion",
-        a12_title: "What the storms left behind",
+        // Same rule as the French block: every leg's title is a QUESTION the
+        // leg's own indicators can settle — nothing about causes where we only
+        // have correlations, nothing about the future where we only have past
+        // series. The `thesis` below says what we answer it with.
+        a1_title: "How much does the Pacific weigh on the climate?",
+        a2_title: "How much has this ocean warmed?",
+        a8_title: "Is the climate drifting from its normals?",
+        a12_title: "More cyclones, or stronger ones?",
+        a6_title: "Is our land yielding more, or less?",
+        a7_title: "Do we protect faster than we lose?",
+        a3_title: "Is the sea rising where people live?",
+        a10_title: "Does safe water protect health?",
+        a4_title: "Who absorbs the shock of disasters?",
+        a5_title: "How far has renewable power come?",
+        a9_title: "Does the economy pay for its footprint?",
+        a11_title: "What room to manoeuvre is left?",
       },
       begin: "Discover",
+      setup: {
+        kicker: "Before you set out",
+        title: "Two settings for the voyage",
+        sub: "They apply at once: what you see behind this panel is what you will get.",
+        lang: "Language",
+        display: "Display",
+        recommended: "recommended",
+        dark: "Dark",
+        dark_note:
+          "The story is drawn for darkness: starfield, night maps, luminous tracks.",
+        light: "Light",
+        light_note:
+          "Fully supported — every chart has its own colours for this mode.",
+        start: "Begin the voyage",
+        cancel: "Not yet",
+        later: "You can change language and display at any time, from the header.",
+      },
       sources: "The sources",
       tb: { value_caption: "Local incidence" },
       sea: {

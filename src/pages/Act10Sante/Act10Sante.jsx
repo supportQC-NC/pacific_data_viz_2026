@@ -373,7 +373,16 @@ export default function Act10Sante() {
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue des visuels en est exemptée : les dessins ont leur propre
+  // sélecteur de territoire et ignorent ces filtres.
+  const boardControls = (
     <>
       <ChartFilter
         label={t("act10.board.metric_label")}
@@ -488,6 +497,7 @@ export default function Act10Sante() {
                 // Le dessin encode par un REMPLISSAGE, pas par une teinte.
                 swatch: "none",
               },
+              controls: boardControls,
               node: <WaterGlass embed />,
             },
     bacilli: {
@@ -523,6 +533,7 @@ export default function Act10Sante() {
                 note: tx("act10.key.tb_note", SOURCE_TB_FR, SOURCE_TB_EN),
                 swatch: "none",
               },
+              controls: boardControls,
               node: <TbBacilli embed />,
             },
   };
@@ -578,6 +589,7 @@ export default function Act10Sante() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act10b__fit">
                 <TrendLines
@@ -624,6 +636,7 @@ export default function Act10Sante() {
               "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
               "Every panel shares one scale: they compare at a glance.",
             ),
+            controls: boardControls,
             node: (
               <div className="act10b__scroll">
                 <SmallMultiples
@@ -649,6 +662,7 @@ export default function Act10Sante() {
               "Lancez l'animation : les barres se réordonnent au fil des années.",
               "Press play: the bars reorder themselves year after year.",
             ),
+            controls: boardControls,
             node: (
               <BarRace
                 series={M.race}
@@ -686,6 +700,7 @@ export default function Act10Sante() {
               "Comparez la longueur des barres : elle dit l'ampleur du changement, pas le niveau atteint.",
               "Compare bar lengths: they show how much changed, not the level reached.",
             ),
+            controls: boardControls,
             node: (
               <div className="act10b__scroll">
                 <DumbbellChart
@@ -721,6 +736,7 @@ export default function Act10Sante() {
               "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
               "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
             ),
+            controls: boardControls,
             node: (
               <div className="act10b__scroll">
                 <ApexYearHeatmap
@@ -758,6 +774,7 @@ export default function Act10Sante() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <div className="act10b__fit">
                 <RadarChart subAvg={M.sub} years={M.years} />
@@ -777,6 +794,7 @@ export default function Act10Sante() {
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
               "Spin the globe and hover a territory to read its value.",
             ),
+            controls: boardControls,
             node: (
               <ErrorBoundary
                 fallback={
@@ -835,9 +853,15 @@ export default function Act10Sante() {
       onRetry={retry}
       back={{ to: "/", label: t("act1.back") }}
       eyebrow={t("act10.tag")}
-      title={t("act10.title")}
+      // UNE SEULE SOURCE POUR LE TITRE DE L'ESCALE.
+      // Cette page lisait `act10.title`, pendant que les flèches
+      // « escale précédente / suivante » des voisines annoncent, elles,
+      // `home.acts.a10_title`. Deux clés pour un seul titre : le voisin
+      // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
+      title={t("home.acts.a10_title")}
       thesis={t("act10.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={charts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en

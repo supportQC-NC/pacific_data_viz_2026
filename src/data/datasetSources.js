@@ -522,32 +522,13 @@ const SOURCES = {
     },
   },
 
-  disastersAffected: {
-    fr: {
-      provider: "Division de statistique des Nations unies (UNSD)",
-      dataset:
-        "Base d'indicateurs ODD — personnes directement affectées par les catastrophes (VC_DSR_AFFCT, cibles 1.5.1 & 11.5.1)",
-      frequency: "Annuelle / événementielle",
-      updated: "2024-01-19",
-      license: "",
-      method:
-        "Nombre de personnes directement affectées par les catastrophes. Données par événement (pics), non continues. Métadonnées ODD 1.5.1 / 11.5.1.",
-      example: "",
-      link: "https://unstats.un.org/sdgs/dataportal",
-    },
-    en: {
-      provider: "United Nations Statistics Division (UNSD)",
-      dataset:
-        "SDG Indicators Database — persons directly affected by disasters (VC_DSR_AFFCT, targets 1.5.1 & 11.5.1)",
-      frequency: "Annual / event-based",
-      updated: "2024-01-19",
-      license: "",
-      method:
-        "Number of people directly affected by disasters. Event-based (spikes), not continuous. SDG metadata 1.5.1 / 11.5.1.",
-      example: "",
-      link: "https://unstats.un.org/sdgs/dataportal",
-    },
-  },
+  // La fiche UNSD du MÊME indicateur (VC_DSR_AFFCT) vivait ici, en second.
+  // Deux clés `disastersAffected` dans un même littéral : JavaScript gardait
+  // la seconde, la première — plus complète, portant la mention « jeu officiel
+  // du Challenge » et sa ligne de licence — n'a jamais été affichée, et le
+  // build refusait de passer (`no-dupe-keys`). C'est la fiche PDH/UNDRR qui
+  // fait foi : le concours exige un jeu du Pacific Data Hub, et le service
+  // interroge bien le PDH. Pour revenir à l'UNSD : `git show HEAD -- ce fichier`.
 
   cyclones: {
     fr: {

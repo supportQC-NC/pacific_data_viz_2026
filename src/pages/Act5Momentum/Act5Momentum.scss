@@ -16,3 +16,36 @@
     display: block;
   }
 }
+/* L'anneau occupe son panneau. La rangée de menus qu'il portait au-dessus de
+   lui est remontée dans la colonne de lecture : il ne reste que le tracé, et
+   il prend toute la place. */
+.act5donut {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  min-height: 0;
+
+  > * {
+    min-height: 0;
+  }
+}
+
+/* Une barre de commande au-dessus d'un tracé : la barre garde sa hauteur, le
+   tracé prend tout le reste. Sans cela le tracé demande 100 % du panneau et
+   la barre déborde d'autant. */
+.act5stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  > .barrace__top {
+    flex: 0 0 auto;
+  }
+
+  > :not(.barrace__top) {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

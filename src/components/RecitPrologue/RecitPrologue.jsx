@@ -1,15 +1,32 @@
 // src/components/RecitPrologue/RecitPrologue.jsx
 // ============================================================
-// PROLOGUE DU RÉCIT — « La couverture » (v6).
-// Couverture de récit : titre en grotesque moderne (voix « données »),
-// une CITATION authentique des Pacific Climate Warriors (serif italique),
-// et une ligne concrète qui annonce le propos. La pirogue, fil rouge, cingle
-// vers l'est sur une nuit étoilée (StarfieldCanvas).
+// PROLOGUE DU RÉCIT — « La couverture » (v7).
+// Couverture de récit : titre en grotesque moderne (voix « données »), une
+// CITATION d'auteur (serif italique), et une ligne concrète qui annonce le
+// propos. La pirogue, fil rouge, cingle vers l'est sur une nuit étoilée.
 //
-// Citation : « We are not drowning, we are fighting » — cri de ralliement des
-// Pacific Climate Warriors (lancé p.ex. par Brianna Fruean à la COP26, 2021).
+// ---------------------------------------------------------------------------
+// LA CITATION A CHANGÉ — ET POURQUOI.
 //
-// prefers-reduced-motion respecté. COPY bilingue à valider.
+// Elle portait « We are not drowning, we are fighting », cri de ralliement des
+// Pacific Climate Warriors. La phrase est authentique et bien documentée : ce
+// n'est pas sa véracité qui posait problème, c'est sa FORME. C'est un slogan
+// collectif, pas une phrase d'auteur, et surtout elle nomme la noyade avant de
+// la refuser — on ouvre le récit sur l'image qu'on voulait écarter.
+//
+// À sa place, Epeli Hau'ofa (1939–2008), écrivain et anthropologue tongien-
+// fidjien, dans « Our Sea of Islands » (1993) — le texte fondateur qui a
+// retourné le regard porté sur la région : non pas des « petits États
+// insulaires » isolés et minuscules, mais une mer d'îles immense, parcourue
+// depuis toujours. C'est exactement le renversement que le récit opère avec
+// des chiffres, dit en huit mots trente ans plus tôt.
+//
+// Le titre original est conservé dans la citation des deux langues : le texte
+// est anglophone, la ligne française en est une traduction, et l'indiquer
+// vaut mieux que de le laisser croire écrit en français.
+// ---------------------------------------------------------------------------
+//
+// prefers-reduced-motion respecté.
 // Props : onStart() — démarre le voyage (1re escale).
 // ============================================================
 
@@ -28,19 +45,23 @@ const COPY = {
     // de lecture par la donnée.
     title1: "Lire le Pacifique",
     title2: "par ses données.",
-    quote: "« Nous ne sombrons pas, nous nous battons. »",
-    cite: "Pacific Climate Warriors",
+    quote: "« Nous sommes la mer, nous sommes l'océan. »",
+    cite: "Epeli Hau'ofa · Our Sea of Islands, 1993",
+    // « Du constat à la riposte » ouvrait sur un coup encaissé et une défense.
+    // La ligne dit maintenant les deux choses que l'application montre
+    // réellement — ce qui est mesuré, et ce qui est entrepris — sans passer
+    // par la négation.
     tagline:
-      "Le climat du Pacifique, lu dans ses propres données — du constat à la riposte.",
+      "Le climat du Pacifique, lu dans ses propres données : ce que la région mesure, et ce qu'elle entreprend.",
     cue: "Commencer le voyage",
   },
   en: {
     title1: "Reading the Pacific",
     title2: "through its data.",
-    quote: "“We are not drowning, we are fighting.”",
-    cite: "Pacific Climate Warriors",
+    quote: "“We are the sea, we are the ocean.”",
+    cite: "Epeli Hau'ofa · Our Sea of Islands, 1993",
     tagline:
-      "The Pacific’s climate, read in its own data — from reckoning to response.",
+      "The Pacific’s climate, read in its own data: what the region measures, and what it is doing about it.",
     cue: "Begin the voyage",
   },
 };

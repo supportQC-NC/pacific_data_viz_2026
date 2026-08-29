@@ -470,7 +470,16 @@ export default function Act3Territory() {
   const asOptions = (items) =>
     (items || []).map((it) => ({ value: it.id, label: it.label }));
 
-  const filtersEl = (
+  // ---------- LES COMMANDES PASSENT AU GRAPHIQUE -----------------------
+  // Elles siégeaient dans la barre de l'escale, où elles pesaient sur toute
+  // la largeur, poussaient les onglets et laissaient croire à un réglage
+  // d'ensemble. Chaque graphique porte désormais les siennes, dans sa colonne
+  // de lecture — là où l'on voit ce qu'elles changent. L'en-tête n'a plus que
+  // la navigation.
+  //
+  // La vue des visuels en est exemptée : les dessins ont leur propre
+  // sélecteur de territoire et ignorent ces filtres.
+  const boardControls = (
     <>
       <ChartFilter
         label={t("act3.board.dataset_label")}
@@ -616,6 +625,7 @@ export default function Act3Territory() {
                 // Le dessin encode par une HAUTEUR d'eau, pas par une teinte.
                 swatch: "none",
               },
+              controls: boardControls,
               node: <StiltHouse embed />,
             },
     popviz: {
@@ -651,6 +661,7 @@ export default function Act3Territory() {
                 note: tx("act3.key.pop_note", SOURCE_POP_FR, SOURCE_POP_EN),
                 swatch: "none",
               },
+              controls: boardControls,
               node: <PopGrowth embed />,
             },
     coastviz: {
@@ -687,6 +698,7 @@ export default function Act3Territory() {
                 // Le dessin encode par un DÉPLACEMENT du rivage, pas une teinte.
                 swatch: "none",
               },
+              controls: boardControls,
               node: <CoastlineShift embed />,
             },
   };
@@ -742,6 +754,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <AnomalyBandChart
                 series={seaSeries}
@@ -793,6 +806,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <SlopeChart
                 rows={slopeRows}
@@ -821,6 +835,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <MirrorBars
                 rows={profileRows}
@@ -844,6 +859,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <ChangeChart
                 rows={growthRows}
@@ -861,7 +877,14 @@ export default function Act3Territory() {
             finding: t("act3.board.map_find"),
             takeaway: t("act3.board.map_take"),
             legend: { color: key.color, note: key.note, swatch: key.swatch },
-            controls: mapYearControl,
+            // Les commandes de l\'escale, PLUS celle qui n\'agit que sur cette
+            // vue. L\'ordre compte : le réglage général d\'abord.
+            controls: (
+              <>
+                {boardControls}
+                {mapYearControl}
+              </>
+            ),
             hint: tx(
               "act3.hint.map",
               "Faites tourner le globe et survolez un territoire pour lire sa valeur.",
@@ -926,6 +949,7 @@ export default function Act3Territory() {
             title: t("act3.viz.coast_title"),
             finding: t("act3.board.coast_find"),
             takeaway: t("act3.board.coast_take"),
+            controls: boardControls,
             node: (
               <div className="act6coast">
                 <ErrorBoundary
@@ -1007,6 +1031,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <CoastBalanceChart
                 rows={coastRows}
@@ -1023,6 +1048,7 @@ export default function Act3Territory() {
             title: t("act3.viz.coastmap_title"),
             finding: t("act3.board.coastmap_find"),
             takeaway: t("act3.board.coastmap_take"),
+            controls: boardControls,
             node: (
               <ErrorBoundary
                 fallback={
@@ -1069,6 +1095,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <CoastSpreadChart
                 rows={spreadRows}
@@ -1107,6 +1134,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <BubbleChart
                 groups={bubbleGroups}
@@ -1130,6 +1158,7 @@ export default function Act3Territory() {
               "Survolez le tracé pour lire une valeur précise.",
               "Hover the plot to read a single value.",
             ),
+            controls: boardControls,
             node: (
               <DumbbellChart
                 rows={pathRows}
@@ -1177,7 +1206,8 @@ export default function Act3Territory() {
       eyebrow={t("home.acts.a3_tag")}
       title={t("home.acts.a3_title")}
       thesis={t("act3.thesis")}
-      filters={filtersEl}
+      // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
+      filters={null}
       charts={visibleCharts}
       // Disposition du template d'escale : barre unique (navigation entre
       // escales ET entre vues sur une seule rangée), décor de l'escale en
