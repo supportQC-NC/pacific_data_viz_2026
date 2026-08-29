@@ -1732,11 +1732,34 @@
     min-height: 0;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+
+    /* LA RANGÉE EST BORNÉE PAR LE PANNEAU, PAS PAR SON CONTENU.
+       Sans cette ligne, la grille n'a qu'une rangée implicite en `auto` :
+       elle prend la hauteur de ce qu'on y met et déborde du tableau de bord.
+       Mesuré ici — 812 px de place disponible, 955 px de contenu pour les
+       petits multiples, 907 pour une simple courbe. Le débordement passait
+       sous le pli à chaque vue, pas seulement sur les cartes.
+
+       `minmax(0, 1fr)` force la rangée à tenir dans la boîte ; les enfants,
+       qui portent déjà `min-height: 0`, s'y ajustent au lieu de la pousser. */
+    grid-template-rows: minmax(0, 1fr);
     gap: var(--sp-6);
   }
 
+  /* ---------- LE PANNEAU DU GRAPHIQUE ----------
+     Remplir n'est pas le but : un tracé collé aux quatre bords est aussi
+     inconfortable qu'un tracé perdu dans le vide. Ce qu'il faut, c'est qu'il
+     RESPIRE et qu'il soit CENTRÉ — la place restante se répartit alors autour
+     de lui au lieu de s'accumuler en bas.
+
+     Le centrage ne s'applique qu'à ce qui ne remplit pas : les graphiques qui
+     prennent toute la boîte (ECharts, Mapbox, matrice) ne bougent pas. */
   .board__chart {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-2);
   }
 }
 

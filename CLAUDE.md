@@ -168,9 +168,15 @@ New charts should compose these bases, not rebuild options from scratch.
 
 ### The escale template
 
-Acts are now called **escales** in the UI. Every one of the eleven `ActBoard`
-escales renders in **focus mode** (`focus` prop) and shares one layout, built
-from these pieces:
+Acts are now called **escales** in the UI. Eleven of the twelve render through `ActBoard` in
+**focus mode** (`focus` prop) and share one layout; escale 12 (`/synthese`) is a GSAP scene
+sequence with its own 14 components and none of this applies to it.
+
+Note that the escale **number is not the act id**: `JOURNEY` orders them `a1, a2, a8, a12, a6,
+a7, a3, a10, a4, a5, a9, a11` — so escale 03 is `Act8Ciel` and escale 04 is `Act12Cyclones`.
+Never hardcode a number; use `numberOf(id)` / `padOf(id)`.
+
+The pieces:
 
 | Piece | Role |
 |---|---|
@@ -194,10 +200,20 @@ Rules the template enforces, so pages don't have to:
 
 **Filters belong to the chart they drive, not to the bar.** A control that only
 changes one view sits in that view's `controls` (rendered in the reading column);
-one that changes every view stays in the escale bar. Escale 10 shows both cases at
-once: its year slider is global on the *mix* dataset and map-only on the *renewable*
-one, so it moves between the two places. Escales 01, 02, 03, 05 and 07 have an
-empty bar — navigation only.
+one that changes every view stays in the escale bar.
+
+Escale **10 · L'élan renouvelable** shows both cases at once: its year slider is global on the
+*mix* dataset — it recomputes the band, the detail, the composition, the treemap and the donut
+— and map-only on the *renewable* one, so it moves between the two places depending on the
+selection. Escale **07 · La côte** is the pure case: `currentYear` has exactly one consumer,
+the map's columns.
+
+**Migrated so far** (empty bar, navigation only): escales **01, 02, 03, 05**. Escale 04 never
+had filters. **The other six still carry theirs in the bar** — the migration is deliberate and
+escale-by-escale, using the previous ones as the reference.
+
+Before moving a filter, **verify its reach** — don't assume. The region predicate feeds 5 to 17
+call sites depending on the escale: it really is global, and it stays in the bar.
 
 Visual views take **no** filter: the Home drawings carry their own territory
 selector and ignore the escale's filters.
@@ -255,6 +271,15 @@ Both systems are in use and split by concern — this is intentional, not leftov
 over both dicts. Add or correct a string in `extraStrings` rather than editing the large JSON
 files. `t('some.path')` returns the path itself when a key is missing — so a raw dotted string
 visible in the UI means a missing translation, not a rendering bug.
+
+**`extraStrings.js` holds ONE object per language.** A second key of the same name in the same
+literal silently overwrites the first — the last one wins in JS, and nothing warns you. This
+has already swallowed three legends. When adding to `fr` or `en`, merge into the existing
+object; never append a second `home: {…}` or `act8: {…}`.
+
+Pages carry a local `tx(key, fr, en)` helper: it returns the dictionary value when the key
+exists and the literal otherwise, so a new string can ship before it is versed into the
+dictionaries — without ever printing a dotted path on screen.
 
 ## Known repo hygiene issues
 
@@ -333,9 +358,10 @@ What is still open:
 - **No dual-axis charts.** `charts/DualAxisChart.jsx` and `charts/ParetoChart.jsx` use two
   y-scales. `EvolutionLines` has an `index` mode (base 100 + reference line) that is the
   correct one-axis replacement.
-- **`OceanMap` still ships a `semantic` ramp — green ↔ red** — and the two coastline maps of
-  escale 07 are its last callers. The escale was explicitly left alone by the entrant; the
-  ramp is the doctrine violation, not the views.
+- **`OceanMap` still ships a `semantic` ramp — green ↔ red.** Two callers remain:
+  `pages/Act3Territory` (the satellite coastline view, deliberately left alone by the entrant)
+  and `pages/Ocean/Ocean.jsx` — a page outside the twelve escales, never re-read in this pass.
+  The ramp is the doctrine violation, not the views.
 - **`stress` has no inverted form.** Indicators where *low* is worse (Red List Index, safe
   water) are painted `magnitude` and the reading key says in words which end warns. A ramp
   that could carry that orientation would remove the words.

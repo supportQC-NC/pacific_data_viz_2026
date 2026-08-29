@@ -24,7 +24,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiLogOut } from "react-icons/fi";
 import "./EscaleBar.scss";
 
 export default function EscaleBar({
@@ -43,30 +43,51 @@ export default function EscaleBar({
     Number.isFinite(index) && Number.isFinite(total) && total > 0;
   const pct = hasProgress ? Math.min(100, Math.max(0, (index / total) * 100)) : 0;
 
-  // Les chevrons portent le titre de l'escale voisine en infobulle plutôt
-  // qu'à l'écran : à l'écran il volait la place des vues, et il n'apporte
-  // rien tant qu'on n'a pas décidé de partir.
-  const arrow = (side, target) => {
+  // ---- LES DEUX BOUTONS D'EXTRÉMITÉ ----------------------------------
+  // C'étaient deux chevrons nus, dont le titre de l'escale voisine
+  // n'apparaissait qu'au survol. Rien ne disait qu'ils menaient à une AUTRE
+  // ESCALE plutôt qu'au graphique suivant — deux navigations cohabitent dans
+  // cette barre, et la plus engageante des deux était la moins lisible.
+  //
+  // Ils portent donc leur nom. Le titre de l'escale visée reste en infobulle :
+  // à l'écran il doublerait la largeur du bouton pour une information dont on
+  // n'a besoin qu'une fois la décision prise.
+  //
+  // Sous 1400 px le libellé s'efface et le chevron reprend seul : les onglets
+  // de vue ont alors besoin de toute la place, et c'est eux qu'on manipule le
+  // plus souvent.
+  const navButton = (side, target) => {
     const isPrev = side === "prev";
     const Icon = isPrev ? FiChevronLeft : FiChevronRight;
+    const icon = <Icon aria-hidden="true" />;
+    const text = target?.label ? (
+      <span className="escbar__nav-label">{target.label}</span>
+    ) : null;
+
     if (!target) {
       return (
         <span
-          className={`escbar__arrow escbar__arrow--${side} is-disabled`}
+          className={`escbar__nav escbar__nav--${side} is-disabled`}
           aria-hidden="true"
         >
-          <Icon />
+          {isPrev ? icon : null}
+          {text}
+          {isPrev ? null : icon}
         </span>
       );
     }
     return (
       <Link
         to={target.to}
-        className={`escbar__arrow escbar__arrow--${side}`}
-        title={target.label}
-        aria-label={target.label}
+        className={`escbar__nav escbar__nav--${side}`}
+        title={target.hint || target.label}
+        aria-label={
+          target.hint ? `${target.label} : ${target.hint}` : target.label
+        }
       >
-        <Icon aria-hidden="true" />
+        {isPrev ? icon : null}
+        {text}
+        {isPrev ? null : icon}
       </Link>
     );
   };
@@ -74,7 +95,7 @@ export default function EscaleBar({
   return (
     <nav className="escbar" aria-label={navAria}>
       <div className="escbar__inner container">
-        {arrow("prev", prev)}
+        {navButton("prev", prev)}
 
         {/* ---- OÙ JE SUIS ---- */}
         <div className="escbar__where">
@@ -102,13 +123,24 @@ export default function EscaleBar({
         {/* ---- CE QUE JE REGARDE + AVEC QUOI ---- */}
         <div className="escbar__views">{children}</div>
 
+        {/* QUITTER LE VOYAGE — une porte, et rien d'autre.
+            Le libellé complet occupait la largeur d'un onglet et demi pour une
+            action qu'on ne fait qu'une fois, tout en attirant l'œil autant que
+            la navigation qu'on utilise en permanence. L'icône garde son nom
+            pour le survol et pour les lecteurs d'écran. */}
         {onExit && exitLabel ? (
-          <button type="button" className="escbar__exit" onClick={onExit}>
-            <span aria-hidden="true">×</span> {exitLabel}
+          <button
+            type="button"
+            className="escbar__exit"
+            onClick={onExit}
+            title={exitLabel}
+            aria-label={exitLabel}
+          >
+            <FiLogOut aria-hidden="true" />
           </button>
         ) : null}
 
-        {arrow("next", next)}
+        {navButton("next", next)}
       </div>
     </nav>
   );

@@ -82,7 +82,11 @@ export default function ActBoard({
     const n = journey[here.index + 1];
     nextAct = {
       to: n.to,
-      label: `${t("flow.next")} · ${t(`home.acts.${n.id}_title`)}`,
+      // `label` est le NOM DU BOUTON, `hint` le titre de l'escale visée. Le
+      // second se lit au survol ; le premier doit tenir sur le bouton et dire
+      // ce qu'il fait, pas où il mène.
+      label: t("flow.next"),
+      hint: t(`home.acts.${n.id}_title`),
     };
   }
   let prevAct = null;
@@ -90,7 +94,8 @@ export default function ActBoard({
     const p = journey[here.index - 1];
     prevAct = {
       to: p.to,
-      label: `${t("flow.prev")} · ${t(`home.acts.${p.id}_title`)}`,
+      label: t("flow.prev"),
+      hint: t(`home.acts.${p.id}_title`),
     };
   }
 

@@ -20,40 +20,75 @@
   color: var(--c-text-mute);
 }
 
-/* Le rail. Un filet et un fond retenu : l'ensemble se lit comme un groupe,
-   ce qu'une rangée de boutons isolés ne fait pas. */
+/* ---------- LE RAIL ----------
+   Il portait deux boutons voisins et un fond posé sous celui qui était actif :
+   rien ne disait qu'ils formaient UN choix. On lisait deux boutons, pas deux
+   états d'une même chose.
+
+   Le rail est maintenant une grille à colonnes égales, dans laquelle glisse un
+   curseur. Colonnes égales parce que la math du curseur en dépend — et parce
+   qu'un segment qui change de largeur selon la longueur du mot fait bouger le
+   voisin à chaque bascule. */
 .vizswitch__track {
-  display: inline-flex;
-  gap: 2px;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--vs-count, 2), minmax(0, 1fr));
   padding: 3px;
-  border: var(--border-hair) solid var(--c-line);
+  border: var(--border-hair) solid
+    color-mix(in srgb, var(--c-line) 80%, transparent);
   border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--c-bg-2) 70%, transparent);
+  background: color-mix(in srgb, var(--c-bg-2) 55%, transparent);
+  backdrop-filter: blur(8px);
+  isolation: isolate;
+}
+
+/* LE CURSEUR. Il occupe exactement une colonne et se déplace de son propre
+   rang — d'où les colonnes égales. Le ressort léger en fin de course fait
+   sentir qu'on a posé quelque chose, sans surjouer. */
+.vizswitch__thumb {
+  position: absolute;
+  z-index: 0;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / var(--vs-count, 2));
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 12%, transparent) inset,
+    0 6px 16px -8px rgb(0 0 0 / 55%);
+  transform: translateX(calc(var(--vs-index, 0) * 100%));
+  transition: transform 260ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vizswitch__thumb {
+    transition: none;
+  }
 }
 
 .vizswitch__item {
+  position: relative;
+  z-index: 1;
   padding: var(--sp-2) var(--sp-4);
   border: 0;
   border-radius: var(--r-pill);
   background: transparent;
-  color: var(--c-text-soft);
+  color: var(--c-text-mute);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: 0.04em;
+  white-space: nowrap;
   cursor: pointer;
-  transition:
-    background var(--t-fast) var(--ease-out),
-    color var(--t-fast) var(--ease-out);
+  transition: color var(--t-fast) var(--ease-out);
 
   &:hover {
-    color: var(--c-text);
+    color: var(--c-text-soft);
   }
 
-  /* L'option retenue est PLEINE, pas seulement colorée : sur un fond de photo
-     floutée, une simple différence de teinte ne suffit pas à dire laquelle des
-     deux est active. */
+  /* L'option retenue passe en pleine encre : sur un fond de photo floutée, la
+     nuance seule ne suffisait pas à dire laquelle des deux est active. */
   &.is-on {
-    background: var(--c-surface);
     color: var(--c-text);
   }
 

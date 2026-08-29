@@ -1,6 +1,15 @@
 // src/components/CropRanking/CropRanking.scss
 @use "../../index.scss" as *;
 
+/* LES RANGÉES SE PARTAGENT LA HAUTEUR DU PANNEAU.
+   La liste s'empilait à sa hauteur naturelle : douze cultures occupaient
+   442 px dans un panneau de 812, soit 369 px perdus — 45 % de la place, le
+   pire de l'escale. Les barres restaient fines et serrées en haut de l'écran
+   pendant que le bas restait vide.
+
+   Chaque rangée prend maintenant sa part : peu de cultures, des rangées
+   généreuses ; beaucoup, des rangées serrées. `min-height` empêche
+   l'écrasement au-delà d'une vingtaine d'entrées, et le conteneur défile. */
 .croprank {
   list-style: none;
   margin: 0;
@@ -8,8 +17,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2, 0.5rem);
+  height: 100%;
+  min-height: 0;
 
   &__row {
+    flex: 1 1 auto;
+    min-height: 2.2rem;
+    align-content: center;
     display: grid;
     grid-template-columns: 1.5rem 1.5rem minmax(120px, 1.4fr) minmax(90px, 2fr) auto;
     align-items: center;
@@ -63,6 +77,14 @@
 }
 
 .croprank-wrap {
+  /* L'enveloppe RELAIE la hauteur : sans cela, le `height: 100 %` de la liste
+     se résout contre une boîte à hauteur automatique et ne produit rien —
+     c'est ce qui laissait 297 px vides sous le palmarès. */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
   gap: var(--sp-3, 0.75rem);

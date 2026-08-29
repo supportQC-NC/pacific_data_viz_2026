@@ -203,8 +203,45 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
 
   if (!cells.length) return null;
 
+  // ---- LA GRILLE S'ADAPTE AU NOMBRE DE VIGNETTES ----------------------
+  // Elle était figée : `auto-fill` avec un minimum de 190 px. Deux
+  // conséquences, toutes deux visibles dès qu'on filtrait.
+  //
+  //   • `auto-fill` RÉSERVE les colonnes vides. Filtrer à trois territoires
+  //     laissait trois vignettes de 190 px alignées à gauche et six colonnes
+  //     fantômes à droite. `auto-fit` fait l'inverse : les colonnes vides
+  //     s'effondrent et les vignettes présentes se partagent la largeur.
+  //
+  //   • Le minimum ne bougeait pas. Trois vignettes ou vingt-deux, chacune
+  //     avait droit aux mêmes 190 px et à la même courbe de 40 px de haut :
+  //     serrées quand il y en a beaucoup, perdues quand il y en a peu.
+  //
+  // On fait donc varier la taille de base ET la hauteur de courbe avec le
+  // nombre affiché. Peu de vignettes : grandes et espacées, on peut lire la
+  // forme. Beaucoup : resserrées, on compare des silhouettes.
+  const n = cells.length;
+  //
+  // Ces trois mesures règlent la CARTE, pas le tracé : sa largeur de base, le
+  // plancher de sa zone de dessin, et l'écart entre cartes. La hauteur, elle,
+  // vient de la grille — les rangées se partagent le panneau.
+  const sizing =
+    n <= 4
+      ? { min: 340, spark: 120, gap: 6 }
+      : n <= 8
+        ? { min: 280, spark: 96, gap: 5 }
+        : n <= 14
+          ? { min: 230, spark: 64, gap: 4 }
+          : { min: 190, spark: 46, gap: 4 };
+
   return (
-    <div className="smallmult">
+    <div
+      className="smallmult"
+      style={{
+        "--sm-min": `${sizing.min}px`,
+        "--sm-spark": `${sizing.spark}px`,
+        "--sm-gap": `var(--sp-${sizing.gap})`,
+      }}
+    >
       {cells.map((c, i) => (
         <div
           key={c.area}

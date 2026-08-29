@@ -21,7 +21,14 @@ import "./TrendLines.scss";
 
 const W = 1000;
 const H = 380;
-const M = { top: 26, right: 198, bottom: 40, left: 64 };
+// MARGE DROITE : 198 px sur 1000, soit un cinquième de la largeur, réservés
+// aux noms de territoires en toutes lettres. « Papouasie-Nouvelle-Guinée » y
+// tenait à peine, et le tracé — le sujet — se retrouvait tassé au centre.
+//
+// Les libellés portent donc le CODE du territoire. Deux lettres suffisent à
+// distinguer les courbes ; le nom complet, la valeur et la trajectoire propre
+// s'affichent au survol, quand on cherche à identifier une ligne précise.
+const M = { top: 26, right: 58, bottom: 40, left: 64 };
 // Palette de séries VALIDÉE (miroir de --c-series-1..8 dans _variables.scss).
 // Écrite en dur ici parce que ce composant est du d3 pur, sans accès aux
 // tokens — c'est sans risque : la palette catégorielle est invariante par
@@ -45,6 +52,38 @@ const colorAt = (i) => PALETTE[i] || NEUTRAL;
 const NICE_LOG = [
   0.5, 1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 500, 1000, 2000, 5000,
 ];
+
+// TRAJECTOIRE PROPRE d'un territoire, à SA propre échelle. Sur le graphique
+// principal, toutes les courbes partagent une échelle : un petit territoire y
+// paraît plat alors qu'il a pu doubler. Cette miniature lui rend sa forme.
+function MiniTrend({ values, color }) {
+  const pts = (values || []).filter((v) => Number.isFinite(v.value));
+  if (pts.length < 2) return null;
+  const w = 132;
+  const h = 34;
+  const xs = pts.map((p) => p.year);
+  const ys = pts.map((p) => p.value);
+  const x0 = Math.min(...xs);
+  const x1 = Math.max(...xs);
+  const y0 = Math.min(...ys);
+  const y1 = Math.max(...ys);
+  const sx = (v) => ((v - x0) / (x1 - x0 || 1)) * w;
+  const sy = (v) => h - ((v - y0) / (y1 - y0 || 1)) * (h - 3) - 1.5;
+  const d = pts
+    .map((p, i) => `${i ? "L" : "M"}${sx(p.year).toFixed(1)},${sy(p.value).toFixed(1)}`)
+    .join(" ");
+  return (
+    <svg
+      className="trend__pop-spark"
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={d} fill="none" stroke={color} />
+    </svg>
+  );
+}
 
 export default function TrendLines({
   series = [],
@@ -128,6 +167,8 @@ export default function TrendLines({
         return {
           area: s.area,
           name: s.name,
+          last,
+          values: s.values,
           color: colorAt(i),
           yTrue: y(last.value),
           xEnd: x(last.year),
@@ -147,6 +188,21 @@ export default function TrendLines({
       });
     return items;
   }, [series, x, y, useLog]);
+
+  // Ce que la bulle affiche, dérivé du territoire survolé ou épinglé.
+  const hovered = useMemo(() => {
+    if (!focusArea) return null;
+    const it = labels.find((l) => l.area === focusArea);
+    if (!it) return null;
+    const known = (it.values || []).filter((v) => Number.isFinite(v.value));
+    const first = known[0];
+    return {
+      ...it,
+      firstYear: first ? first.year : null,
+      delta:
+        first && it.last ? it.last.value - first.value : null,
+    };
+  }, [focusArea, labels]);
 
   if (!valid || !series.length) return <div className="trend trend--empty" />;
 
@@ -269,7 +325,10 @@ export default function TrendLines({
               dy="0.32em"
               fill={it.color}
             >
-              {it.name}
+              {it.area}
+              {/* Le nom complet reste accessible : lecteurs d'écran et
+                  infobulle native, sans occuper la largeur du tracé. */}
+              <title>{it.name}</title>
             </text>
           </g>
         ))}
@@ -306,6 +365,47 @@ export default function TrendLines({
           </g>
         )}
       </svg>
+      {/* ---------- LA BULLE DE SURVOL ----------
+          Les libellés ne portent plus que deux lettres : il faut donc un
+          endroit où lire le nom complet. C'est ici, et l'occasion d'en dire
+          plus que ne le faisait le nom seul — la valeur de la dernière année,
+          l'écart depuis la première, et la TRAJECTOIRE PROPRE du territoire.
+
+          Cette petite courbe est mise à SA propre échelle, contrairement aux
+          lignes du graphique qui partagent la leur. C'est le point : sur un
+          graphe où huit territoires s'écrasent parce que l'un d'eux domine,
+          elle rend sa forme à celui qu'on survole. Un territoire plat parmi
+          des géants n'est pas forcément immobile — il est seulement petit. */}
+      {hovered ? (
+        <div className="trend__pop" role="status">
+          <span className="trend__pop-head">
+            <span className="trend__pop-code" style={{ color: hovered.color }}>
+              {hovered.area}
+            </span>
+            <span className="trend__pop-name">{hovered.name}</span>
+          </span>
+
+          {hovered.last ? (
+            <span className="trend__pop-val">
+              <strong>{fmt(hovered.last.value)}</strong>
+              {unit ? <i> {unit}</i> : null}
+              <em>{hovered.last.year}</em>
+            </span>
+          ) : null}
+
+          <MiniTrend values={hovered.values} color={hovered.color} />
+
+          {hovered.delta != null ? (
+            <span
+              className={`trend__pop-delta ${hovered.delta < 0 ? "is-down" : "is-up"}`}
+            >
+              {hovered.delta < 0 ? "▾" : "▴"} {fmt(Math.abs(hovered.delta))}
+              {unit ? ` ${unit}` : ""}
+              <i> · {hovered.firstYear}–{hovered.last?.year}</i>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

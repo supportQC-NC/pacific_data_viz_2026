@@ -384,6 +384,7 @@ export default function Act7Vivant() {
     <>
       <ChartFilter
         label={t("act7.board.metric_label")}
+        hideLabel
         value={metric}
         onChange={setMetric}
         options={asOptions(metricItems)}
@@ -599,6 +600,9 @@ export default function Act7Vivant() {
                   unit={M.unit}
                   decimals={metricDecimals}
                   labels={cmpLabels}
+                  // Occupe la hauteur du panneau : sans cela, la hauteur est
+                  // calculée sur le nombre de lignes et laisse le bas vide.
+                  fill
                 />
               </div>
             ),

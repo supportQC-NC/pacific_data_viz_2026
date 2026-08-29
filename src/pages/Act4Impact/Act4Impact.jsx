@@ -259,6 +259,7 @@ export default function Act4Impact() {
     <>
       <ChartFilter
         label={t("act4.board.metric_label")}
+        hideLabel
         value={metric}
         onChange={setMetric}
         options={asOptions(metricItems)}

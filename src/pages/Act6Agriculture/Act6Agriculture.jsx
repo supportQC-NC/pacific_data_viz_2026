@@ -39,7 +39,6 @@ import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import CropRanking from "../../components/CropRanking/CropRanking";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
 import TrendLines from "../../components/TrendLines/TrendLines";
-import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 // Les visuels de la Home qui portent les jeux de cette escale. Chacun lit
 // exactement le même jeu qu'une des trois mesures du sélecteur :
 // PlantGrowth → cropYield, CattleThrive → livestockYield,
@@ -49,13 +48,11 @@ import PlantGrowth from "../../components/PlantGrowth/PlantGrowth";
 import CattleThrive from "../../components/CattleThrive/CattleThrive";
 import ForestCover from "../../components/ForestCover/ForestCover";
 import RankChart from "../../components/charts/RankChart";
-import BarRace from "../../components/BarRace/BarRace";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import CoverageChart from "../../components/charts/CoverageChart";
 import useThemeTokens from "../../hooks/UseThemeTokens";
 import ChangeChart from "../../components/charts/ChangeChart";
 import TrendChart from "../../components/charts/TrendChart";
-import SlopeChart from "../../components/charts/SlopeChart";
 import VizSwitch from "../../components/VizSwitch/VizSwitch";
 import { useDispatch, useSelector } from "react-redux";
 import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
@@ -215,7 +212,6 @@ export default function Act6Agriculture() {
   const [yearIdx, setYearIdx] = useState(null);
   const [dataset, setDataset] = useState("crop"); // crop | livestock | soil
   const kind = dataset === "soil" ? "crop" : dataset; // les vues de production restent en crop/livestock
-  const [raceProduct, setRaceProduct] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -309,21 +305,6 @@ export default function Act6Agriculture() {
     [landSeries],
   );
   // Slope : première -> dernière année observée, par territoire.
-  const landSlopeRows = useMemo(
-    () =>
-      landSeries
-        .map((sx) => ({
-          name: sx.name,
-          left: sx.values[0].value,
-          right: sx.values[sx.values.length - 1].value,
-        }))
-        .filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right)),
-    [landSeries],
-  );
-  const landSlopeMax = useMemo(() => {
-    const v = landSlopeRows.flatMap((r) => [r.left, r.right]);
-    return v.length ? Math.ceil(Math.max(...v) / 10) * 10 : 200;
-  }, [landSlopeRows]);
 
   const cropRankRows = useMemo(() => {
     if (!agri.data || currentYear == null) return [];
@@ -405,55 +386,7 @@ export default function Act6Agriculture() {
     [volatilityRows],
   );
 
-  // --- Course animée : un produit choisi, ses territoires sur toute la période ---
-  const raceProducts = useMemo(() => {
-    if (!agri.data) return [];
-    return (agri.data.commodities || [])
-      .filter((c) => c.kind === kind)
-      .filter((c) => {
-        const d = agri.data.byCommodity[c.code];
-        if (!d) return false;
-        return (
-          d.areas.filter(
-            (a) =>
-              isPict(a) &&
-              (d.byArea[a] || []).some((p) => Number.isFinite(p.value)),
-          ).length >= 2
-        );
-      });
-  }, [agri.data, kind]);
 
-  useEffect(() => {
-    if (
-      raceProducts.length &&
-      (raceProduct == null || !raceProducts.some((c) => c.code === raceProduct))
-    ) {
-      setRaceProduct(raceProducts[0].code);
-    }
-  }, [raceProducts, raceProduct]);
-
-  const raceData =
-    raceProduct && agri.data ? agri.data.byCommodity[raceProduct] : null;
-  const raceMeta = raceProducts.find((c) => c.code === raceProduct);
-  const raceYears = useMemo(() => raceData?.years || [], [raceData]);
-  const raceSeries = useMemo(() => {
-    if (!raceData) return [];
-    return raceData.areas
-      .filter((a) => isPict(a) && areaVisible(a))
-      .map((a) => {
-        const s = (raceData.byArea[a] || [])
-          .filter((p) => Number.isFinite(p.value))
-          .sort((x, y) => x.year - y.year);
-        let last = null;
-        const values = raceYears.map((y) => {
-          const ex = s.find((p) => p.year === y);
-          if (ex) last = ex.value;
-          return { year: y, value: last == null ? 0 : last };
-        });
-        return { area: a, name: pictName(a, lang), values };
-      })
-      .filter((r) => r.values.some((v) => v.value > 0));
-  }, [raceData, raceYears, areaVisible, lang]);
 
   // Chiffres-clés RETIRÉS de cet écran, comme sur les escales 01 et 02 : le
   // sujet du dashboard, c'est le graphique. Le composant KpiRow n'est pas
@@ -523,6 +456,7 @@ export default function Act6Agriculture() {
     <>
       <ChartFilter
         label={t("act6.board.dataset_label")}
+        hideLabel
         value={dataset}
         onChange={setDataset}
         options={asOptions(datasetItems)}
@@ -745,10 +679,15 @@ export default function Act6Agriculture() {
           {
             ...activeViz,
             id: "viz",
-            // L'onglet porte le nom du dessin affiché — « Pousse », « Verre »,
-            // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
-            // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
-            // catégorie à laquelle il appartient.
+            // L'ONGLET DIT LE JEU, PAS LE DESSIN.
+            // Il portait le nom du dessin — « Pousse » — quand la bascule juste
+            // en dessous annonçait « Cultures » : deux mots pour la même chose,
+            // et le premier nommait l'illustration plutôt que ce qu'elle
+            // mesure. Ici la bascule EST le sélecteur de jeu, l'onglet reprend
+            // donc son vocabulaire.
+            tab:
+              vizItems.find((o) => o.id === dataset)?.label ??
+              tx("act6.viz.sw_plant", "Cultures", "Crops"),
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -758,6 +697,51 @@ export default function Act6Agriculture() {
                   label={tx("act6.viz.sw_label", "Visuel", "Visual")}
                 />
                 <div className="vizpane__body">{activeViz.node}</div>
+              </div>
+            ),
+          },
+          {
+            id: "explorer",
+            bare: true,
+            empty: !agri.data,
+            tab: t("act6.board.tab_explorer"),
+            title: t("act6.explorer_title"),
+            finding: t("act6.board.explorer_find"),
+            takeaway: t("act6.board.explorer_take"),
+            controls: boardControls,
+            legend: {
+              ...key,
+              y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
+              x: key.y,
+            },
+            hint: tx(
+              "act6.hint.explorer",
+              "Choisissez une culture ou un élevage : tout le tracé se recalcule sur lui.",
+              "Pick a crop or a livestock type: the whole plot recomputes on it.",
+            ),
+            node: (
+              <div className="act6b__scroll">
+                <CropExplorer
+                  data={agri.data}
+                  kind={kind}
+                  // Le filtre de sous-région vient de l'escale : ce composant
+                  // n'a plus son propre menu, il n'en resterait qu'un doublon.
+                  areaVisible={areaVisible}
+                  labels={{
+                    pick:
+                      kind === "crop"
+                        ? t("act6.explorer_pick")
+                        : t("act6.explorer_animal_pick"),
+                    // Les deux modes de lecture, et les commandes de la course.
+                    trend: tx("act6.explorer_mode_trend", "Trajectoire", "Path"),
+                    race: tx("act6.explorer_mode_race", "Course", "Race"),
+                    race_ctl: {
+                      play: t("act1.race.play"),
+                      pause: t("act1.race.pause"),
+                      restart: t("act1.race.restart"),
+                    },
+                  }}
+                />
               </div>
             ),
           },
@@ -905,6 +889,9 @@ export default function Act6Agriculture() {
                     up: t("act6.compare_up"),
                     down: t("act6.compare_down"),
                   }}
+                  // Occupe la hauteur du panneau : sans cela, la hauteur est
+                  // calculée sur le nombre de lignes et laisse le bas vide.
+                  fill
                 />
               </div>
             ),
@@ -940,91 +927,6 @@ export default function Act6Agriculture() {
                 sort="desc"
                 scale="lin"
               />
-            ),
-          },
-          {
-            id: "race",
-            empty: raceSeries.length < 2,
-            tab: t("act6.board.tab_race"),
-            title: t("act6.board.race_title"),
-            finding: t("act6.board.race_find"),
-            takeaway: t("act6.board.race_take"),
-            controls: boardControls,
-            legend: {
-              ...key,
-              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
-              x: key.y,
-            },
-            hint: tx(
-              "act6.hint.race",
-              "Lancez l'animation : les barres se réordonnent au fil des années.",
-              "Press play: the bars reorder themselves year after year.",
-            ),
-            node: (
-              <div className="act6b__race">
-                <div className="act6b__racebar">
-                  <Select
-                    label={t("act6.board.race_pick")}
-                    options={raceProducts.map((c) => ({
-                      v: c.code,
-                      label: c.label,
-                    }))}
-                    value={raceProduct ?? ""}
-                    onChange={setRaceProduct}
-                  />
-                </div>
-                <BarRace
-                  series={raceSeries}
-                  years={raceYears}
-                  unit={raceMeta?.unit || unit}
-                  decimals={0}
-                  tk={tk}
-                  labels={{
-                    play: t("act1.race.play"),
-                    pause: t("act1.race.pause"),
-                    restart: t("act1.race.restart"),
-                  }}
-                  autoplay={false}
-                  loop={false}
-                  tick={1800}
-                />
-              </div>
-            ),
-          },
-          {
-            id: "heat",
-            empty: vSeries.length === 0,
-            tab: tx("act6.board.tab_matrice", "Matrice", "Matrix"),
-            title: t("act6.heatmap_title"),
-            finding: t("act6.board.heat_find"),
-            takeaway: t("act6.board.heat_take"),
-            controls: boardControls,
-            legend: {
-              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
-              x: key.x,
-              color: key.color,
-              note: key.note,
-              swatch: key.swatch,
-            },
-            hint: tx(
-              "act6.hint.heat",
-              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
-              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
-            ),
-            node: (
-              <div className="act6b__scroll">
-                <ApexYearHeatmap
-                  series={vSeries}
-                  years={years}
-                  unit={unit}
-                  scale="sequential"
-                  decimals={0}
-                  labels={{
-                    low: t("act6.heatmap_low"),
-                    high: t("act6.heatmap_high"),
-                  }}
-                />
-              </div>
             ),
           },
           {
@@ -1070,40 +972,6 @@ export default function Act6Agriculture() {
                   />
                 </Suspense>
               </ErrorBoundary>
-            ),
-          },
-          {
-            id: "explorer",
-            bare: true,
-            empty: !agri.data,
-            tab: t("act6.board.tab_explorer"),
-            title: t("act6.explorer_title"),
-            finding: t("act6.board.explorer_find"),
-            takeaway: t("act6.board.explorer_take"),
-            controls: boardControls,
-            legend: {
-              ...key,
-              y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
-              x: key.y,
-            },
-            hint: tx(
-              "act6.hint.explorer",
-              "Choisissez une culture ou un élevage : tout le tracé se recalcule sur lui.",
-              "Pick a crop or a livestock type: the whole plot recomputes on it.",
-            ),
-            node: (
-              <div className="act6b__scroll">
-                <CropExplorer
-                  data={agri.data}
-                  kind={kind}
-                  labels={{
-                    pick:
-                      kind === "crop"
-                        ? t("act6.explorer_pick")
-                        : t("act6.explorer_animal_pick"),
-                  }}
-                />
-              </div>
             ),
           },
           {
@@ -1161,39 +1029,6 @@ export default function Act6Agriculture() {
             ),
           },
           {
-            id: "land_slope",
-            empty: !landReady || landSlopeRows.length < 2,
-            tab: tx("act6.board.tab_land_pente", "Pente", "Slope"),
-            title: t("act6.land.slope_title"),
-            finding: t("act6.board.land_slope_find"),
-            takeaway: t("act6.board.land_slope_take"),
-            controls: boardControls,
-            legend: {
-              ...key,
-              y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
-              x: tx(
-                "act6.key.land_slope_x",
-                "La pente moyenne de l'indice, en points par an : le rythme, pas le niveau.",
-                "The index's average slope, in points per year: the pace, not the level.",
-              ),
-            },
-            hint: tx(
-              "act6.hint.hover",
-              "Survolez le tracé pour lire une valeur précise.",
-              "Hover the plot to read a single value.",
-            ),
-            node: (
-              <SlopeChart
-                rows={landSlopeRows}
-                leftLabel={String(landYears[0] ?? "")}
-                rightLabel={String(landYears[landYears.length - 1] ?? "")}
-                unit={t("act6.land.index_unit")}
-                min={0}
-                max={landSlopeMax}
-              />
-            ),
-          },
-          {
             id: "coverage",
             empty: vSeries.length === 0,
             tab: t("act6.board.tab_coverage"),
@@ -1217,7 +1052,9 @@ export default function Act6Agriculture() {
 
   // Le jeu choisi décide des VUES : Sol → ses 3 vues d'occupation ; Culture /
   // Élevage → toutes les vues de production.
-  const SOIL_IDS = ["land_change", "land_lines", "land_slope"];
+  // La vue « pente » a été retirée : la pente moyenne d'un indice base 100
+// n'apprend rien de plus que la trajectoire elle-même, qui la montre déjà.
+const SOIL_IDS = ["land_change", "land_lines"];
   // L'entrée des visuels reste à l'écran dans les deux familles : c'est la
   // bascule du panneau qui choisit le dessin, pas le carrousel.
   const visibleCharts = charts.filter((c) =>

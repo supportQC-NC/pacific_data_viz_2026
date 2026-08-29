@@ -28,10 +28,29 @@ import "./VizSwitch.scss";
 export default function VizSwitch({ items = [], value, onChange, label }) {
   if (!items || items.length < 2) return null;
 
+  // Rang de l'option retenue : c'est lui qui déplace le curseur.
+  const index = Math.max(
+    0,
+    items.findIndex((it) => it.id === value),
+  );
+
   return (
     <div className="vizswitch" role="group" aria-label={label}>
       {label ? <span className="vizswitch__label">{label}</span> : null}
-      <div className="vizswitch__track">
+      <div
+        className="vizswitch__track"
+        style={{ "--vs-count": items.length, "--vs-index": index }}
+      >
+        {/* LE CURSEUR GLISSANT.
+            L'option retenue se signalait par un simple fond posé sous son
+            libellé : rien ne reliait les deux options, et l'ensemble se lisait
+            comme deux boutons voisins plutôt que comme un choix entre deux
+            états. Un curseur qui SE DÉPLACE dit qu'il n'y en a qu'un à la
+            fois, et le mouvement montre d'où l'on vient.
+            Il est décoratif — la vérité d'état reste `aria-pressed` sur les
+            boutons, que le curseur ne fait qu'illustrer. */}
+        <span className="vizswitch__thumb" aria-hidden="true" />
+
         {items.map((it) => {
           const on = it.id === value;
           return (

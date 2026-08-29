@@ -54,7 +54,11 @@ function sameShape(a, b) {
   return true;
 }
 
-export default function ApexChart({ options, className = "" }) {
+// `style` est relayé pour qu'un graphique puisse imposer un PLANCHER de
+// hauteur à son conteneur — la matrice s'en sert quand ses lignes sont trop
+// nombreuses pour le panneau : elle reprend alors sa hauteur propre et le
+// panneau défile, au lieu d'écraser les cases.
+export default function ApexChart({ options, className = "", style }) {
   const elRef = useRef(null);
   const chartRef = useRef(null);
   const rafRef = useRef(0);
@@ -136,5 +140,5 @@ export default function ApexChart({ options, className = "" }) {
     prevRef.current = options;
   }, [options]);
 
-  return <div ref={elRef} className={`apexchart ${className}`} />;
+  return <div ref={elRef} className={`apexchart ${className}`} style={style} />;
 }

@@ -151,11 +151,31 @@
   background: linear-gradient(to top, var(--c-ord-1), var(--c-ord-6));
 }
 
-/* Les commandes propres à une vue : elles doivent respirer, sans concurrencer
-   le texte de lecture qui les entoure. */
-.chartkey__block--controls {
-  > *:not(.chartkey__head) {
-    margin-top: var(--sp-2);
+/* LES COMMANDES DE LA VUE, en tête de colonne.
+   Sur UNE ligne, sans intertitre ni étiquettes : deux menus côte à côte se
+   comprennent d'eux-mêmes, et les trois lignes de texte qui les séparaient
+   coûtaient plus qu'elles n'expliquaient. */
+.chartkey__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-4);
+  border-bottom: var(--border-hair) solid
+    color-mix(in srgb, var(--c-line) 60%, transparent);
+
+  /* Les filtres se partagent la largeur au lieu de garder chacun sa taille
+     minimale, qui les faisait passer à la ligne dans une colonne étroite. */
+  .chfilter {
+    flex: 1 1 8rem;
+    min-width: 0;
+    margin-bottom: 0;
+  }
+
+  .chfilter__selwrap,
+  .chfilter__select {
+    width: 100%;
+    min-width: 0;
   }
 }
 

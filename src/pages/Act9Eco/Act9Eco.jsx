@@ -690,6 +690,7 @@ export default function Act9Eco() {
     <>
       <ChartFilter
         label={t("act9.board.metric_label")}
+        hideLabel
         value={metric}
         onChange={setMetric}
         options={asOptions(metricItems)}
@@ -1033,7 +1034,10 @@ export default function Act9Eco() {
                 yearB={M.B}
                 unit={M.unit}
                 labels={cmpLabels}
-              />
+                // Occupe la hauteur du panneau : sans cela, la hauteur est
+                  // calculée sur le nombre de lignes et laisse le bas vide.
+                  fill
+                />
             ),
           },
           {

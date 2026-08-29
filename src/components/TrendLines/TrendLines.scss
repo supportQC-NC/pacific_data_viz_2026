@@ -1,6 +1,113 @@
 // src/components/TrendLines/TrendLines.scss
 .trend {
   width: 100%;
+  position: relative;
+}
+
+/* ---------- LA BULLE DE SURVOL ----------
+   Les libellés de fin ne portent plus que le code du territoire : deux
+   lettres suffisent à distinguer huit courbes, et les 198 px que prenaient
+   les noms en toutes lettres sont rendus au tracé. Le nom complet se lit ici.
+
+   Elle se pose en haut à droite, dans la zone que les courbes atteignent le
+   moins souvent, et ne capte pas la souris — sinon elle se fermerait
+   elle-même en s'ouvrant sous le curseur. */
+.trend__pop {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 10rem;
+  max-width: 15rem;
+  padding: var(--sp-3);
+  border: var(--border-hair) solid var(--c-line);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.trend__pop-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.trend__pop-code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+}
+
+.trend__pop-name {
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  line-height: 1.2;
+}
+
+.trend__pop-val {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  color: var(--c-text-mute);
+  font-size: var(--fs-xs);
+
+  strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semi);
+    color: var(--c-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  i {
+    font-style: normal;
+  }
+
+  em {
+    margin-left: auto;
+    font-style: normal;
+  }
+}
+
+/* La trajectoire propre du territoire, à SA propre échelle — c'est tout
+   l'intérêt : sur un graphe où l'un domine, elle rend sa forme aux autres. */
+.trend__pop-spark {
+  width: 100%;
+  height: 34px;
+  display: block;
+
+  path {
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.trend__pop-delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+
+  i {
+    font-style: normal;
+    color: var(--c-text-mute);
+  }
+
+  &.is-up {
+    color: var(--c-div-9);
+  }
+
+  &.is-down {
+    color: var(--c-div-1);
+  }
 }
 .trend--empty {
   min-height: 1px;

@@ -120,8 +120,15 @@ const EXTRA_STRINGS = {
     },
     // Passage du board vers la conclusion de l'acte (3e temps).
     board: { conclude: "Lire la conclusion" },
-    // Sortie du voyage guidé, depuis la barre d'acte.
-    flow: { exit_voyage: "Quitter le voyage" },
+    // Sortie du voyage guidé, et les deux boutons d'extrémité de la barre
+    // d'escale. Ils disaient « Précédent » et « Acte suivant » : deux
+    // formulations différentes pour deux boutons symétriques, et le mot
+    // « acte » alors que l'interface parle d'escales partout ailleurs.
+    flow: {
+      exit_voyage: "Quitter le voyage",
+      prev: "Escale précédente",
+      next: "Escale suivante",
+    },
     // Barre de voyage du Récit (chaque acte = une escale).
     // La phrase de la vue « calendrier » décrivait un vert-rouge qui n'existe
     // plus : la matrice compte des cyclones, une grandeur, et emploie
@@ -132,6 +139,10 @@ const EXTRA_STRINGS = {
     // sur douze, et le lavande-rouge qui l'a remplacé a été adouci en ambre.
     // Ces phrases nommaient encore le rouge. Une légende qui désigne une
     // couleur absente de l'écran est pire qu'une absence de légende.
+    // Les deux boutons d'extrémité de la barre d'escale. Ils disaient
+    // « Précédent » et « Acte suivant » — deux formulations différentes pour
+    // deux boutons symétriques, et le mot « acte » alors que l'interface parle
+    // d'escales partout ailleurs.
     act8: {
       board: {
         heat_find:
@@ -164,7 +175,11 @@ const EXTRA_STRINGS = {
       export_excel: "Excel workbook",
     },
     board: { conclude: "Read the conclusion" },
-    flow: { exit_voyage: "Leave the voyage" },
+    flow: {
+      exit_voyage: "Leave the voyage",
+      prev: "Previous escale",
+      next: "Next escale",
+    },
     recit: {
       voyage_exit: "Leave the voyage",
       voyage_next: "Next leg",

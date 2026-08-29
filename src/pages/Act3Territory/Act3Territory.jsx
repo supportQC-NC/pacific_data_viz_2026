@@ -474,6 +474,7 @@ export default function Act3Territory() {
     <>
       <ChartFilter
         label={t("act3.board.dataset_label")}
+        hideLabel
         value={dataset}
         onChange={setDataset}
         options={asOptions(datasetItems)}
@@ -1135,7 +1136,10 @@ export default function Act3Territory() {
                 unit={popUnit}
                 startLabel={t("act3.path_start")}
                 endLabel={t("act3.path_end")}
-              />
+                // Occupe la hauteur du panneau : sans cela, la hauteur est
+                  // calculée sur le nombre de lignes et laisse le bas vide.
+                  fill
+                />
             ),
           },
           {

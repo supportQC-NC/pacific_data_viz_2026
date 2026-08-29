@@ -4,13 +4,41 @@
 // Tokens uniquement → suit le thème. Aucune couleur en dur.
 // ============================================================
 
+/* ---------- LE FOND ----------
+   La barre posait un aplat à 78 % d'opacité : un bandeau plein en haut de
+   l'écran, qui coupait le décor de l'escale et se lisait comme une pièce
+   rapportée. La colonne de lecture, à droite, ne s'autorise qu'un filet — et
+   c'est elle qui donne le ton du tableau de bord.
+
+   On garde donc le FLOU, qui est ce qui rend le texte lisible par-dessus une
+   photo, et l'on réduit l'aplat au minimum nécessaire pour que les libellés
+   tiennent sur les zones claires. Le décor traverse. */
 .escbar {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: var(--border-hair) solid var(--c-line);
+
+  /* AUCUN FOND. La colonne de lecture, à droite, n'en pose pas : le décor de
+     l'escale la traverse et elle ne tient que par un filet. La barre se lit
+     désormais comme sa voisine — plus de bandeau, plus même le dégradé
+     résiduel qui la soulignait.
+
+     Tout repose donc sur le FLOU, qui détache la barre du décor sans en
+     cacher ni la couleur ni la forme. Il est poussé un cran plus loin, et
+     désaturé davantage, pour compenser la disparition de l'ombre.
+
+     CE QUI EST EN JEU : sur un décor sombre, rien ne bouge. Sur une photo
+     claire — la plage à contre-jour de l'escale 09 est le pire cas du
+     parcours — le titre de l'escale n'a plus que le flou pour se détacher.
+     À surveiller si de nouveaux décors arrivent : c'est le premier endroit
+     où la lisibilité lâchera. */
+  background: none;
+  backdrop-filter: blur(16px) saturate(0.85);
+
+  /* Le filet, comme celui de la colonne — mais atténué : en pleine largeur il
+     pèse plus qu'une bordure verticale de 300 px. */
+  border-bottom: var(--border-hair) solid
+    color-mix(in srgb, var(--c-line) 60%, transparent);
 }
 
 .escbar__inner {
@@ -21,30 +49,52 @@
   padding-block: var(--sp-2);
 }
 
-/* ---------- Chevrons : la navigation ENTRE escales ----------
-   Aux extrémités, isolés du reste : on ne les confond pas avec les onglets
-   de vue qui vivent au centre. */
-.escbar__arrow {
+/* ---------- LES DEUX BOUTONS D'EXTRÉMITÉ ----------
+   La navigation ENTRE escales, aux deux bords, isolée des onglets de vue qui
+   vivent au centre. Elle portait deux chevrons nus : rien ne disait qu'ils
+   menaient à une autre escale.
+
+   Le vocabulaire est celui de la colonne de lecture — capitales espacées,
+   fonte à chasse fixe, encre atténuée — parce que ces deux zones jouent le
+   même rôle : elles entourent le graphique et le commentent, sans jamais lui
+   disputer l'attention. */
+.escbar__nav {
   flex: 0 0 auto;
-  width: 2.1rem;
-  height: 2.1rem;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: var(--border-hair) solid var(--c-line);
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  /* Cerne DISCRET au repos. Un contour plein enfermait chaque bouton dans une
+     pastille, et trois pastilles alignées sur une photo font davantage penser
+     à une palette d'outils qu'à un fil de lecture. */
+  border: var(--border-hair) solid
+    color-mix(in srgb, var(--c-line) 45%, transparent);
   border-radius: var(--r-pill);
   color: var(--c-text-soft);
-  font-size: 1.1rem;
-  transition: color var(--t-fast) var(--ease-out),
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    color var(--t-fast) var(--ease-out),
     border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
     transform var(--t-fast) var(--ease-out);
+
+  svg {
+    flex: 0 0 auto;
+    font-size: 1rem;
+  }
 
   &:hover,
   &:focus-visible {
     color: var(--c-text);
     border-color: var(--c-line-strong);
+    background: color-mix(in srgb, var(--c-bg-2) 60%, transparent);
   }
 
+  /* Le déplacement au survol dit le SENS avant qu'on ait lu le libellé. */
   &--prev:hover {
     transform: translateX(-2px);
   }
@@ -54,8 +104,21 @@
   }
 
   &.is-disabled {
-    opacity: 0.3;
+    opacity: 0.28;
     pointer-events: none;
+  }
+}
+
+/* Sous 1400 px, le libellé s'efface et le chevron reprend seul : les onglets
+   de vue ont alors besoin de toute la place, et ce sont eux qu'on manipule le
+   plus souvent. Le nom reste dans l'infobulle et pour les lecteurs d'écran. */
+@media (max-width: 1400px) {
+  .escbar__nav-label {
+    display: none;
+  }
+
+  .escbar__nav {
+    padding: var(--sp-2);
   }
 }
 
@@ -126,17 +189,26 @@
   border-left: var(--border-hair) solid var(--c-line);
 }
 
+/* QUITTER LE VOYAGE — une porte, sans libellé.
+   Le texte complet prenait la largeur d'un onglet et demi pour une action
+   qu'on ne fait qu'une fois, tout en attirant l'œil autant que la navigation
+   dont on se sert en permanence. L'icône se tient en retrait : c'est une
+   sortie de secours, pas une destination. */
 .escbar__exit {
   flex: 0 0 auto;
-  padding: 2px var(--sp-3);
-  border: 1px solid transparent;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--border-hair) solid transparent;
   border-radius: var(--r-pill);
   background: transparent;
   color: var(--c-text-mute);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  white-space: nowrap;
+  font-size: 0.95rem;
   cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
 
   &:hover,
   &:focus-visible {
@@ -196,15 +268,12 @@
     display: none;
   }
 
-  .escbar__arrow {
-    width: 1.9rem;
-    height: 1.9rem;
+  .escbar__nav {
+    padding: var(--sp-2);
   }
 
   .escbar__exit {
     order: 2;
-    padding: 0;
-    font-size: 0;
 
     /* Le libellé disparaît, la croix reste — et garde son intitulé pour les
        lecteurs d'écran via le texte du bouton. */

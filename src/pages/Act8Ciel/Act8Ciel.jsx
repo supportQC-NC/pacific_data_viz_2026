@@ -570,6 +570,7 @@ export default function Act8Ciel() {
     <>
       <ChartFilter
         label={t("act8.board.group_measure")}
+        hideLabel
         value={metric}
         onChange={setMetric}
         options={asOptions(measureItems)}
@@ -739,7 +740,10 @@ export default function Act8Ciel() {
                 unit={M.unit}
                 decimals={metricDecimals}
                 labels={cmpLabels}
-              />
+                // Occupe la hauteur du panneau : sans cela, la hauteur est
+                  // calculée sur le nombre de lignes et laisse le bas vide.
+                  fill
+                />
             </div>
           ),
         }

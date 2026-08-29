@@ -63,6 +63,17 @@ export default function ChartKey({
           La phrase de résumé, elle, ne s'affiche plus : elle disait ce que
           la clé de lecture dit déjà, en plus long. Elle reste dans la fiche
           « + » pour qui veut le détail. */}
+      {/* LES COMMANDES, EN TÊTE DE COLONNE ET SUR UNE LIGNE.
+          Elles étaient plus bas, sous un intertitre « Régler », chacune
+          précédée de son étiquette en capitales. Trois lignes de texte pour
+          deux menus déroulants — qu'un menu déroulant se manipule, personne
+          n'a besoin qu'on le lui écrive.
+
+          Elles passent donc au-dessus du titre : c'est le premier geste
+          qu'on fait sur une vue, avant même de lire ce qu'elle montre. Sans
+          intertitre, sans étiquettes, côte à côte. */}
+      {controls ? <div className="chartkey__controls">{controls}</div> : null}
+
       {title ? (
         <header className="chartkey__top">
           <h2 className="chartkey__title">{title}</h2>
@@ -142,20 +153,6 @@ export default function ChartKey({
         <section className="chartkey__block chartkey__block--take">
           <h3 className="chartkey__head">{labels.takeaway || "À retenir"}</h3>
           <p className="chartkey__take">{takeaway}</p>
-        </section>
-      ) : null}
-
-      {/* LES COMMANDES PROPRES À CETTE VUE.
-          Un filtre qui n'agit que sur UN graphique n'a rien à faire dans la
-          barre de l'escale : il y prend la place des onglets, et il laisse
-          croire qu'il pilote tout le tableau de bord. Posé ici, à côté du
-          tracé qu'il change, sa portée se lit d'elle-même.
-          Les filtres qui agissent sur TOUTES les vues restent dans la barre :
-          c'est leur portée qui décide de leur place. */}
-      {controls ? (
-        <section className="chartkey__block chartkey__block--controls">
-          <h3 className="chartkey__head">{labels.controls || "Régler"}</h3>
-          {controls}
         </section>
       ) : null}
 

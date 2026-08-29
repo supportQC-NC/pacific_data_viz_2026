@@ -696,6 +696,7 @@ export default function Act5Momentum() {
     <>
       <ChartFilter
         label={t("act5.board.dataset_label")}
+        hideLabel
         value={dataset}
         onChange={setDataset}
         options={asOptions(datasetItems)}

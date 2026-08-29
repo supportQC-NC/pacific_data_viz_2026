@@ -102,12 +102,21 @@ export default function ApexYearHeatmap({
       ranges.unshift({ from: -eps, to: eps, color: tk.bg2, name: labels.low || "0" });
     }
 
-    const height = Math.max(280, ordered.length * ROW_H + EXTRA_H);
+    // HAUTEUR : celle du PANNEAU, pas celle du contenu.
+    // Elle était calculée « nombre de lignes × 26 px + 120 » : quinze
+    // territoires donnaient 510 px dans un panneau de 812, soit 302 px perdus
+    // — 37 % de la place, alors que des cases plus hautes se lisent mieux.
+    //
+    // On demande donc 100 % de la boîte. Le plancher calculé subsiste comme
+    // MINIMUM : au-delà d'une vingtaine de lignes, la matrice reprend sa
+    // hauteur propre et le panneau défile, plutôt que d'écraser les cases.
+    const minHeight = Math.max(280, ordered.length * ROW_H + EXTRA_H);
 
     return {
       chart: {
         ...baseChart(tk, { type: "heatmap" }),
-        height,
+        height: "100%",
+        __minHeight: minHeight,
         animations: { enabled: false },
       },
       series: apexSeries,
@@ -160,5 +169,13 @@ export default function ApexYearHeatmap({
     };
   }, [series, years, unit, scale, decimals, labels, tk]);
 
-  return <ApexChart options={option} className="apexchart--tall" />;
+  // Le plancher voyage jusqu'au conteneur : c'est lui qui décide de faire
+  // défiler quand les lignes sont trop nombreuses pour la boîte.
+  return (
+    <ApexChart
+      options={option}
+      className="apexchart--tall"
+      style={{ minHeight: option.chart.__minHeight }}
+    />
+  );
 }

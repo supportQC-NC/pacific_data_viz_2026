@@ -7,8 +7,9 @@
 .chfilter {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   margin-bottom: var(--sp-4);
+  min-width: 0;
 
   &__label {
     font-family: var(--font-mono);
@@ -24,31 +25,51 @@
     align-items: center;
   }
 
+  /* ---------- LE MENU ----------
+     Il tenait sa largeur d'un `min-width: 13rem` fixe : deux menus côte à côte
+     dans une colonne de 260 px passaient donc à la ligne, et une étiquette
+     longue était tronquée quand une courte laissait du vide. Il se dimensionne
+     maintenant sur la place qu'on lui donne.
+
+     Le vocabulaire est celui du reste du tableau de bord — pilule, filet
+     discret, fond à peine posé, flou léger : le même que les onglets, les
+     boutons d'escale et les cartes de petits multiples. */
   &__select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    min-width: 13rem;
-    padding: var(--sp-2) calc(var(--sp-6) + var(--sp-2)) var(--sp-2) var(--sp-4);
-    border: var(--border-hair) solid var(--c-line-strong);
+    width: 100%;
+    min-width: 0;
+    padding: var(--sp-2) calc(var(--sp-6) + var(--sp-1)) var(--sp-2) var(--sp-3);
+    border: var(--border-hair) solid
+      color-mix(in srgb, var(--c-line) 70%, transparent);
     border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+    background: color-mix(in srgb, var(--c-surface) 46%, transparent);
     color: var(--c-text);
     font-family: var(--font-body);
     font-size: var(--fs-sm);
     font-weight: var(--fw-med);
     line-height: 1.2;
+    /* Une étiquette trop longue se coupe proprement au lieu d'élargir le
+       menu et de pousser son voisin hors de la colonne. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     cursor: pointer;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition:
       border-color var(--t-fast) var(--ease-out),
+      background var(--t-fast) var(--ease-out),
       color var(--t-fast) var(--ease-out);
 
-    &:hover,
+    &:hover {
+      border-color: color-mix(in srgb, var(--c-accent) 60%, transparent);
+      background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+    }
+
     &:focus-visible {
       border-color: var(--c-accent);
-      color: var(--c-text);
       outline: none;
     }
 
@@ -59,11 +80,22 @@
     }
   }
 
+  /* Le chevron : seul indice qu'il s'agit d'un menu une fois l'étiquette
+     retirée. Il s'anime au survol pour le confirmer. */
   &__chev {
     position: absolute;
-    right: var(--sp-4);
+    right: var(--sp-3);
     pointer-events: none;
-    font-size: 0.7em;
+    font-size: 0.62em;
     color: var(--c-text-mute);
+    transition:
+      color var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+
+  &__selwrap:hover &__chev,
+  &:hover &__chev {
+    color: var(--c-text);
+    transform: translateY(1px);
   }
 }
