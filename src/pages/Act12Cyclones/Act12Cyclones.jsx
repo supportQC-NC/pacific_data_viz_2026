@@ -134,11 +134,20 @@ function mixRgb(a, b, t) {
 
 /* ---------- Panneau « Source & portée » (onglet provenance) ---------- */
 function ProvenancePanel({ t }) {
+  // LES LIENS DOIVENT POINTER VERS LE JEU RÉELLEMENT CHARGÉ.
+  // Ils menaient à data.gouv.nc et à la fiche Géorep, c'est-à-dire à la base
+  // Météo-France Nouvelle-Calédonie — celle qui a été ÉCARTÉE parce que sa
+  // licence CC BY-NC-ND ne satisfait pas l'exigence de données ouvertes du
+  // concours. Cette vue est celle que le jury lit pour vérifier la source :
+  // elle doit déclarer IBTrACS, et rien d'autre.
   const links = [
-    { href: "https://data.gouv.nc/", label: t("act12.source.link_datagouv") },
     {
-      href: "https://georep-dtsi-sgt.opendata.arcgis.com/maps/63e27e6671324498838e4944035a3cc0/about",
-      label: t("act12.source.link_georep"),
+      href: "https://www.ncei.noaa.gov/products/international-best-track-archive",
+      label: t("act12.source.link_ibtracs"),
+    },
+    {
+      href: "https://doi.org/10.1002/joc.2412",
+      label: t("act12.source.link_speartc"),
     },
   ];
   return (
@@ -153,6 +162,13 @@ function ProvenancePanel({ t }) {
           <dt>{t("act12.source.license_label")}</dt>
           <dd>{t("act12.source.license")}</dd>
         </div>
+        {/* Le stade n'existe pas dans IBTrACS : nous le dérivons du vent.
+            Une transformation que nous appliquons doit se déclarer ici, au
+            même titre que le producteur et la licence. */}
+        <div className="act12-src__row">
+          <dt>{t("act12.source.derived_label")}</dt>
+          <dd>{t("act12.source.derived")}</dd>
+        </div>
       </dl>
       <p className="act12-src__genealogy">{t("act12.source.genealogy")}</p>
       <div className="act12-src__scope">
@@ -160,9 +176,15 @@ function ProvenancePanel({ t }) {
           {t("act12.source.scope_title")}
         </h4>
         <ul className="act12-src__scope-list">
-          <li>{t("act12.source.scope_nc")}</li>
-          <li>{t("act12.source.scope_swp")}</li>
-          <li>{t("act12.source.scope_wf")}</li>
+          {/* Les trois puces listaient les trois domaines d'alerte de la base
+              Météo-France (Nouvelle-Calédonie, bassin Pacifique sud-ouest,
+              Wallis-et-Futuna). Notre sélection n'en retient qu'UN : vérifié,
+              211 des 212 trajectoires traversent la seule zone d'alerte
+              néo-calédonienne. Annoncer trois domaines faisait paraître la
+              fenêtre bien plus large qu'elle n'est. */}
+          <li>{t("act12.source.scope_zone")}</li>
+          <li>{t("act12.source.scope_track")}</li>
+          <li>{t("act12.source.scope_start")}</li>
         </ul>
         <p className="act12-src__note">{t("act12.source.scope_note")}</p>
       </div>
@@ -363,7 +385,30 @@ export default function Act12Cyclones() {
         ? Math.round(win.reduce((a, b) => a + b, 0) / win.length)
         : null;
     });
-    return { seasons, share, roll };
+
+    // LES DEUX COMPTEURS, EXPOSÉS.
+    //
+    // Ils étaient déjà calculés ci-dessus (`e.n`, `e.intense`) puis jetés :
+    // seule la PART sortait d'ici, et c'est elle que traçait la vue. Or la
+    // part est ici trompeuse, et vérifiable :
+    //   • sévères (≥ 64 kt) : 2,00 · 2,00 · 2,13 · 1,88 · 2,00 · 2,29 par
+    //     saison sur six blocs de huit saisons — pente OLS +0,01/décennie ;
+    //   • faibles : 2,88 · 3,38 · 2,75 · 1,75 · 1,50 · 2,57 — un creux entre
+    //     2001 et 2016, déjà revenu.
+    // La part monte donc SANS que le numérateur bouge. Et elle est instable
+    // par construction : 15 saisons sur 47 comptent 3 systèmes ou moins,
+    // 8 en comptent 2 ou moins — où elle ne peut valoir que 0, 50 ou 100 %.
+    // Un compte ne souffre d'aucun de ces deux défauts.
+    const sev = seasons.map((s) => (m.get(s) ? m.get(s).intense : 0));
+    const weak = seasons.map((s) => (m.get(s) ? m.get(s).n - m.get(s).intense : 0));
+    const roll5 = (arr) =>
+      arr.map((_, i) => {
+        const win = [];
+        for (let k = Math.max(0, i - 4); k <= i; k += 1) win.push(arr[k]);
+        return win.reduce((a, b) => a + b, 0) / win.length;
+      });
+
+    return { seasons, share, roll, sev, weak, sevRoll: roll5(sev), weakRoll: roll5(weak) };
   }, [cyclones, seasons]);
 
   // ---- Calendrier d'activité : genèse par MOIS × DÉCENNIE (heatmap) ----
@@ -778,34 +823,43 @@ export default function Act12Cyclones() {
     const sea = intensify.seasons;
     return {
       chart: baseChart(tk, { type: "line" }),
+      // DEUX COMPTES, UN SEUL AXE.
+      // Les deux séries partagent l'unité « systèmes par saison », donc un
+      // seul axe suffit — pas de double échelle (règle du projet). Le point
+      // fin porte la saison réelle, la ligne épaisse sa moyenne glissante
+      // sur cinq saisons : c'est la grammaire déjà employée par la vue.
       series: [
         {
-          name: t("act12.viz.intensify_raw"),
+          name: t("act12.viz.intensify_sev_raw"),
           type: "scatter",
-          data: sea.map((s, i) => ({ x: s, y: intensify.share[i] })),
+          data: sea.map((s, i) => ({ x: s, y: intensify.sev[i] })),
         },
         {
-          name: t("act12.viz.intensify_trend"),
-          type: "area",
-          data: sea.map((s, i) => ({ x: s, y: intensify.roll[i] })),
+          name: t("act12.viz.intensify_sev"),
+          type: "line",
+          data: sea.map((s, i) => ({ x: s, y: intensify.sevRoll[i] })),
+        },
+        {
+          name: t("act12.viz.intensify_weak_raw"),
+          type: "scatter",
+          data: sea.map((s, i) => ({ x: s, y: intensify.weak[i] })),
+        },
+        {
+          name: t("act12.viz.intensify_weak"),
+          type: "line",
+          data: sea.map((s, i) => ({ x: s, y: intensify.weakRoll[i] })),
         },
       ],
-      // La courbe de tendance passe de `tk.warm` — un jeton d'INTERFACE, employé
-      // ailleurs pour des états — à l'accent du système, celui que portent les
-      // courbes de référence des autres escales.
-      colors: [tk.textMute, tk.accent],
-      stroke: { width: [0, 3.5], curve: "smooth" },
+      // Sévères sur l'accent du système, faibles en encre neutre : la couleur
+      // sépare deux ENTITÉS (deux catégories de systèmes), elle ne gradue
+      // rien — d'où `swatch: "none"` dans la clé de lecture.
+      colors: [tk.accent, tk.accent, tk.textMute, tk.textMute],
+      stroke: { width: [0, 3.5, 0, 2.5], curve: "smooth", dashArray: [0, 0, 0, 4] },
       fill: {
-        type: ["solid", "gradient"],
-        opacity: [0.5, 0.25],
-        gradient: {
-          shadeIntensity: 0.5,
-          opacityFrom: 0.34,
-          opacityTo: 0.02,
-          stops: [0, 100],
-        },
+        type: "solid",
+        opacity: [0.55, 1, 0.4, 1],
       },
-      markers: { size: [3.5, 0], strokeWidth: 0, hover: { size: 5 } },
+      markers: { size: [3.5, 0, 3.5, 0], strokeWidth: 0, hover: { size: 5 } },
       dataLabels: { enabled: false },
       legend: {
         show: true,
@@ -828,22 +882,26 @@ export default function Act12Cyclones() {
       }),
       yaxis: baseYaxis(tk, {
         min: 0,
-        max: 100,
-        tickAmount: 5,
+        tickAmount: 4,
         labels: {
-          formatter: (v) => `${Math.round(v)} %`,
+          formatter: (v) => `${Math.round(v)}`,
           style: { colors: tk.textMute, fontFamily: MONO, fontSize: "11px" },
         },
       }),
-      // Repère « 50 % » : seuil où la majorité des cyclones atteignent CT+.
+      // Repère : la moyenne de systèmes SÉVÈRES par saison sur toute la
+      // période. Elle vaut ~2 et la ligne épaisse ne s'en écarte jamais
+      // durablement — c'est le fait que la vue démontre. Calculée, jamais
+      // écrite en dur.
       annotations: {
         yaxis: [
           {
-            y: 50,
+            y:
+              intensify.sev.reduce((a, b) => a + b, 0) /
+              (intensify.sev.length || 1),
             strokeDashArray: 3,
             borderColor: tk.lineStrong,
             label: {
-              text: "50 %",
+              text: t("act12.viz.intensify_mean"),
               position: "left",
               borderWidth: 0,
               style: {
@@ -859,7 +917,12 @@ export default function Act12Cyclones() {
       tooltip: {
         shared: true,
         intersect: false,
-        y: { formatter: (v) => (v == null ? "—" : `${Math.round(v)} %`) },
+        // Les points bruts sont des entiers, les glissantes des décimales :
+        // arrondir les deux pareil ferait mentir la moyenne (« 2 » pour 2,29).
+        y: {
+          formatter: (v) =>
+            v == null ? "—" : Number.isInteger(v) ? String(v) : v.toFixed(1),
+        },
       },
     };
   }, [intensify, tk, t]);
@@ -1161,11 +1224,7 @@ export default function Act12Cyclones() {
                 "Systems per season, with the rolling mean that gives the trend.",
               ),
               x: tx("act12.key.season_x", "Les saisons, de 1977 à 2024. Une saison court de juillet à juin.", "Seasons, 1977 to 2024. A season runs July to June."),
-              color: tx(
-                "act12.key.trend_c",
-                "Les barres portent le compte brut ; la courbe, la tendance. Deux lectures d'une même donnée, pas deux mesures.",
-                "Bars carry the raw count; the line carries the trend. Two readings of one measure, not two measures.",
-              ),
+              color: t("act12.key.intensify_c"),
               note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
               swatch: "none",
             },
@@ -1204,6 +1263,11 @@ export default function Act12Cyclones() {
               "One colour per stage of the official scale, the same as on the map: calmest to most intense.",
             ),
               note: tx("act12.key.note", SOURCE_FR, SOURCE_EN),
+              // Neuf systèmes n'ont pas de pression relevée : le service les
+              // met à null (cycloneApi.js:200) et le nuage les écarte. Une vue
+              // dont l'argument est « les deux mesures se contrôlent » doit
+              // dire lesquelles ne peuvent pas l'être.
+              caveat: t("act12.key.wp_caveat"),
               swatch: "none",
             },
             hint: tx(

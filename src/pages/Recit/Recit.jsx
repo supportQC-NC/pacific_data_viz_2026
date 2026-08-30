@@ -126,7 +126,14 @@ export default function Recit() {
           key={act.id}
           kicker={`${copy.legWord} ${String(index + 1).padStart(2, "0")}`}
           title={t(`home.acts.${act.id}_title`)}
-          subtitle={t(`home.acts.${act.id}_text`)}
+          // Texte NARRATIF de la traversée (`_cross`), avec repli sur la
+          // description de catalogue (`_text`) si elle n'est pas écrite.
+          // `t()` renvoie le chemin quand la clé manque : on compare.
+          subtitle={
+            t(`home.acts.${act.id}_cross`) === `home.acts.${act.id}_cross`
+              ? t(`home.acts.${act.id}_text`)
+              : t(`home.acts.${act.id}_cross`)
+          }
           accent={ACCENT}
           enterLabel={copy.enter}
           scene={legScene}

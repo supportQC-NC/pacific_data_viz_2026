@@ -70,7 +70,13 @@ export default function ActBoard({
   // Résolution de l'acte courant via la route → numéro, total, voisins.
   const here = byPath(pathname);
   const num = here ? String(here.number).padStart(2, "0") : null;
-  const actName = here ? t(`home.acts.${here.id}_name`) : "";
+  // Même piège que dans ActFlow : `t()` renvoie le CHEMIN quand la clé
+  // manque, donc `actName ?` était toujours vrai et l'intro plein écran
+  // affichait « Escale 01 — home.acts.a1_name » sur les huit escales
+  // dépourvues de `_name`.
+  const nameKey = here ? `home.acts.${here.id}_name` : null;
+  const nameVal = nameKey ? t(nameKey) : "";
+  const actName = nameVal && nameVal !== nameKey ? nameVal : "";
 
   // Eyebrow « Acte 03 — Nom » dérivé du parcours ; repli sur la prop.
   // (Utilisé uniquement par l'intro plein écran, étape 0.)

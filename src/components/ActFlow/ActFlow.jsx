@@ -99,9 +99,29 @@ export default function ActFlow({ actId, children }) {
 
   const num = String(index + 1).padStart(2, "0");
 
-  // Tag composé : « Acte 03 » (+ éventuel nom court de l'acte, ex. « — L'assiette »).
-  const actName = t(`home.acts.${actId}_name`);
+  // Tag composé : « Escale 03 » (+ éventuel nom court, ex. « — L'assiette »).
+  //
+  // ⚠️ `t()` RENVOIE LE CHEMIN quand la clé est absente — jamais une chaîne
+  // vide. Un simple `actName ? …` était donc TOUJOURS vrai, et les huit
+  // escales sans `_name` (a1, a2, a8, a3, a10, a4, a5, a9) affichaient
+  // « Escale 01 — home.acts.a1_name » sur l'écran de traversée. On compare
+  // donc au chemin demandé avant d'utiliser la valeur.
+  const nameKey = `home.acts.${actId}_name`;
+  const nameVal = t(nameKey);
+  const actName = nameVal === nameKey ? "" : nameVal;
   const tag = `${t("flow.act")} ${num}${actName ? ` — ${actName}` : ""}`;
+
+  // SOUS-TITRE DE LA TRAVERSÉE.
+  // `_cross` est le texte NARRATIF de la traversée : il prolonge ce qu'on
+  // vient de comprendre et ouvre la question de l'escale qu'on rejoint.
+  // `_text` reste la description de CATALOGUE (rendue par /actes et le
+  // PresentationDeck) : elle dit ce que l'escale contient, ce qui est un
+  // autre métier. On garde donc les deux, et on retombe sur `_text` si une
+  // traversée n'est pas encore écrite — même garde que ci-dessus, `t()`
+  // renvoyant le chemin quand la clé manque.
+  const crossKey = `home.acts.${actId}_cross`;
+  const crossVal = t(crossKey);
+  const subtitle = crossVal === crossKey ? t(`home.acts.${actId}_text`) : crossVal;
 
   return (
     <div className="actflow" ref={rootRef}>
@@ -120,7 +140,7 @@ export default function ActFlow({ actId, children }) {
           key={actId}
           kicker={`${tag} · ${t("flow.step")} ${num} / ${total}`}
           title={t(`home.acts.${actId}_title`)}
-          subtitle={t(`home.acts.${actId}_text`)}
+          subtitle={subtitle}
           accent={ACCENT}
           enterLabel={t("flow.reveal")}
           scene={LAND_MOVEMENTS.has(movementId) ? "land" : "sea"}

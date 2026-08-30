@@ -12,6 +12,15 @@ const EXTRA_STRINGS = {
     // dans la légende, et la table des couleurs, indexée par le nom, n'en
     // retenait qu'une.
     act10: {
+      outro: {
+        // a10 est l'escale 08.
+        kicker: "Fin de l'escale 08",
+        next: "Escale suivante : l'impact",
+      },
+      hint: {
+        multiples:
+          "Chaque vignette a sa propre échelle : comparez les formes, pas les hauteurs.",
+      },
       // La vue « Tendance » croise désormais les deux mesures : son titre et
       // ses phrases parlaient encore de la seule mesure sélectionnée.
       regional_water_title: "Les deux mesures, ramenées à leur point de départ",
@@ -33,12 +42,71 @@ const EXTRA_STRINGS = {
     },
     act9: {
       tag: "Escale 11",
+      // PASSE CORRECTIVE — cf. audit éditorial.
+      // Le kicker d'outro portait « Fin de l'acte 09 » : le numéro suivait
+      // l'IDENTIFIANT (a9), pas l'ordre du voyage. a9 est l'escale 11.
+      outro: {
+        kicker: "Fin de l'escale 11",
+        next: "Escale suivante : la synthèse",
+      },
+      // SmallMultiples met CHAQUE vignette à l'échelle de ses propres
+      // extrêmes (min/max calculés par cellule, SmallMultiples.jsx:167).
+      // L'indice promettait une échelle commune : il invitait à comparer
+      // des hauteurs qui ne sont pas comparables. Le `finding` de cette vue
+      // disait déjà le contraire sur le même écran.
+      hint: {
+        multiples:
+          "Chaque vignette a sa propre échelle : comparez les formes, pas les hauteurs.",
+      },
     },
     act7: {
       tag: "Escale 06 — Le vivant",
+      outro: {
+        kicker: "Fin de l'escale 06",
+        next: "Escale suivante : le territoire",
+      },
+      hint: {
+        multiples:
+          "Chaque vignette a sa propre échelle : comparez les formes, pas les hauteurs.",
+      },
+      board: {
+        // La carte de cette vue est peinte en `ramp="magnitude"` — la
+        // séquentielle lavande (Act7Vivant.jsx:714). La légende promettait
+        // du vert, et « préservé » portait un jugement que l'indice ne
+        // porte pas : l'Indice Liste Rouge estime un risque d'extinction.
+        map_find:
+          "La géographie de l'indicateur pour la dernière année. La teinte va du clair au foncé : foncé = indice élevé, soit un risque d'extinction estimé plus faible.",
+      },
     },
     act6: {
       tag: "Escale 05 — L'assiette",
+      outro: {
+        kicker: "Fin de l'escale 05",
+        next: "Escale suivante : le vivant",
+      },
+      hint: {
+        multiples:
+          "Chaque vignette a sa propre échelle : comparez les formes, pas les hauteurs.",
+      },
+    },
+    // Nouveaux espaces de noms : ils n'existaient pas dans cette couche.
+    // ⚠️ Ne jamais en ajouter un SECOND plus bas dans le même objet `fr` —
+    // la dernière occurrence écraserait silencieusement celle-ci.
+    act2: {
+      outro: {
+        kicker: "Fin de l'escale 02",
+        // Renvoyait « à l'acte 8 » : a8 est l'escale 03.
+        text:
+          "Oscillation d'un côté, tendance de l'autre : l'écart à la normale n'a plus de secret. Le ciel raconte la suite — pluies et températures face à leurs normales, à l'escale 03.",
+        next: "Escale suivante : le ciel",
+      },
+    },
+    act4: {
+      outro: {
+        // a4 est l'escale 09, pas l'acte 04.
+        kicker: "Fin de l'escale 09",
+        next: "Escale suivante : l'élan",
+      },
     },
     about: {
       data: {
@@ -52,6 +120,11 @@ const EXTRA_STRINGS = {
     },
     header: { nav_recit: "Le Récit" },
     act5: {
+      outro: {
+        // a5 est l'escale 10.
+        kicker: "Fin de l'escale 10",
+        next: "Escale suivante : l'économie",
+      },
       board: {
         // La carte est sur la rampe SÉQUENTIELLE lavande depuis la refonte ;
         // la phrase promettait encore du vert. Et « plus vertueux » portait un
@@ -62,6 +135,12 @@ const EXTRA_STRINGS = {
       },
     },
     act3: {
+      outro: {
+        // Portait « Fin de l'acte 06 » — faux même comme identifiant : a3 est
+        // l'escale 07. Deux escales voisines annonçaient le même numéro.
+        kicker: "Fin de l'escale 07",
+        next: "Escale suivante : l'eau et la santé",
+      },
       board: {
         // La carte satellite passait par la rampe « semantic » (vert → cyan →
         // rouge), écartée pour cause de daltonisme ; elle est maintenant sur
@@ -93,6 +172,32 @@ const EXTRA_STRINGS = {
     //      qui est tracé.
     // ------------------------------------------------------------------
     act1: {
+      // ============================================================
+      // ESCALE 01 — refonte éditoriale.
+      // Chiffres recalculés depuis l'indicateur EN.GHG.ALL.PC.CE.AR5
+      // (Banque mondiale), celui-là même que l'app lit via le PDH — relu
+      // ici par World Bank Data360, le PDH étant en panne (cf.
+      // scripts/analyse_e01.mjs). Tout est arrondi à UNE décimale, la
+      // précision réellement publiée et affichée.
+      // ============================================================
+
+      // « du simple au décuple » = ×10. La série 2024 court de 0,1 à 86,7 :
+      // c'est un rapport de plus de huit cents, et de cent contre la médiane.
+      // L'écart n'était pas sous-estimé de peu, il l'était d'un ordre de
+      // grandeur — dans la phrase d'ouverture de l'escale.
+      thesis:
+        "Dans le Pacifique, l'empreinte par habitant va de 0,1 à 86,7 tonnes selon le territoire — un rapport de plus de huit cents. Presque tout cet écart s'explique par le dénominateur, et cette escale montre comment le lire.",
+      outro: {
+        // Numéro déjà juste (a1 = escale 01), mais le vocabulaire « acte »
+        // subsistait dans les trois chaînes de sortie.
+        kicker: "Fin de l'escale 01",
+        title: "Un niveau bas, pas une pente",
+        // « légère, et tenue dans la durée » laissait entendre une baisse
+        // générale. Onze territoires sur dix-sept ont augmenté depuis 1970.
+        text:
+          "Le Pacifique émet peu — la médiane régionale tient sous une tonne par habitant. Mais onze territoires sur dix-sept émettent plus qu'en 1970 : c'est un niveau bas, pas une pente descendante. Reste à voir ce que l'océan, lui, enregistre déjà.",
+        next: "Escale suivante : l'océan",
+      },
       viz: {
         plume_title: "L'empreinte, territoire par territoire",
         plume_find:
@@ -120,6 +225,29 @@ const EXTRA_STRINGS = {
       },
 
       board: {
+        // FAUX : sur dix-sept territoires, six seulement ont baissé depuis
+        // 1970, et trois seulement conjuguent niveau bas ET baisse. Le
+        // quadrant bas-gauche est le MOINS peuplé, pas le plus. La phrase
+        // renvoyait en outre à « l'acte 5 » pour l'escale 10.
+        scatter_take:
+          "Le quadrant bas-gauche — peu émettre et baisser encore — ne compte que trois territoires sur dix-sept. Onze ont augmenté depuis 1970. La sobriété du Pacifique est un niveau de départ, pas une trajectoire descendante : c'est ce qui la rend fragile.",
+
+        // Le plus gros émetteur de la région est aussi celui qui a le plus
+        // reculé : 190,6 t/hab. en 1970, 86,7 en 2024. Le dire change le sens
+        // du pic — il n'est pas une dérive en cours.
+        rank_take:
+          "Deux territoires se détachent loin à droite. Le premier, Palau, émettait 190,6 tonnes par habitant en 1970 ; il en émet 86,7 aujourd'hui, soit plus de deux fois moins. Un ratio par habitant se lit d'abord par son dénominateur : une population de vingt mille personnes suffit à propulser le résultat sans que la région autour ait bougé.",
+
+        // La stabilité était affirmée sans être chiffrée. Elle l'est
+        // maintenant : de 1990 à 2024, le déplacement médian au classement
+        // est de zéro place, et deux territoires seulement changent de moitié.
+        heat_take:
+          "D'une année à l'autre, les lignes gardent leur teinte. Entre 1990 et aujourd'hui, le déplacement médian au classement est de zéro place, et deux territoires sur dix-sept seulement changent de moitié de tableau. Un demi-siècle de données, et presque aucun changement de camp.",
+
+        // « une avance » supposait une baisse générale. Onze territoires sur
+        // dix-sept ont augmenté : l'avance est un point de départ, pas un élan.
+        change_take:
+          "Onze territoires sur dix-sept émettent plus qu'en 1970, six moins. Tonga a triplé, la Polynésie française et les Samoa ont plus que doublé — depuis des niveaux qui restent, en valeur absolue, parmi les plus bas du monde.",
         race_find:
           "Le classement rejoué en accéléré, une image par année, de la première donnée à la dernière. Chaque barre est un territoire ; elle s'allonge quand il émet plus, et les barres se doublent quand l'ordre change.",
         race_take:
@@ -127,8 +255,6 @@ const EXTRA_STRINGS = {
 
         rank_find:
           "Un point par territoire, pour la seule année posée sur le curseur : sa position sur l'axe est ce qu'il émet par personne cette année-là. Le pointillé marque la médiane — la moitié des territoires est à sa gauche.",
-        rank_take:
-          "Deux territoires se détachent tout à droite. Ce chiffre est un rapport : une population minuscule au dénominateur, ou une industrie lourde au numérateur, suffit à le faire monter — sans que la région autour ait changé. Tout le reste du Pacifique se resserre dans la moitié gauche.",
 
         trend_find:
           "Une courbe par territoire, une année par point, de la première donnée à la dernière. La hauteur de la courbe, c'est ce que le territoire émet par habitant cette année-là. Le menu au-dessus du graphique permet de n'en garder qu'une.",
@@ -141,8 +267,6 @@ const EXTRA_STRINGS = {
 
         scatter_find:
           "Un point par territoire. Sa position de gauche à droite, c'est ce qu'il émet aujourd'hui par habitant ; sa position de bas en haut, de combien cela a changé depuis sa première année. En bas à gauche se rassemblent ceux qui émettent peu et baissent encore.",
-        scatter_take:
-          "Le quadrant bas-gauche est le plus peuplé : émettre peu, et continuer à baisser. C'est un point de départ favorable pour l'escale consacrée à l'élan renouvelable.",
 
         denom_find:
           "Un point par territoire. De gauche à droite, son niveau habituel sur la période ; de bas en haut, à quel point sa courbe saute d'une année à l'autre — 0 % pour une série parfaitement régulière, 100 % pour une série qui varie autant que sa moyenne.",
@@ -151,8 +275,6 @@ const EXTRA_STRINGS = {
 
         heat_find:
           "Une ligne par territoire, une colonne par année, une case par valeur. La couleur de la case donne la position du territoire cette année-là : claire quand il est parmi les plus sobres, sombre quand il est parmi les plus émetteurs.",
-        heat_take:
-          "Les lignes gardent la même teinte de gauche à droite : sur un demi-siècle, presque aucun territoire ne change de camp. C'est la stabilité que cette vue donne à voir.",
 
         map_find:
           "Une colonne plantée sur chaque territoire. Plus elle est haute et claire, plus ce territoire émet par habitant l'année choisie. Le globe tourne à la souris, et le lecteur d'années se trouve en bas.",
@@ -217,20 +339,21 @@ const EXTRA_STRINGS = {
           "Avant le verdict, retraçons le chemin parcouru — chaque escale, une pièce du puzzle climatique du Pacifique.",
         resp_k: "Escale 01 · La responsabilité",
         ocean_k: "Escale 02 · L'océan",
-      },
-      story: {
         // La matrice passe du vert↔rouge à la divergente validée : la phrase
         // qui disait « le rouge s'accumule » nommait une couleur qui n'est
         // plus à l'écran.
+        // ⚠️ Était dans un SECOND objet `story`, qui écrasait le premier :
+        // `voyage_title`, `voyage_text`, `resp_k` et `ocean_k` ci-dessus
+        // n'atteignaient jamais l'écran. Les deux objets sont fusionnés.
         matrix_text:
           "Territoires en lignes, stress en colonnes. Les cases chaudes s'accumulent : ce n'est pas un risque isolé, c'est leur addition.",
       },
-      // La thèse promettait une lecture « que vous pouvez explorer ET
-      // PONDÉRER vous-même ». Le studio de pondération est retiré de la
-      // synthèse : la promesse ne tient plus, et une promesse non tenue en
-      // ouverture d'un dernier acte est pire qu'une promesse plus modeste.
-      thesis:
-        "Onze actes pour une même idée, et une note d'espoir : les territoires du Pacifique émettent très peu de CO₂ par habitant, encaissent beaucoup — mais gardent des marges de manœuvre réelles. Ce dernier acte rassemble les preuves en une lecture claire, relative au Pacifique, que vous pouvez parcourir scène après scène.",
+      // NOTE — un SECOND `thesis` se trouvait ici et écrasait celui du haut.
+      // Les deux textes portaient déjà la même correction de fond (le studio
+      // de pondération est retiré de la synthèse, donc la thèse ne promet
+      // plus de « pondérer vous-même ») ; ils ne différaient que par le
+      // vocabulaire acte/escale. Le doublon est supprimé, la version
+      // « escale » conservée — c'est elle qui était voulue.
       outro: {
         // La sortie promettait elle aussi de vous « laisser ajuster ce qui
         // compte le plus ». Ce que l'indice fait vraiment, désormais, c'est
@@ -303,6 +426,94 @@ const EXTRA_STRINGS = {
         browse: "Parcourir les escales",
       },
       acts: {
+        // ============================================================
+        // LES TRAVERSÉES — `_cross`
+        // ------------------------------------------------------------
+        // Affiché sous la question, sur l'écran de la pirogue (ActFlow et
+        // Recit). C'est le SEUL emplacement purement narratif du produit.
+        //
+        // Pourquoi une clé neuve plutôt que réécrire `_text` : `_text` a
+        // quatre consommateurs, dont /actes, un CATALOGUE où le texte sert
+        // à choisir une escale. Une respiration de traversée n'y ferait
+        // pas ce travail. Deux métiers, deux chaînes.
+        //
+        // Règles tenues ici :
+        //   • La traversée appartient à l'escale où l'on ARRIVE.
+        //   • Elle ne montre aucun graphique : elle ne démontre rien, elle
+        //     prolonge ce qu'on vient de comprendre et ouvre la question
+        //     suivante.
+        //   • Elle ne décrit jamais l'animation (pirogue, étoiles, aube) —
+        //     l'écran le fait déjà.
+        //   • Longueurs volontairement inégales : 15 à 30 mots.
+        // ============================================================
+
+        // → 01. Entrée du voyage. La Home vient de dire « nos ancêtres
+        // lisaient les étoiles, nous lisons les données » : on pose le
+        // contrat, se compter soi-même avant de compter ce qui arrive.
+        a1_cross:
+          "Avant de regarder ce qui arrive, savoir ce qu'on pèse. Cinquante ans de mesures pour un seul chiffre par personne.",
+
+        // 01 → 02. Reprend la conclusion de 01 (empreinte légère, tenue) et
+        // en tire la conséquence : ce qui arrive vient d'ailleurs.
+        a2_cross:
+          "Presque rien émis, donc. Ce qui arrive vient d'ailleurs — et le premier endroit où ça se lit, c'est l'eau.",
+
+        // 02 → 03. 02 a montré que l'écart cesse d'osciller au milieu des
+        // années 1990. « avec quoi on le saurait » plante le réseau de
+        // stations, qui est le vrai sujet de 03.
+        // ⚠️ L'escale 03 est l'acte `a8`, pas `a3` — l'ordre du voyage n'est
+        // pas celui des identifiants (cf. JOURNEY).
+        a8_cross:
+          "La mer a changé de régime. Reste à savoir si le ciel au-dessus a suivi — et avec quoi on le saurait.",
+
+        // 03 → 04. Annonce FRANCHEMENT le changement d'échelle au lieu de
+        // l'excuser après coup dans la thèse : 04 est une fenêtre.
+        a12_cross:
+          "La dérive cesse d'être une courbe. Quarante-sept saisons de tempêtes, vues par une seule fenêtre : celle de la Nouvelle-Calédonie.",
+
+        // 04 → 05. La rupture la plus brutale du voyage (150 nœuds → kg/ha).
+        // Le lien est temporel et humain, jamais causal.
+        a6_cross:
+          "Entre deux saisons cycloniques, il faut manger. Ce que la terre rend se mesure aussi.",
+
+        // 05 → 06. De ce qu'on cultive à ce qui pousse sans nous. « ce qu'on
+        // décide » prépare les deux indicateurs de nature opposée de 06.
+        a7_cross:
+          "Ça, c'est ce qu'on cultive. Reste tout ce qui pousse et vit sans nous — et ce qu'on décide d'en protéger.",
+
+        // 06 → 07. Atterrage (la pirogue accoste au mouvement m4).
+        // « village par village » prépare la phrase du littoral de 07 :
+        // une médiane rassurante peut cacher une plage qui disparaît.
+        a3_cross:
+          "Ces décisions se prennent quelque part. Reste à voir où la mer et les gens se rencontrent vraiment — village par village.",
+
+        // 07 → 08. Descente d'échelle : du territoire au foyer.
+        a10_cross:
+          "Quand le rivage bouge, ce qui devient fragile ne se voit pas depuis la côte. On entre dans les maisons : l'eau, d'abord.",
+
+        // 08 → 09. Le graduel cède au soudain. « portent un nom » est le pont
+        // vers Winston et Pam, dont 04 a montré le vent et la pression.
+        a4_cross:
+          "Tout cela se dégrade lentement, ou s'améliore lentement. Certaines choses, non : elles arrivent en une nuit et portent un nom.",
+
+        // 09 → 10. Bascule vers le mouvement « riposte » : on quitte ce qu'on
+        // subit pour ce qu'on change.
+        a5_cross:
+          "La facture est connue, même imparfaitement. Ce qui suit n'est plus ce qu'on subit, mais ce qu'on change.",
+
+        // 10 → 11. Emporte la découverte de 10 (la part renouvelable respire
+        // au rythme des pluies, l'hydro dépend du ciel de l'escale 03).
+        a9_cross:
+          "Une part qui dépend encore de la pluie. Changer coûte — reste à savoir avec quel argent.",
+
+        // 11 → 12. LE SEUL rappel des étoiles de tout le voyage, placé à la
+        // douzième traversée pour être mérité : il referme la promesse de la
+        // Home. L'analogie est exacte, pas décorative — un compas stellaire
+        // se tient en croisant plusieurs astres, la synthèse en croisant
+        // plusieurs mesures.
+        a11_cross:
+          "Onze relevés, onze instruments. Nos ancêtres croisaient plusieurs étoiles pour tenir un cap. On va croiser onze mesures.",
+
         a1_text:
           "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cette escale la mesure territoire par territoire — le socle du récit.",
         a2_text:
@@ -557,15 +768,149 @@ const EXTRA_STRINGS = {
           "La matrice distingue d'un coup d'œil ce qui oscille de ce qui s'installe — bleu sous la normale, ambre au-dessus.",
       },
       map_sub: "Anomalie par territoire — bleu sous la référence, ambre au-dessus",
+      outro: {
+        // a8 est l'escale 03.
+        kicker: "Fin de l'escale 03",
+        next: "Escale suivante : les cyclones",
+      },
+      hint: {
+        multiples:
+          "Chaque vignette a sa propre échelle : comparez les formes, pas les hauteurs.",
+      },
     },
     act12: {
+      // ============================================================
+      // ESCALE 04 — refonte éditoriale.
+      // Chaque affirmation ci-dessous est adossée à une valeur recalculée
+      // depuis public/data/cyclones/ (cf. scripts/analyse_e04*.mjs).
+      // Le fait central : sur six blocs de huit saisons, le nombre de
+      // systèmes SÉVÈRES (≥ 64 kt) vaut 2,00 · 2,00 · 2,13 · 1,88 · 2,00 ·
+      // 2,29 par saison. Il ne bouge pas. Ce qui bouge, c'est le décompte
+      // des systèmes faibles — et c'est lui qui fait monter la « part ».
+      // ============================================================
       viz: {
         month_find:
           "Genèse des cyclones par mois (saison australe, juillet → juin, en lignes) et par tranche d'années (en colonnes). Plus une case est marquée, plus de cyclones s'y sont formés. Le cœur de saison se concentre de décembre à avril.",
+        month_take:
+          "Quatre systèmes sur cinq naissent entre décembre et mars, et le mois médian de formation est février — avant 2000 comme depuis. La saison ne s'est ni allongée ni déplacée : elle est restée à sa place pendant que le reste changeait.",
+
+        // --- LA VUE PIVOT -----------------------------------------
+        // L'ancien titre — « L'intensité grimpe, pas la fréquence » —
+        // annonçait une conclusion que le fichier ne porte pas, et que le
+        // graphique ne pouvait pas montrer puisqu'il ne traçait qu'un
+        // ratio. Le titre pose désormais la question que la vue tranche.
+        intensify_title: "Deux par saison, depuis quarante-sept ans",
+        intensify_find:
+          "Deux comptes sur un même axe : les systèmes ayant atteint le stade « cyclone tropical » ou plus (64 nœuds), et ceux restés en dessous. Le point donne la saison réelle, la ligne sa moyenne sur cinq saisons. Le pointillé marque la moyenne des sévères sur toute la période.",
+        intensify_take:
+          "La ligne des sévères ne quitte jamais durablement son pointillé : environ deux par saison en 1977 comme en 2023. C'est celle des faibles qui creuse au début des années 2000, puis remonte. La « part de cyclones violents » monte donc sans qu'un seul cyclone violent de plus soit apparu — elle monte parce que son dénominateur a baissé.",
+
+        // Noms de séries : ils disent l'entité, pas le calcul.
+        intensify_sev: "sévères · moyenne 5 saisons",
+        intensify_sev_raw: "sévères · saison",
+        intensify_weak: "faibles · moyenne 5 saisons",
+        intensify_weak_raw: "faibles · saison",
+        intensify_mean: "moyenne des sévères",
+
+        // --- SAISONS ----------------------------------------------
+        season_title: "Combien par saison, et à quel point ça varie",
+        season_find:
+          "Le nombre de systèmes entrés dans la zone d'alerte, saison par saison. De 1 à 8 selon les années, 4,5 en moyenne.",
+        season_take:
+          "L'écart d'une saison à l'autre est énorme et ne dessine aucune tendance. Quinze saisons sur quarante-sept comptent trois systèmes ou moins ; huit en comptent deux ou moins, où un pourcentage ne peut valoir que 0, 50 ou 100 %. C'est pourquoi cette escale compte plutôt qu'elle ne rapporte.",
+
+        // --- STADES -----------------------------------------------
+        bystage_find:
+          "Combien de trajectoires ont atteint chaque stade, du plus faible au plus violent. Le stade est déduit du vent maximal relevé : 64 nœuds ouvrent le stade « cyclone tropical », 116 le stade « très intense ».",
+        stage_take:
+          "Quatre-vingt-quinze systèmes sur deux cent douze ont atteint le stade de cyclone tropical, vingt le stade le plus haut. Ces vingt-là ne se répartissent pas régulièrement : Winston et Pam, les deux plus violents de toute la série, sont séparés de treize mois.",
+
+        // --- SIGNATURE VENT–PRESSION ------------------------------
+        windpress_take:
+          "Les deux mesures s'accordent presque parfaitement : la corrélation vaut −0,97 sur les deux cent trois systèmes qui portent les deux valeurs. C'est ce qui rend la série fiable — et c'est aussi pourquoi le stade, déduit du vent, n'est pas une preuve de plus : c'est le même chiffre, écrit autrement.",
+
+        // --- CARTE ------------------------------------------------
+        map_take:
+          "Ces trajectoires se ressemblent parce qu'on les a choisies ainsi : la base ne retient que les systèmes passés dans la zone d'alerte de la Nouvelle-Calédonie. C'est une fenêtre, pas le Pacifique — et ce qu'on y voit, superposé, ressemble à une aggravation qu'il va falloir vérifier.",
+      },
+      key: {
+        // Deux comptes dans la même unité : un seul axe, pas de double
+        // échelle (règle du projet).
+        intensify_y:
+          "Le nombre de systèmes dans la saison. Les deux séries partagent cette unité, donc cet axe.",
+        intensify_c:
+          "Une teinte par catégorie : les sévères, les faibles. La couleur ne gradue rien, elle nomme.",
+        // Le point aveugle de cette vue, dit avant qu'on la lise.
+        wp_caveat:
+          "Neuf systèmes sur deux cent douze n'ont pas de pression relevée : ils sont absents de ce nuage, pas corrigés ni estimés. On ne peut donc pas contrôler leur vent par leur pression.",
+        // ATTRIBUTION DE SOURCE — corrigée.
+        // Le jeu réellement chargé est IBTrACS v04r01 (NOAA/NCEI), domaine
+        // public. La base Météo-France Nouvelle-Calédonie (CC BY-NC-ND) a été
+        // ÉCARTÉE pour satisfaire l'exigence de données ouvertes du concours
+        // (cf. data/datasetSources.js → cyclones). Le texte affiché créditait
+        // encore la source écartée.
+        map_caveat:
+          "Jeu hors liste officielle du concours : archive mondiale IBTrACS (NOAA/NCEI), domaine public, dont provient aussi la base cyclonique de Météo-France Nouvelle-Calédonie. On l'a ajoutée pour le récit.",
+      },
+
+      // ============================================================
+      // VUE « SOURCE & PORTÉE » — DÉCLARATION AU JURY.
+      // C'est le texte que les organisateurs liront pour vérifier la
+      // provenance. Il déclarait la base Météo-France NC et sa licence
+      // CC BY-NC-ND — c'est-à-dire le jeu qui a précisément été ÉCARTÉ
+      // parce que « pas de modification » et « non commercial » ne sont
+      // pas conformes à la définition des données ouvertes exigée par le
+      // règlement. La donnée réellement chargée est IBTrACS v04r01,
+      // domaine public. Déclarer l'une pour l'autre était le risque le
+      // plus sérieux de cette escale.
+      // ============================================================
+      source: {
+        title: "D'où viennent ces données",
+        disclaimer:
+          "Ce jeu ne figure pas sur la liste officielle du concours : nous l'avons ajouté pour le récit. Il est ouvert au sens du règlement — l'archive IBTrACS est dans le domaine public, sans restriction de réutilisation.",
+        provider_label: "Producteur",
+        provider:
+          "NOAA / NCEI — IBTrACS v04r01, archive cyclonique officielle de l'OMM (World Data Center for Meteorology)",
+        license_label: "Licence",
+        license:
+          "Domaine public — données du gouvernement des États-Unis, réutilisation libre, y compris commerciale et modifiée.",
+        genealogy:
+          "Pour le Pacifique sud-ouest, IBTrACS intègre l'archive SPEArTC (Diamond, Lorrey, Knapp & Levinson, 2012) — la même généalogie que la base cyclonique de Météo-France Nouvelle-Calédonie, dont la licence CC BY-NC-ND ne permettait pas la réutilisation demandée ici.",
+        scope_title: "Portée géographique — tout le Pacifique n'est pas couvert",
+        scope_zone:
+          "Un seul critère de sélection : la zone d'alerte de la Nouvelle-Calédonie, 13°S à 25°S × 158°E à 172°E.",
+        scope_track:
+          "La trajectoire entière est conservée, y compris la partie qui sort largement de cette zone — d'où des tracés qui traversent tout le Pacifique sud-ouest.",
+        scope_start:
+          "Depuis la saison 1977/1978, seuil fixé par le lancement de Himawari-1 : avant lui, aucune couverture satellitaire tri-horaire de la zone.",
+        scope_note:
+          "Deux cent douze phénomènes au total. Onze d'entre eux n'ont pas de points horodatés dans le fichier de positions : leur trajectoire s'affiche, mais l'intensité ne peut pas varier le long du tracé.",
+        // Une transformation que nous assumons, et qu'il faut déclarer :
+        // IBTrACS ne fournit pas de libellé de stade.
+        derived_label: "Transformation de notre fait",
+        derived:
+          "IBTrACS ne fournit aucun libellé de stade : nous les déduisons du vent moyen sur dix minutes, selon le barème en vigueur dans la zone — 64 nœuds ouvrent le stade « cyclone tropical », 116 le stade « très intense ». Le stade d'un phénomène est celui de son point le plus venteux. Dix-neuf systèmes sur deux cent douze portent un libellé qui ne correspond pas exactement à ce barème, l'étiquette ayant été posée point par point ; aucun ne franchit les 64 nœuds, le seuil qui sépare les deux catégories comptées dans cette escale.",
+        links_label: "Accès aux données",
+        link_ibtracs: "IBTrACS (NOAA / NCEI)",
+        link_speartc: "SPEArTC — Diamond et al., 2012",
+      },
+      // La thèse annonçait « ce n'est pas leur nombre qui inquiète, mais leur
+      // force ». Le fichier ne dit ni l'un ni l'autre : le compte de systèmes
+      // sévères est plat sur quarante-sept saisons. Elle pose donc désormais
+      // la question au lieu d'y répondre.
+      thesis:
+        "Depuis 1977, 212 phénomènes tropicaux recensés dans l'archive mondiale IBTrACS (NOAA/NCEI) : ceux entrés dans la zone d'alerte de la Nouvelle-Calédonie (13°S–25°S, 158°E–172°E). Ce n'est donc pas tout le Pacifique, et on trace leur trajectoire entière, qui s'étend souvent bien au-delà. Quarante-sept saisons superposées : reste à savoir ce qui, là-dedans, a réellement changé.",
+      outro: {
+        kicker: "Fin de l'escale 04",
+        title: "Deux par saison",
+        text:
+          "Le nombre de cyclones violents entrés dans la zone n'a pas bougé depuis 1977 : environ deux par saison, hier comme aujourd'hui. Ce qui montait était une part, et une part descend quand son dénominateur descend. Reste que Winston et Pam sont passés — et qu'on verra plus tard ce qu'ils ont coûté.",
+        next: "Escale suivante : l'assiette",
       },
     },
     recit: {
-      cta_acts: "Explorer les 11 escales détaillées",
+      // Le voyage compte douze escales, pas onze.
+      cta_acts: "Explorer les 12 escales détaillées",
       voyage_exit: "Quitter le voyage",
       voyage_next: "Escale suivante",
       voyage_enter: "Entrer dans l’escale",
@@ -587,15 +932,65 @@ const EXTRA_STRINGS = {
       tag: "Leg 08",
       water_med_name: "Safe water · median",
       tb_med_name: "Tuberculosis · median",
+      outro: {
+        kicker: "End of leg 08",
+        next: "Next leg: the impact",
+      },
+      hint: {
+        multiples:
+          "Each panel has its own scale: compare the shapes, not the heights.",
+      },
     },
     act9: {
       tag: "Leg 11",
+      outro: {
+        kicker: "End of leg 11",
+        next: "Next leg: the synthesis",
+      },
+      hint: {
+        multiples:
+          "Each panel has its own scale: compare the shapes, not the heights.",
+      },
     },
     act7: {
       tag: "Leg 06 — The living world",
+      outro: {
+        kicker: "End of leg 06",
+        next: "Next leg: the territory",
+      },
+      hint: {
+        multiples:
+          "Each panel has its own scale: compare the shapes, not the heights.",
+      },
+      board: {
+        map_find:
+          "The geography of the indicator for the last year. The hue runs light to dark: dark = a high index, meaning a lower estimated extinction risk.",
+      },
     },
     act6: {
       tag: "Leg 05 — The plate",
+      outro: {
+        kicker: "End of leg 05",
+        next: "Next leg: the living world",
+      },
+      hint: {
+        multiples:
+          "Each panel has its own scale: compare the shapes, not the heights.",
+      },
+    },
+    act2: {
+      outro: {
+        kicker: "End of leg 02",
+        text:
+          "Oscillation on one side, trend on the other: the gap to the normal holds no more secrets. The sky tells what follows — rainfall and temperatures against their normals, on leg 03.",
+        next: "Next leg: the sky",
+      },
+    },
+    act4: {
+      outro: {
+        kicker: "End of leg 09",
+        next: "Next leg: momentum",
+      },
     },
     about: {
       data: {
@@ -627,7 +1022,7 @@ const EXTRA_STRINGS = {
       next: "Next leg",
     },
     recit: {
-      cta_acts: "Explore the 11 detailed legs",
+      cta_acts: "Explore the 12 detailed legs",
       voyage_exit: "Leave the voyage",
       voyage_next: "Next leg",
       voyage_enter: "Enter the leg",
@@ -636,6 +1031,10 @@ const EXTRA_STRINGS = {
       voyage_leg: "Leg",
     },
     act3: {
+      outro: {
+        kicker: "End of leg 07",
+        next: "Next leg: water and health",
+      },
       board: {
         coast_find:
           "Each dot is a satellite-tracked coastline segment (Landsat, 1999–2023). Red for segments retreating, blue for those advancing — in metres per year.",
@@ -644,12 +1043,28 @@ const EXTRA_STRINGS = {
       },
     },
     act5: {
+      outro: {
+        kicker: "End of leg 10",
+        next: "Next leg: the economy",
+      },
       board: {
         map_find:
           "Each territory's renewable share for the chosen year, set on the globe. The taller and lighter the column, the higher that share.",
       },
     },
     act1: {
+      // LEG 01 — figures recomputed from EN.GHG.ALL.PC.CE.AR5, rounded to the
+      // one decimal actually published. See the French block for the audit
+      // trail; two claims there were factually wrong and are corrected.
+      thesis:
+        "Across the Pacific, the per-capita footprint runs from 0.1 to 86.7 tonnes depending on the territory — a ratio of more than eight hundred. Almost all of that gap comes down to the denominator, and this leg shows you how to read it.",
+      outro: {
+        kicker: "End of leg 01",
+        title: "A low level, not a slope",
+        text:
+          "The Pacific emits little — the regional median sits under one tonne per person. But eleven territories out of seventeen emit more than they did in 1970: this is a low level, not a downward slope. Now to what the ocean is already recording.",
+        next: "Next leg: the ocean",
+      },
       viz: {
         plume_title: "The footprint, territory by territory",
         plume_find:
@@ -670,6 +1085,14 @@ const EXTRA_STRINGS = {
       },
 
       board: {
+        scatter_take:
+          "The lower-left quadrant — emitting little and still falling — holds just three territories out of seventeen. Eleven have risen since 1970. The Pacific's low footprint is a starting level, not a downward path: that is what makes it fragile.",
+        rank_take:
+          "Two territories sit far out to the right. The first, Palau, emitted 190.6 tonnes per person in 1970; today it emits 86.7, less than half. A per-capita ratio is read through its denominator first: a population of twenty thousand is enough to send the figure soaring with nothing around it having changed.",
+        heat_take:
+          "Row by row, the shades hold. Between 1990 and today the median move in the ranking is zero places, and only two territories out of seventeen cross into the other half of the table. Half a century of data, and almost no one changes camp.",
+        change_take:
+          "Eleven territories out of seventeen emit more than they did in 1970, six less. Tonga has tripled, French Polynesia and Samoa more than doubled — from levels that remain, in absolute terms, among the lowest in the world.",
         race_find:
           "The ranking replayed at speed, one frame per year, from the first data point to the last. Each bar is a territory; it grows as that territory emits more, and bars overtake one another when the order changes.",
         race_take:
@@ -677,8 +1100,6 @@ const EXTRA_STRINGS = {
 
         rank_find:
           "One dot per territory, for the single year set on the slider: its position on the axis is what it emits per person that year. The dashed line marks the median — half the territories sit to its left.",
-        rank_take:
-          "Two territories stand apart on the far right. The figure is a ratio: a tiny population in the denominator, or heavy industry in the numerator, is enough to push it up — with nothing changing in the region around it. All the rest of the Pacific bunches into the left half.",
 
         trend_find:
           "One curve per territory, one point per year, from the first data point to the last. The height of the curve is what the territory emits per inhabitant that year. The menu above the chart keeps just one.",
@@ -691,8 +1112,6 @@ const EXTRA_STRINGS = {
 
         scatter_find:
           "One dot per territory. Its left-to-right position is what it emits today per inhabitant; its bottom-to-top position, how much that has changed since its first year. The lower left gathers those that emit little and are still going down.",
-        scatter_take:
-          "The lower-left quadrant is the most crowded: emitting little, and still falling. A favourable starting point for the leg on renewable momentum.",
 
         denom_find:
           "One dot per territory. Left to right, its usual level over the whole period. Bottom to top, how much its curve jumps from one year to the next: 0 % for a perfectly steady series, 100 % for one that varies as much as its own average.",
@@ -701,8 +1120,6 @@ const EXTRA_STRINGS = {
 
         heat_find:
           "One row per territory, one column per year, one cell per value. A cell's colour gives that territory's standing that year: light when it is among the lowest emitters, dark when it is among the highest.",
-        heat_take:
-          "Rows keep the same shade from left to right: over half a century, almost no territory changes camp. Stability is what this view shows.",
 
         map_find:
           "One column planted on each territory. The taller and lighter it is, the more that territory emits per inhabitant in the chosen year. Drag to spin the globe; the year scrubber sits at the bottom.",
@@ -761,13 +1178,13 @@ const EXTRA_STRINGS = {
           "Before the verdict, let us retrace the road travelled \u2014 each leg, one piece of the Pacific's climate puzzle.",
         resp_k: "Leg 01 · Responsibility",
         ocean_k: "Leg 02 · The ocean",
-      },
-      story: {
+        // Merged up from a SECOND `story` object that was overwriting this
+        // one — see the French side for the full note.
         matrix_text:
           "Territories in rows, stresses in columns. The warm cells pile up: it is not one isolated risk, it is their sum.",
       },
-      thesis:
-        "Eleven acts for one idea, with a note of hope: Pacific territories emit very little CO₂ per capita and absorb a great deal — yet keep real room to act. This final act gathers the evidence into one clear reading, relative to the Pacific, that you can walk through scene by scene.",
+      // A second `thesis` sat here and overwrote the one above; both carried
+      // the same substantive fix and differed only in act/leg wording.
       outro: {
         text: "None of this is set in stone. This index invents no data: it gathers official measurements, puts them on one scale and weighs every dimension alike. It doesn't rule — it shows where to act first, and opens the conversation rather than closing it.",
       },
@@ -823,6 +1240,47 @@ const EXTRA_STRINGS = {
       },
       // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
       acts: {
+        // THE CROSSINGS — adapted, not translated. Same beat, same restraint,
+        // same length; the phrasing is rebuilt in English rather than carried
+        // across. See the French block for the rules that govern them.
+
+        a1_cross:
+          "Before you measure what is coming, know what you weigh. Fifty years of records for a single figure per person.",
+
+        a2_cross:
+          "Almost nothing emitted, then. What is arriving comes from somewhere else — and water is where it shows first.",
+
+        // Leg 03 is act `a8`, not `a3` — journey order is not id order.
+        a8_cross:
+          "The sea has changed register. Whether the sky above it followed is another question — and answering that takes instruments.",
+
+        a3_cross:
+          "Those decisions get taken somewhere. Where the sea and the people actually meet is the next question — village by village.",
+
+        a12_cross:
+          "The drift stops being a curve. Forty-seven seasons of storms, seen through a single window: New Caledonia's.",
+
+        a6_cross:
+          "Between two cyclone seasons, people still have to eat. What the land gives back is measured too.",
+
+        a7_cross:
+          "That is what we farm. Then there is everything that grows and lives without us — and what we decide to keep of it.",
+
+        a10_cross:
+          "When the shore moves, what turns fragile is not visible from the shore. Indoors, then: water first.",
+
+        a4_cross:
+          "All of this worsens slowly, or improves slowly. Some things do not: they arrive in a single night, and they have names.",
+
+        a5_cross:
+          "The bill is known, imperfectly. What comes next is no longer what is endured, but what is changed.",
+
+        a9_cross:
+          "A share that still depends on the rain. Changing costs money — the question is whose.",
+
+        a11_cross:
+          "Eleven readings, eleven instruments. Our ancestors held a course by crossing several stars. We are about to cross eleven measurements.",
+
         a1_text:
           "Fifty years of data, one constant: the Pacific's per-capita carbon footprint stays light, and stays light over time. This leg measures it territory by territory \u2014 the bedrock of the story.",
         a2_text:
@@ -966,11 +1424,111 @@ const EXTRA_STRINGS = {
           "The matrix tells at a glance what oscillates from what settles in — blue below the normal, amber above.",
       },
       map_sub: "Anomaly per territory — blue below reference, amber above",
+      outro: {
+        kicker: "End of leg 03",
+        next: "Next leg: the cyclones",
+      },
+      hint: {
+        multiples:
+          "Each panel has its own scale: compare the shapes, not the heights.",
+      },
     },
     act12: {
+      // LEG 04 — English adaptation. Every figure is the one verified in the
+      // French block; the phrasing is rebuilt, not carried across. Two idioms
+      // are deliberately dropped: "la part monte parce que son dénominateur a
+      // baissé" becomes plain arithmetic in English, and "ce qui ne bouge pas"
+      // becomes "what did not move", which reads as a finding rather than a
+      // riddle.
       viz: {
         month_find:
           "Cyclone genesis by month (austral season, July → June, rows) and by span of years (columns). The stronger a cell, the more cyclones formed then. The season peaks from December to April.",
+        month_take:
+          "Four systems in five form between December and March, and the median month of formation is February — before 2000 and since. The season has neither stretched nor shifted: it stayed where it was while everything else changed.",
+
+        intensify_title: "Two a season, for forty-seven years",
+        intensify_find:
+          "Two counts on one axis: systems that reached tropical-cyclone stage or above (64 knots), and those that stayed below. The dot gives the actual season, the line its five-season average. The dashed line marks the average number of severe systems across the whole record.",
+        intensify_take:
+          "The severe line never strays far from its dashed mark: about two a season in 1977, about two in 2023. It is the weak line that dips in the early 2000s, then climbs back. So the share of violent cyclones rises without a single extra violent cyclone — it rises because the number it is divided by fell.",
+
+        intensify_sev: "severe · 5-season average",
+        intensify_sev_raw: "severe · season",
+        intensify_weak: "weaker · 5-season average",
+        intensify_weak_raw: "weaker · season",
+        intensify_mean: "severe average",
+
+        season_title: "How many a season, and how much it swings",
+        season_find:
+          "The number of systems entering the alert zone, season by season. Between 1 and 8 depending on the year, 4.5 on average.",
+        season_take:
+          "The swing from one season to the next is huge and draws no trend. Fifteen seasons out of forty-seven hold three systems or fewer; eight hold two or fewer, where a percentage can only be 0, 50 or 100. That is why this leg counts rather than divides.",
+
+        bystage_find:
+          "How many tracks reached each stage, weakest to most violent. The stage is inferred from the highest wind recorded: 64 knots opens the tropical-cyclone stage, 116 the very-intense one.",
+        stage_take:
+          "Ninety-five systems out of two hundred and twelve reached tropical-cyclone stage, twenty the highest one. Those twenty are not evenly spread: Winston and Pam, the two most violent of the entire record, are thirteen months apart.",
+
+        windpress_take:
+          "The two measurements agree almost perfectly: the correlation is −0.97 across the two hundred and three systems carrying both values. That is what makes the record trustworthy — and also why the stage, being inferred from the wind, is not a second piece of evidence: it is the same number, written differently.",
+
+        map_take:
+          "These tracks resemble one another because we picked them that way: the archive keeps only systems that crossed New Caledonia's alert zone. It is a window, not the Pacific — and what you see layered here looks like a worsening that still has to be checked.",
+      },
+      key: {
+        intensify_y:
+          "The number of systems in the season. Both series share this unit, so they share this axis.",
+        intensify_c:
+          "One hue per category: severe, weaker. The colour grades nothing, it names.",
+        wp_caveat:
+          "Nine systems out of two hundred and twelve have no recorded pressure: they are absent from this scatter, neither corrected nor estimated. Their wind cannot be cross-checked against their pressure.",
+        // Source attribution corrected: the dataset actually loaded is IBTrACS
+        // v04r01 (NOAA/NCEI, public domain). The Météo-France New Caledonia
+        // base (CC BY-NC-ND) was deliberately set aside to meet the contest's
+        // open-data requirement — see data/datasetSources.js.
+        map_caveat:
+          "Not on the challenge's official list: the global IBTrACS archive (NOAA/NCEI), public domain, the same source Météo-France New Caledonia's cyclone database draws on. We added it for the story.",
+      },
+      // SOURCE & SCOPE — the panel the judges read to check provenance.
+      // It declared the Météo-France base and its CC BY-NC-ND licence, i.e.
+      // exactly the dataset that was set aside because "no commercial use"
+      // and "no derivatives" fail the open-data definition the rules require.
+      source: {
+        title: "Where this data comes from",
+        disclaimer:
+          "This dataset is not on the contest's official list: we added it for the story. It is open in the sense the rules require — the IBTrACS archive is in the public domain, with no restriction on reuse.",
+        provider_label: "Producer",
+        provider:
+          "NOAA / NCEI — IBTrACS v04r01, the WMO's official tropical-cyclone archive (World Data Center for Meteorology)",
+        license_label: "Licence",
+        license:
+          "Public domain — U.S. Government data, free to reuse, including commercially and in modified form.",
+        genealogy:
+          "For the south-west Pacific, IBTrACS incorporates the SPEArTC archive (Diamond, Lorrey, Knapp & Levinson, 2012) — the same lineage as Météo-France New Caledonia's cyclone database, whose CC BY-NC-ND licence did not permit the reuse needed here.",
+        scope_title: "Geographic scope — this is not the whole Pacific",
+        scope_zone:
+          "One selection criterion only: New Caledonia's alert zone, 13°S to 25°S × 158°E to 172°E.",
+        scope_track:
+          "The full track is kept, including the stretch reaching well outside that box — hence tracks that cross the entire south-west Pacific.",
+        scope_start:
+          "From the 1977/1978 season, a threshold set by the launch of Himawari-1: before it, no three-hourly satellite coverage of the area.",
+        scope_note:
+          "Two hundred and twelve systems in all. Eleven of them carry no time-stamped fixes: their track is drawn, but intensity cannot vary along it.",
+        derived_label: "Our own transformation",
+        derived:
+          "IBTrACS carries no stage labels: we infer them from the ten-minute mean wind, using the scale in force in the area — 64 knots opens the tropical-cyclone stage, 116 the very-intense one. A system's stage is that of its windiest fix. Nineteen systems out of two hundred and twelve carry a label that does not match that scale exactly, the label having been set fix by fix; none crosses 64 knots, the threshold separating the two categories counted in this leg.",
+        links_label: "Data access",
+        link_ibtracs: "IBTrACS (NOAA / NCEI)",
+        link_speartc: "SPEArTC — Diamond et al., 2012",
+      },
+      thesis:
+        "Since 1977, 212 tropical systems recorded in the global IBTrACS archive (NOAA/NCEI): those that entered New Caledonia's alert zone (13°S–25°S, 158°E–172°E). So this is not the whole Pacific, and each full track is drawn here, often reaching far beyond it. Forty-seven seasons layered on top of one another: what remains is to work out what, in all that, actually changed.",
+      outro: {
+        kicker: "End of leg 04",
+        title: "Two a season",
+        text:
+          "The number of violent cyclones entering the zone has not moved since 1977: about two a season, then as now. What was rising was a share, and a share falls when the number beneath it falls. Winston and Pam still came through — and what they cost comes later.",
+        next: "Next leg: the plate",
       },
     },
   },
