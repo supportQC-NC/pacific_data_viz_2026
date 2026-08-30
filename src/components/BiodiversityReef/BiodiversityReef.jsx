@@ -38,27 +38,181 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./BiodiversityReef.scss";
 
-/* Coraux : silhouette + classe de couleur + base x (pivot houle/échelle). */
+// ---------------------------------------------------------------------------
+// LE RÉCIF, REDESSINÉ.
+//
+// Les six coraux étaient : une arche arrondie (qui se lit comme une pierre
+// tombale), un Y, une deuxième arche, TROIS BARRES VERTICALES, une troisième
+// arche, un second Y. Rien là-dedans ne ressemble à un corail, et trois des
+// six sont la même forme à l'échelle près.
+//
+// Ils sont remplacés par six silhouettes réelles, toutes reconnaissables :
+// corail de table (Acropora), cerveau de Neptune, anémone, corne de cerf,
+// gorgone en éventail, corail digité. Trois pleins, trois au trait — la
+// répartition d'origine, que le fondu squelette/vivant exige.
+//
+// Les géométries sont en coordonnées LOCALES : le pied du corail est en (0,0)
+// et il pousse vers les y négatifs. Le placement est porté par le groupe
+// parent — c'est ce qui permet de faire GRANDIR chaque corail depuis sa base
+// au lieu de l'écraser sur place.
+// ---------------------------------------------------------------------------
+
+// Chaque corail porte désormais sa propre cote au sol (`y`) : une constante
+// unique ne pouvait pas suivre le relief du banc de sable.
+
+// Particules en suspension, semées à la main : réparties au hasard elles
+// feraient du bruit, alignées elles feraient une grille.
+const MOTES = [
+  [62, 52, 1.6], [118, 34, 1.2], [176, 62, 1.8], [214, 28, 1.1],
+  [262, 48, 1.5], [312, 70, 1.3], [88, 108, 1.4], [196, 128, 1.2],
+  [284, 116, 1.6], [148, 96, 1.1], [334, 40, 1.2], [40, 84, 1.3],
+];
+
 const CORALS = [
-  { d: "M38,196 Q33,166 50,154 Q67,166 62,196 Z", cls: "reef__c1", x: 50 },
-  { d: "M100,196 L100,170 M100,178 L88,160 M100,176 L113,158 M88,160 L84,148 M113,158 L117,148", cls: "reef__c2", x: 100 },
-  { d: "M132,196 Q129,170 150,168 Q171,170 168,196 Z", cls: "reef__c3", x: 150 },
-  { d: "M200,196 L200,166 M210,196 L210,154 M220,196 L220,164", cls: "reef__c4", x: 210 },
-  { d: "M256,196 Q249,164 270,150 Q291,164 284,196 Z", cls: "reef__c5", x: 270 },
-  { d: "M320,196 L320,174 M320,182 L309,166 M320,182 L331,166 M320,178 L323,160", cls: "reef__c6", x: 320 },
+  // Corail de table : un pied court, un plateau large. C'est la silhouette la
+  // plus identifiable d'un récif vu de côté.
+  {
+    x: 48,
+    y: 201,
+    cls: "reef__c1",
+    fill: true,
+    d: "M-4,0 L-3,-15 L3,-15 L4,0 Z M-27,-16 Q-15,-27 0,-26 Q15,-27 27,-16 Q14,-11 0,-11 Q-14,-11 -27,-16 Z",
+  },
+  // Corne de cerf : un tronc et quatre ramures qui se dédoublent. Les branches
+  // ne partent pas du même point, sinon on obtient un Y.
+  {
+    x: 104,
+    y: 202,
+    cls: "reef__c2",
+    d: "M0,0 L0,-18 M0,-14 L-11,-26 M-11,-26 L-15,-38 M-11,-26 L-3,-35 M0,-16 L11,-27 M11,-27 L16,-39 M11,-27 L6,-36 M0,-18 L1,-30",
+  },
+  // Cerveau de Neptune : un dôme bas, à bord lobé. Le lisser en demi-cercle
+  // en ferait une bulle.
+  {
+    x: 156,
+    y: 205,
+    cls: "reef__c3",
+    fill: true,
+    d: "M-24,0 Q-26,-15 -17,-22 Q-9,-28 0,-27 Q9,-28 17,-22 Q26,-15 24,0 Z",
+  },
+  // Gorgone : un éventail de nervures qui s'ouvrent depuis un pied unique,
+  // reliées par deux arcs. Sans les arcs, ce sont des herbes.
+  {
+    x: 212,
+    y: 204,
+    cls: "reef__c4",
+    d: "M0,0 L0,-10 M0,-10 L-18,-34 M0,-10 L-9,-38 M0,-10 L0,-42 M0,-10 L9,-38 M0,-10 L18,-34 M-13,-27 Q0,-33 13,-27 M-16,-32 Q0,-40 16,-32",
+  },
+  // Anémone : un bulbe et des tentacules courts en couronne.
+  {
+    x: 268,
+    y: 197,
+    cls: "reef__c5",
+    fill: true,
+    d: "M-13,0 Q-16,-14 0,-17 Q16,-14 13,0 Z M-15,-16 Q-19,-27 -10,-29 Q-6,-22 -8,-16 Z M-6,-18 Q-8,-31 0,-32 Q8,-31 6,-18 Z M8,-16 Q6,-22 10,-29 Q19,-27 15,-16 Z",
+  },
+  // Corail digité : des doigts de hauteurs inégales, à bout rond. Réguliers,
+  // ils feraient un code-barres — c'était exactement le défaut d'avant.
+  {
+    x: 320,
+    y: 196,
+    cls: "reef__c6",
+    d: "M-12,0 L-12,-19 M-6,0 L-6,-27 M0,0 L0,-22 M6,0 L6,-31 M12,0 L12,-16",
+  },
 ];
 
-const FISH_D = "M9,0 Q3,-6 -6,-4 L-14,-8 L-11,0 L-14,8 L-6,4 Q3,6 9,0 Z";
+// Trois silhouettes de poisson au lieu d'une seule répétée six fois : un
+// poisson de récif trapu, un poisson allongé, et un petit rond. Chacune porte
+// son œil — c'est ce qui fait qu'on lit un animal et non une flèche.
+const FISH_SHAPES = {
+  reef: {
+    body: "M10,0 Q4,-7 -5,-5 L-14,-9 L-11,0 L-14,9 L-5,5 Q4,7 10,0 Z",
+    eye: [6, -1.6, 1.3],
+    fin: "M-2,-4 Q0,-9 4,-5",
+  },
+  long: {
+    body: "M14,0 Q6,-4 -6,-3 L-15,-7 L-12,0 L-15,7 L-6,3 Q6,4 14,0 Z",
+    eye: [9, -1.1, 1.1],
+    fin: "M0,-3 Q3,-7 7,-3",
+  },
+  round: {
+    body:
+      "M-7,0 Q-3,-7 4,-6 Q10,-4 10,0 Q10,4 4,6 Q-3,7 -7,0 Z" +
+      " M-7,0 L-13,-6 L-11,0 L-13,6 Z",
+    eye: [5, -2, 1.2],
+    fin: "M0,-5 Q3,-9 6,-5",
+  },
+
+  // Tortue verte, de profil : dossière bombée, plastron plat, deux nageoires
+  // décalées (les quatre visibles à la fois donneraient une araignée).
+  turtle: {
+    body:
+      "M-14,2 Q-16,-9 -2,-12 Q13,-14 17,-4 Q19,2 12,5 Q-2,9 -14,2 Z" +
+      " M17,-4 Q24,-8 27,-3 Q28,2 22,3 Q18,2 17,-1 Z" +
+      " M-2,5 Q0,13 8,12 Q9,7 5,5 Z" +
+      " M-11,3 Q-16,10 -22,7 Q-20,2 -14,1 Z" +
+      " M-14,-4 Q-21,-9 -24,-4 Q-21,-1 -15,-1 Z",
+    eye: [23, -3, 1.1],
+    fin: null,
+    lines: "M-9,-6 Q0,-9 9,-6 M-6,-1 Q1,-3 8,-1",
+  },
+
+  // Raie manta, vue de trois quarts : deux ailes en arc, une queue fine. Une
+  // raie symétrique et à plat se lit comme un cerf-volant.
+  // Raie manta. La première version était deux arcs symétriques partant du
+  // même point : une couverture, pas un animal. Ce qui fait lire une manta,
+  // c'est l'aile TRIANGULAIRE en flèche, les deux cornes céphaliques à
+  // l'avant — elle n'a ça qu'elle — et la queue en fouet, plus longue que le
+  // corps. Museau vers les x positifs, comme tous les autres.
+  ray: {
+    body:
+      "M15,0 C10,-8 -2,-15 -14,-19 C-24,-22 -30,-20 -26,-13" +
+      " C-22,-7 -16,-3 -12,0 C-16,3 -22,7 -26,13 C-30,20 -24,22 -14,19" +
+      " C-2,15 10,8 15,0 Z" +
+      " M15,-1 L23,-8 L18,-1 Z" +
+      " M15,1 L23,8 L18,1 Z" +
+      " M-11,-1.8 Q-27,-0.6 -47,1 Q-27,1.8 -11,1.8 Z",
+    eye: [10, -3.4, 1.1],
+    fin: null,
+    // Les deux taches claires des épaules : le marquage qui sert à
+    // identifier une manta individuellement.
+    lines: "M3,-6 Q-4,-10 -11,-11 M3,6 Q-4,10 -11,11",
+  },
+
+  // Requin de récif : museau pointu, dorsale, caudale échancrée. Le ventre
+  // clair et la ligne latérale sont ce qui empêche la forme de faire dauphin.
+  shark: {
+    body:
+      "M26,0 Q14,-8 -4,-7 Q-16,-6 -22,-2 L-32,-9 L-28,0 L-32,9 L-22,2 Q-14,7 -2,7 Q14,7 26,0 Z" +
+      " M2,-7 L6,-17 L13,-6 Z" +
+      " M-6,7 L-9,13 L-1,8 Z",
+    eye: [18, -2, 1.2],
+    fin: null,
+    lines: "M-16,0 Q0,-1 18,-1",
+  },
+};
+
+// LES ESPÈCES EMBLÉMATIQUES SONT LA MESURE.
+//
+// L'animation révèle les animaux dans l'ordre du tableau : les derniers
+// n'apparaissent qu'aux indices élevés. En plaçant la tortue, la raie et le
+// requin en fin de liste, on obtient exactement ce que dit l'indicateur — un
+// récif préservé garde ses grands animaux, un récif sous pression ne garde que
+// les petits. Ce n'est pas une décoration : c'est l'encodage.
+//
+// Ils nagent aussi PLUS LENTEMENT (`sp` bas) et plus loin : un requin qui
+// file comme un poisson-papillon casse l'échelle du dessin.
 const FISH = [
-  { x: 96, y: 88, cls: "reef__f1", sp: 0.5, off: 0.0 },
-  { x: 158, y: 70, cls: "reef__f2", sp: 0.42, off: 1.1 },
-  { x: 224, y: 96, cls: "reef__f3", sp: 0.55, off: 2.0 },
-  { x: 284, y: 78, cls: "reef__f1", sp: 0.46, off: 0.7 },
-  { x: 126, y: 120, cls: "reef__f2", sp: 0.6, off: 1.7 },
-  { x: 250, y: 128, cls: "reef__f3", sp: 0.5, off: 2.6 },
+  { x: 96, y: 84, cls: "reef__f1", sp: 0.5, off: 0.0, sh: "reef", s: 1.0 },
+  { x: 158, y: 66, cls: "reef__f2", sp: 0.42, off: 1.1, sh: "long", s: 0.9 },
+  { x: 224, y: 94, cls: "reef__f3", sp: 0.55, off: 2.0, sh: "round", s: 0.85 },
+  { x: 288, y: 74, cls: "reef__f1", sp: 0.46, off: 0.7, sh: "long", s: 0.78 },
+  { x: 124, y: 122, cls: "reef__f2", sp: 0.6, off: 1.7, sh: "round", s: 0.7 },
+  { x: 252, y: 130, cls: "reef__f3", sp: 0.5, off: 2.6, sh: "reef", s: 0.82 },
+  { x: 152, y: 40, cls: "reef__f4", sp: 0.22, off: 0.4, sh: "turtle", s: 1.0, amp: 30 },
+  { x: 284, y: 58, cls: "reef__f5", sp: 0.18, off: 2.2, sh: "ray", s: 1.2, amp: 34 },
+  { x: 110, y: 152, cls: "reef__f6", sp: 0.15, off: 1.4, sh: "shark", s: 1.15, amp: 52 },
 ];
-
-const BASE_Y = 196;
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -199,16 +353,27 @@ export default function BiodiversityReef({ embed = false, code = null } = {}) {
         numberRef.current.textContent = animObj.current.idx.toFixed(2);
 
       const swing = reduced ? 0 : 1;
-      // Coraux : houle (rotation) + TAILLE selon la vitalité (rabougris si bas).
-      const sy = 0.4 + 0.6 * v;
-      const sx = 0.72 + 0.28 * v;
+
+      // CHAQUE CORAIL POUSSE, LE RÉCIF NE S'APLATIT PAS.
+      //
+      // Avant : deux facteurs différents, 0,40 en hauteur et 0,72 en largeur,
+      // appliqués à TOUS les coraux en même temps. Un récif en mauvaise santé
+      // n'était donc pas clairsemé, il était ÉCRASÉ — chaque colonie gardait
+      // sa place et perdait ses proportions, ce qui ne veut rien dire.
+      //
+      // Maintenant chaque colonie a sa propre progression, décalée, et grandit
+      // sans se déformer : les premières tiennent, les dernières restent des
+      // recrues. C'est la même mécanique que le bosquet de l'escale 05.
+      const nc = CORALS.length;
       coralRefs.current.forEach((node, i) => {
         if (!node) return;
-        const x = CORALS[i].x;
-        const a = 3.6 * v * swing * Math.sin(phase * 0.9 + i * 1.3);
+        const p = clamp01((v - i / (nc + 1)) * 1.9);
+        const grow = 1 - (1 - p) * (1 - p);
+        const sc = (0.08 + 0.92 * grow).toFixed(3);
+        const a = 3.6 * grow * swing * Math.sin(phase * 0.9 + i * 1.3);
         node.setAttribute(
           "transform",
-          `translate(${x} ${BASE_Y}) rotate(${a.toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(${-x} ${-BASE_Y})`,
+          `rotate(${a.toFixed(2)}) scale(${sc})`,
         );
       });
 
@@ -216,15 +381,36 @@ export default function BiodiversityReef({ embed = false, code = null } = {}) {
       fishRefs.current.forEach((node, i) => {
         if (!node) return;
         const f = FISH[i];
-        const tx = f.x + (reduced ? 0 : 20 * Math.sin(phase * f.sp + f.off));
+        // `amp` : les grands animaux couvrent plus de distance par battement.
+        const amp = f.amp || 20;
+        const tx = f.x + (reduced ? 0 : amp * Math.sin(phase * f.sp + f.off));
         const ty = f.y + (reduced ? 0 : 6 * Math.sin(phase * 0.8 + f.off));
         const dir = Math.cos(phase * f.sp + f.off) >= 0 ? 1 : -1;
+        // La tortue, la raie et le requin sont en fin de tableau : ils
+        // n'apparaissent donc qu'aux indices élevés.
+        const late = i >= FISH.length - 3;
+        const p = clamp01((v - i / (FISH.length + 0.6)) * (late ? 3 : 2.2));
+
+        // POUR LES GRANDS ANIMAUX, C'EST LA TAILLE QUI DIT LA PRÉSENCE.
+        //
+        // Ils apparaissaient en fondu, comme les petits poissons. À
+        // mi-apparition la raie était donc à 0,64 d'opacité — et les poissons
+        // qui passaient DERRIÈRE elle se voyaient au travers. Un animal de
+        // deux mètres d'envergure ne se traverse pas du regard.
+        //
+        // Ils deviennent opaques presque tout de suite (×12) et arrivent de
+        // LOIN : leur échelle monte de 0,45 à 1. On les voit s'approcher au
+        // lieu de se matérialiser, et ils masquent ce qu'ils recouvrent.
+        const grow = 1 - (1 - p) * (1 - p);
+        const sc = (f.s || 1) * (late ? 0.45 + 0.55 * grow : 1);
         node.setAttribute(
           "transform",
-          `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) scale(${dir} 1)`,
+          `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) scale(${(dir * sc).toFixed(3)} ${sc.toFixed(3)})`,
         );
-        const appear = clamp01((v - i / FISH.length) * 2.2);
-        node.setAttribute("opacity", appear.toFixed(3));
+        node.setAttribute(
+          "opacity",
+          (late ? clamp01((p - 0.02) * 12) : p).toFixed(3),
+        );
       });
     },
     [reduced],
@@ -425,29 +611,57 @@ export default function BiodiversityReef({ embed = false, code = null } = {}) {
                 role="img"
                 aria-label={svgLabel}
               >
-                {/* Rais de lumière */}
+                {/* Rais de lumière. Ils étaient verticaux et à bords nets :
+                    trois piliers gris plantés dans l'eau. Inclinés, plus larges
+                    en surface qu'au fond, ils redeviennent de la lumière. */}
                 <g className="reef__rays" aria-hidden="true">
-                  <polygon points="70,0 110,0 90,200 78,200" />
-                  <polygon points="180,0 210,0 198,200 188,200" />
-                  <polygon points="280,0 312,0 300,200 290,200" />
+                  <polygon points="58,0 104,0 84,200 70,200" />
+                  <polygon points="168,0 206,0 190,200 180,200" />
+                  <polygon points="276,0 330,0 302,200 288,200" />
                 </g>
 
-                {/* Sol */}
+                {/* Particules en suspension : ce qui donne à une eau sa
+                    profondeur, ce n'est pas sa couleur, c'est ce qui flotte
+                    dedans. */}
+                <g className="reef__motes" aria-hidden="true">
+                  {MOTES.map(([cx, cy, r], i) => (
+                    <circle key={i} cx={cx} cy={cy} r={r} />
+                  ))}
+                </g>
+
+                {/* Le fond. C'était un rectangle à bord tracé, qui se lisait
+                    comme une boîte noire posée sur l'image. Un banc de sable
+                    sans contour, plus une pente et deux blocs. */}
                 <path
                   className="reef__bed"
-                  d="M0,200 Q90,188 180,198 T360,196 L360,240 L0,240 Z"
+                  d="M0,208 Q24,203 48,201 Q76,200 104,202 Q130,204 156,205 Q184,205 212,204 Q240,201 268,197 Q294,195 320,196 Q340,197 360,199 L360,240 L0,240 Z"
                 />
+                <path
+                  className="reef__bed reef__bed--far"
+                  d="M0,214 Q90,204 180,212 Q270,220 360,210 L360,240 L0,240 Z"
+                />
+                <g className="reef__rocks" aria-hidden="true">
+                  <ellipse cx="76" cy="205" rx="17" ry="6" />
+                  <ellipse cx="244" cy="202" rx="13" ry="5" />
+                  <ellipse cx="332" cy="203" rx="10" ry="4" />
+                </g>
 
-                {/* Coraux : squelette blanchi + version vivante colorée */}
+                {/* Coraux. Le groupe extérieur POSE le corail sur le fond, le
+                    groupe intérieur l'anime autour de son pied : il grandit
+                    depuis sa base, il ne s'écrase pas sur place. */}
                 {CORALS.map((c, i) => (
-                  <g
-                    key={i}
-                    ref={(n) => {
-                      coralRefs.current[i] = n;
-                    }}
-                  >
-                    <path className="reef__ghost" d={c.d} />
-                    <path className={`reef__alive ${c.cls}`} d={c.d} />
+                  <g key={i} transform={`translate(${c.x} ${c.y})`}>
+                    <g
+                      ref={(n) => {
+                        coralRefs.current[i] = n;
+                      }}
+                    >
+                      <path
+                        className={`reef__ghost ${c.fill ? "" : "reef__ghost--line"}`}
+                        d={c.d}
+                      />
+                      <path className={`reef__alive ${c.cls}`} d={c.d} />
+                    </g>
                   </g>
                 ))}
 
@@ -460,7 +674,28 @@ export default function BiodiversityReef({ embed = false, code = null } = {}) {
                     }}
                     opacity="0"
                   >
-                    <path className={`reef__fish ${f.cls}`} d={FISH_D} />
+                    <path
+                      className={`reef__fish ${f.cls}`}
+                      d={FISH_SHAPES[f.sh].body}
+                    />
+                    {FISH_SHAPES[f.sh].fin ? (
+                      <path
+                        className={`reef__fin ${f.cls}`}
+                        d={FISH_SHAPES[f.sh].fin}
+                      />
+                    ) : null}
+                    {FISH_SHAPES[f.sh].lines ? (
+                      <path
+                        className="reef__detail"
+                        d={FISH_SHAPES[f.sh].lines}
+                      />
+                    ) : null}
+                    <circle
+                      className="reef__eye"
+                      cx={FISH_SHAPES[f.sh].eye[0]}
+                      cy={FISH_SHAPES[f.sh].eye[1]}
+                      r={FISH_SHAPES[f.sh].eye[2]}
+                    />
                   </g>
                 ))}
               </svg>

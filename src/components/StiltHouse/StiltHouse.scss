@@ -204,7 +204,7 @@
 }
 .stilt__posts line,
 .stilt__ladder line {
-  stroke: var(--c-text-mute);
+  stroke: color-mix(in srgb, var(--c-text-mute) 74%, var(--c-warm) 26%);
   stroke-linecap: round;
 }
 .stilt__posts line {
@@ -218,40 +218,95 @@
   fill: var(--c-accent-deep);
   opacity: 0.42;
 }
+/* LA SURFACE A UNE ARÊTE.
+   L'eau était deux masses translucides sans ligne de crête : elle se lisait
+   comme un bloc de couleur, pas comme une surface. Le tracé est clos très
+   au-delà du cadre, si bien que seule la ligne du haut est visible. */
 .stilt__water-front {
   fill: var(--c-accent);
   opacity: 0.52;
+  stroke: var(--c-text);
+  stroke-width: 1.4;
+  stroke-opacity: 0.5;
 }
-.stilt__bubble {
+/* ---- Sous l'eau ----
+   Le fond ne porte aucune donnée : il donne un bas à l'image et une échelle
+   aux pilotis. Il doit donc rester en retrait — c'est l'eau et la maison qui
+   parlent. */
+.stilt__sand {
   fill: var(--c-bg);
-  opacity: 0.5;
+  opacity: 0.55;
 }
-.stilt__floor {
+.stilt__clump {
+  fill: var(--c-text-mute);
+  opacity: 0.22;
+}
+
+/* Les poissons : sourds eux aussi, mais pleins — un poisson translucide se
+   confondrait avec les pieux immergés qu'il croise. */
+.stilt__fish path {
   fill: var(--c-text-soft);
+  opacity: 0.55;
 }
-.stilt__wall {
-  fill: var(--c-surface);
-  stroke: var(--c-text-soft);
-  stroke-width: 2.4;
+.stilt__fish-eye {
+  fill: var(--c-bg);
+  opacity: 0.8;
 }
-.stilt__door {
-  fill: var(--c-bg-2);
-  stroke: var(--c-text-mute);
-  stroke-width: 1.5;
+/* ---- La maison ----
+   Le bois prend un ton d'écorce plutôt que l'encre de texte : six montants
+   blancs sur fond sombre tiraient l'œil plus que le toit. */
+.stilt__floor {
+  fill: color-mix(in srgb, var(--c-text-mute) 72%, var(--c-warm) 28%);
 }
-.stilt__window {
-  fill: var(--c-accent);
-  opacity: 0.45;
+.stilt__joist {
+  fill: color-mix(in srgb, var(--c-text-mute) 78%, var(--c-warm) 22%);
+  opacity: 0.7;
 }
+
+/* L'intérieur du fale : un vide sombre entre les poteaux. C'est lui qui fait
+   lire une maison ouverte, et non un cube plein. */
+.stilt__inside {
+  fill: var(--c-bg);
+  opacity: 0.55;
+}
+.stilt__cols line {
+  stroke: color-mix(in srgb, var(--c-text-mute) 74%, var(--c-warm) 26%);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.stilt__rail {
+  fill: color-mix(in srgb, var(--c-text-mute) 70%, var(--c-warm) 30%);
+  opacity: 0.9;
+}
+
+/* Le chaume. Le toit était une lentille pleine : un aplat n'a pas de matière.
+   Les rangs et le faîtage lui en donnent, et le débord fait l'ombre. */
 .stilt__roof {
   fill: var(--c-warm-soft);
   stroke: var(--c-warm);
-  stroke-width: 2;
-}
-.stilt__roof-ridge {
-  stroke: var(--c-warm);
   stroke-width: 1.6;
-  opacity: 0.5;
+  stroke-linejoin: round;
+}
+.stilt__ridge {
+  stroke: var(--c-warm);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.stilt__thatch path {
+  stroke: var(--c-warm);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.32;
+}
+
+/* Contreventement : des croix, pas une barre. Plus fines que les pieux, sinon
+   la structure a l'air d'un échafaudage. */
+.stilt__braces line {
+  stroke: color-mix(in srgb, var(--c-text-mute) 60%, var(--c-warm) 40%);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: 0.6;
 }
 .stilt__frame {
   stroke: var(--c-line);

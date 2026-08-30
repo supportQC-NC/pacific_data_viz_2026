@@ -35,10 +35,8 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ActBoard from "../../components/ActBoard/ActBoard";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
-import BarRace from "../../components/BarRace/BarRace";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import RankChart from "../../components/charts/RankChart";
-import RiverChart from "../../components/charts/RiverChart";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import SmokePlume from "../../components/SmokePlume/SmokePlume";
 import HeatmapChart from "../../components/charts/HeatmapChart";
@@ -47,6 +45,7 @@ import ScatterChart from "../../components/charts/ScatterChart";
 import EvolutionLines from "../../components/charts/EvolutionLines";
 import { territoryColors } from "../../components/charts/seriesColor";
 import {
+  fmt,
   median,
   valAt,
   paletteOf,
@@ -81,7 +80,6 @@ export default function Act1Emissions() {
 
   // Filtres GLOBAUX (un seul jeu pour tout l'acte).
   const [region, setRegion] = useState("all");
-  const [trendCountry, setTrendCountry] = useState("all"); // filtre propre à la vue Tendance
   const [yearIdx, setYearIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
 
@@ -237,21 +235,39 @@ export default function Act1Emissions() {
     [rankRows],
   );
 
-  // Vue Tendance : aire empilée par territoire. Options du filtre pays
-  // (limitées à la sous-région courante) et séries effectivement tracées.
-  const trendCountryOpts = useMemo(
-    () =>
-      allSeries
-        .filter((s) => inRegion(s.area))
-        .map((s) => ({ value: s.area, label: s.name })),
-    [allSeries, inRegion],
-  );
-  const trendSeries = useMemo(() => {
-    const base = allSeries.filter((s) => inRegion(s.area));
-    if (trendCountry === "all") return base;
-    const one = base.filter((s) => s.area === trendCountry);
-    return one.length ? one : base;
-  }, [allSeries, inRegion, trendCountry]);
+  // ---------- LES CHIFFRES À EMPORTER ----------
+  // L'escale montrait des formes et pas un seul nombre isolé. Un lecteur qui
+  // n'a pas l'habitude des graphiques repart avec UNE phrase et UN chiffre.
+  // Les trois sont dérivés de séries déjà calculées : aucune requête de plus,
+  // aucun chiffre écrit en dur.
+  const figures = useMemo(() => {
+    if (!rankRows.length) return [];
+    const top = rankRows.reduce(
+      (m, r) => (!m || r.value > m.value ? r : m),
+      null,
+    );
+    const dec = (v) => (v < 10 ? 1 : 0);
+    return [
+      {
+        value: fmt(rankMedian, dec(rankMedian)),
+        unit: t("act1.unit"),
+        label: tx("act1.fig.median", "Médiane du Pacifique", "Pacific median"),
+        meta: String(currentYear),
+      },
+      {
+        value: fmt(top.value, dec(top.value)),
+        unit: t("act1.unit"),
+        label: tx("act1.fig.top", "Le plus élevé", "The highest"),
+        meta: top.name,
+      },
+      {
+        value: `${firstYear}–${lastYear}`,
+        label: tx("act1.fig.span", "Période couverte", "Period covered"),
+        meta: `${years.length} ${tx("act1.fig.years", "années", "years")}`,
+      },
+    ];
+  }, [rankRows, rankMedian, currentYear, firstYear, lastYear, years, t, tx]);
+
 
   const subNames = useMemo(
     () => ({
@@ -466,6 +482,13 @@ export default function Act1Emissions() {
               "Switch territory with the selector below the plume.",
             ),
             legend: {
+              // CE QUE LA COULEUR ENCODE, DÉCLARÉ.
+              // Aucune vue de cette escale ne le disait : `ChartKey` retombait
+              // donc sur son défaut, « polarity », et peignait une pastille
+              // dégradée bleu↔ambre à côté de phrases qui parlent de teinte
+              // par territoire ou de grandeur. La légende décrivait un encodage
+              // que le graphique n'utilise pas.
+              swatch: "none",
               color: tx(
                 "act1.key.plume_c",
                 "La densité du panache suit les émissions par habitant du territoire choisi.",
@@ -475,39 +498,13 @@ export default function Act1Emissions() {
             },
             node: <SmokePlume embed />,
           },
-
-          {
-            id: "race",
-            empty: noSeries,
-            tab: tx("act1.board.tab_course", "Course", "Race"),
-            title: t("act1.viz.race_title"),
-            finding: t("act1.board.race_find"),
-            takeaway: t("act1.board.race_take"),
-            hint: tx(
-              "act1.hint.race",
-              "Lancez la course et regardez l'ordre : il change à peine en cinquante ans.",
-              "Start the race and watch the order: it barely moves in fifty years.",
-            ),
-            legend: {
-              y: tx("act1.key.race_y", "Un territoire par barre, le plus émetteur en haut", "One territory per bar, biggest emitter on top"),
-              x: tx("act1.key.race_x", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
-              note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
-            },
-            controls: boardControls,
-            node: (
-              <BarRace
-                series={regionSeries}
-                years={years}
-                unit={t("act1.unit")}
-                tk={tk}
-                labels={{
-                  play: t("act1.race.play"),
-                  pause: t("act1.race.pause"),
-                  restart: t("act1.race.restart"),
-                }}
-              />
-            ),
-          },
+          // VUE « COURSE » RETIRÉE.
+          // Elle rejouait le classement année après année. Or le Classement
+          // porte déjà le curseur d'années : on y obtient exactement la même
+          // lecture, à la main plutôt qu'en boucle. Et son enseignement —
+          // « l'ordre ne bouge pas en cinquante ans » — est celui que la vue
+          // Évolution démontre en base 100, mieux et sur un seul écran.
+          // `BarRace` reste dans components/ : l'escale 11 s'en sert.
           {
             id: "read",
             empty: false,
@@ -539,10 +536,11 @@ export default function Act1Emissions() {
             takeaway: t("act1.board.rank_take"),
             hint: tx(
               "act1.hint.rank",
-              "Survolez une barre pour la valeur exacte. Changez de sous-région dans la barre du haut.",
-              "Hover a bar for the exact value. Switch sub-region in the top bar.",
+              "Survolez une barre pour la valeur exacte. Le menu en haut de cette colonne change de sous-région.",
+              "Hover a bar for the exact value. The menu at the top of this column switches sub-region.",
             ),
             legend: {
+              swatch: "none",
               y: tx("act1.key.rank_y", "Un territoire par barre, du plus émetteur au plus sobre", "One territory per bar, from biggest emitter to lowest"),
               x: tx("act1.key.rank_x", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
               color: tx(
@@ -558,78 +556,41 @@ export default function Act1Emissions() {
               // s'expliquer si on ne le dit pas.
               caveat: tx(
                 "act1.key.rank_caveat",
-                "Le classement porte sur la seule année choisie au curseur, pas sur la période. Un territoire sans mesure cette année-là n'apparaît pas — une absence n'est pas un zéro.",
-                "The ranking covers only the year set on the slider, not the whole period. A territory with no measurement that year is absent — a gap is not a zero.",
+                "Un territoire sans mesure cette année-là n'apparaît pas : une absence n'est pas un zéro. Et la série est publiée à une décimale : plusieurs territoires partagent la valeur plancher de 0,1 — entre eux, l'ordre ne veut rien dire.",
+                "A territory with no measurement that year does not appear: a gap is not a zero. And the series is published to one decimal: several territories share the floor value of 0.1 — among them, the order means nothing.",
               ),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
             controls: boardControls,
             node: (
+              // EN POINTS, SUR ÉCHELLE LOGARITHMIQUE.
+              // En barres, l'écart réel de la donnée — un territoire à 86
+              // t/hab, une douzaine sous 2 — réduisait quinze territoires sur
+              // dix-huit à un filet d'un pixel, dont quatre sans aucune marque
+              // visible : impossible de les distinguer d'une donnée manquante,
+              // ce que le « à savoir » rendait justement ambigu.
+              // Une barre ne peut pas passer en log, elle encode depuis zéro ;
+              // un point le peut. Chaque graduation vaut dix fois la
+              // précédente, et les dix-huit territoires redeviennent lisibles
+              // en même temps.
               <RankChart
                 points={rankRows}
                 unit={t("act1.unit")}
                 median={rankMedian}
                 refLabel={t("act1.ref_median")}
                 sort="desc"
+                marks="dot"
+                logX
               />
             ),
           },
-          {
-            id: "trend",
-            empty: noSeries,
-            tab: tx("act1.board.tab_traj", "Trajectoires", "Paths"),
-            title: t("act1.viz.trend_title"),
-            finding: t("act1.board.trend_find"),
-            takeaway: t("act1.board.trend_take"),
-            hint: tx(
-              "act1.hint.trend",
-              "Choisissez un territoire dans le menu au-dessus du graphique pour isoler sa trajectoire.",
-              "Pick a territory in the menu above the chart to isolate its path.",
-            ),
-            legend: {
-              y: tx("act1.key.trend_y", "Émissions par habitant, en tonnes", "Emissions per person, in tonnes"),
-              x: tx("act1.key.trend_x", "Une année par point", "One point per year"),
-              note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
-            },
-            controls: boardControls,
-            node: (
-              <div className="chartview">
-                <ChartFilter
-                  label={tf(
-                    "act1.trend.country_label",
-                    "Territoire",
-                    "Territory",
-                  )}
-                  value={trendCountry}
-                  onChange={setTrendCountry}
-                  options={[
-                    {
-                      value: "all",
-                      label: tf(
-                        "act1.trend.country_all",
-                        "Tous les territoires",
-                        "All territories",
-                      ),
-                    },
-                    ...trendCountryOpts,
-                  ]}
-                />
-                <div className="chartview__chart">
-                  <RiverChart
-                    subAvg={trendSeries}
-                    years={years}
-                    compactLegend
-                    // PAS d'empilement : on ne peut pas additionner des
-                    // tonnes PAR HABITANT. Empilées, les 21 séries donnaient
-                    // un axe montant à plusieurs dizaines de tonnes pour une
-                    // région dont la médiane est inférieure à 1 — un total
-                    // qui n'existe nulle part.
-                    stack={false}
-                  />
-                </div>
-              </div>
-            ),
-          },
+          // VUE « TRAJECTOIRES » RETIRÉE.
+          // Mêmes séries, même forme et même composant de données que la vue
+          // Évolution — à ceci près qu'Évolution les ramène toutes à base 100.
+          // Sur des niveaux qui vont de 0,1 à 86 t/hab, les courbes brutes se
+          // superposaient toutes contre l'axe : on ne pouvait y lire ni le
+          // niveau (le Classement le donne) ni le mouvement (Évolution le
+          // donne). `RiverChart` reste dans charts/ : d'autres escales l'utilisent.
           {
             id: "change",
             empty: noSeries,
@@ -658,6 +619,7 @@ export default function Act1Emissions() {
               "Click a territory in the legend to hide it, and isolate the ones that actually move.",
             ),
             legend: {
+              swatch: "polarity",
               y: tx("act1.key.change_y", "Base 100 à la première année : 100 = même niveau qu'au départ", "Base 100 at the first year: 100 = same level as the start"),
               x: tx("act1.key.change_x", "Une année par point", "One point per year"),
               color: tx(
@@ -682,7 +644,7 @@ export default function Act1Emissions() {
           {
             id: "scatter",
             empty: noScatter,
-            tab: tx("act1.board.tab_croisement", "Croisement", "Crossing"),
+            tab: tx("act1.board.tab_croisement", "Position", "Standing"),
             title: t("act1.viz.scatter_title"),
             finding: t("act1.board.scatter_find"),
             takeaway: t("act1.board.scatter_take"),
@@ -692,6 +654,7 @@ export default function Act1Emissions() {
               "Hover a dot to name it. The lower-left quadrant holds the low emitters still going down.",
             ),
             legend: {
+              swatch: "none",
               y: tx("act1.key.scatter_y", "Évolution depuis la première année", "Change since the first year"),
               x: tx("act1.key.scatter_x", "Niveau actuel par habitant, échelle logarithmique", "Current level per person, logarithmic scale"),
               color: tx("act1.key.scatter_c", "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.", "One hue per sub-region: Melanesia, Polynesia, Micronesia."),
@@ -710,7 +673,7 @@ export default function Act1Emissions() {
           {
             id: "denom",
             empty: noVol,
-            tab: tx("act1.board.tab_volatilite", "Volatilité", "Volatility"),
+            tab: tx("act1.board.tab_volatilite", "Nervosité", "Jumpiness"),
             title: t("act1.viz.denom_title"),
             finding: t("act1.board.denom_find"),
             takeaway: t("act1.board.denom_take"),
@@ -720,6 +683,7 @@ export default function Act1Emissions() {
               "Hover a dot: the jumpiest are almost always the least populated.",
             ),
             legend: {
+              swatch: "none",
               y: tx("act1.key.denom_y", "Nervosité de la série : écart entre ses années extrêmes", "How jumpy the series is: gap between its extreme years"),
               x: tx("act1.key.denom_x", "Niveau médian sur toute la période", "Median level over the whole period"),
               color: tx("act1.key.denom_c", "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.", "One hue per sub-region: Melanesia, Polynesia, Micronesia."),
@@ -743,6 +707,30 @@ export default function Act1Emissions() {
             title: t("act1.viz.heat_title"),
             finding: t("act1.board.heat_find"),
             takeaway: t("act1.board.heat_take"),
+            hint: tx(
+              "act1.hint.heat",
+              "Suivez une ligne de gauche à droite : c'est l'histoire d'un territoire sur un demi-siècle.",
+              "Follow one row from left to right: it is one territory's half-century.",
+            ),
+            legend: {
+              swatch: "magnitude",
+              y: tx(
+                "act1.key.heat_y",
+                "Une ligne par territoire, les plus émetteurs en haut.",
+                "One row per territory, the biggest emitters on top.",
+              ),
+              x: tx(
+                "act1.key.heat_x",
+                "Une colonne par année, de la plus ancienne à la plus récente.",
+                "One column per year, from the oldest to the most recent.",
+              ),
+              color: tx(
+                "act1.key.heat_c",
+                "Du clair au sombre : la position du territoire cette année-là, du plus sobre au plus émetteur.",
+                "Light to dark: the territory's standing that year, from lowest to highest emitter.",
+              ),
+              note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
+            },
             controls: boardControls,
             node: (
               <HeatmapChart
@@ -779,6 +767,7 @@ export default function Act1Emissions() {
               "Spin the globe, zoom in, hover a column. The year scrubber sits at the bottom, and the top-right button goes full screen.",
             ),
             legend: {
+              swatch: "magnitude",
               color: tx("act1.key.map_c", "Plus la colonne est haute et claire, plus le territoire émet par habitant. Échelle logarithmique : les écarts vont du simple au décuple.", "The taller and lighter the column, the more the territory emits per person. Logarithmic scale: the gaps run from one to tenfold."),
               note: tx("act1.key.source", SOURCE_FR, SOURCE_EN),
             },
@@ -849,6 +838,7 @@ export default function Act1Emissions() {
       back={{ to: "/", label: t("act1.back") }}
       eyebrow={t("home.acts.a1_tag")}
       title={t("home.acts.a1_title")}
+      figures={figures}
       // La question de l'escale n'apparaît plus DANS le dashboard : elle est
       // portée par la traversée en pirogue qui y mène. Elle reste posée ici
       // parce que l'étape 0 (hors voyage guidé) l'affiche encore.

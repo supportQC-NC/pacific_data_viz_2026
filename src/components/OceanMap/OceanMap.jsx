@@ -16,7 +16,6 @@
 // ============================================================
 
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -140,6 +139,15 @@ function colorExpr(lo, hi, pal, mid) {
 
 // Territoire PICT le plus proche d'un point (decalage antimeridien) -> sert
 // a nommer un point de littoral par l'ile a laquelle il appartient.
+// Ne garde que les segments des territoires demandés. `null` ou liste vide
+// = on rend la collection telle quelle, sans recopier inutilement.
+function filterCoast(gj, areas) {
+  if (!gj) return gj;
+  if (!areas || !areas.length) return gj;
+  const keep = new Set(areas);
+  return { ...gj, features: gj.features.filter((f) => keep.has(f.properties.a)) };
+}
+
 function nearestPict(ll) {
   const wlng = ll.lng < 0 ? ll.lng + 360 : ll.lng;
   let best = null;
@@ -200,6 +208,15 @@ export default function OceanMap({
   // Prévient le parent quand on quitte le plein écran, pour qu'il puisse
   // démonter la carte au lieu de la laisser retomber dans un panneau.
   onExitFull = null,
+  // Territoires effectivement couverts par la couche littoral, renvoyés au
+  // parent une fois le fichier lu. Il n'y a pas d'autre endroit d'où le
+  // savoir : la liste dépend du contenu du GeoJSON, pas d'une table.
+  onCoastAreas = null,
+  // Sous-ensemble de territoires à AFFICHER sur la couche littoral. `null`
+  // (défaut) = tous. Le filtre de sous-région de l'escale pilotait toutes les
+  // vues sauf celle-ci : la carte continuait de montrer les 812 segments du
+  // Pacifique entier pendant qu'on avait demandé la Mélanésie.
+  coastAreas = null,
 }) {
   const { lang } = useLang();
   const ml = mapLabels[lang] || mapLabels.fr;
@@ -218,13 +235,20 @@ export default function OceanMap({
   // change réellement.
   const [fitTick, setFitTick] = useState(0);
   const coastPtsRef = useRef([]);
-  const coastIdxRef = useRef(-1);
+  // La collection complète, telle que reçue : re-filtrer ne doit pas
+  // relancer la requête ni reconstruire les couches.
+  const coastRawRef = useRef(null);
   // Centre de survol recalculé sur les segments du territoire (voir plus bas).
   const droneCenterRef = useRef(null);
+  // Le PREMIER cadrage se pose d'un coup (`jumpTo`) : animer une traversée
+  // depuis un globe lointain déclenche une vague de tuiles intermédiaires qui
+  // fige le rendu. Les suivants, eux, sont des déplacements demandés par le
+  // lecteur : ils s'animent, sinon la carte a l'air de se téléporter et l'on
+  // perd le lien entre l'endroit d'avant et celui d'après.
+  const droneFlownRef = useRef(false);
   const showCoastRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [full, setFull] = useState(initialFull);
-  const [coastNav, setCoastNav] = useState(null);
 
   const min = range?.min ?? -1;
   const max = range?.max ?? 1;
@@ -597,12 +621,15 @@ export default function OceanMap({
     if (droneOn && PICT_GEO[droneOn]) {
       const key = `drone:${droneOn}`;
       if (fittedKeyRef.current !== key) {
-        map.jumpTo({
+        const cam = {
           center: droneCenterRef.current || PICT_GEO[droneOn],
           zoom: droneCenterRef.current ? 7.2 : 6.6,
           pitch: droneCenterRef.current ? 52 : 50,
           bearing: -18,
-        });
+        };
+        if (droneFlownRef.current) map.flyTo({ ...cam, speed: 0.9 });
+        else map.jumpTo(cam);
+        droneFlownRef.current = true;
         fittedKeyRef.current = key;
       }
     }
@@ -751,14 +778,24 @@ export default function OceanMap({
       .then((r) => r.json())
       .then((gj) => {
         if (cancelled || !mapRef.current) return;
+        // Chaque segment reçoit SON territoire, calculé une fois. C'est ce
+        // qui permet ensuite de filtrer par sous-région sans re-parcourir la
+        // géographie à chaque changement de menu.
+        gj.features.forEach((f) => {
+          f.properties.a =
+            nearestPict({
+              lng: f.geometry.coordinates[0],
+              lat: f.geometry.coordinates[1],
+            }) || "";
+        });
+        coastRawRef.current = gj;
         const pts = gj.features.map((f) => ({
           lng: f.geometry.coordinates[0],
           lat: f.geometry.coordinates[1],
           r: Number(f.properties.r),
+          a: f.properties.a,
         }));
         coastPtsRef.current = pts;
-        coastIdxRef.current = -1;
-        setCoastNav({ idx: -1, total: pts.length });
 
         // RECALAGE DU SURVOL SUR LES SEGMENTS RÉELLEMENT MESURÉS.
         //
@@ -772,31 +809,37 @@ export default function OceanMap({
         // On recale donc sur la moyenne des segments du territoire. `jumpTo`
         // et non `easeTo` : pas de traversée à animer, donc pas de vague de
         // tuiles intermédiaires — c'est ce qui figeait le rendu.
+        if (typeof onCoastAreas === "function") {
+          onCoastAreas(Array.from(new Set(pts.map((q) => q.a))).filter(Boolean));
+        }
+
         if (droneOn) {
-          const mine = pts.filter(
-            (q) => nearestPict({ lng: q.lng, lat: q.lat }) === droneOn,
-          );
+          const mine = pts.filter((q) => q.a === droneOn);
           if (mine.length) {
             // Moyenne en longitudes déroulées : le jeu traverse l'antiméridien.
             const wrap = (v) => (v < 0 ? v + 360 : v);
             const lw = mine.reduce((a, q) => a + wrap(q.lng), 0) / mine.length;
             const lat = mine.reduce((a, q) => a + q.lat, 0) / mine.length;
             droneCenterRef.current = [lw > 180 ? lw - 360 : lw, lat];
-            map.jumpTo({
+            const cam = {
               center: droneCenterRef.current,
               zoom: 7.2,
               pitch: 52,
               bearing: -18,
-            });
+            };
+            if (droneFlownRef.current) map.flyTo({ ...cam, speed: 0.9 });
+            else map.jumpTo(cam);
+            droneFlownRef.current = true;
             fittedKeyRef.current = `drone:${droneOn}`;
           }
         }
 
+        const visible = filterCoast(gj, coastAreas);
         if (map.getSource("coast")) {
-          map.getSource("coast").setData(gj);
+          map.getSource("coast").setData(visible);
           return;
         }
-        map.addSource("coast", { type: "geojson", data: gj });
+        map.addSource("coast", { type: "geojson", data: visible });
         const before = map.getLayer("cols") ? "cols" : undefined;
 
         map.addLayer(
@@ -988,14 +1031,12 @@ export default function OceanMap({
         }
         cpop.remove();
         coastPtsRef.current = [];
-        coastIdxRef.current = -1;
         showCoastRef.current = null;
-        setCoastNav(null);
       } catch (e) {
         /* carte deja detruite */
       }
     };
-  }, [loaded, coastlineUrl, lang, droneOn]);
+  }, [loaded, coastlineUrl, lang, droneOn, onCoastAreas, coastAreas]);
 
   // Redimensionnement du conteneur : on remet la carte à la bonne taille PUIS
   // on redemande un cadrage. Sans le second, la caméra garde le réglage d'une
@@ -1054,50 +1095,22 @@ export default function OceanMap({
     return () => window.removeEventListener("keydown", onKey);
   }, [full]);
 
-  // Navigation pas-a-pas le long du littoral : recentre sur le point
-  // precedent/suivant en CONSERVANT le zoom courant, et ouvre sa bulle.
-  // 1er appel : on part du point le plus proche du centre actuel.
-  const goCoast = useCallback((dir) => {
+
+  // LE FILTRE DE SOUS-RÉGION S'APPLIQUE À LA COUCHE LITTORAL.
+  // Il ne relance rien : la collection complète est en mémoire depuis le
+  // premier chargement, on ne fait que servir un sous-ensemble à la source.
+  useEffect(() => {
     const map = mapRef.current;
-    const pts = coastPtsRef.current;
-    if (!map || !pts.length) return;
-    let idx = coastIdxRef.current;
-    if (idx < 0) {
-      const c = map.getCenter();
-      const wc = c.lng < 0 ? c.lng + 360 : c.lng;
-      let bd = Infinity;
-      let bi = 0;
-      pts.forEach((p, i) => {
-        const w = p.lng < 0 ? p.lng + 360 : p.lng;
-        const d = (w - wc) * (w - wc) + (p.lat - c.lat) * (p.lat - c.lat);
-        if (d < bd) {
-          bd = d;
-          bi = i;
-        }
-      });
-      idx = bi;
-    } else {
-      idx = (idx + dir + pts.length) % pts.length;
-    }
-    coastIdxRef.current = idx;
-    const p = pts[idx];
-    // On conserve le zoom ET l'inclinaison courants : passer d'un site au
-    // suivant ne doit pas faire remonter la caméra.
-    map.flyTo({ center: [p.lng, p.lat], zoom: map.getZoom(), speed: 0.8 });
-    if (showCoastRef.current) showCoastRef.current(idx);
-    setCoastNav({ idx, total: pts.length });
-  }, []);
+    if (!map || !loaded) return;
+    const src = map.getSource("coast");
+    if (!src || !coastRawRef.current) return;
+    src.setData(filterCoast(coastRawRef.current, coastAreas));
+  }, [loaded, coastAreas]);
 
   if (!TOKEN) return <div className="omap omap--notoken">{noTokenMsg}</div>;
 
   const hasTimeline = years.length > 0 && typeof onTogglePlay === "function";
   const curYear = years.length ? years[yearIndex ?? 0] : "";
-  const coastPrevLabel =
-    ml.coastPrev || (lang === "fr" ? "Point précédent" : "Previous point");
-  const coastNextLabel =
-    ml.coastNext || (lang === "fr" ? "Point suivant" : "Next point");
-  const coastBrowseLabel =
-    ml.coastBrowse || (lang === "fr" ? "Parcourir la côte" : "Browse coast");
 
   return (
     <div className={`omap ${full ? "omap--full" : ""}`}>
@@ -1211,63 +1224,6 @@ export default function OceanMap({
           </div>
         )}
 
-        {coastNav && (
-          <div className="omap__coastnav">
-            <button
-              type="button"
-              className="omap__coastbtn"
-              onClick={() => goCoast(-1)}
-              aria-label={coastPrevLabel}
-              title={coastPrevLabel}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path
-                  d="M14 6 L8 12 L14 18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <span className="omap__coastlabel">
-              {coastNav.idx < 0
-                ? coastBrowseLabel
-                : `${coastNav.idx + 1} / ${coastNav.total}`}
-            </span>
-            <button
-              type="button"
-              className="omap__coastbtn"
-              onClick={() => goCoast(1)}
-              aria-label={coastNextLabel}
-              title={coastNextLabel}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path
-                  d="M10 6 L16 12 L10 18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* L'échelle de valeurs n'a de sens QUE si la carte peint des valeurs.

@@ -1,117 +1,75 @@
 // src/components/KeyFigures/KeyFigures.scss
 // ============================================================
-// Bandeau de chiffres-clés sous le hero. Design « grand livre » éditorial :
-// chaque chiffre coiffé d'un filet + d'une amorce d'accent, grand nombre serif
-// coloré, unité mono, libellé sobre. Cohérent avec les piliers du manifeste.
-// Tokens uniquement (light/dark auto), responsive, zéro inline.
+// Les chiffres à emporter, en tête de la colonne de lecture.
+// Empilés, le premier plus gros : une hiérarchie, pas trois égaux.
 // ============================================================
 
-.keyfigs {
-  padding-block: var(--sp-16);
-}
-
-.keyfigs__kicker {
-  margin-bottom: var(--sp-8);
-}
-
-.keyfigs__grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: var(--sp-8) var(--sp-6);
-}
-
-/* Chaque chiffre : filet en tête + amorce d'accent (look « ledger »). */
 .keyfig {
-  position: relative;
+  flex: 0 0 auto;
+}
+
+.keyfig__list {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding-top: var(--sp-4);
-  border-top: var(--border-hair) solid var(--c-line-strong);
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 0;
-    width: 34px;
-    height: 2px;
-    background: var(--c-accent);
-  }
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.keyfig--empty {
-  border-top: 0;
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  color: var(--c-text-mute);
-
-  &::before {
-    display: none;
-  }
-}
-
-.keyfig__value {
+.keyfig__item {
   display: flex;
-  align-items: baseline;
-  gap: var(--sp-1);
+  flex-direction: column;
+  gap: 1px;
+  padding-left: var(--sp-3);
+  border-left: 2px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+}
+
+/* LE CHIFFRE. Proportionnel, pas tabulaire : la doctrine du dépôt réserve
+   `tabular-nums` aux graduations d'axe et aux lignes de tableau, où les
+   chiffres doivent s'aligner en colonne. Ici il n'y a rien à aligner, et les
+   chasses fixes creusent des trous dans un grand corps. */
+.keyfig__value {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 4.4vw, 3.4rem);
-  font-weight: var(--fw-semi);
-  line-height: 1;
-  letter-spacing: var(--ls-tight);
-  color: var(--c-accent);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-med);
+  line-height: 1.05;
+  color: var(--c-text);
+
+  .is-lead & {
+    font-size: var(--fs-lg);
+  }
 }
 
 .keyfig__unit {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-reg);
-  letter-spacing: 0.02em;
-  color: var(--c-text-mute);
-}
-
-.keyfig__label {
-  max-width: 26ch;
-  font-size: var(--fs-sm);
-  line-height: 1.45;
+  font-weight: var(--fw-reg, 400);
   color: var(--c-text-soft);
 }
 
-.keyfigs__source {
-  margin-top: var(--sp-12);
-  font-family: var(--font-mono);
+.keyfig__label {
+  margin: 0;
   font-size: var(--fs-xs);
-  letter-spacing: 0.02em;
+  line-height: 1.4;
   color: var(--c-text-mute);
 }
 
-/* Légère apparition au défilement (piloté par data-inview). */
-.keyfig {
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 0.6s var(--ease-out),
-    transform 0.6s var(--ease-out);
-}
-.keyfigs[data-inview="true"] .keyfig {
-  opacity: 1;
-  transform: none;
+.keyfig__meta {
+  color: var(--c-text-soft);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .keyfig {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+/* ---------- EN REPLI, SOUS 1180 px ----------
+   La colonne n'existe plus : les chiffres passent dans l'en-tête, où la
+   largeur est disponible et la hauteur comptée. Ils s'y mettent en ligne. */
+.board__head .keyfig__list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-5);
 }
 
-@media (max-width: 600px) {
-  .keyfigs__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.board__head .keyfig__value,
+.board__head .is-lead .keyfig__value {
+  font-size: var(--fs-md);
 }

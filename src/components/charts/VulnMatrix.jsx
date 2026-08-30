@@ -69,7 +69,12 @@ export default function VulnMatrix({
         min: 0,
         max: 100,
         calculable: true,
-        inRange: { color: [tk.positive, tk.warm, tk.negative] },
+        // VERT → AMBRE → ROUGE remplacé par la divergente validée.
+        // Les deux pôles de l'ancienne paire sont indiscernables pour près
+        // d'un homme sur douze, sur la matrice qui porte la thèse de tout
+        // l'acte. `div1..div9` suivent le thème, contrairement aux jetons
+        // sémantiques employés ici.
+        inRange: { color: [tk.div1, tk.div5, tk.div9] },
       },
       series: [
         {

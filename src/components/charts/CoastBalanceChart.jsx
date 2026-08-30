@@ -13,8 +13,18 @@ import useThemeTokens from "../../hooks/UseThemeTokens";
 import ApexChart from "../ApexChart/ApexChart";
 import { fmt, baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip, refLineX, MONO } from "./apexBase";
 
-const ERO = "#e8453c"; // recul
-const ACC = "#2c7fb8"; // avancée
+// Les deux pôles étaient codés en dur (#e8453c / #2c7fb8) : identiques dans
+// les deux thèmes alors que sur le fond marine les extrêmes doivent être
+// CLAIRS, et hors de la divergente validée du système. On lit les jetons.
+const cssVar = (name, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return v || fallback;
+};
+const ERO = () => cssVar("--c-div-9", "#e0a55c"); // recul  → pôle chaud
+const ACC = () => cssVar("--c-div-1", "#7fb0f0"); // avancée → pôle froid
 
 export default function CoastBalanceChart({ rows = [], retreatLabel = "Recul", advanceLabel = "Avancée", unit = "%" }) {
   const tk = useThemeTokens();
@@ -25,7 +35,7 @@ export default function CoastBalanceChart({ rows = [], retreatLabel = "Recul", a
 
     return {
       chart: baseChart(tk, { type: "bar", stacked: true }),
-      colors: [ERO, ACC],
+      colors: [ERO(), ACC()],
       plotOptions: {
         bar: { horizontal: true, barHeight: "66%", borderRadius: 3 },
       },

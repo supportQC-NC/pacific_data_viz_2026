@@ -57,6 +57,7 @@
     flex-direction: column;
 
     .cmap__stage {
+      overflow: hidden;
       flex: 1;
       min-height: 0;
     }
@@ -185,6 +186,26 @@
     backdrop-filter: blur(10px);
     border: var(--border-hair) solid var(--c-line);
     border-radius: var(--r-pill);
+
+    /* SUR TÉLÉPHONE, LA RÉGLETTE PASSE À LA LIGNE.
+       Sa largeur était bien contrainte (`min(560px, 100% - 32px)`) mais son
+       CONTENU ne l'était pas : bouton, curseur, année et régulateur de vitesse
+       tenaient une rangée de 331 px dans une piste de 245. Le débordement
+       sortait de la carte et poussait la page entière — 22 px de défilement
+       horizontal sur toute l'escale, à 390 px de large.
+       On enroule, et le curseur reprend la largeur restante. */
+    @media (max-width: 700px) {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--sp-2);
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--r-lg, 16px);
+
+      > input[type="range"] {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+    }
   }
 
   &__play {

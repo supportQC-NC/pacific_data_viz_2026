@@ -30,11 +30,57 @@
 .chartkey {
   display: none;
   flex-direction: column;
-  gap: var(--sp-6);
+  /* Cinq intervalles à 1,5 rem coûtaient 120 px de colonne pour rien depuis
+     que la phrase de lecture s'y ajoute. Un cran plus bas : les blocs
+     restent distincts, ils sont séparés par leurs intertitres. */
+  gap: var(--sp-5);
   min-width: 0;
   height: 100%;
   padding: var(--sp-3) 0 var(--sp-2) var(--sp-8);
   border-left: var(--border-hair) solid var(--c-line);
+
+  /* FILET DE SÉCURITÉ. La colonne portait un contenu de hauteur à peu près
+     fixe ; la phrase « ce que vous regardez » en ajoute deux à quatre lignes,
+     et une escale bavarde peut dépasser. Sans cela le contenu débordait sous
+     le panneau, en silence. La barre reste masquée : le dégradé de bas de
+     colonne suffit à dire qu'il y a une suite. */
+}
+
+/* La zone qui défile : le titre et les explications. Les commandes (au-dessus)
+   et la source (en dessous) n'en font pas partie — elles doivent rester
+   visibles sans qu'on ait à faire défiler quoi que ce soit. */
+.chartkey__flow {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  /* Et si elle défile, elle le DIT. Une colonne coupée net en bas se lit
+     comme une colonne finie : le lecteur ne cherche pas la suite d'un texte
+     dont rien n'annonce qu'il continue. */
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - 28px),
+    transparent 100%
+  );
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* La phrase de lecture : même corps que le reste, mais posée juste sous le
+   titre — c'est la première chose qu'on lit après avoir su de quoi il s'agit. */
+.chartkey__finding {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--c-text-soft);
 }
 
 .chartkey__block {

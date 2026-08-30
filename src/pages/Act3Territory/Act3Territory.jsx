@@ -215,6 +215,22 @@ export default function Act3Territory() {
   const [yearIdx, setYearIdx] = useState(null); // index sur les années de la MER
   const [playing, setPlaying] = useState(false);
 
+  // ---------- LE SURVOL DU TRAIT DE CÔTE ----------
+  // « Parcourir la côte » enchaînait les segments un par un, dans l'ordre du
+  // fichier : on sautait d'une île à l'autre sans logique apparente, et le
+  // compteur « 37 / 812 » ne disait pas où l'on se trouvait. Le lecteur, lui,
+  // arrive avec une question simple — « et chez moi ? ». Un menu de
+  // territoires y répond, et la caméra vole jusqu'à la côte choisie.
+  const [coastArea, setCoastArea] = useState("NC");
+  // La carte renvoie les territoires réellement couverts par le fichier de
+  // littoral : proposer un choix qui mène à une mer vide serait pire que ne
+  // pas le proposer du tout.
+  const [coastAreas, setCoastAreas] = useState([]);
+  const handleCoastAreas = useCallback(
+    (codes) => setCoastAreas((prev) => (prev.join() === codes.join() ? prev : codes)),
+    [],
+  );
+
   useEffect(() => {
     dispatch(loadDataset("seaLevel"));
     dispatch(loadDataset("population"));
@@ -254,6 +270,33 @@ export default function Act3Territory() {
     (area) => region === "all" || REGION_OF[area] === region,
     [region],
   );
+
+  // LE FILTRE DE SOUS-RÉGION VAUT AUSSI POUR LE LITTORAL.
+  // Il pilotait toutes les vues de l'escale sauf celle-ci : on demandait la
+  // Mélanésie et la carte continuait d'afficher les segments du Pacifique
+  // entier, menu compris. Ici il fait les deux : il restreint la couche
+  // dessinée ET la liste des territoires qu'on peut survoler.
+  const coastVisibleAreas = useMemo(() => {
+    const inCoast = coastAreas.length ? coastAreas : [coastArea];
+    return inCoast.filter((c) => isPict(c) && inRegion(c));
+  }, [coastAreas, coastArea, inRegion]);
+
+  const coastAreaOptions = useMemo(
+    () =>
+      coastVisibleAreas
+        .map((c) => ({ value: c, label: pictName(c, lang) }))
+        .sort((a, b) => a.label.localeCompare(b.label, lang)),
+    [coastVisibleAreas, lang],
+  );
+
+  // Si le territoire survolé sort de la sous-région choisie, la caméra irait
+  // se poser sur une côte qu'on vient de masquer. On la repose sur le premier
+  // territoire encore disponible.
+  useEffect(() => {
+    if (!coastAreaOptions.length) return;
+    if (coastAreaOptions.some((o) => o.value === coastArea)) return;
+    setCoastArea(coastAreaOptions[0].value);
+  }, [coastAreaOptions, coastArea]);
 
   // Séries par territoire (mer & population), filtrées par sous-région.
   const seaSeries = useMemo(
@@ -703,22 +746,166 @@ export default function Act3Territory() {
             },
   };
 
-  const vizIds =
-    dataset === "population" ? ["popviz"] : ["stilt", "coastviz"];
+  // LES TROIS DESSINS SOUS UN SEUL ONGLET, COMME PARTOUT AILLEURS.
+  //
+  // La bascule était filtrée par le jeu de données : « Peuplement » ne se
+  // montrait que sur la famille population, « Pilotis » et « Rivage » que sur
+  // la famille mer. Un lecteur resté sur la mer ne savait donc pas que la
+  // colonne démographique existait — et le tiers du visuel de l'escale lui
+  // était invisible.
+  //
+  // Ce filtrage n'avait aucune raison d'être : chaque dessin charge SA propre
+  // série et porte SON propre sélecteur de territoire. Il ne dépend pas du
+  // menu de l'escale, comme le veut la règle des vues « visuel ».
+  const vizIds = ["stilt", "coastviz", "popviz"];
   const vizItems = [
     { id: "stilt", label: tx("act3.viz.sw_stilt", "Pilotis", "Stilts") },
     { id: "coastviz", label: tx("act3.viz.sw_coast", "Rivage", "Shore") },
     { id: "popviz", label: tx("act3.viz.sw_pop", "Peuplement", "People") },
-  ].filter((o) => vizIds.includes(o.id));
+  ];
   const vizKey = vizIds.includes(viz) ? viz : vizIds[0];
   const activeViz = VIZ[vizKey];
 
   const charts =
     status === "ready" && currentSeaYear != null
       ? [
+          // LE TRAIT DE CÔTE OUVRE L'ESCALE.
+          // La question posée est « la mer monte-t-elle là où l'on vit ? ».
+          // On y répondait en commençant par des courbes d'anomalie : le
+          // lecteur voyait un niveau moyen avant d'avoir vu une côte. Le globe
+          // satellite montre d'emblée le LIEU — des segments de littoral
+          // relevés un par un, sur une image réelle — et les mesures qui
+          // suivent quantifient ce qu'on vient de regarder.
+          {
+            id: "coast",
+            signature: true,
+            empty: false,
+            tab: t("act3.board.tab_coast"),
+            title: t("act3.viz.coast_title"),
+            finding: t("act3.board.coast_find"),
+            takeaway: t("act3.board.coast_take"),
+            hint: tx(
+              "act3.hint.coast",
+              "Choisissez un territoire dans le menu : la caméra s'y pose. Puis servez-vous de la boussole en haut à gauche pour pivoter et vous incliner — la carte est en trois dimensions, on peut vraiment survoler la côte.",
+              "Pick a territory in the menu and the camera lands on it. Then use the compass at the top left to turn and tilt — the map is three-dimensional, you can genuinely fly along the coast.",
+            ),
+            // Les commandes de l'escale, PLUS le survol propre à cette vue.
+            controls: (
+              <>
+                {boardControls}
+                <ChartFilter
+                  label={tx("act3.coast.fly_label", "Survoler", "Fly to")}
+                  hideLabel
+                  value={coastArea}
+                  onChange={setCoastArea}
+                  options={coastAreaOptions}
+                />
+              </>
+            ),
+            legend: {
+              swatch: "none",
+              color: tx(
+                "act3.key.coast_c",
+                "Une couleur par territoire, la même que dans les autres vues.",
+                "One colour per territory, the same as in the other views.",
+              ),
+              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+            },
+            node: (
+              <div className="act6coast">
+                <ErrorBoundary
+                  fallback={
+                    <div className="board__state board__state--err">
+                      {t("scene.error")}
+                    </div>
+                  }
+                >
+                  <Suspense
+                    fallback={<Loader compact label={t("scene.loading")} />}
+                  >
+                    <OceanMap
+                      data={[]}
+                      fitAreas={coastRows}
+                      unit={seaUnit}
+                      range={mapRange}
+                      // LA RAMPE VERT↔ROUGE EST ÉCARTÉE ICI AUSSI.
+                      // « semantic » va de #25e09a à #ff4d6d : mesurée à
+                      // ΔE 4,1 sous deutéranopie, ses deux pôles sont la MÊME
+                      // couleur pour près d'un homme sur douze — sur une carte
+                      // qui oppose précisément recul et avancée. Elle était
+                      // aussi codée en dur, donc insensible au thème.
+                      // « polarity » est la divergente validée (bleu↔ambre,
+                      // pire cas ΔE 20,5), et le recul/avancée du trait de
+                      // côte est bien une polarité autour de zéro.
+                      ramp="polarity"
+                      mid={0}
+                      lowLabel={t("act3.map_low")}
+                      midLabel={t("act3.map_mid")}
+                      highLabel={t("act3.map_high")}
+                      noTokenMsg={t("act1.map_no_token")}
+                      coastlineUrl={COAST_URL}
+                      // Aucune colonne peinte sur cette vue : la barre
+                      // d'échelle générique n'aurait rien décrit. La légende
+                      // recul/avancée, juste dessous, est la bonne.
+                      showLegend={false}
+                      // On ouvre au ras de la Nouvelle-Calédonie : de
+                      // loin, un segment de littoral fait moins d'un
+                      // pixel. Le lecteur reprend la main dès le premier
+                      // geste, et « Parcourir la côte » l'emmène ensuite
+                      // sur tous les autres sites du Pacifique.
+                      droneOn={coastArea}
+                      onCoastAreas={handleCoastAreas}
+                      coastAreas={coastVisibleAreas}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+                <div className="act6coast__legend">
+                  <div className="act6coast__scale">
+                    <span className="act6coast__end">
+                      {t("act3.coast.legend_erosion")}
+                    </span>
+                    <span className="act6coast__bar" aria-hidden="true" />
+                    <span className="act6coast__end">
+                      {t("act3.coast.legend_accretion")}
+                    </span>
+                  </div>
+                  <span className="act6coast__attr">
+                    {t("act3.coast.attr")}
+                  </span>
+                </div>
+              </div>
+            ),
+          },
           {
             ...activeViz,
             id: "viz",
+            finding: tx(
+              "act3.viz.embed_find",
+              "Un dessin plutôt qu'un graphique : la grandeur se lit dans sa forme — sa hauteur, sa densité, son remplissage. Le sélecteur sous l'image change de territoire.",
+              "A drawing rather than a chart: the quantity is read from its shape — height, density, fill. The selector below the image switches territory.",
+            ),
+            takeaway: tx(
+              "act3.viz.embed_take",
+              "Un chiffre isolé ne dit rien tant qu'on ne l'a pas comparé. Le dessin donne une échelle intuitive ; les vues suivantes donnent les valeurs exactes.",
+              "A lone figure says nothing until you compare it. The drawing gives an intuitive scale; the next views give the exact values.",
+            ),
+            hint: tx(
+              "act3.viz.embed_hint",
+              "Changez de territoire sous l'image, et de dessin avec la bascule au-dessus.",
+              "Switch territory below the image, and drawing with the toggle above.",
+            ),
+            legend: {
+              // Aucune échelle de couleur : ces dessins encodent par la forme.
+              // La pastille reste un cadre vide, ce qui est la seule chose
+              // honnête à montrer quand la couleur ne mesure rien.
+              swatch: "none",
+              color: tx(
+                "act3.viz.embed_c",
+                "La couleur ne mesure rien ici : c'est la forme du dessin qui porte la valeur.",
+                "Colour measures nothing here: the drawing's shape carries the value.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -742,13 +929,12 @@ export default function Act3Territory() {
           // que les courbes ne les mettent en série.
           {
             id: "band",
-            signature: true,
             empty: noSeaSeries,
             tab: tx("act3.board.tab_montee", "Montée", "Rise"),
             title: t("act3.viz.band_title"),
             finding: t("act3.board.band_find"),
             takeaway: t("act3.board.band_take"),
-            legend: key,
+            legend: { ...key, swatch: "polarity" },
             hint: tx(
               "act3.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -793,6 +979,7 @@ export default function Act3Territory() {
             finding: t("act3.board.slope_find"),
             takeaway: t("act3.board.slope_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
@@ -826,6 +1013,7 @@ export default function Act3Territory() {
             finding: t("act3.board.profile_find"),
             takeaway: t("act3.board.profile_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -853,7 +1041,7 @@ export default function Act3Territory() {
             title: t("act3.viz.pop_title"),
             finding: t("act3.board.pop_find"),
             takeaway: t("act3.board.pop_take"),
-            legend: key,
+            legend: { ...key, swatch: "polarity" },
             hint: tx(
               "act3.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -943,68 +1131,6 @@ export default function Act3Territory() {
           // comprend d'abord ce que « recul » et « avancée » veulent dire sur
           // un rivage dessiné, puis on va les voir mesurés sur le globe.
           {
-            id: "coast",
-            empty: false,
-            tab: t("act3.board.tab_coast"),
-            title: t("act3.viz.coast_title"),
-            finding: t("act3.board.coast_find"),
-            takeaway: t("act3.board.coast_take"),
-            controls: boardControls,
-            node: (
-              <div className="act6coast">
-                <ErrorBoundary
-                  fallback={
-                    <div className="board__state board__state--err">
-                      {t("scene.error")}
-                    </div>
-                  }
-                >
-                  <Suspense
-                    fallback={<Loader compact label={t("scene.loading")} />}
-                  >
-                    <OceanMap
-                      data={[]}
-                      fitAreas={coastRows}
-                      unit={seaUnit}
-                      range={mapRange}
-                      ramp="semantic"
-                      mid={0}
-                      lowLabel={t("act3.map_low")}
-                      midLabel={t("act3.map_mid")}
-                      highLabel={t("act3.map_high")}
-                      noTokenMsg={t("act1.map_no_token")}
-                      coastlineUrl={COAST_URL}
-                      // Aucune colonne peinte sur cette vue : la barre
-                      // d'échelle générique n'aurait rien décrit. La légende
-                      // recul/avancée, juste dessous, est la bonne.
-                      showLegend={false}
-                      // On ouvre au ras de la Nouvelle-Calédonie : de
-                      // loin, un segment de littoral fait moins d'un
-                      // pixel. Le lecteur reprend la main dès le premier
-                      // geste, et « Parcourir la côte » l'emmène ensuite
-                      // sur tous les autres sites du Pacifique.
-                      droneOn="NC"
-                    />
-                  </Suspense>
-                </ErrorBoundary>
-                <div className="act6coast__legend">
-                  <div className="act6coast__scale">
-                    <span className="act6coast__end">
-                      {t("act3.coast.legend_erosion")}
-                    </span>
-                    <span className="act6coast__bar" aria-hidden="true" />
-                    <span className="act6coast__end">
-                      {t("act3.coast.legend_accretion")}
-                    </span>
-                  </div>
-                  <span className="act6coast__attr">
-                    {t("act3.coast.attr")}
-                  </span>
-                </div>
-              </div>
-            ),
-          },
-          {
             id: "coastbal",
             empty: coastRows.length === 0,
             tab: tx("act3.board.tab_bilan", "Bilan", "Balance"),
@@ -1049,6 +1175,15 @@ export default function Act3Territory() {
             finding: t("act3.board.coastmap_find"),
             takeaway: t("act3.board.coastmap_take"),
             controls: boardControls,
+            legend: {
+              swatch: "none",
+              color: tx(
+                "act3.key.coastmap_c",
+                "Chaque segment de côte est coloré selon le sens de son déplacement : recul d'un côté, avancée de l'autre.",
+                "Each coastal segment is coloured by the direction it moved: retreat on one side, advance on the other.",
+              ),
+              note: tx("act3.key.sea_note", SOURCE_SEA_FR, SOURCE_SEA_EN),
+            },
             node: (
               <ErrorBoundary
                 fallback={
@@ -1064,7 +1199,10 @@ export default function Act3Territory() {
                     data={coastEroPoints}
                     unit={t("act3.coast.ero_unit")}
                     range={eroRange}
-                    ramp="diverging"
+                    // Même raison : « diverging » est un bleu↔rouge codé en
+                    // dur, donc identique dans les deux thèmes alors que les
+                    // pôles doivent être clairs sur le fond sombre.
+                    ramp="polarity"
                     lowLabel={t("act3.coastmap_low")}
                     midLabel={t("act3.coastmap_mid")}
                     highLabel={t("act3.coastmap_high")}
@@ -1082,6 +1220,7 @@ export default function Act3Territory() {
             finding: t("act3.board.spread_find"),
             takeaway: t("act3.board.spread_take"),
             legend: {
+              swatch: "polarity",
               ...key,
               y: tx("act3.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
@@ -1152,7 +1291,7 @@ export default function Act3Territory() {
             title: t("act3.viz.path_title"),
             finding: t("act3.board.path_find"),
             takeaway: t("act3.board.path_take"),
-            legend: key,
+            legend: { ...key, swatch: "magnitude" },
             hint: tx(
               "act3.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",

@@ -30,6 +30,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchCiel } from "../../services/cielApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import figuresFromBundle from "../../components/KeyFigures/fromBundle";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
@@ -781,6 +782,22 @@ export default function Act8Ciel() {
           ),
         };
 
+  // ---------- LES CHIFFRES À EMPORTER ----------
+  // Trois nombres tirés du bundle de la mesure courante : ils changent avec le
+  // sélecteur, comme le reste de l'escale. Le lecteur qui ne lit rien d'autre
+  // repart au moins avec un ordre de grandeur et la période sur laquelle il
+  // vaut. Voir components/KeyFigures/fromBundle.js.
+  const figures = useMemo(
+    () =>
+      figuresFromBundle(M, {
+        median: tx("act8.fig.median", "Médiane du Pacifique", "Pacific median"),
+        edge: tx("act8.fig.edge", "La valeur extrême", "The extreme value"),
+        span: tx("act8.fig.span", "Période couverte", "Period covered"),
+        years: tx("act8.fig.years", "années", "years"),
+      }),
+    [M, tx],
+  );
+
   const charts =
     status === "ready"
       ? [
@@ -970,6 +987,7 @@ export default function Act8Ciel() {
       // `home.acts.a8_title`. Deux clés pour un seul titre : le voisin
       // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
       title={t("home.acts.a8_title")}
+      figures={figures}
       thesis={t("act8.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

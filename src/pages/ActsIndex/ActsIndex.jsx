@@ -23,6 +23,7 @@ import {
 } from "react-icons/fi";
 import { WiHurricane } from "react-icons/wi";
 import { useLang } from "../../store/context/langContext";
+import { numberOfAct } from "../../store/context/journeyContext";
 import "../Home/Home.scss";
 
 // Icône thématique par acte.
@@ -42,6 +43,15 @@ const ACT_ICONS = {
 };
 
 // Récit complet : actes répartis en 3 chapitres narratifs.
+// LES ESCALES SE RANGENT DANS L'ORDRE DU VOYAGE, PAS DES IDENTIFIANTS.
+// Les trois chapitres restent tels quels — c'est un regroupement éditorial.
+// Mais à l'intérieur de chacun, les cartes suivaient l'ordre des ids : depuis
+// que le numéro d'escale s'affiche sur la carte, la liste se lisait
+// « 01, 02, 07, 09 » et paraissait mélangée. Le tri se fait ici, à partir de
+// la même source que le reste de l'application.
+const byJourney = (acts) =>
+  [...acts].sort((a, b) => numberOfAct(a.id) - numberOfAct(b.id));
+
 const CHAPTERS = [
   {
     id: "c1",
@@ -125,7 +135,7 @@ export default function ActsIndex() {
             </div>
 
             <ol className="home__acts">
-              {chap.acts.map((a) => {
+              {byJourney(chap.acts).map((a) => {
                 globalIdx += 1;
                 const idx = globalIdx;
                 return (

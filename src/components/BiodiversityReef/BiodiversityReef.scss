@@ -270,9 +270,17 @@
 }
 
 /* Rais de lumière + sol. */
+/* LES RAIS ÉCLAIRENT, ILS N'ASSOMBRISSENT PAS.
+   Ils étaient peints en `--c-accent` : sur ce fond, le résultat se lisait comme
+   trois piliers plus SOMBRES que l'eau — l'inverse exact d'un rayon. L'encre
+   de texte est la seule teinte franchement claire des deux thèmes, et un
+   dégradé les fait mourir avant le sable, comme la lumière le fait vraiment. */
 .reef__rays polygon {
-  fill: var(--c-accent);
-  opacity: 0.05;
+  fill: var(--c-text);
+  opacity: 0.055;
+}
+.reef__rays {
+  mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 92%);
 }
 .reef__bed {
   fill: var(--c-bg-2);
@@ -367,4 +375,65 @@
   .reef__chips {
     justify-content: center;
   }
+}
+/* ---- Récif redessiné : pièces ajoutées ---- */
+
+/* Le fond n'a plus de contour : un trait sur un banc de sable en faisait une
+   boîte posée sur l'image. Deux plans, le plus lointain plus sourd. */
+/* Le sable, pas un bandeau noir. `--c-bg-2` sur un fond déjà sombre donnait
+   une barre pleine, plus foncée que tout le reste de l'image. On l'éclaircit
+   vers l'encre atténuée et on adoucit l'arête. */
+.reef__bed {
+  fill: color-mix(in srgb, var(--c-bg-2) 62%, var(--c-text-mute) 38%);
+  stroke: none;
+  opacity: 0.85;
+}
+.reef__bed--far {
+  fill: color-mix(in srgb, var(--c-bg-2) 80%, var(--c-text-mute) 20%);
+  opacity: 0.7;
+}
+.reef__rocks ellipse {
+  fill: color-mix(in srgb, var(--c-bg-2) 70%, var(--c-text-mute));
+  opacity: 0.5;
+}
+
+/* Ce qui donne sa profondeur à l'eau, ce n'est pas sa couleur : c'est ce qui
+   flotte dedans. */
+.reef__motes circle {
+  fill: var(--c-text-soft);
+  opacity: 0.14;
+}
+
+/* L'œil est ce qui fait lire un animal plutôt qu'une flèche. */
+.reef__eye {
+  fill: var(--c-bg);
+  opacity: 0.75;
+}
+.reef__fin {
+  opacity: 0.75;
+}
+.reef__detail {
+  fill: none;
+  stroke: var(--c-bg);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+/* Les trois espèces emblématiques. Teintes distinctes des petits poissons :
+   elles ne sont pas un banc de plus, elles sont l'enjeu. */
+.reef__f4 {
+  fill: var(--c-positive);
+}
+.reef__f5 {
+  fill: var(--c-accent-deep, var(--c-accent));
+}
+.reef__f6 {
+  fill: var(--c-text-mute);
+}
+
+/* Le squelette blanchi des coraux au TRAIT : sans cette règle il héritait du
+   `fill: none` de la version vivante et disparaissait. */
+.reef__ghost--line {
+  fill: none;
 }

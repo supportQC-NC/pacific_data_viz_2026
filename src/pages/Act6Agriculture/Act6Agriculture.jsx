@@ -688,6 +688,33 @@ export default function Act6Agriculture() {
             tab:
               vizItems.find((o) => o.id === dataset)?.label ??
               tx("act6.viz.sw_plant", "Cultures", "Crops"),
+            finding: tx(
+              "act6.viz.embed_find",
+              "Un dessin plutôt qu'un graphique : la grandeur se lit dans sa forme — sa hauteur, sa densité, son remplissage. Le sélecteur sous l'image change de territoire.",
+              "A drawing rather than a chart: the quantity is read from its shape — height, density, fill. The selector below the image switches territory.",
+            ),
+            takeaway: tx(
+              "act6.viz.embed_take",
+              "Un chiffre isolé ne dit rien tant qu'on ne l'a pas comparé. Le dessin donne une échelle intuitive ; les vues suivantes donnent les valeurs exactes.",
+              "A lone figure says nothing until you compare it. The drawing gives an intuitive scale; the next views give the exact values.",
+            ),
+            hint: tx(
+              "act6.viz.embed_hint",
+              "Changez de territoire sous l'image, et de dessin avec la bascule au-dessus.",
+              "Switch territory below the image, and drawing with the toggle above.",
+            ),
+            legend: {
+              // Aucune échelle de couleur : ces dessins encodent par la forme.
+              // La pastille reste un cadre vide, ce qui est la seule chose
+              // honnête à montrer quand la couleur ne mesure rien.
+              swatch: "none",
+              color: tx(
+                "act6.viz.embed_c",
+                "La couleur ne mesure rien ici : c'est la forme du dessin qui porte la valeur.",
+                "Colour measures nothing here: the drawing's shape carries the value.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -710,6 +737,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.explorer_take"),
             controls: boardControls,
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
               x: key.y,
@@ -765,7 +793,7 @@ export default function Act6Agriculture() {
             finding: t("act6.board.small_find"),
             takeaway: t("act6.board.small_take"),
             controls: boardControls,
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act6.hint.multiples",
               "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
@@ -815,7 +843,7 @@ export default function Act6Agriculture() {
             finding: t("act6.board.regional_find"),
             takeaway: t("act6.board.regional_take"),
             controls: boardControls,
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act6.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -844,6 +872,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.crops_take"),
             controls: boardControls,
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act6.key.item_y", "Une culture ou un élevage par ligne.", "One crop or livestock type per row."),
               x: key.y,
@@ -868,6 +897,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.change_take"),
             controls: boardControls,
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -905,6 +935,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.stability_take"),
             controls: boardControls,
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
@@ -983,6 +1014,7 @@ export default function Act6Agriculture() {
             takeaway: t("act6.board.land_change_take"),
             controls: boardControls,
             legend: {
+              swatch: "polarity",
               ...key,
               y: tx("act6.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
@@ -1013,7 +1045,7 @@ export default function Act6Agriculture() {
             finding: t("act6.board.land_lines_find"),
             takeaway: t("act6.board.land_lines_take"),
             controls: boardControls,
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act6.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",

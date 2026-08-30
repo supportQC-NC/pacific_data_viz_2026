@@ -19,6 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchEco } from "../../services/ecoApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import figuresFromBundle from "../../components/KeyFigures/fromBundle";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
@@ -768,6 +769,22 @@ export default function Act9Eco() {
           swatch: "magnitude",
         };
 
+  // ---------- LES CHIFFRES À EMPORTER ----------
+  // Trois nombres tirés du bundle de la mesure courante : ils changent avec le
+  // sélecteur, comme le reste de l'escale. Le lecteur qui ne lit rien d'autre
+  // repart au moins avec un ordre de grandeur et la période sur laquelle il
+  // vaut. Voir components/KeyFigures/fromBundle.js.
+  const figures = useMemo(
+    () =>
+      figuresFromBundle(M, {
+        median: tx("act9.fig.median", "Médiane du Pacifique", "Pacific median"),
+        edge: tx("act9.fig.edge", "La valeur extrême", "The extreme value"),
+        span: tx("act9.fig.span", "Période couverte", "Period covered"),
+        years: tx("act9.fig.years", "années", "years"),
+      }),
+    [M, tx],
+  );
+
   const charts =
     status === "ready"
       ? [
@@ -825,7 +842,7 @@ export default function Act9Eco() {
             title: M.titles.trend,
             finding: t("act9.board.trend_find"),
             takeaway: t("act9.board.trend_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act9.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -850,7 +867,7 @@ export default function Act9Eco() {
             title: M.titles.multiples,
             finding: t("act9.board.multiples_find"),
             takeaway: t("act9.board.multiples_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act9.hint.multiples",
               "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
@@ -880,6 +897,15 @@ export default function Act9Eco() {
             finding: M.compoFind,
             takeaway: M.compoTake,
             controls: boardControls,
+            legend: {
+              swatch: "none",
+              color: tx(
+                "act9.key.compo_c",
+                "Une teinte par territoire : la couleur nomme qui, la hauteur dit combien.",
+                "One hue per territory: colour says who, height says how much.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="act9b__fit">
                 <StackedColsChart
@@ -931,6 +957,7 @@ export default function Act9Eco() {
             finding: t("act9.board.pareto_find"),
             takeaway: t("act9.board.pareto_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
@@ -1002,6 +1029,7 @@ export default function Act9Eco() {
             finding: t("act9.board.race_find"),
             takeaway: t("act9.board.race_take"),
             legend: { ...key, y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act9.hint.race",
               "Lancez l'animation : les barres se réordonnent au fil des années.",
@@ -1030,6 +1058,7 @@ export default function Act9Eco() {
             finding: t("act9.board.change_find"),
             takeaway: t("act9.board.change_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act9.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -1092,6 +1121,7 @@ export default function Act9Eco() {
             finding: t("act9.board.radar_find"),
             takeaway: t("act9.board.radar_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx(
                 "act9.key.radar_y",
@@ -1210,6 +1240,7 @@ export default function Act9Eco() {
       // `home.acts.a9_title`. Deux clés pour un seul titre : le voisin
       // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
       title={t("home.acts.a9_title")}
+      figures={figures}
       thesis={t("act9.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

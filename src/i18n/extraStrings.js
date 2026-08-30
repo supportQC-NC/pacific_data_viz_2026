@@ -6,9 +6,203 @@
 
 const EXTRA_STRINGS = {
   fr: {
+    act10: {
+      tag: "Escale 08",
+    },
+    act9: {
+      tag: "Escale 11",
+    },
+    act7: {
+      tag: "Escale 06 — Le vivant",
+    },
+    act6: {
+      tag: "Escale 05 — L'assiette",
+    },
+    about: {
+      data: {
+        lead:
+          "Toutes les données de Datamoana proviennent de sources publiques et ouvertes, agrégées par le Pacific Data Hub .Stat de la Communauté du Pacifique (SPC). Elles correspondent à la liste officielle du concours : chaque escale affiche sa source, son unité et sa méthode.",
+      },
+      challenge: {
+        body:
+          "Datamoana est ma contribution au Pacific Dataviz Challenge 2026, dont le thème est le changement climatique dans le Pacifique. Douze escales, 23 jeux de données officiels croisés, une seule histoire.",
+      },
+    },
     header: { nav_recit: "Le Récit" },
+    act5: {
+      board: {
+        // La carte est sur la rampe SÉQUENTIELLE lavande depuis la refonte ;
+        // la phrase promettait encore du vert. Et « plus vertueux » portait un
+        // jugement que la donnée ne porte pas : une part renouvelable élevée
+        // se lit, la vertu se discute.
+        map_find:
+          "La part d'énergie renouvelable de chaque territoire pour l'année choisie, posée sur le globe. Plus la colonne est haute et claire, plus cette part est élevée.",
+      },
+    },
+    act3: {
+      board: {
+        // La carte satellite passait par la rampe « semantic » (vert → cyan →
+        // rouge), écartée pour cause de daltonisme ; elle est maintenant sur
+        // la divergente validée bleu ↔ ambre. La phrase nommait « rouge » et
+        // « bleu » : le bleu était déjà faux avant, le rouge l'est devenu.
+        coast_find:
+          "Chaque point est un segment de littoral suivi par satellite (Landsat, 1999–2023). En rouge les segments qui reculent, en bleu ceux qui avancent — exprimé en mètres par an.",
+        coastbal_find:
+          "Pour chaque territoire, la part de littoral qui recule (en ambre, à gauche) face à la part qui avance (en bleu, à droite), agrégée sur tous ses segments suivis.",
+      },
+    },
+    // ------------------------------------------------------------------
+    // ESCALE 01 — LES TEXTES DE LA COLONNE DE LECTURE, RÉÉCRITS.
+    //
+    // Ils étaient écrits pour quelqu'un qui sait déjà lire un graphique :
+    // « écart-type rapporté à la moyenne », « base 100 », « échelle
+    // logarithmique », « l'effet dénominateur » — chacun de ces termes est le
+    // POINT de sa vue, et aucun n'était expliqué. L'unité elle-même se
+    // traduisait par « en tonnes », ce qui escamotait le « e » d'équivalent :
+    // c'est pourtant lui qui explique qu'un territoire monte à 86.
+    //
+    // Recette appliquée aux neuf vues :
+    //   1. « Ce que vous regardez » nomme la MARQUE (une barre, un point, une
+    //      case) avant de nommer l'axe qui la porte ;
+    //   2. l'unité est donnée en mots, jamais en sigle seul ;
+    //   3. aucun terme technique n'apparaît sans sa traduction dans la même
+    //      phrase ;
+    //   4. « Ce qu'il faut retenir » dit pourquoi c'est intéressant, pas ce
+    //      qui est tracé.
+    // ------------------------------------------------------------------
+    act1: {
+      viz: {
+        plume_title: "L'empreinte, territoire par territoire",
+        plume_find:
+          "Un panache de fumée par territoire. Plus il est dense et haut, plus ce territoire émet de gaz à effet de serre par habitant. Choisissez-en un dans le menu sous le dessin.",
+        plume_take:
+          "Un chiffre par habitant ne dit rien tout seul. Mis côte à côte, deux panaches se comparent sans qu'on ait à lire un seul nombre.",
+
+        race_title: "La course des territoires",
+        rank_title: "Qui émet combien, année par année",
+        trend_title: "Trajectoires dans le temps",
+
+        // « Niveau face à l'évolution » nommait deux axes, pas une question.
+        scatter_title: "Où en est chacun, et dans quel sens il va",
+
+        // Le titre d'origine — « L'effet dénominateur, démontré par la
+        // volatilité » — employait deux termes techniques pour annoncer une
+        // idée simple, sur la vue la plus difficile de l'escale.
+        denom_title: "Pourquoi les chiffres des petits territoires sautent",
+
+        heat_title: "Vue d'ensemble : territoires × années",
+        map_title: "Cartographie des émissions",
+
+        change_take2:
+          "En bleu, ceux qui ont allégé leur empreinte depuis leur première année ; en ambre, ceux qui l'ont alourdie. La plupart restent collés à la ligne des 100 : cinquante ans de développement, à empreinte presque constante.",
+      },
+
+      board: {
+        race_find:
+          "Le classement rejoué en accéléré, une image par année, de la première donnée à la dernière. Chaque barre est un territoire ; elle s'allonge quand il émet plus, et les barres se doublent quand l'ordre change.",
+        race_take:
+          "Regardez l'ordre plutôt que les longueurs : en cinquante ans, il ne change presque pas. Le Pacifique émet peu depuis toujours.",
+
+        rank_find:
+          "Un point par territoire, pour la seule année posée sur le curseur : sa position sur l'axe est ce qu'il émet par personne cette année-là. Le pointillé marque la médiane — la moitié des territoires est à sa gauche.",
+        rank_take:
+          "Deux territoires se détachent tout à droite. Ce chiffre est un rapport : une population minuscule au dénominateur, ou une industrie lourde au numérateur, suffit à le faire monter — sans que la région autour ait changé. Tout le reste du Pacifique se resserre dans la moitié gauche.",
+
+        trend_find:
+          "Une courbe par territoire, une année par point, de la première donnée à la dernière. La hauteur de la courbe, c'est ce que le territoire émet par habitant cette année-là. Le menu au-dessus du graphique permet de n'en garder qu'une.",
+        trend_take:
+          "Aucune envolée collective : la plupart des courbes restent basses et à peu près horizontales. Autrement dit, le développement du Pacifique ne s'est pas payé en carbone par habitant.",
+
+        change_title: "Le mouvement, territoire par territoire",
+        change_find:
+          "Les mêmes courbes, toutes ramenées à 100 pour leur première année. On ne compare plus des niveaux — ils vont de un à quatre-vingts et écrasent tout — mais des mouvements : à 120, le territoire a pris 20 % ; à 80, il en a perdu 20.",
+
+        scatter_find:
+          "Un point par territoire. Sa position de gauche à droite, c'est ce qu'il émet aujourd'hui par habitant ; sa position de bas en haut, de combien cela a changé depuis sa première année. En bas à gauche se rassemblent ceux qui émettent peu et baissent encore.",
+        scatter_take:
+          "Le quadrant bas-gauche est le plus peuplé : émettre peu, et continuer à baisser. C'est un point de départ favorable pour l'escale consacrée à l'élan renouvelable.",
+
+        denom_find:
+          "Un point par territoire. De gauche à droite, son niveau habituel sur la période ; de bas en haut, à quel point sa courbe saute d'une année à l'autre — 0 % pour une série parfaitement régulière, 100 % pour une série qui varie autant que sa moyenne.",
+        denom_take:
+          "Une émission « par habitant » est une division : par dix mille personnes plutôt que dix millions, un seul navire fait bondir le résultat. Les pics des petits territoires disent la taille de leur population, pas un dérapage.",
+
+        heat_find:
+          "Une ligne par territoire, une colonne par année, une case par valeur. La couleur de la case donne la position du territoire cette année-là : claire quand il est parmi les plus sobres, sombre quand il est parmi les plus émetteurs.",
+        heat_take:
+          "Les lignes gardent la même teinte de gauche à droite : sur un demi-siècle, presque aucun territoire ne change de camp. C'est la stabilité que cette vue donne à voir.",
+
+        map_find:
+          "Une colonne plantée sur chaque territoire. Plus elle est haute et claire, plus ce territoire émet par habitant l'année choisie. Le globe tourne à la souris, et le lecteur d'années se trouve en bas.",
+        map_take:
+          "Les colonnes les plus hautes se dressent sur les plus petits territoires. Là encore, c'est la division par une population minuscule qui fait le pic — pas une région qui dérape.",
+      },
+
+      key: {
+        race_y: "Un territoire par barre.",
+        race_x:
+          "Tonnes de gaz à effet de serre, par personne et par an.",
+
+        rank_y:
+          "Un territoire par point.",
+        rank_x:
+          "Tonnes de gaz à effet de serre, par personne et par an. Échelle logarithmique : chaque graduation vaut dix fois la précédente.",
+        rank_c:
+          "Une couleur par territoire, la même que dans les autres vues.",
+
+        trend_y:
+          "Tonnes de gaz à effet de serre, par personne et par an.",
+        trend_x: "Le temps, une année par point.",
+
+        change_y:
+          "Base 100 : 100 = le niveau de départ, 150 = une fois et demie plus, 50 = deux fois moins.",
+        change_x: "Le temps, une année par point.",
+        change_c:
+          "Bleu, l'empreinte a baissé depuis la première année. Ambre, elle a augmenté.",
+
+        scatter_y:
+          "Évolution depuis la première année, en %.",
+        scatter_x:
+          "Niveau actuel par habitant. Échelle logarithmique : ×10 par graduation.",
+        scatter_c: "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.",
+
+        denom_y:
+          "Nervosité de la série, en %.",
+        denom_x:
+          "Niveau habituel sur la période, en tonnes par personne et par an.",
+        denom_c: "Une teinte par sous-région : Mélanésie, Polynésie, Micronésie.",
+
+        heat_c:
+          "Du clair au sombre : du plus sobre au plus émetteur.",
+
+        map_c:
+          "Colonne haute et claire : émet plus par habitant. Échelle logarithmique : ×10 par graduation.",
+
+        plume_c:
+          "La densité du panache suit les émissions par habitant du territoire choisi.",
+      },
+    },
     // ⚠️ UN SEUL objet `act11` par langue (même règle que `home`).
     act11: {
+      // « Acte 11 » était doublement faux : le mot, et le numéro — a11 est la
+      // DOUZIÈME escale du voyage.
+      tag: "Escale 12 — Synthèse",
+      thesis:
+        "Onze escales pour une même idée, et une note d'espoir : les territoires du Pacifique émettent très peu de CO₂ par habitant, encaissent beaucoup — mais gardent des marges de manœuvre réelles. Cette dernière escale rassemble les preuves en une lecture claire, relative au Pacifique, que vous pouvez parcourir scène après scène.",
+      story: {
+        voyage_title: "Douze escales, une seule histoire",
+        voyage_text:
+          "Avant le verdict, retraçons le chemin parcouru — chaque escale, une pièce du puzzle climatique du Pacifique.",
+        resp_k: "Escale 01 · La responsabilité",
+        ocean_k: "Escale 02 · L'océan",
+      },
+      story: {
+        // La matrice passe du vert↔rouge à la divergente validée : la phrase
+        // qui disait « le rouge s'accumule » nommait une couleur qui n'est
+        // plus à l'écran.
+        matrix_text:
+          "Territoires en lignes, stress en colonnes. Les cases chaudes s'accumulent : ce n'est pas un risque isolé, c'est leur addition.",
+      },
       // La thèse promettait une lecture « que vous pouvez explorer ET
       // PONDÉRER vous-même ». Le studio de pondération est retiré de la
       // synthèse : la promesse ne tient plus, et une promesse non tenue en
@@ -23,7 +217,55 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      acts_intro: "Douze escales pour comprendre. Une région déjà en mouvement.",
+      acts_lead:
+        "Chaque escale part d'un chiffre vérifiable et le suit jusqu'au bout : la réalité qu'il décrit, et la réponse que le Pacifique lui oppose déjà.",
+      act_explore: "Explorer l'escale",
+      // La phrase d'accueil : la première chose qu'on lit du produit.
+      thesis:
+        "Un voyage en douze escales à travers le climat du Pacifique : pas une fatalité qu'on subit, mais une région qui mesure, s'adapte et prend les devants — avec, pour seule source, ses propres données.",
+      stat4_num: "12 escales",
+      intro: {
+        body1:
+          "Pensée comme un voyage en plusieurs escales, la plateforme mobilise un maximum de données ouvertes et officielles sur le Pacifique.",
+        p2_text:
+          "Douze escales pour relier les chiffres aux réalités vécues sur le terrain.",
+      },
+      modes: {
+        browse_title: "Par escale",
+        browse_text:
+          "Explorez librement : choisissez l'escale qui vous parle et plongez directement dedans.",
+        browse_action: "Voir les escales",
+        guided_text:
+          "« Découvrir » vous emmène à travers les douze escales, dans l'ordre du récit.",
+      },
+      teaser: {
+        cta: "Explorer les escales",
+        lead:
+          "Du plus grand au plus isolé, chaque territoire du Pacifique fait face au changement climatique. Entrez dans le récit, escale par escale.",
+      },
+      closing_cta: {
+        text:
+          "Douze escales, des données réelles, une région en première ligne. À vous de choisir comment la lire.",
+        browse: "Parcourir les escales",
+      },
       acts: {
+        a1_text:
+          "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cette escale la mesure territoire par territoire — le socle du récit.",
+        a2_text:
+          "L'anomalie de température de surface de la mer, territoire par territoire : l'écart à la normale, année après année. Savoir lire l'océan, c'est pouvoir anticiper — pour le vivant, le ciel et les saisons cycloniques des escales suivantes.",
+        a1_tag: "Escale 01",
+        a2_tag: "Escale 02",
+        a8_tag: "Escale 03",
+        a12_tag: "Escale 04",
+        a6_tag: "Escale 05",
+        a7_tag: "Escale 06",
+        a3_tag: "Escale 07",
+        a10_tag: "Escale 08",
+        a4_tag: "Escale 09",
+        a5_tag: "Escale 10",
+        a9_tag: "Escale 11",
+        a11_tag: "Escale 12 — Synthèse",
         // ------------------------------------------------------------------
         // CHAQUE TITRE D'ESCALE EST UNE QUESTION.
         //
@@ -214,6 +456,8 @@ const EXTRA_STRINGS = {
     },
     // Barre d'export de la page jeu de données (/data/:id).
     dataset: {
+      no_table:
+        "Tableau brut bientôt disponible — ce jeu se consulte aujourd'hui directement dans les escales.",
       export_title: "Exporter",
       export_pdf: "Rapport PDF",
       export_excel: "Classeur Excel",
@@ -225,6 +469,10 @@ const EXTRA_STRINGS = {
     // formulations différentes pour deux boutons symétriques, et le mot
     // « acte » alors que l'interface parle d'escales partout ailleurs.
     flow: {
+      act: "Escale",
+      reveal: "Découvrir l'escale",
+      nav_aria: "Navigation entre les escales",
+      deck_done: "Fin de l'escale",
       exit_voyage: "Quitter le voyage",
       prev: "Escale précédente",
       next: "Escale suivante",
@@ -244,6 +492,7 @@ const EXTRA_STRINGS = {
     // deux boutons symétriques, et le mot « acte » alors que l'interface parle
     // d'escales partout ailleurs.
     act8: {
+      tag: "Escale 03",
       board: {
         heat_find:
           "Territoires × années : l'intensité dit l'écart à la normale — bleu en dessous, ambre au-dessus.",
@@ -259,6 +508,7 @@ const EXTRA_STRINGS = {
       },
     },
     recit: {
+      cta_acts: "Explorer les 11 escales détaillées",
       voyage_exit: "Quitter le voyage",
       voyage_next: "Escale suivante",
       voyage_enter: "Entrer dans l’escale",
@@ -268,19 +518,49 @@ const EXTRA_STRINGS = {
     },
   },
   en: {
+    act10: {
+      tag: "Leg 08",
+    },
+    act9: {
+      tag: "Leg 11",
+    },
+    act7: {
+      tag: "Leg 06 — The living world",
+    },
+    act6: {
+      tag: "Leg 05 — The plate",
+    },
+    about: {
+      data: {
+        lead:
+          "All of Datamoana's data comes from open, public sources, aggregated by the Pacific Community's (SPC) Pacific Data Hub .Stat. It matches the challenge's official list: each leg shows its source, unit and method.",
+      },
+      challenge: {
+        body:
+          "Datamoana is my entry to the 2026 Pacific Dataviz Challenge, whose theme is climate change in the Pacific. Twelve legs, 23 official datasets crossed, one story.",
+      },
+    },
     header: { nav_recit: "The Story" },
     dataset: {
+      no_table:
+        "Raw table coming soon — this dataset is currently explored directly inside the legs.",
       export_title: "Export",
       export_pdf: "PDF report",
       export_excel: "Excel workbook",
     },
     board: { conclude: "Read the conclusion" },
     flow: {
+      act: "Leg",
+      reveal: "Discover the leg",
+      nav_aria: "Navigation between legs",
+      deck_done: "End of the leg",
       exit_voyage: "Leave the voyage",
-      prev: "Previous escale",
-      next: "Next escale",
+      // « escale » était resté en français dans la version anglaise.
+      prev: "Previous leg",
+      next: "Next leg",
     },
     recit: {
+      cta_acts: "Explore the 11 detailed legs",
       voyage_exit: "Leave the voyage",
       voyage_next: "Next leg",
       voyage_enter: "Enter the leg",
@@ -288,7 +568,137 @@ const EXTRA_STRINGS = {
       voyage_progress: "Voyage progress",
       voyage_leg: "Leg",
     },
+    act3: {
+      board: {
+        coast_find:
+          "Each dot is a satellite-tracked coastline segment (Landsat, 1999–2023). Red for segments retreating, blue for those advancing — in metres per year.",
+        coastbal_find:
+          "For each territory, the share of coastline retreating (amber, left) against the share advancing (blue, right), aggregated across all its tracked segments.",
+      },
+    },
+    act5: {
+      board: {
+        map_find:
+          "Each territory's renewable share for the chosen year, set on the globe. The taller and lighter the column, the higher that share.",
+      },
+    },
+    act1: {
+      viz: {
+        plume_title: "The footprint, territory by territory",
+        plume_find:
+          "One smoke plume per territory. The denser and taller it is, the more that territory emits in greenhouse gases per inhabitant. Pick one in the menu below the drawing.",
+        plume_take:
+          "A per-person figure says nothing on its own. Side by side, two plumes compare without reading a single number.",
+
+        race_title: "The territories' race",
+        rank_title: "Who emits how much, year by year",
+        trend_title: "Paths through time",
+        scatter_title: "Where each one stands, and which way it is heading",
+        denom_title: "Why the figures of small territories jump about",
+        heat_title: "The whole picture: territories × years",
+        map_title: "Mapping the emissions",
+
+        change_take2:
+          "In blue, the territories that lightened their footprint since their first year; in amber, those that increased it. Most curves stay glued to the 100 line: fifty years of development at an almost constant footprint.",
+      },
+
+      board: {
+        race_find:
+          "The ranking replayed at speed, one frame per year, from the first data point to the last. Each bar is a territory; it grows as that territory emits more, and bars overtake one another when the order changes.",
+        race_take:
+          "Watch the order rather than the lengths: in fifty years it barely changes. The Pacific has always emitted little.",
+
+        rank_find:
+          "One dot per territory, for the single year set on the slider: its position on the axis is what it emits per person that year. The dashed line marks the median — half the territories sit to its left.",
+        rank_take:
+          "Two territories stand apart on the far right. The figure is a ratio: a tiny population in the denominator, or heavy industry in the numerator, is enough to push it up — with nothing changing in the region around it. All the rest of the Pacific bunches into the left half.",
+
+        trend_find:
+          "One curve per territory, one point per year, from the first data point to the last. The height of the curve is what the territory emits per inhabitant that year. The menu above the chart keeps just one.",
+        trend_take:
+          "No collective surge: most curves stay low and roughly flat. In other words, the Pacific's development was not paid for in carbon per person.",
+
+        change_title: "The movement, territory by territory",
+        change_find:
+          "The same curves, but all reset to 100 at their first year. We no longer compare levels — they run from one to eighty and crush everything — but movements: at 120 a territory has gained 20 %, at 80 it has lost 20.",
+
+        scatter_find:
+          "One dot per territory. Its left-to-right position is what it emits today per inhabitant; its bottom-to-top position, how much that has changed since its first year. The lower left gathers those that emit little and are still going down.",
+        scatter_take:
+          "The lower-left quadrant is the most crowded: emitting little, and still falling. A favourable starting point for the leg on renewable momentum.",
+
+        denom_find:
+          "One dot per territory. Left to right, its usual level over the whole period. Bottom to top, how much its curve jumps from one year to the next: 0 % for a perfectly steady series, 100 % for one that varies as much as its own average.",
+        denom_take:
+          "An emission \u201cper inhabitant\u201d is a division: by ten thousand people rather than ten million, a single ship sends the result soaring. Small territories\u2019 spikes speak of population size, not of a region going off the rails.",
+
+        heat_find:
+          "One row per territory, one column per year, one cell per value. A cell's colour gives that territory's standing that year: light when it is among the lowest emitters, dark when it is among the highest.",
+        heat_take:
+          "Rows keep the same shade from left to right: over half a century, almost no territory changes camp. Stability is what this view shows.",
+
+        map_find:
+          "One column planted on each territory. The taller and lighter it is, the more that territory emits per inhabitant in the chosen year. Drag to spin the globe; the year scrubber sits at the bottom.",
+        map_take:
+          "The tallest columns rise over the smallest territories. Here again it is the division by a tiny population that makes the spike — not a region going off the rails.",
+      },
+
+      key: {
+        race_y: "One territory per bar.",
+        race_x: "Tonnes of greenhouse gases, per person per year.",
+
+        rank_y:
+          "One territory per dot.",
+        rank_x: "Tonnes of greenhouse gases, per person per year. Logarithmic scale: each gradation is ten times the previous one.",
+        rank_c:
+          "One colour per territory, the same as in the other views.",
+
+        trend_y: "Tonnes of greenhouse gases, per person per year.",
+        trend_x: "Time, one point per year.",
+
+        change_y:
+          "Base 100: 100 = the starting level, 150 = one and a half times as much, 50 = half.",
+        change_x: "Time, one point per year.",
+        change_c:
+          "Blue, the footprint went down since the first year. Amber, it went up.",
+
+        scatter_y:
+          "Change since the first year, in %.",
+        scatter_x:
+          "Current level per inhabitant. Logarithmic scale: ×10 per gradation.",
+        scatter_c: "One hue per sub-region: Melanesia, Polynesia, Micronesia.",
+
+        denom_y:
+          "How jumpy the series is, in %.",
+        denom_x:
+          "Usual level over the whole period, in tonnes per person per year.",
+        denom_c: "One hue per sub-region: Melanesia, Polynesia, Micronesia.",
+
+        heat_c:
+          "Light to dark: from lowest to highest emitter.",
+
+        map_c:
+          "Tall, light column: emits more per inhabitant. Logarithmic scale: ×10 per gradation.",
+
+        plume_c:
+          "The plume's density follows the chosen territory's emissions per person.",
+      },
+    },
     act11: {
+      tag: "Leg 12 — Synthesis",
+      thesis:
+        "Eleven legs for one idea, with a note of hope: Pacific territories emit very little CO\u2082 per capita and absorb a great deal \u2014 yet keep real room to act. This final leg gathers the evidence into one clear reading, relative to the Pacific, that you can walk through scene by scene.",
+      story: {
+        voyage_title: "Twelve legs, one story",
+        voyage_text:
+          "Before the verdict, let us retrace the road travelled \u2014 each leg, one piece of the Pacific's climate puzzle.",
+        resp_k: "Leg 01 · Responsibility",
+        ocean_k: "Leg 02 · The ocean",
+      },
+      story: {
+        matrix_text:
+          "Territories in rows, stresses in columns. The warm cells pile up: it is not one isolated risk, it is their sum.",
+      },
       thesis:
         "Eleven acts for one idea, with a note of hope: Pacific territories emit very little CO₂ per capita and absorb a great deal — yet keep real room to act. This final act gathers the evidence into one clear reading, relative to the Pacific, that you can walk through scene by scene.",
       outro: {
@@ -296,8 +706,55 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      acts_intro: "Twelve legs to understand. A region already on the move.",
+      acts_lead:
+        "Every leg starts from one verifiable figure and follows it through: the reality it describes, and the answer the Pacific is already giving it.",
+      act_explore: "Explore the leg",
+      thesis:
+        "A voyage in twelve legs through the climate of the Pacific: not a fate to be endured, but a region that measures, adapts and takes the lead \u2014 with its own data as the only source.",
+      stat4_num: "12 legs",
+      intro: {
+        body1:
+          "Built as a voyage in several legs, the platform draws on as much open, official Pacific data as it can.",
+        p2_text:
+          "Twelve legs to connect the figures with realities lived on the ground.",
+      },
+      modes: {
+        browse_title: "By leg",
+        browse_text:
+          "Browse freely: pick the leg that speaks to you and dive straight in.",
+        browse_action: "See the legs",
+        guided_text:
+          "\u201cDiscover\u201d takes you through the twelve legs, in the order of the story.",
+      },
+      teaser: {
+        cta: "Explore the legs",
+        lead:
+          "From the largest to the most remote, every Pacific territory faces climate change. Step into the story, leg by leg.",
+      },
+      closing_cta: {
+        text:
+          "Twelve legs, real data, a region on the front line. It is up to you how to read it.",
+        browse: "Browse the legs",
+      },
       // Idem côté anglais : un seul objet `home`, sinon écrasement silencieux.
       acts: {
+        a1_text:
+          "Fifty years of data, one constant: the Pacific's per-capita carbon footprint stays light, and stays light over time. This leg measures it territory by territory \u2014 the bedrock of the story.",
+        a2_text:
+          "Sea-surface temperature anomaly, territory by territory: the gap to the normal, year after year. Knowing how to read the ocean means being able to anticipate \u2014 for the living world, the sky and the cyclone seasons of the legs ahead.",
+        a1_tag: "Leg 01",
+        a2_tag: "Leg 02",
+        a8_tag: "Leg 03",
+        a12_tag: "Leg 04",
+        a6_tag: "Leg 05",
+        a7_tag: "Leg 06",
+        a3_tag: "Leg 07",
+        a10_tag: "Leg 08",
+        a4_tag: "Leg 09",
+        a5_tag: "Leg 10",
+        a9_tag: "Leg 11",
+        a11_tag: "Leg 12 — Synthesis",
         // Same rule as the French block: every leg's title is a QUESTION the
         // leg's own indicators can settle — nothing about causes where we only
         // have correlations, nothing about the future where we only have past
@@ -413,6 +870,7 @@ const EXTRA_STRINGS = {
       },
     },
     act8: {
+      tag: "Leg 03",
       board: {
         heat_find:
           "Territories × years: intensity carries the gap from the normal — blue below, amber above.",

@@ -384,6 +384,7 @@ export default function Act2Ocean() {
               "Switch islands with the selector below the thermometer.",
             ),
             legend: {
+              swatch: "polarity",
               // DEUX ENCODAGES, DEUX SEUILS — il faut dire les deux, sinon le
               // lecteur croit que la couleur redit la hauteur.
               y: tx(
@@ -422,6 +423,7 @@ export default function Act2Ocean() {
               "Each year, the share of islands whose ocean sits above its normal.",
             ),
             legend: {
+              swatch: "none",
               y: tx(
                 "act2.key.share_y",
                 "Combien d'îles dépassent leur normale, en %",
@@ -472,6 +474,7 @@ export default function Act2Ocean() {
               "The median gap to the normal, and the distance between the coolest island and the warmest.",
             ),
             legend: {
+              swatch: "polarity",
               y: tx(
                 "act2.key.band_y",
                 "L'écart à la normale, en degrés",
@@ -534,6 +537,7 @@ export default function Act2Ocean() {
               "The whole series at a glance. The shift from blue to amber lands in the mid-1990s.",
             ),
             legend: {
+              swatch: "polarity",
               y: tx(
                 "act2.key.heat_y",
                 "Une ligne par île, la plus chaude en haut",
@@ -598,7 +602,15 @@ export default function Act2Ocean() {
               `Le réchauffement de chaque île, de ${firstYear} à aujourd'hui`,
               `How much each island warmed, from ${firstYear} to today`,
             ),
-            finding: null,
+            // Elle était volontairement à `null` : à l'époque, la phrase de
+            // résumé s'affichait AU-DESSUS du tracé, en doublon du titre.
+            // Elle vit maintenant dans la colonne, sous « Ce que vous
+            // regardez », où elle ne répète rien et dit ce qu'est une marque.
+            finding: tx(
+              "act2.viz.path_find",
+              `Une ligne par île. À gauche le point gris, son écart à la normale en ${firstYear} ; à droite le point ambre, ce même écart aujourd'hui. La longueur du trait, c'est le chemin parcouru entre les deux.`,
+              `One row per island. On the left the grey dot, its gap to the normal in ${firstYear}; on the right the amber dot, that same gap today. The length of the line is the distance travelled between them.`,
+            ),
             takeaway: tx(
               "act2.viz.path_take",
               "Le départ compte autant que l'arrivée. Une île partie de très bas peut avoir beaucoup bougé sans être la plus chaude aujourd'hui.",
@@ -610,6 +622,7 @@ export default function Act2Ocean() {
               "Hover a line to compare both years side by side.",
             ),
             legend: {
+              swatch: "none",
               y: tx(
                 "act2.key.path_y",
                 "Une ligne par île, la plus chaude en haut",
@@ -683,6 +696,7 @@ export default function Act2Ocean() {
               "Spin the globe, zoom in, hover a column. The year scrubber sits at the bottom, and the top-right button goes full screen.",
             ),
             legend: {
+              swatch: "polarity",
               color: tx(
                 "act2.key.map_c",
                 "Bleu sous la normale, ambre au-dessus. Plus la colonne est haute, plus l'écart est grand.",

@@ -18,6 +18,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchVivant } from "../../services/vivantApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import figuresFromBundle from "../../components/KeyFigures/fromBundle";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
@@ -426,6 +427,22 @@ export default function Act7Vivant() {
     t("act7.spotlight.n5"),
   ];
 
+  // ---------- LES CHIFFRES À EMPORTER ----------
+  // Trois nombres tirés du bundle de la mesure courante : ils changent avec le
+  // sélecteur, comme le reste de l'escale. Le lecteur qui ne lit rien d'autre
+  // repart au moins avec un ordre de grandeur et la période sur laquelle il
+  // vaut. Voir components/KeyFigures/fromBundle.js.
+  const figures = useMemo(
+    () =>
+      figuresFromBundle(M, {
+        median: tx("act7.fig.median", "Médiane du Pacifique", "Pacific median"),
+        edge: tx("act7.fig.edge", "La valeur extrême", "The extreme value"),
+        span: tx("act7.fig.span", "Période couverte", "Period covered"),
+        years: tx("act7.fig.years", "années", "years"),
+      }),
+    [M, tx],
+  );
+
   const charts =
     status === "ready"
       ? [
@@ -483,7 +500,7 @@ export default function Act7Vivant() {
             title: titles.trend,
             finding: t("act7.board.trend_find"),
             takeaway: t("act7.board.trend_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act7.hint.trend",
               "Survolez une courbe pour suivre un territoire année par année.",
@@ -530,7 +547,7 @@ export default function Act7Vivant() {
             title: titles.multiples,
             finding: t("act7.board.multiples_find"),
             takeaway: t("act7.board.multiples_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act7.hint.multiples",
               "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
@@ -557,6 +574,7 @@ export default function Act7Vivant() {
             finding: t("act7.board.race_find"),
             takeaway: t("act7.board.race_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act7.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -590,6 +608,7 @@ export default function Act7Vivant() {
             finding: t("act7.board.change_find"),
             takeaway: t("act7.board.change_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act7.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -734,6 +753,7 @@ export default function Act7Vivant() {
       // `home.acts.a7_title`. Deux clés pour un seul titre : le voisin
       // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
       title={t("home.acts.a7_title")}
+      figures={figures}
       thesis={t("act7.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

@@ -909,6 +909,33 @@ export default function Act5Momentum() {
             // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
             // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
             // catégorie à laquelle il appartient.
+            finding: tx(
+              "act5.viz.embed_find",
+              "Un dessin plutôt qu'un graphique : la grandeur se lit dans sa forme — sa hauteur, sa densité, son remplissage. Le sélecteur sous l'image change de territoire.",
+              "A drawing rather than a chart: the quantity is read from its shape — height, density, fill. The selector below the image switches territory.",
+            ),
+            takeaway: tx(
+              "act5.viz.embed_take",
+              "Un chiffre isolé ne dit rien tant qu'on ne l'a pas comparé. Le dessin donne une échelle intuitive ; les vues suivantes donnent les valeurs exactes.",
+              "A lone figure says nothing until you compare it. The drawing gives an intuitive scale; the next views give the exact values.",
+            ),
+            hint: tx(
+              "act5.viz.embed_hint",
+              "Changez de territoire sous l'image, et de dessin avec la bascule au-dessus.",
+              "Switch territory below the image, and drawing with the toggle above.",
+            ),
+            legend: {
+              // Aucune échelle de couleur : ces dessins encodent par la forme.
+              // La pastille reste un cadre vide, ce qui est la seule chose
+              // honnête à montrer quand la couleur ne mesure rien.
+              swatch: "none",
+              color: tx(
+                "act5.viz.embed_c",
+                "La couleur ne mesure rien ici : c'est la forme du dessin qui porte la valeur.",
+                "Colour measures nothing here: the drawing's shape carries the value.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -936,7 +963,7 @@ export default function Act5Momentum() {
             title: t("act5.ren_title"),
             finding: t("act5.board.trend_find"),
             takeaway: t("act5.board.trend_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -985,7 +1012,7 @@ export default function Act5Momentum() {
             title: t("act5.board.lines_title"),
             finding: t("act5.board.lines_find"),
             takeaway: t("act5.board.lines_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1009,6 +1036,7 @@ export default function Act5Momentum() {
             finding: t("act5.board.rank_find"),
             takeaway: t("act5.board.rank_take"),
             legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1085,7 +1113,7 @@ export default function Act5Momentum() {
             title: t("act5.evo_title"),
             finding: t("act5.board.evo_find"),
             takeaway: t("act5.board.evo_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1113,7 +1141,7 @@ export default function Act5Momentum() {
             title: t("act5.mix.band_title"),
             finding: t("act5.board.mix_band_find"),
             takeaway: t("act5.board.mix_band_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1135,7 +1163,7 @@ export default function Act5Momentum() {
             title: t("act5.mix.detail_title"),
             finding: t("act5.board.mix_detail_find"),
             takeaway: t("act5.board.mix_detail_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1157,7 +1185,7 @@ export default function Act5Momentum() {
             title: `${t("act5.mix.compo_title")} · ${compoYear ?? ""}`,
             finding: t("act5.board.mix_compo_find"),
             takeaway: t("act5.board.mix_compo_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1312,6 +1340,7 @@ export default function Act5Momentum() {
             finding: t("act5.board.mix_leader_find"),
             takeaway: t("act5.board.mix_leader_take"),
             legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1333,6 +1362,7 @@ export default function Act5Momentum() {
             finding: t("act5.board.mix_funnel_find"),
             takeaway: t("act5.board.mix_funnel_take"),
             legend: { ...key, y: tx("act5.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -1348,7 +1378,7 @@ export default function Act5Momentum() {
             title: t("act5.mix.share_evo_title"),
             finding: t("act5.board.mix_share_evo_find"),
             takeaway: t("act5.board.mix_share_evo_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act5.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",

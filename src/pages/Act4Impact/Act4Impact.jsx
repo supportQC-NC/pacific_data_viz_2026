@@ -434,6 +434,33 @@ export default function Act4Impact() {
             // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
             // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
             // catégorie à laquelle il appartient.
+            finding: tx(
+              "act4.viz.embed_find",
+              "Un dessin plutôt qu'un graphique : la grandeur se lit dans sa forme — sa hauteur, sa densité, son remplissage. Le sélecteur sous l'image change de territoire.",
+              "A drawing rather than a chart: the quantity is read from its shape — height, density, fill. The selector below the image switches territory.",
+            ),
+            takeaway: tx(
+              "act4.viz.embed_take",
+              "Un chiffre isolé ne dit rien tant qu'on ne l'a pas comparé. Le dessin donne une échelle intuitive ; les vues suivantes donnent les valeurs exactes.",
+              "A lone figure says nothing until you compare it. The drawing gives an intuitive scale; the next views give the exact values.",
+            ),
+            hint: tx(
+              "act4.viz.embed_hint",
+              "Changez de territoire sous l'image, et de dessin avec la bascule au-dessus.",
+              "Switch territory below the image, and drawing with the toggle above.",
+            ),
+            legend: {
+              // Aucune échelle de couleur : ces dessins encodent par la forme.
+              // La pastille reste un cadre vide, ce qui est la seule chose
+              // honnête à montrer quand la couleur ne mesure rien.
+              swatch: "none",
+              color: tx(
+                "act4.viz.embed_c",
+                "La couleur ne mesure rien ici : c'est la forme du dessin qui porte la valeur.",
+                "Colour measures nothing here: the drawing's shape carries the value.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -463,7 +490,7 @@ export default function Act4Impact() {
             title: `${t("act4.timeline_title")} · ${metricLabel}`,
             finding: t("act4.board.timeline_find"),
             takeaway: t("act4.board.timeline_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act4.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -509,7 +536,7 @@ export default function Act4Impact() {
             title: `${t("act4.board.annual_title")} · ${metricLabel}`,
             finding: t("act4.board.annual_find"),
             takeaway: t("act4.board.annual_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act4.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -533,6 +560,7 @@ export default function Act4Impact() {
             finding: t("act4.board.rank_find"),
             takeaway: t("act4.board.rank_take"),
             legend: { ...key, y: tx("act4.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act4.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",

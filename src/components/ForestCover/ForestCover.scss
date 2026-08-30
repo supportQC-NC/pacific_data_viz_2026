@@ -205,23 +205,65 @@
   stroke: var(--c-line);
   stroke-width: 1;
 }
+/* LE TRONC RECULE DERRIÈRE LE FEUILLAGE.
+   Il était peint en `--c-text-mute`, c'est-à-dire en gris clair : sur le fond
+   sombre, six bâtons blancs attiraient l'œil plus que la canopée, alors que
+   c'est elle qui porte la donnée. Un peu d'ambre le fait tirer vers l'écorce,
+   et le mélange suit le thème — aucune valeur figée. */
 .forest__trunk {
-  stroke: var(--c-text-mute);
-  stroke-width: 6;
+  stroke: color-mix(in srgb, var(--c-text-mute) 58%, var(--c-warm) 42%);
+  stroke-width: 5;
   stroke-linecap: round;
+  fill: none;
+  opacity: 0.72;
 }
-.forest__canopy circle {
+
+/* Branches et stipe du pin : plus fins que le fût, sinon l'arbre a des bras
+   aussi épais que son tronc. */
+.forest__trunk--thin {
+  stroke-width: 3;
+}
+
+/* La couronne est peinte par le groupe, pas par élément : les silhouettes ne
+   sont plus faites que de cercles — le pin a des étages, le palmier des
+   nervures. Un sélecteur sur `circle` seul laissait les deux sans couleur. */
+.forest__canopy path:not(.forest__trunk):not(.forest__frond),
+.forest__canopy circle:not(.forest__nut) {
   stroke: none;
 }
-.forest__canopy-a circle {
+.forest__canopy-a path:not(.forest__trunk):not(.forest__frond),
+.forest__canopy-a circle:not(.forest__nut) {
   fill: var(--c-positive);
 }
-.forest__canopy-b circle {
+.forest__canopy-b path:not(.forest__trunk):not(.forest__frond),
+.forest__canopy-b circle:not(.forest__nut) {
   fill: var(--c-positive-soft);
+}
+
+/* Les palmes sont des TRAITS, pas des surfaces : une frondaison pleine fait
+   une tache, alors qu'elle se lit à ses nervures. */
+.forest__frond {
+  fill: none;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+}
+.forest__canopy-a .forest__frond {
+  stroke: var(--c-positive);
+}
+.forest__canopy-b .forest__frond {
+  stroke: var(--c-positive-soft);
+}
+
+/* Les noix : au ton de l'écorce, et petites. En gris clair et à taille pleine,
+   les deux cercles se lisaient comme une paire d'yeux sous la frondaison. */
+.forest__nut {
+  fill: color-mix(in srgb, var(--c-text-mute) 50%, var(--c-warm) 50%);
+  stroke: none;
+  opacity: 0.8;
 }
 .forest__grass path {
   stroke: var(--c-positive-soft);
-  stroke-width: 2.4;
+  stroke-width: 2.2;
   stroke-linecap: round;
   opacity: 0.6;
 }

@@ -1464,6 +1464,22 @@
     color: var(--c-text-soft);
   }
 
+  /* LES COMMANDES PRENNENT LEUR PROPRE RANG.
+     L'en-tête est une grille « titre | phrase | reste ». Les commandes
+     tombaient dans la troisième colonne, en `auto` : à trois menus déroulants
+     elles y prenaient presque toute la largeur, et la colonne du milieu —
+     celle de la phrase de lecture — se réduisait à un mot par ligne. Elles
+     s'étalent donc sur toute la largeur, sur la ligne suivante. */
+  .board__head-controls {
+    grid-column: 1 / -1;
+    margin-top: var(--sp-2);
+  }
+
+  .board__head .keyfig {
+    grid-column: 1 / -1;
+    margin-top: var(--sp-2);
+  }
+
   .board__chart {
     min-height: 320px;
   }

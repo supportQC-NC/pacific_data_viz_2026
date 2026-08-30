@@ -21,6 +21,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import KpiRow from "../KpiRow/KpiRow";
+import KeyFigures from "../KeyFigures/KeyFigures";
 import Loader from "../Loader/Loader";
 import ActBar from "../ActBar/ActBar";
 import ChartCarousel from "../ChartCarousel/ChartCarousel";
@@ -38,6 +39,10 @@ export default function ActBoard({
   title,
   thesis,
   kpis = [],
+  // CHIFFRES-CLÉS DE LA COLONNE, distincts des `kpis` du hero : deux ou trois
+  // seulement, et formulés pour être lus à 230 px de large. Une escale qui n'en
+  // fournit pas retombe sur ses `kpis`, dont le format est compatible.
+  figures = [],
   kpiTitle,
   filters,
   charts = [],
@@ -491,7 +496,15 @@ export default function ActBoard({
                       labels={{ prev: labels.prev, next: labels.next, signature: labels.signature, group: labels.viewGroup }}
                     />
                   )}
-                  {!active.bare && (
+                  {/* L'EN-TÊTE REVIENT SUR LES VUES `bare`, EN DESSOUS DE 1180 px.
+                      `bare` donne au tracé le panneau entier — c'était sans
+                      risque tant que la colonne de lecture portait le titre, la
+                      phrase, la source et les commandes. Sous 1180 px cette
+                      colonne n'existe pas : une vue `bare` y perdait TOUT, y
+                      compris la provenance de ses données. Au-dessus, la règle
+                      CSS `.board--focus .board__head { display:none }` continue
+                      de l'effacer : le rendu desktop est inchangé. */}
+                  {(
                     <div className="board__head">
                       <span className="board__num">
                         {String(idx + 1).padStart(2, "0")} /{" "}
@@ -505,6 +518,15 @@ export default function ActBoard({
                       ) : null}
                       {active.finding ? (
                         <p className="board__finding">{active.finding}</p>
+                      ) : null}
+                      {/* Les chiffres suivent le lecteur sous 1180 px aussi :
+                          la colonne disparaît, eux non. Ils s'y mettent en
+                          ligne — la largeur est disponible, la hauteur non. */}
+                      {(figures.length ? figures : kpis).length ? (
+                        <KeyFigures
+                          items={figures.length ? figures : kpis}
+                          label={tf("board.key_figures", "Chiffres-clés", "Key figures")}
+                        />
                       ) : null}
                       {/* LES COMMANDES DE LA VUE, EN REPLI.
                           Elles vivent dans la colonne de lecture — mais celle-ci
@@ -550,6 +572,16 @@ export default function ActBoard({
                         <ChartKey
                           title={active.title}
                           more={moreBtn}
+                          // Les chiffres-clés de l'escale : `figures` si la
+                          // page en fournit, sinon les `kpis` du hero, dont le
+                          // format {value, unit, label} est compatible.
+                          figures={figures.length ? figures : kpis}
+                          // CE QUE VOUS REGARDEZ. La phrase de lecture de la
+                          // vue n'était relayée nulle part sur écran large :
+                          // elle vivait derrière le « + » et dans l'en-tête
+                          // sous 1180 px. Onze escales l'avaient écrite, aucune
+                          // ne l'affichait là où on lit.
+                          finding={active.finding}
                           y={active.legend?.y}
                           x={active.legend?.x}
                           color={active.legend?.color}
@@ -566,6 +598,8 @@ export default function ActBoard({
                           takeaway={active.takeaway}
                           hint={active.hint}
                           labels={{
+                            figures: tf("board.key_figures", "Chiffres-clés", "Key figures"),
+                            finding: tf("board.key_finding", "Ce que vous regardez", "What you are looking at"),
                             read: tf("board.key_read", "Comment lire", "How to read"),
                             takeaway: tf("board.key_take", "Ce qu'il faut retenir", "What to take away"),
                             explore: tf("board.key_explore", "À vous de jouer", "Your turn"),

@@ -6,7 +6,7 @@
 // valeurs visibles malgre l'outlier ; valeur exacte en bout de barre.
 //
 // COULEUR SEMANTIQUE divergente autour du repere `worldAvg` (mediane) :
-//   • betterWhen="low"  (defaut) -> sous la mediane = vert, au-dessus = rouge
+//   • betterWhen="low"  (defaut) -> sous la mediane = bleu, au-dessus = ambre
 //   • betterWhen="high"          -> inverse
 // Zones teintees en arriere-plan (favorable / defavorable) + ligne de
 // reference libellee. Couleurs lues depuis les tokens CSS -> light/dark auto.
@@ -63,11 +63,17 @@ export default function RankBars({
     return (min + max) / 2;
   }, [worldAvg, min, max]);
 
-  // Couleur divergente : vert (favorable) -> cyan (repere) -> rouge (defavorable).
+  // COULEUR DIVERGENTE — LA VALIDEE, PAS VERT<->ROUGE.
+  // Elle allait de --c-positive a --c-negative, c'est-a-dire du vert au
+  // rouge : mesuree a dE 4,1 sous deuteranopie, la paire dont les deux poles
+  // sont la MEME couleur pour pres d'un homme sur douze. Les jetons `div`
+  // portent la divergente bleu<->ambre du systeme, declaree dans les deux
+  // themes, pire cas dE 20,5. Le repere central prend le jeton neutre de la
+  // rampe plutot que l'accent, qui n'a rien d'un milieu.
   const colorFor = useMemo(() => {
-    const pos = cssVar("--c-positive", "#25e09a");
-    const neg = cssVar("--c-negative", "#ff4d6d");
-    const mid = cssVar("--c-accent", "#00e6ff");
+    const pos = cssVar("--c-div-1", "#4f8fd0");
+    const neg = cssVar("--c-div-9", "#d99b3c");
+    const mid = cssVar("--c-div-5", "#9aa3b2");
     const lowColor = betterWhen === "high" ? neg : pos;
     const highColor = betterWhen === "high" ? pos : neg;
     const belowS = d3.scaleLinear().domain([min, pivot]).range([0, 1]).clamp(true);

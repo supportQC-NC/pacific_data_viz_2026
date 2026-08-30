@@ -19,6 +19,7 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSante } from "../../services/santeApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import figuresFromBundle from "../../components/KeyFigures/fromBundle";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
@@ -544,6 +545,22 @@ export default function Act10Sante() {
   ];
   const activeViz = VIZ[viz] || VIZ.glass;
 
+  // ---------- LES CHIFFRES À EMPORTER ----------
+  // Trois nombres tirés du bundle de la mesure courante : ils changent avec le
+  // sélecteur, comme le reste de l'escale. Le lecteur qui ne lit rien d'autre
+  // repart au moins avec un ordre de grandeur et la période sur laquelle il
+  // vaut. Voir components/KeyFigures/fromBundle.js.
+  const figures = useMemo(
+    () =>
+      figuresFromBundle(M, {
+        median: tx("act10.fig.median", "Médiane du Pacifique", "Pacific median"),
+        edge: tx("act10.fig.edge", "La valeur extrême", "The extreme value"),
+        span: tx("act10.fig.span", "Période couverte", "Period covered"),
+        years: tx("act10.fig.years", "années", "years"),
+      }),
+    [M, tx],
+  );
+
   const charts =
     status === "ready"
       ? [
@@ -554,6 +571,33 @@ export default function Act10Sante() {
             // « Foule »… — et change avec la bascule. La barre annonce ainsi ce
             // qu'on va voir, comme sur les escales 01 et 02, au lieu de la
             // catégorie à laquelle il appartient.
+            finding: tx(
+              "act10.viz.embed_find",
+              "Un dessin plutôt qu'un graphique : la grandeur se lit dans sa forme — sa hauteur, sa densité, son remplissage. Le sélecteur sous l'image change de territoire.",
+              "A drawing rather than a chart: the quantity is read from its shape — height, density, fill. The selector below the image switches territory.",
+            ),
+            takeaway: tx(
+              "act10.viz.embed_take",
+              "Un chiffre isolé ne dit rien tant qu'on ne l'a pas comparé. Le dessin donne une échelle intuitive ; les vues suivantes donnent les valeurs exactes.",
+              "A lone figure says nothing until you compare it. The drawing gives an intuitive scale; the next views give the exact values.",
+            ),
+            hint: tx(
+              "act10.viz.embed_hint",
+              "Changez de territoire sous l'image, et de dessin avec la bascule au-dessus.",
+              "Switch territory below the image, and drawing with the toggle above.",
+            ),
+            legend: {
+              // Aucune échelle de couleur : ces dessins encodent par la forme.
+              // La pastille reste un cadre vide, ce qui est la seule chose
+              // honnête à montrer quand la couleur ne mesure rien.
+              swatch: "none",
+              color: tx(
+                "act10.viz.embed_c",
+                "La couleur ne mesure rien ici : c'est la forme du dessin qui porte la valeur.",
+                "Colour measures nothing here: the drawing's shape carries the value.",
+              ),
+              note: key.note,
+            },
             node: (
               <div className="vizpane">
                 <VizSwitch
@@ -583,7 +627,7 @@ export default function Act10Sante() {
             title: M.titles.trend,
             finding: t("act10.board.trend_find"),
             takeaway: t("act10.board.trend_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act10.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -630,7 +674,7 @@ export default function Act10Sante() {
             title: M.titles.multiples,
             finding: t("act10.board.multiples_find"),
             takeaway: t("act10.board.multiples_take"),
-            legend: key,
+            legend: { ...key, swatch: "none" },
             hint: tx(
               "act10.hint.multiples",
               "Toutes les vignettes partagent la même échelle : elles se comparent du regard.",
@@ -657,6 +701,7 @@ export default function Act10Sante() {
             finding: t("act10.board.race_find"),
             takeaway: t("act10.board.race_take"),
             legend: { ...key, y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+              swatch: "none",
             hint: tx(
               "act10.hint.race",
               "Lancez l'animation : les barres se réordonnent au fil des années.",
@@ -686,6 +731,7 @@ export default function Act10Sante() {
             finding: t("act10.board.change_find"),
             takeaway: t("act10.board.change_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: key.y,
@@ -761,6 +807,7 @@ export default function Act10Sante() {
             finding: t("act10.board.radar_find"),
             takeaway: t("act10.board.radar_take"),
             legend: {
+              swatch: "none",
               ...key,
               y: tx(
                 "act10.key.radar_y",
@@ -859,6 +906,7 @@ export default function Act10Sante() {
       // `home.acts.a10_title`. Deux clés pour un seul titre : le voisin
       // pouvait annoncer autre chose que ce qu'on trouvait en arrivant.
       title={t("home.acts.a10_title")}
+      figures={figures}
       thesis={t("act10.thesis")}
       // L'en-tête ne porte plus de filtres : chaque graphique a les siens.
       filters={null}

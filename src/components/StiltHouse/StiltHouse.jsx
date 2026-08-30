@@ -32,10 +32,46 @@ import useInView from "../../hooks/UseInView";
 import "./StiltHouse.scss";
 
 const HIGH_Y = 158; // eau haute (juste sous le plancher)
-const LOW_Y = 266; // eau basse (près du fond)
+// Eau basse. À 266 il ne restait que 6 px entre la surface et le fond : ni
+// assez pour qu'un poisson y tienne, ni assez pour que ça ressemble à de
+// l'eau. La course encode toujours la même chose — une hauteur normalisée sur
+// l'amplitude du Pacifique, dit sous le visuel — sur 74 px au lieu de 108.
+const LOW_Y = 232;
 const SEABED_Y = 272;
 const STILTS = [100, 150, 210, 260];
-const BUBBLES = [118, 150, 196, 232, 168];
+// LES BULLES SONT REMPLACÉES PAR DES POISSONS.
+// Cinq points noirs qui remontaient en boucle : ça ne ressemblait ni à des
+// bulles (elles seraient claires) ni à rien d'autre. Sous une maison sur
+// pilotis il y a un fond et des poissons — et ils disent quelque chose de
+// plus : plus l'eau monte, plus il y a de place pour eux.
+//
+// `depth` est la profondeur de croisière ; un poisson ne s'affiche que lorsque
+// la surface est passée au-dessus de lui.
+// `depth` est RELATIVE à la colonne d'eau : 0 = juste sous la surface,
+// 1 = juste au-dessus du fond. Les poissons suivent donc le niveau au lieu
+// d'attendre qu'il les atteigne.
+const FISH = [
+  { x: 118, depth: 0.32, amp: 26, sp: 0.34, off: 0.0, s: 1.0 },
+  { x: 196, depth: 0.74, amp: 34, sp: 0.26, off: 1.6, s: 0.82 },
+  { x: 236, depth: 0.2, amp: 22, sp: 0.42, off: 2.7, s: 0.7 },
+  { x: 152, depth: 0.88, amp: 30, sp: 0.3, off: 0.9, s: 0.9 },
+  { x: 262, depth: 0.55, amp: 24, sp: 0.38, off: 2.1, s: 0.76 },
+];
+
+// Un poisson simple : corps, caudale, œil. À cette taille, l'œil est ce qui
+// fait la différence entre un animal et une virgule.
+const FISH_BODY = "M8,0 Q3,-5 -4,-4 L-11,-7 L-9,0 L-11,7 L-4,4 Q3,5 8,0 Z";
+
+// Fond marin : un banc de sable et quelques massifs, très sourds. Ils ne
+// portent aucune donnée — ils donnent une échelle et un bas à l'image.
+const SEABED_D =
+  "M-10,272 Q40,264 92,269 Q150,275 208,268 Q272,261 370,268 L370,300 L-10,300 Z";
+const SEABED_CLUMPS = [
+  "M56,268 q4,-11 9,-3 q5,-9 8,3 Z",
+  "M138,266 q3,-9 7,-2 q4,-7 6,2 Z",
+  "M228,265 q5,-13 10,-4 q6,-10 9,4 Z",
+  "M300,269 q3,-8 7,-2 q4,-6 6,2 Z",
+];
 
 function firstFinite(serie) {
   for (let i = 0; i < serie.length; i += 1)
@@ -181,20 +217,34 @@ export default function StiltHouse({ embed = false, code = null } = {}) {
       if (frontRef.current)
         frontRef.current.setAttribute("d", build(ly, 4.5, 0.06, 1.5, 0));
 
+      // LES POISSONS NE SONT PAS UNE DONNÉE.
+      //
+      // Ils n'apparaissaient qu'une fois la surface passée au-dessus d'eux : au
+      // territoire le plus bas, l'eau ne montait pas assez et le dessin n'en
+      // comptait aucun. Or ils ne mesurent rien — c'est la hauteur d'eau qui
+      // porte l'anomalie. Faire dépendre le vivant d'un chiffre qu'il n'encode
+      // pas, c'est laisser croire à une lecture qui n'existe pas.
+      //
+      // Ils nagent donc dans la colonne d'eau QUELLE QU'ELLE SOIT : leur
+      // profondeur est relative, entre la surface et le fond. Ils sont toujours
+      // là, ils sont seulement plus ou moins au large.
+      const top = ly + 7;
+      const floor = SEABED_Y - 4;
+      const column = Math.max(0, floor - top);
       bubbleRefs.current.forEach((node, i) => {
         if (!node) return;
-        const sp = 24 + (i % 3) * 8;
-        const span = SEABED_Y - ly;
-        if (span <= 6) {
-          node.setAttribute("opacity", "0");
-          return;
-        }
-        const yb = reduced
-          ? SEABED_Y - ((i + 1) / 6) * span
-          : SEABED_Y - ((phase * sp + i * 24) % span);
-        const op = clamp01((yb - ly) / 40) * 0.5;
-        node.setAttribute("cy", yb.toFixed(1));
-        node.setAttribute("opacity", op.toFixed(3));
+        const f = FISH[i];
+        const fx = f.x + (reduced ? 0 : f.amp * Math.sin(phase * f.sp + f.off));
+        const fy = top + f.depth * column;
+        const dir = Math.cos(phase * f.sp + f.off) >= 0 ? 1 : -1;
+        // Dans une lame d'eau étroite, ils rapetissent plutôt que de disparaître.
+        const fit = clamp01(column / 60);
+        const sc = f.s * (0.55 + 0.45 * fit);
+        node.setAttribute(
+          "transform",
+          `translate(${fx.toFixed(1)} ${fy.toFixed(1)}) scale(${(dir * sc).toFixed(3)} ${sc.toFixed(3)})`,
+        );
+        node.setAttribute("opacity", column > 14 ? "1" : "0");
       });
     },
     [reduced, signed],
@@ -374,54 +424,109 @@ export default function StiltHouse({ embed = false, code = null } = {}) {
                 <g clipPath="url(#stilt-frame)">
                   <rect className="stilt__sky" x="0" y="0" width="360" height="300" />
 
-                  {/* Pilotis */}
+                  {/* Pilotis. Une seule entretoise horizontale les faisait
+                      lire comme un échafaudage : ce qui tient une maison sur
+                      pieux, ce sont des CROIX de contreventement entre pieux
+                      voisins, plus une lisse basse. */}
                   <g className="stilt__posts">
                     {STILTS.map((x, i) => (
                       <line key={i} x1={x} y1="150" x2={x} y2={SEABED_Y} />
                     ))}
-                    {/* entretoises */}
-                    <line x1="100" y1="206" x2="260" y2="206" />
+                  </g>
+                  <g className="stilt__braces">
+                    {STILTS.slice(0, -1).map((x, i) => (
+                      <g key={i}>
+                        <line x1={x} y1="186" x2={STILTS[i + 1]} y2="228" />
+                        <line x1={STILTS[i + 1]} y1="186" x2={x} y2="228" />
+                      </g>
+                    ))}
+                    <line x1={STILTS[0]} y1="228" x2={STILTS[STILTS.length - 1]} y2="228" />
                   </g>
 
-                  {/* Échelle */}
+                  {/* Échelle : elle partait dans le vide, sans appui sur le
+                      plancher. Elle s'accroche maintenant sous le débord. */}
                   <g className="stilt__ladder">
-                    <line x1="118" y1="152" x2="96" y2={SEABED_Y} />
-                    <line x1="130" y1="152" x2="108" y2={SEABED_Y} />
-                    <line x1="124" y1="170" x2="112" y2="170" />
-                    <line x1="120" y1="192" x2="108" y2="192" />
-                    <line x1="116" y1="214" x2="104" y2="214" />
-                    <line x1="112" y1="236" x2="100" y2="236" />
+                    <line x1="112" y1="150" x2="92" y2={SEABED_Y} />
+                    <line x1="126" y1="150" x2="106" y2={SEABED_Y} />
+                    <line x1="123" y1="166" x2="109" y2="166" />
+                    <line x1="119" y1="188" x2="105" y2="188" />
+                    <line x1="115" y1="210" x2="101" y2="210" />
+                    <line x1="111" y1="232" x2="97" y2="232" />
+                  </g>
+
+                  {/* Fond marin, très sourd : il donne un bas à l'image et une
+                      échelle aux pilotis. Il ne porte aucune donnée. */}
+                  <g className="stilt__seabed" aria-hidden="true">
+                    <path className="stilt__sand" d={SEABED_D} />
+                    {SEABED_CLUMPS.map((d, i) => (
+                      <path key={i} className="stilt__clump" d={d} />
+                    ))}
                   </g>
 
                   {/* Eau (semi-transparente : pilotis submergés visibles) */}
                   <path ref={backRef} className="stilt__water-back" d="" />
                   <path ref={frontRef} className="stilt__water-front" d="" />
-                  {BUBBLES.map((x, i) => (
-                    <circle
+                  {FISH.map((f, i) => (
+                    <g
                       key={i}
                       ref={(n) => {
                         bubbleRefs.current[i] = n;
                       }}
-                      className="stilt__bubble"
-                      cx={x}
-                      cy="260"
-                      r={2 + (i % 3)}
+                      className="stilt__fish"
                       opacity="0"
-                    />
+                    >
+                      <path d={FISH_BODY} />
+                      <circle className="stilt__fish-eye" cx="4.6" cy="-1.4" r="1" />
+                    </g>
                   ))}
 
-                  {/* Maison (toujours au-dessus de l'eau) */}
+                  {/* LA MAISON, REDESSINÉE EN FALE.
+                      Elle était : un toit en LENTILLE posé sur rien, une boîte
+                      pleine pour corps, et une porte flottant à côté d'une
+                      fenêtre. Le toit ne touchait pas les murs.
+                      Un fale est ouvert : des poteaux d'angle, une lisse à
+                      hauteur d'appui, un intérieur sombre entre les poteaux, et
+                      un toit de chaume à quatre pans qui DÉBORDE largement —
+                      c'est le débord qui abrite, et c'est lui qu'on reconnaît. */}
                   <g className="stilt__house">
-                    {/* plancher */}
-                    <rect className="stilt__floor" x="78" y="144" width="204" height="8" rx="2" />
-                    {/* corps */}
-                    <rect className="stilt__wall" x="104" y="104" width="152" height="42" rx="2" />
-                    {/* porte + fenêtre */}
-                    <rect className="stilt__door" x="170" y="116" width="22" height="30" rx="2" />
-                    <rect className="stilt__window" x="120" y="116" width="26" height="18" rx="2" />
-                    {/* toit (chaume arrondi) */}
-                    <path className="stilt__roof" d="M66,110 Q180,52 294,110 Z" />
-                    <path className="stilt__roof-ridge" d="M84,104 Q180,66 276,104" fill="none" />
+                    {/* Plancher : une planche et ses solives, pas un trait. */}
+                    <rect className="stilt__joist" x="80" y="150" width="200" height="5" rx="1" />
+                    <rect className="stilt__floor" x="72" y="142" width="216" height="9" rx="2" />
+
+                    {/* L'intérieur, dans l'ombre du toit : c'est ce vide qui
+                        fait lire une maison ouverte plutôt qu'un cube. */}
+                    <rect className="stilt__inside" x="98" y="96" width="164" height="46" />
+
+                    {/* Poteaux d'angle et poteaux intermédiaires. */}
+                    <g className="stilt__cols">
+                      <line x1="102" y1="96" x2="102" y2="142" />
+                      <line x1="142" y1="96" x2="142" y2="142" />
+                      <line x1="218" y1="96" x2="218" y2="142" />
+                      <line x1="258" y1="96" x2="258" y2="142" />
+                    </g>
+
+                    {/* Lisse basse, ouverte au centre : l'entrée. */}
+                    <rect className="stilt__rail" x="98" y="124" width="52" height="12" rx="2" />
+                    <rect className="stilt__rail" x="210" y="124" width="52" height="12" rx="2" />
+
+                    {/* Toit de chaume à quatre pans : un faîtage horizontal,
+                        deux croupes, un débord franc de part et d'autre. */}
+                    <path
+                      className="stilt__roof"
+                      d="M52,100 Q88,96 124,58 L236,58 Q272,96 308,100 Q296,106 268,104 L92,104 Q64,106 52,100 Z"
+                    />
+                    {/* Faîtage */}
+                    <path className="stilt__ridge" d="M120,57 L240,57" fill="none" />
+                    {/* Rangs de chaume : ce qui distingue un toit d'un aplat. */}
+                    <g className="stilt__thatch">
+                      <path d="M70,99 Q104,94 131,68" fill="none" />
+                      <path d="M82,101 Q112,97 137,72" fill="none" />
+                      <path d="M290,99 Q256,94 229,68" fill="none" />
+                      <path d="M278,101 Q248,97 223,72" fill="none" />
+                      <path d="M150,58 L150,104" fill="none" />
+                      <path d="M180,58 L180,104" fill="none" />
+                      <path d="M210,58 L210,104" fill="none" />
+                    </g>
                   </g>
                 </g>
 

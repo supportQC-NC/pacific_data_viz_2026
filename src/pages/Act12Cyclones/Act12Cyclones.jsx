@@ -1074,7 +1074,27 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_map"),
             title: t("act12.viz.map_title"),
             finding: t("act12.viz.map_find"),
+            // LA PROVENANCE, DITE À L'ENDROIT OÙ ON REGARDE.
+            // C'est la seule escale dont le jeu ne vient PAS de la liste
+            // officielle du concours : l'avoir incluse est un choix de récit,
+            // et un lecteur qui vérifie les sources doit l'apprendre ici, pas
+            // en fouillant la fiche.
+            takeaway: tx(
+              "act12.viz.map_take",
+              "Ces trajectoires se ressemblent parce qu'on les a choisies ainsi. La base ne garde que les cyclones passés près de la Nouvelle-Calédonie. C'est une fenêtre, pas le Pacifique.",
+              "These tracks look alike because we picked them that way. The archive keeps only cyclones that came near New Caledonia. It is a window, not the Pacific.",
+            ),
             legend: {
+              // LA PROVENANCE, DITE LÀ OÙ ON REGARDE.
+              // C'est la seule escale dont le jeu ne vient PAS de la liste
+              // officielle du concours : l'avoir incluse est un choix de récit.
+              // Un lecteur qui vérifie ses sources doit l'apprendre ici, pas en
+              // fouillant la fiche.
+              caveat: tx(
+                "act12.key.map_caveat",
+                "Jeu hors liste officielle du concours : base cyclonique de Météo-France Nouvelle-Calédonie, ouverte via Géorep. On l'a ajoutée pour le récit.",
+                "Not on the challenge's official list: Météo-France New Caledonia's cyclone database, open via Géorep. We added it for the story.",
+              ),
               x: tx(
                 "act12.key.map_x",
                 "Les trajectoires réellement enregistrées, saison par saison. Rien n'est interpolé entre deux points.",
@@ -1129,6 +1149,11 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_intensify"),
             title: t("act12.viz.intensify_title"),
             finding: t("act12.viz.intensify_find"),
+            takeaway: tx(
+              "act12.viz.intensify_take",
+              "Ce n'est pas le nombre de cyclones qui change, c'est la part de ceux qui atteignent les stades sévères. Une saison peu fournie peut donc être plus dangereuse qu'une saison chargée — compter les phénomènes ne suffit pas à mesurer le risque.",
+              "It is not the number of cyclones that changes, but the share reaching the severe stages. A thin season can therefore be more dangerous than a busy one — counting systems does not measure the risk.",
+            ),
             legend: {
               y: tx(
                 "act12.key.intensify_y",
@@ -1157,6 +1182,11 @@ export default function Act12Cyclones() {
             tab: tx("act12.board.tab_signature", "Signature", "Signature"),
             title: t("act12.viz.wp_title"),
             finding: t("act12.viz.wp_find"),
+            takeaway: tx(
+              "act12.viz.windpress_take",
+              "Les deux mesures disent la même chose par deux chemins : quand la pression au centre chute, le vent monte. C'est ce qui permet de contrôler l'une par l'autre — un point qui s'écarterait franchement du nuage signalerait une mesure douteuse plutôt qu'un cyclone hors norme.",
+              "The two measurements say the same thing by two routes: as the central pressure drops, the wind rises. That is what lets one check the other — a dot far off the cloud would flag a doubtful reading rather than an extraordinary storm.",
+            ),
             legend: {
               y: tx(
                 "act12.key.wp_y",
@@ -1189,7 +1219,22 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_exposure"),
             title: t("act12.viz.exposure_title"),
             finding: t("act12.viz.exposure_find"),
+            takeaway: tx(
+              "act12.viz.exposure_take",
+              "Voir passer beaucoup de phénomènes et en subir de violents sont deux choses différentes. Un territoire peut être souvent frôlé sans que les stades supérieurs soient atteints : c'est la répartition des couleurs dans chaque barre, et non sa longueur, qui dit lequel des deux cas on regarde.",
+              "Seeing many systems pass and being hit hard are two different things. A territory can be brushed often without the upper stages being reached: it is the spread of colours within each bar, not its length, that says which of the two you are looking at.",
+            ),
             legend: {
+              // LE SEUIL DES 300 km EST LE NÔTRE, ET IL DOIT SE DIRE.
+              // Le fichier ne contient aucun champ « exposé » : on croise les
+              // tracés avec la position des territoires et on tranche à 300 km
+              // (`EXPOSURE_KM`). Un autre seuil donnerait un autre classement —
+              // et le lecteur ne peut pas le deviner d'un décompte.
+              caveat: tx(
+                "act12.key.exposure_caveat",
+                "Les 300 km sont notre seuil, pas une donnée du fichier. Il ne dit pas qui a été touché : on le calcule. Un autre seuil, un autre classement.",
+                "The 300 km is our threshold, not a field in the file. It does not say who was hit — we work it out. Another threshold, another ranking.",
+              ),
               y: tx("act12.key.terr_y", "Un territoire par ligne.", "One territory per row."),
               x: tx(
                 "act12.key.exposure_x",
@@ -1217,6 +1262,11 @@ export default function Act12Cyclones() {
             tab: t("act12.board.tab_stage"),
             title: t("act12.viz.bystage_title"),
             finding: t("act12.viz.bystage_find"),
+            takeaway: tx(
+              "act12.viz.stage_take",
+              "Les stades supérieurs sont les moins nombreux — et ce sont eux qui font les dégâts. C'est pourquoi cette escale regarde leur PART plutôt que le total : c'est elle qui bouge, comme le montre la vue « Intensité ».",
+              "The upper stages are the least numerous — and they are the ones that do the damage. That is why this leg watches their SHARE rather than the total: the share is what moves, as the \u201cIntensity\u201d view shows.",
+            ),
             legend: {
               y: tx("act12.key.stage_y", "Un stade du barème par ligne.", "One scale stage per row."),
               x: tx("act12.key.count_x", "Le nombre de systèmes.", "Number of systems."),
@@ -1241,6 +1291,11 @@ export default function Act12Cyclones() {
             tab: tx("act12.board.tab_saisons", "Saisons", "Seasons"),
             title: t("act12.viz.season_title"),
             finding: t("act12.viz.season_find"),
+            takeaway: tx(
+              "act12.viz.season_take",
+              "Compter les cyclones d'une saison ne dit presque rien : l'écart d'une année à l'autre est énorme et ne dessine aucune tendance. C'est précisément pour cela que l'escale mesure l'intensité plutôt que la fréquence.",
+              "Counting a season's cyclones says almost nothing: the swing from year to year is huge and draws no trend. That is exactly why this leg measures intensity rather than frequency.",
+            ),
             legend: {
               y: tx("act12.key.count_y", "Le nombre de systèmes de la saison.", "Number of systems in the season."),
               x: tx("act12.key.season_x", "Les saisons, de 1977 à 2024. Une saison court de juillet à juin.", "Seasons, 1977 to 2024. A season runs July to June."),
@@ -1265,6 +1320,11 @@ export default function Act12Cyclones() {
             tab: tx("act12.board.tab_calendrier", "Calendrier", "Calendar"),
             title: t("act12.viz.month_title"),
             finding: t("act12.viz.month_find"),
+            takeaway: tx(
+              "act12.viz.month_take",
+              "La saison cyclonique est une fenêtre courte : l'essentiel se joue de décembre à avril. Comparez les colonnes entre elles pour voir si cette fenêtre s'est déplacée d'une tranche d'années à la suivante.",
+              "The cyclone season is a narrow window: the bulk of it falls between December and April. Compare the columns to see whether that window has shifted from one span of years to the next.",
+            ),
             legend: {
               y: tx("act12.key.decade_y", "Une décennie par ligne.", "One decade per row."),
               x: tx(

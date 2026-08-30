@@ -45,6 +45,50 @@ const BASE_X = 184; // trait de côte « sans changement »
 const RANGE = 84; // amplitude max de glissement (px) pour le plus fort taux
 const PROJ_YEARS = 50;
 
+// UNE CÔTE N'EST PAS UNE SINUSOÏDE.
+// Le trait était une seule onde régulière : lisse, périodique, reconnaissable
+// comme une formule. Un rivage réel est irrégulier à plusieurs échelles. Ce
+// bruit est FIGÉ (et non tiré à chaque image) : une côte qui frétillerait
+// serait pire que lisse.
+const SHORE_NOISE = [
+  0.0, -2.1, 1.4, 3.2, 0.6, -1.8, -3.4, -1.1, 1.9, 3.8, 2.2, -0.4, -2.6,
+  -3.9, -1.7, 0.9, 2.8, 4.1, 2.3, 0.2, -1.5, -3.1, -2.2, 0.4, 2.6, 3.3,
+  1.2, -0.8, -2.9, -3.6, -1.4, 0.7, 2.4, 3.9, 1.8, -0.3, -2.2, -3.4,
+];
+
+// Massifs coralliens vus du ciel. En ellipses grises ils passaient pour des
+// galets : un récif se repère à ce qu'il est plus CLAIR que le fond, et à ce
+// qu'aucun de ses contours n'est régulier.
+const REEFS = [
+  "M32,84 q14,-9 27,-2 q10,7 1,13 q-16,7 -27,1 q-7,-6 -1,-12 Z",
+  "M84,162 q11,-7 20,-1 q7,5 0,10 q-12,5 -20,0 q-5,-4 0,-9 Z",
+  "M52,202 q9,-6 16,-1 q6,4 0,8 q-10,4 -16,0 q-4,-3 0,-7 Z",
+  "M112,56 q8,-5 15,-1 q5,4 0,7 q-9,4 -15,0 q-4,-3 0,-6 Z",
+];
+
+// Bosquets côté terre. En cercles de rayon voisin et régulièrement espacés,
+// ils faisaient des pois. Ils sont maintenant de tailles très inégales et
+// serrés près du rivage, clairsemés en s'enfonçant dans les terres — c'est
+// ainsi que pousse la végétation littorale.
+// Bosquets côté terre. En cercles parfaits ils faisaient des pois : un couvert
+// végétal vu du ciel n'a ni bord net ni forme répétée. Chaque tache a donc son
+// propre contour, et les tailles restent très inégales.
+const SCRUB = [
+  ["M292,46 q13,-8 24,-1 q9,7 -1,12 q-15,7 -25,0 q-7,-6 2,-11 Z", 0],
+  ["M316,72 q8,-5 14,0 q5,4 -1,7 q-9,4 -14,0 q-4,-4 1,-7 Z", 1],
+  ["M300,92 q11,-7 20,-1 q8,6 -1,10 q-13,6 -20,0 q-6,-5 1,-9 Z", 0],
+  ["M334,84 q6,-4 11,0 q4,3 -1,5 q-7,3 -11,0 q-3,-3 1,-5 Z", 1],
+  ["M296,124 q14,-9 26,-1 q10,7 -1,13 q-16,7 -26,0 q-8,-6 1,-12 Z", 0],
+  ["M326,140 q8,-5 15,0 q5,4 -1,7 q-10,4 -15,0 q-4,-4 1,-7 Z", 1],
+  ["M300,166 q10,-6 18,-1 q7,5 -1,9 q-12,5 -18,0 q-5,-4 1,-8 Z", 0],
+  ["M330,180 q11,-7 20,-1 q8,6 -1,10 q-13,5 -20,0 q-6,-5 1,-9 Z", 0],
+  ["M340,158 q6,-4 11,0 q4,3 -1,5 q-7,3 -11,0 q-3,-3 1,-5 Z", 1],
+  ["M294,202 q12,-8 22,-1 q9,6 -1,11 q-14,6 -22,0 q-7,-5 1,-10 Z", 0],
+  ["M322,218 q7,-5 13,0 q5,4 -1,6 q-9,4 -13,0 q-4,-3 1,-6 Z", 1],
+  ["M338,206 q8,-5 15,0 q6,4 -1,7 q-10,4 -15,0 q-4,-4 1,-7 Z", 0],
+  ["M300,236 q10,-6 18,-1 q7,5 -1,9 q-12,4 -18,0 q-5,-4 1,-8 Z", 0],
+];
+
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
   if (!v.length) return null;
@@ -126,20 +170,14 @@ export default function CoastlineShift({ embed = false, code = null } = {}) {
   const seaRef = useRef(null);
   const sandRef = useRef(null);
   const foamRef = useRef(null);
+  // Bandes de déferlement et de sable mouillé : elles suivent le trait,
+  // c'est ce qui fait lire une plage plutôt qu'une frontière.
+  const surfRef = useRef(null);
+  const wetRef = useRef(null);
   const numberRef = useRef(null);
-  const crestRefs = useRef([]);
   const animObj = useRef({ off: 0, med: 0 });
   const startedRef = useRef(false);
 
-  const crests = useMemo(
-    () => [
-      { y: 70, sp: 0.4, off: 0.0 },
-      { y: 110, sp: 0.5, off: 0.4 },
-      { y: 150, sp: 0.34, off: 0.7 },
-      { y: 196, sp: 0.46, off: 0.2 },
-    ],
-    [],
-  );
 
   const draw = useCallback(
     (phase) => {
@@ -149,48 +187,74 @@ export default function CoastlineShift({ embed = false, code = null } = {}) {
       const erosion = animObj.current.med < 0;
       const jagAmp = erosion ? 2.2 * Math.min(1, Math.abs(off) / RANGE) : 0;
 
-      const pts = [];
-      for (let y = YTOP; y <= YBOT; y += 10) {
-        const x =
-          shoreX +
-          (reduced ? 0 : lap * Math.sin(y * 0.05 + phase * 1.5)) +
-          (reduced ? 0 : jagAmp * Math.sin(y * 0.7 + phase * 4));
-        pts.push([x, y]);
+      // DEUX TRACÉS, ET C'EST TOUTE LA DIFFÉRENCE.
+      //
+      // Un seul servait à la mer ET à la terre : la houle déplaçait donc le
+      // SABLE autant que l'eau, et la plage entière frétillait. Or le rivage
+      // ne bouge pas à l'échelle d'une vague — c'est l'eau qui vient le lécher
+      // et se retire.
+      //
+      //   `shorePts` : le rivage. Fixe, avec son irrégularité figée. Il ne se
+      //                déplace qu'avec la DONNÉE, quand le territoire change.
+      //   `waterPts` : la lisière de l'eau. C'est elle, et elle seule, que la
+      //                houle fait aller et venir par-dessus le sable.
+      const shorePts = [];
+      const waterPts = [];
+      for (let y = YTOP, k = 0; y <= YBOT; y += 6, k += 1) {
+        const base = shoreX + SHORE_NOISE[k % SHORE_NOISE.length];
+        shorePts.push([base, y]);
+        waterPts.push([
+          base +
+            (reduced ? 0 : lap * Math.sin(y * 0.05 + phase * 1.5)) +
+            (reduced ? 0 : jagAmp * Math.sin(y * 0.7 + phase * 4)),
+          y,
+        ]);
       }
-      const line = pts.map(([x, y]) => `L${x.toFixed(1)},${y}`).join(" ");
+      const seg = (arr) =>
+        arr.map(([x, y]) => `L${x.toFixed(1)},${y}`).join(" ");
+      // Une bande entre deux copies d'un tracé, décalées : elle épouse la côte
+      // au lieu d'être un rectangle posé à côté.
+      const band = (src, dxA, dxB) => {
+        const a = src.map(([x, y]) => [x + dxA, y]);
+        const b = src.map(([x, y]) => [x + dxB, y]).reverse();
+        return `M${a[0][0].toFixed(1)},${a[0][1]} ${seg(a)} ${seg(b)} Z`;
+      };
+
+      // L'eau : sa lisière ondule.
       if (seaRef.current)
-        seaRef.current.setAttribute("d", `M0,${YTOP} ${line} L0,${YBOT} Z`);
+        seaRef.current.setAttribute(
+          "d",
+          `M0,${YTOP} ${seg(waterPts)} L0,${YBOT} Z`,
+        );
+      // LE SABLE PASSE SOUS L'EAU.
+      // Son bord s'arrêtait exactement au rivage : quand la vague se retirait
+      // au-delà, il ne restait entre les deux qu'une fente de fond, une
+      // déchirure noire le long de la côte. Le sable déborde donc d'un peu plus
+      // que l'amplitude de la houle, et la mer, dessinée par-dessus, le
+      // recouvre. Ce qui se découvre au reflux est du sable mouillé — ce qui
+      // est exactement ce qu'on voit sur une plage.
+      const under = -(lap + jagAmp + 2);
       if (sandRef.current)
         sandRef.current.setAttribute(
           "d",
-          `M${VBW},${YTOP} ${line} L${VBW},${YBOT} Z`,
+          `M${VBW},${YTOP} ${seg(shorePts.map(([x, y]) => [x + under, y]))} L${VBW},${YBOT} Z`,
         );
+      // Le déferlement suit l'eau ; le sable mouillé reste au sol.
+      if (surfRef.current)
+        surfRef.current.setAttribute("d", band(waterPts, -15, 1));
+      if (wetRef.current)
+        wetRef.current.setAttribute("d", band(shorePts, under, 20));
       if (foamRef.current)
         foamRef.current.setAttribute(
           "d",
-          `M${pts[0][0].toFixed(1)},${YTOP} ${line}`,
+          `M${waterPts[0][0].toFixed(1)},${YTOP} ${seg(waterPts)}`,
         );
 
       if (numberRef.current)
         numberRef.current.textContent = signed(animObj.current.med, 2);
 
-      crestRefs.current.forEach((node, i) => {
-        if (!node) return;
-        const c = crests[i];
-        if (reduced) {
-          node.setAttribute("opacity", "0.28");
-          node.setAttribute("cx", String(shoreX - 30));
-          node.setAttribute("cy", String(c.y));
-          return;
-        }
-        const p = (phase * c.sp + c.off) % 1;
-        const cx = 14 + p * (shoreX - 22);
-        node.setAttribute("cx", cx.toFixed(1));
-        node.setAttribute("cy", String(c.y));
-        node.setAttribute("opacity", (0.45 * Math.sin(Math.PI * p)).toFixed(3));
-      });
     },
-    [reduced, crests],
+    [reduced],
   );
 
   useEffect(() => {
@@ -385,20 +449,22 @@ export default function CoastlineShift({ embed = false, code = null } = {}) {
                   d=""
                 />
 
-                {crests.map((c, i) => (
-                  <ellipse
-                    key={i}
-                    ref={(n) => {
-                      crestRefs.current[i] = n;
-                    }}
-                    className="coast__crest"
-                    cx="14"
-                    cy={c.y}
-                    rx="14"
-                    ry="2.4"
-                    opacity="0"
-                  />
-                ))}
+                {/* Massifs coralliens dans le petit fond. Trois taches grises
+                    flottaient auparavant dans l'eau sans rien signifier ; ceux-ci
+                    posent une profondeur et rompent l'aplat. */}
+                <g className="coast__reefs" aria-hidden="true">
+                  {REEFS.map((d, i) => (
+                    <path key={i} d={d} />
+                  ))}
+                </g>
+
+                {/* Sable mouillé, puis déferlement : les deux suivent le trait. */}
+                <path ref={wetRef} className="coast__wet" d="" />
+                <path ref={surfRef} className="coast__surf" d="" />
+
+                {/* Les crêtes en ellipses claires ont été retirées : à cette
+                    échelle elles se lisaient comme des objets flottants, et
+                    elles doublaient ce que la lisière ondulante dit déjà. */}
 
                 <path ref={foamRef} className="coast__foam" fill="none" d="" />
 
@@ -409,6 +475,14 @@ export default function CoastlineShift({ embed = false, code = null } = {}) {
                   y1={YTOP}
                   y2={YBOT}
                 />
+
+                {/* Végétation côté terre : ce qui borde une plage vue du ciel,
+                    c'est un liseré de bosquets, pas une arête franche. */}
+                <g className="coast__scrub" aria-hidden="true">
+                  {SCRUB.map(([d, tone], i) => (
+                    <path key={i} className={tone ? "coast__scrub--pale" : ""} d={d} />
+                  ))}
+                </g>
 
                 <text className="coast__tag" x="16" y="30">
                   {t("home.coast.sea_label")}

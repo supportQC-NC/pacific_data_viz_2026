@@ -29,21 +29,127 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./ForestCover.scss";
 
+// ---------------------------------------------------------------------------
+// LE BOSQUET, REDESSINÉ.
+//
+// Il portait six arbres RIGOUREUSEMENT identiques : un trait vertical pour le
+// tronc, quatre cercles pour la couronne, la même chose six fois de suite. Ce
+// n'est pas une forêt, c'est une frise de sucettes.
+//
+// Deuxième défaut, plus gênant : seule la COURONNE était mise à l'échelle, le
+// tronc gardait sa taille. À densité faible (facteur 0,32) le feuillage se
+// rétractait et se décrochait du tronc, qui restait planté sous lui.
+//
+// Ici : trois silhouettes, des hauteurs différentes, et le tronc vit DANS le
+// groupe animé — l'arbre grandit d'un bloc, depuis son pied.
+//
+// Le pin colonnaire (Araucaria columnaris) n'est pas un choix décoratif : il
+// est l'emblème de la Nouvelle-Calédonie et se reconnaît à sa silhouette. Un
+// bosquet du Pacifique dessiné en chênes serait joli et faux.
+// ---------------------------------------------------------------------------
+
+const GROUND_Y = 210;
+
+// x = position au sol · s = échelle propre · kind = silhouette
+// Les deux derniers sont des SEMIS : l'animation révèle les arbres dans
+// l'ordre du tableau, ils n'apparaissent donc qu'aux densités hautes — le
+// bosquet se regarnit par le bas, ce qui est l'idée même de l'indice.
+// Le COCOTIER domine le bosquet : c'est l'arbre du Pacifique, celui qu'on
+// reconnaît avant d'avoir lu la légende. Le pin colonnaire et le feuillu
+// l'accompagnent — trois silhouettes suffisent à faire une forêt, une seule
+// fait une frise.
 const TREES = [
-  { x: 44, s: 1.0, cls: "forest__canopy-a" },
-  { x: 96, s: 0.86, cls: "forest__canopy-b" },
-  { x: 150, s: 1.1, cls: "forest__canopy-a" },
-  { x: 206, s: 0.92, cls: "forest__canopy-b" },
-  { x: 262, s: 1.02, cls: "forest__canopy-a" },
-  { x: 316, s: 0.84, cls: "forest__canopy-b" },
+  { x: 40, s: 1.0, kind: "palm", cls: "forest__canopy-a" },
+  { x: 94, s: 0.86, kind: "pine", cls: "forest__canopy-b" },
+  { x: 148, s: 1.04, kind: "palm", cls: "forest__canopy-a" },
+  { x: 206, s: 0.9, kind: "broad", cls: "forest__canopy-b" },
+  { x: 262, s: 0.96, kind: "palm", cls: "forest__canopy-a" },
+  { x: 318, s: 0.82, kind: "pine", cls: "forest__canopy-b" },
+  { x: 124, s: 0.32, kind: "palm", cls: "forest__canopy-b" },
+  { x: 238, s: 0.3, kind: "broad", cls: "forest__canopy-a" },
 ];
-const PIVOT_Y = 156;
-const CANOPY = [
-  [0, -12, 22],
-  [-18, 2, 16],
-  [18, 2, 16],
-  [0, 10, 18],
+
+// Étages du pin colonnaire : ils se resserrent vers la cime, ce qui donne à
+// l'arbre son profil de colonne plutôt que de sapin.
+const PINE_TIERS = [
+  [-20, 17],
+  [-32, 15.5],
+  [-44, 14],
+  [-55, 12],
+  [-66, 9.5],
+  [-76, 7],
+  [-85, 4.5],
 ];
+
+// Couronne du feuillu : cinq masses décentrées. Aucune n'est concentrique —
+// c'est ce qui évite le nuage de bande dessinée.
+const BROAD_CROWN = [
+  [0, -64, 19],
+  [-16, -55, 14.5],
+  [16, -55, 14],
+  [-8, -76, 12],
+  [10, -74, 11],
+];
+
+// Palmes : six nervures partant du même point, longueurs et courbures
+// dissemblables. Symétriques, elles feraient une étoile.
+// Huit palmes, longueurs et courbures toutes différentes. Symétriques ou de
+// longueur égale, elles feraient une étoile ; ce qui fait la couronne d'un
+// cocotier, c'est qu'aucune ne retombe comme sa voisine.
+const PALM_FRONDS = [
+  "M3,-70 Q-16,-82 -30,-73",
+  "M3,-70 Q-13,-90 -22,-99",
+  "M3,-70 Q-4,-94 -6,-104",
+  "M3,-70 Q8,-93 6,-103",
+  "M3,-70 Q19,-90 27,-98",
+  "M3,-70 Q23,-80 35,-72",
+  "M3,-70 Q-8,-78 -17,-62",
+  "M3,-70 Q16,-76 27,-60",
+];
+
+// Géométrie en coordonnées LOCALES : le pied de l'arbre est en (0, 0) et le
+// tronc monte vers les y négatifs. Le placement et l'échelle sont portés par
+// les groupes parents — l'arbre lui-même ne sait pas où il pousse.
+function TreeShape({ kind }) {
+  if (kind === "pine") {
+    return (
+      <>
+        <path className="forest__trunk forest__trunk--thin" d="M0,0 L0,-88" fill="none" />
+        {PINE_TIERS.map(([y, w], k) => (
+          <path
+            key={k}
+            d={`M${-w},${y} Q0,${y - 9} ${w},${y} Q0,${y + 4} ${-w},${y} Z`}
+          />
+        ))}
+      </>
+    );
+  }
+  if (kind === "palm") {
+    return (
+      <>
+        {/* Le stipe se courbe : un palmier droit ne ressemble à rien. */}
+        <path className="forest__trunk" d="M0,0 C2,-26 7,-50 3,-70" fill="none" />
+        {PALM_FRONDS.map((d, k) => (
+          <path key={k} className="forest__frond" d={d} fill="none" />
+        ))}
+        {/* Le régime : trois noix groupées sous la couronne, jamais alignées. */}
+        <circle className="forest__nut" cx="-2" cy="-66" r="2.3" />
+        <circle className="forest__nut" cx="4" cy="-64" r="2" />
+        <circle className="forest__nut" cx="8" cy="-67" r="1.8" />
+      </>
+    );
+  }
+  return (
+    <>
+      <path className="forest__trunk" d="M0,0 C-1,-18 1,-32 0,-46" fill="none" />
+      <path className="forest__trunk forest__trunk--thin" d="M0,-34 L-11,-46" fill="none" />
+      <path className="forest__trunk forest__trunk--thin" d="M0,-40 L10,-50" fill="none" />
+      {BROAD_CROWN.map(([cx, cy, r], k) => (
+        <circle key={k} cx={cx} cy={cy} r={r} />
+      ))}
+    </>
+  );
+}
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -165,18 +271,46 @@ export default function ForestCover({ embed = false, code = null } = {}) {
       if (numberRef.current)
         numberRef.current.textContent = nf.format(Math.round(animObj.current.val));
 
-      const scaleV = 0.32 + 0.68 * v;
+      // CHAQUE ARBRE POUSSE, LE BOSQUET NE SE FOND PAS.
+      //
+      // Avant : une seule échelle pour tous (0,32 → 1) et une opacité décalée
+      // par arbre. Les huit arbres changeaient donc de taille ENSEMBLE pendant
+      // que les derniers se dissolvaient — un fondu, pas une croissance. Un
+      // fondu dit « il y a moins d'arbres » ; il ne dit pas qu'un couvert se
+      // regarnit.
+      //
+      // Maintenant chaque arbre a SA propre progression, décalée : quand
+      // l'indice monte, le premier atteint sa taille, puis le deuxième, et les
+      // semis sortent en dernier. On voit une reprise, pas un réglage
+      // d'opacité.
+      const n = TREES.length;
       canopyRefs.current.forEach((node, i) => {
         if (!node) return;
         const tree = TREES[i];
-        const sway = reduced ? 0 : 2.4 * (0.4 + 0.6 * v) * Math.sin(phase * 1.2 + i);
-        const sc = (tree.s * scaleV).toFixed(3);
+
+        // Progression propre à cet arbre : il ne démarre qu'une fois le
+        // précédent bien engagé, d'où le décalage `i / (n + 1)`.
+        const p = clamp01((v - i / (n + 1)) * 1.9);
+        // Décélération : une croissance linéaire fait sortir l'arbre comme un
+        // ressort. Il ralentit en approchant de sa taille adulte.
+        const grow = 1 - (1 - p) * (1 - p);
+
+        // 0,05 et non 0 : à l'échelle nulle le navigateur cesse de composer le
+        // groupe, et l'arbre réapparaîtrait d'un bloc au lieu de sortir de terre.
+        const sc = (tree.s * (0.05 + 0.95 * grow)).toFixed(3);
+
+        // Le vent se lève avec l'arbre : un semis ne se balance pas comme un
+        // adulte, et un tronc absent ne se balance pas du tout.
+        const sway = reduced ? 0 : 2.4 * grow * Math.sin(phase * 1.2 + i);
         node.setAttribute(
           "transform",
-          `translate(${tree.x} ${PIVOT_Y}) rotate(${sway.toFixed(2)}) scale(${sc}) translate(${-tree.x} ${-PIVOT_Y})`,
+          `rotate(${sway.toFixed(2)}) scale(${sc})`,
         );
-        const appear = clamp01(0.18 + (v - i / (TREES.length + 1)) * 1.7);
-        node.setAttribute("opacity", appear.toFixed(3));
+
+        // L'opacité ne sert plus qu'à masquer la pousse tant qu'elle est trop
+        // petite pour se lire — elle n'encode plus rien : c'est la TAILLE qui
+        // porte la densité.
+        node.setAttribute("opacity", clamp01(p * 7).toFixed(3));
       });
     },
     [reduced, nf],
@@ -354,14 +488,12 @@ export default function ForestCover({ embed = false, code = null } = {}) {
                   ry="13"
                 />
 
-                {/* Arbres */}
+                {/* Arbres. Deux groupes emboîtés : le premier POSE l'arbre au
+                    sol, le second l'anime autour de son pied. Séparer les deux
+                    évite la double translation qu'il fallait sinon écrire à
+                    chaque image. */}
                 {TREES.map((tree, i) => (
-                  <g key={i}>
-                    <path
-                      className="forest__trunk"
-                      d={`M${tree.x},210 L${tree.x},${PIVOT_Y}`}
-                      fill="none"
-                    />
+                  <g key={i} transform={`translate(${tree.x} ${GROUND_Y})`}>
                     <g
                       ref={(n) => {
                         canopyRefs.current[i] = n;
@@ -369,14 +501,7 @@ export default function ForestCover({ embed = false, code = null } = {}) {
                       className={`forest__canopy ${tree.cls}`}
                       opacity="0"
                     >
-                      {CANOPY.map(([dx, dy, r], k) => (
-                        <circle
-                          key={k}
-                          cx={tree.x + dx}
-                          cy={140 + dy}
-                          r={r}
-                        />
-                      ))}
+                      <TreeShape kind={tree.kind} />
                     </g>
                   </g>
                 ))}
