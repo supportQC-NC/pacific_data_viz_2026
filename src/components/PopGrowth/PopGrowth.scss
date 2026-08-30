@@ -328,3 +328,66 @@
     justify-content: center;
   }
 }
+/* ---- Le village ----
+   La colonne de pictogrammes est remplacée par une rangée de cases : mêmes
+   matières que le fale de l'escale (chaume chaud, bois en retrait), pour que
+   les trois dessins appartiennent au même monde. */
+.pop__ground {
+  stroke: var(--c-text-mute);
+  stroke-width: 1.4;
+  opacity: 0.35;
+}
+.pop__roof {
+  fill: var(--c-warm-soft);
+}
+.pop__body {
+  fill: color-mix(in srgb, var(--c-bg-2) 55%, var(--c-text-mute) 45%);
+}
+.pop__legs {
+  stroke: color-mix(in srgb, var(--c-text-mute) 74%, var(--c-warm) 26%);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* L'ouverture est un vide sombre, pas une lampe. Une fenêtre allumée
+   suggérait une occupation que l'indicateur — un taux — ne mesure pas. */
+.pop__win {
+  fill: var(--c-bg);
+  opacity: 0.6;
+}
+
+/* ---- Le décor ----
+   Trois plans, tous en retrait : c'est le village qui porte la donnée, pas le
+   paysage. Si le fond attirait l'œil, il mentirait sur ce qu'il faut lire. */
+.pop__sea {
+  fill: var(--c-accent-deep, var(--c-accent));
+  opacity: 0.28;
+}
+.pop__horizon {
+  stroke: var(--c-text-soft);
+  stroke-width: 1;
+  opacity: 0.28;
+}
+.pop__isles path {
+  fill: var(--c-bg);
+  opacity: 0.45;
+}
+.pop__shore {
+  fill: color-mix(in srgb, var(--c-bg-2) 60%, var(--c-warm) 40%);
+  opacity: 0.35;
+}
+
+/* Cocotiers : mêmes matières que le bosquet de l'escale 05 — stipe en écorce,
+   palmes en nervures et non en surface pleine. */
+.pop__palm-trunk {
+  stroke: color-mix(in srgb, var(--c-text-mute) 72%, var(--c-warm) 28%);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+.pop__palm-frond {
+  stroke: var(--c-positive);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: 0.55;
+}

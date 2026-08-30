@@ -217,6 +217,24 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      // ------------------------------------------------------------------
+      // L'UNITÉ ÉTAIT FAUSSE. Le dessin annonçait « +4,4 hab. » et
+      // « Population médiane » pour une valeur qui est un TAUX. La source le
+      // dit sans ambiguïté : indicateur « Croissance démographique (%) »,
+      // UNIT_MEASURE « pour cent », OBS_STATUS « Valeur estimée »,
+      // DATA_SOURCE « Population projections (PDH.Stat) ».
+      // « +4,4 hab. » se lisait comme quatre habitants ; c'est en réalité la
+      // croissance la plus rapide du Pacifique.
+      // ------------------------------------------------------------------
+      pop: {
+        unit: "% par an",
+        value_caption: "Croissance annuelle · médiane du Pacifique",
+        size_caption:
+          "Le nombre de cases suit le taux de croissance, ramené à l'amplitude du Pacifique. La dernière case rétrécit pour la décimale. Ce n'est pas un décompte de maisons.",
+        lead:
+          "Croissance annuelle de la population résidente, territoire par territoire. C'est une estimation issue de projections, pas un recensement.",
+        baseline_label: "",
+      },
       acts_intro: "Douze escales pour comprendre. Une région déjà en mouvement.",
       acts_lead:
         "Chaque escale part d'un chiffre vérifiable et le suit jusqu'au bout : la réalité qu'il décrit, et la réponse que le Pacifique lui oppose déjà.",
@@ -706,6 +724,15 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      pop: {
+        unit: "% per year",
+        value_caption: "Annual growth · Pacific median",
+        size_caption:
+          "The number of houses follows the growth rate, scaled to the Pacific's range. The last house shrinks to carry the decimal. It is not a count of houses.",
+        lead:
+          "Annual growth of the resident population, territory by territory. This is an estimate drawn from projections, not a census.",
+        baseline_label: "",
+      },
       acts_intro: "Twelve legs to understand. A region already on the move.",
       acts_lead:
         "Every leg starts from one verifiable figure and follows it through: the reality it describes, and the answer the Pacific is already giving it.",

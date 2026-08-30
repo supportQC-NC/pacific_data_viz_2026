@@ -30,15 +30,98 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./PopGrowth.scss";
 
-const N = 5;
-const COL_X = 120;
-const BASE_Y = 128;
-const GAP = 22;
-const HEAD_R = 5.6;
-const HEAD_CY = -8;
-const BODY = "M-7.2,11 C-7.2,0 -4.3,-2.6 0,-2.6 C4.3,-2.6 7.2,0 7.2,11 Z";
-const ABOVE = Array.from({ length: N }, (_, i) => BASE_Y - 16 - i * GAP);
-const BELOW = Array.from({ length: N }, (_, i) => BASE_Y + 20 + i * GAP);
+// ---------------------------------------------------------------------------
+// LE VILLAGE QUI SE PEUPLE OU QUI SE VIDE.
+//
+// C'était une colonne unique de cinq pictogrammes empilés au-dessus d'un
+// pointillé : un graphique en unités, pas un dessin — et il occupait cinq pour
+// cent du panneau. Les deux autres visuels de l'escale sont des SCÈNES (le fale
+// sur ses pieux, la plage vue du ciel) ; celui-ci rompait la famille.
+//
+// Un village sur la grève dit la même chose et appartient au même monde : des
+// cases s'allument et s'ajoutent quand la population croît, les volets se
+// ferment quand elle décline.
+//
+// Ce qu'il NE dit pas, et c'est délibéré : la cause. L'indicateur agrège la
+// croissance naturelle et les migrations ; dessiner des bateaux ou des berceaux
+// aurait tranché une question que la donnée ne tranche pas. Une maison éclairée
+// dit « on y habite », rien de plus.
+//
+// Lecture : cinq cases ÉTABLIES, toujours debout, plus trois emplacements de
+// croissance à droite. Croissance positive → les trois se construisent, l'une
+// après l'autre. Croissance négative → les cases établies se ferment, en
+// partant de la droite. Zéro → le village tel qu'il est, entier et habité.
+// ---------------------------------------------------------------------------
+
+const HORIZON_Y = 104; // la ligne de mer, au loin
+const BASE_Y = 182; // la grève, au premier plan
+
+// UNE CASE EST LÀ, OU ELLE N'EST PAS.
+//
+// Le dessin distinguait d'abord les cases « allumées » des cases « éteintes »,
+// avec des volets qui se fermaient. Cette nuance n'existe pas dans la donnée :
+// l'indicateur est un taux, il ne dit rien de qui dort où. Et une case à demi
+// éclairée demandait au lecteur de comparer des intensités lumineuses — la
+// chose la plus difficile à comparer qui soit.
+//
+// Le village COMPTE désormais. Le nombre de cases suit le taux ; la fraction
+// restante devient une case plus petite, ce qui rend la décimale lisible sans
+// écrire un chiffre.
+//
+//   taux le plus bas du Pacifique  → 1 case
+//   croissance nulle               → 5 cases
+//   taux le plus haut              → 9 cases
+//
+// Ce n'est PAS un décompte de maisons : c'est une échelle normalisée sur
+// l'amplitude du Pacifique, et la légende sous le dessin le dit.
+const HOUSES = [
+  { x: 20, s: 0.84 },
+  { x: 47, s: 0.94 },
+  { x: 74, s: 0.86 },
+  { x: 101, s: 0.98 },
+  { x: 128, s: 0.9 },
+  { x: 155, s: 0.82 },
+  { x: 182, s: 0.92 },
+  { x: 209, s: 0.86 },
+  { x: 236, s: 0.9 },
+];
+const MID_HOUSES = 5; // le village à croissance nulle
+const SPAN_HOUSES = 4; // ce que la croissance ajoute ou retire, au maximum
+// Échelle commune. Le toit couvre 38 px de large pour un pas de 28 : les cases
+// se chevauchaient et le village se lisait comme une frise de chevrons.
+const HOUSE_SCALE = 0.7;
+
+// Îles au loin : deux silhouettes basses posées sur l'horizon. Elles donnent
+// une profondeur au fond sans rien encoder.
+const FAR_ISLES = [
+  "M14,104 q16,-13 34,-9 q22,4 30,9 Z",
+  "M148,104 q22,-16 44,-11 q26,5 36,11 Z",
+];
+
+// Cocotiers de la grève, derrière les cases. Même famille que le bosquet de
+// l'escale 05 : stipe courbé, palmes en nervures — un palmier droit et plein
+// ne ressemble à rien.
+const PALMS = [
+  { x: 34, s: 1.0 },
+  { x: 126, s: 0.86 },
+  { x: 208, s: 0.94 },
+];
+const PALM_TRUNK = "M0,0 C2,-18 6,-34 3,-48";
+const PALM_FRONDS = [
+  "M3,-48 Q-11,-56 -21,-49",
+  "M3,-48 Q-9,-62 -15,-69",
+  "M3,-48 Q4,-64 1,-71",
+  "M3,-48 Q14,-62 20,-68",
+  "M3,-48 Q17,-55 26,-48",
+  "M3,-48 Q-5,-54 -12,-42",
+];
+
+// Une case : toit à deux pans débordant, corps, poteaux, et une fenêtre qui
+// s'allume. Coordonnées locales, pied en (0, 0).
+const HOUSE_ROOF = "M-19,-16 L0,-31 L19,-16 L15,-13 L0,-27 L-15,-13 Z";
+const HOUSE_BODY = "M-13,-14 L13,-14 L13,0 L-13,0 Z";
+const HOUSE_LEGS = "M-9,0 L-9,7 M9,0 L9,7";
+const HOUSE_WIN = "M-5,-11 L5,-11 L5,-3 L-5,-3 Z";
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -154,8 +237,8 @@ export default function PopGrowth({ embed = false, code = null } = {}) {
   }, [embed, code]);
 
   /* ----------- Colonne ----------- */
-  const aboveRefs = useRef([]);
-  const belowRefs = useRef([]);
+  // Une ref par case : son groupe, dont on pilote la taille.
+  const houseRefs = useRef([]);
   const numberRef = useRef(null);
   const animObj = useRef({ w: 0, val: 0 });
   const startedRef = useRef(false);
@@ -166,22 +249,28 @@ export default function PopGrowth({ embed = false, code = null } = {}) {
       if (numberRef.current)
         numberRef.current.textContent = signed(animObj.current.val);
 
-      const up = clamp01(w) * N;
-      const down = clamp01(-w) * N;
+      // Combien de cases, décimale comprise.
+      const count = MID_HOUSES + w * SPAN_HOUSES;
 
-      aboveRefs.current.forEach((node, i) => {
+      HOUSES.forEach((h, i) => {
+        const node = houseRefs.current[i];
         if (!node) return;
-        const aff = clamp01(up - i);
-        const bob = reduced ? 0 : 1.1 * Math.sin(phase * 1.4 + i);
-        node.setAttribute("opacity", aff.toFixed(3));
-        node.setAttribute("transform", `translate(0 ${bob.toFixed(2)})`);
-      });
-      belowRefs.current.forEach((node, i) => {
-        if (!node) return;
-        const aff = clamp01(down - i);
-        const bob = reduced ? 0 : 1.1 * Math.sin(phase * 1.4 + i + 3);
-        node.setAttribute("opacity", aff.toFixed(3));
-        node.setAttribute("transform", `translate(0 ${bob.toFixed(2)})`);
+
+        // Pleine si son rang est entièrement atteint ; réduite pour la
+        // fraction restante ; absente au-delà. C'est la TAILLE qui porte la
+        // décimale — un demi-village se voit, un « 4,5 » se lit.
+        const part = clamp01(count - i);
+        const eased = 1 - (1 - part) * (1 - part);
+        const scale = h.s * HOUSE_SCALE * eased;
+
+        const bob = reduced ? 0 : 0.7 * Math.sin(phase * 1.1 + i);
+        node.setAttribute(
+          "transform",
+          `translate(0 ${bob.toFixed(2)}) scale(${scale.toFixed(3)})`,
+        );
+        // L'opacité ne sert qu'à effacer une case trop petite pour se lire :
+        // la présence, elle, se voit à la taille.
+        node.setAttribute("opacity", clamp01(part * 12).toFixed(3));
       });
     },
     [reduced, signed],
@@ -344,49 +433,68 @@ export default function PopGrowth({ embed = false, code = null } = {}) {
                 role="img"
                 aria-label={svgLabel}
               >
-                {/* silhouettes au-dessus (croissance) */}
-                {ABOVE.map((y, i) => (
-                  <g key={`a${i}`} transform={`translate(${COL_X} ${y})`}>
-                    <g
-                      ref={(n) => {
-                        aboveRefs.current[i] = n;
-                      }}
-                      className="pop__fig pop__fig--up"
-                      opacity="0"
-                    >
-                      <circle cx="0" cy={HEAD_CY} r={HEAD_R} />
-                      <path d={BODY} />
-                    </g>
-                  </g>
-                ))}
-
-                {/* silhouettes en-dessous (déclin, évidées) */}
-                {BELOW.map((y, i) => (
-                  <g key={`b${i}`} transform={`translate(${COL_X} ${y})`}>
-                    <g
-                      ref={(n) => {
-                        belowRefs.current[i] = n;
-                      }}
-                      className="pop__fig pop__fig--down"
-                      opacity="0"
-                    >
-                      <circle cx="0" cy={HEAD_CY} r={HEAD_R} />
-                      <path d={BODY} />
-                    </g>
-                  </g>
-                ))}
-
-                {/* ligne de base (zéro) */}
+                {/* LE DÉCOR, EN TROIS PLANS.
+                    Le village flottait sur un fond vide : rien ne disait où il
+                    se tenait. Mer au loin, grève au premier plan, et deux îles
+                    posées sur l'horizon pour la profondeur. Aucun de ces
+                    éléments ne porte de donnée — ils donnent un LIEU. */}
+                <rect className="pop__sea" x="0" y="72" width="256" height={BASE_Y - 88} />
+                <g className="pop__isles" aria-hidden="true">
+                  {FAR_ISLES.map((d, i) => (
+                    <path key={i} d={d} />
+                  ))}
+                </g>
                 <line
-                  className="pop__baseline"
-                  x1="44"
-                  y1={BASE_Y}
-                  x2="196"
-                  y2={BASE_Y}
+                  className="pop__horizon"
+                  x1="0"
+                  y1={HORIZON_Y}
+                  x2="256"
+                  y2={HORIZON_Y}
                 />
-                <text className="pop__zero" x="40" y={BASE_Y + 4}>
-                  {t("home.pop.baseline_label")}
-                </text>
+                <path
+                  className="pop__shore"
+                  d={`M0,${BASE_Y - 18} Q64,${BASE_Y - 24} 128,${BASE_Y - 18} Q192,${BASE_Y - 12} 256,${BASE_Y - 17} L256,256 L0,256 Z`}
+                />
+
+                {/* Cocotiers, derrière les cases : ils cadrent le village. */}
+                {PALMS.map((pm, i) => (
+                  <g
+                    key={`p${i}`}
+                    className="pop__palm"
+                    transform={`translate(${pm.x} ${BASE_Y}) scale(${pm.s})`}
+                  >
+                    <path className="pop__palm-trunk" d={PALM_TRUNK} fill="none" />
+                    {PALM_FRONDS.map((d, k) => (
+                      <path key={k} className="pop__palm-frond" d={d} fill="none" />
+                    ))}
+                  </g>
+                ))}
+
+                <path
+                  className="pop__ground"
+                  d={`M4,${BASE_Y + 2} Q60,${BASE_Y - 3} 124,${BASE_Y + 1} Q186,${BASE_Y + 5} 254,${BASE_Y}`}
+                  fill="none"
+                />
+
+                {HOUSES.map((h, i) => (
+                  <g key={i} transform={`translate(${h.x} ${BASE_Y})`}>
+                    <g
+                      ref={(n) => {
+                        houseRefs.current[i] = n;
+                      }}
+                      className="pop__house"
+                    >
+                      <path className="pop__legs" d={HOUSE_LEGS} fill="none" />
+                      <path className="pop__body" d={HOUSE_BODY} />
+                      <path className="pop__roof" d={HOUSE_ROOF} />
+                      {/* L'ouverture : un simple vide sombre. Elle ne
+                          s'allume plus — l'éclairage suggérait une occupation
+                          que la donnée ne mesure pas. */}
+                      <path className="pop__win" d={HOUSE_WIN} />
+                    </g>
+                  </g>
+                ))}
+
               </svg>
               <figcaption className="pop__viz-cap">
                 {t("home.pop.size_caption")}
