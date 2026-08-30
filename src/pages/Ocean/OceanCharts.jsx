@@ -14,7 +14,7 @@
 // Composants déjà présents ; FlagScatter réutilisé depuis le chapitre Humain.
 // ============================================================
 
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import AnomalyTrend from "../../components/AnomalyTrend/AnomalyTrend";
 import FlagScatter from "../Humain/FlagScatter";
 import CoastBalanceChart from "../../components/charts/CoastBalanceChart";
@@ -184,11 +184,14 @@ export default function OceanCharts({ landTemp = null }) {
   const { lang } = useLang();
   const T = TXT[lang] || TXT.fr;
   const loc = lang === "en" ? "en" : "fr-FR";
-  const num = (v, d = 0) =>
-    Number.isFinite(v)
-      ? v.toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d })
-      : "—";
-  const signed = (v, d = 1) => (v > 0 ? "+" : "") + num(v, d);
+  const num = useCallback(
+    (v, d = 0) =>
+      Number.isFinite(v)
+        ? v.toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d })
+        : "—",
+    [loc],
+  );
+  const signed = useCallback((v, d = 1) => (v > 0 ? "+" : "") + num(v, d), [num]);
 
   // Température dans le temps.
   const tempSeries = useMemo(() => tempSeriesFrom(landTemp, lang), [landTemp, lang]);
@@ -277,7 +280,7 @@ export default function OceanCharts({ landTemp = null }) {
         tone: "flat",
       },
     ];
-  }, [tempLatest, tempSeries, tempYears, coastRows, T, loc]);
+  }, [tempLatest, tempSeries, tempYears, coastRows, T, num, signed]);
 
   // Lien réchauffement × côte : un drapeau par territoire ayant les deux.
   const linkPoints = useMemo(

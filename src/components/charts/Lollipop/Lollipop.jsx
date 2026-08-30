@@ -46,7 +46,7 @@ export default function Lollipop({
 }) {
   const [hover, setHover] = useState(null);
 
-  const { items, max, gridTicks, height } = useMemo(() => {
+  const { items, gridTicks, height } = useMemo(() => {
     const clean = rows
       .map((r) => ({
         code: r.code || r.area || r.name || "",

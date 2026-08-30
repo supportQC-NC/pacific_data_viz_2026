@@ -70,14 +70,6 @@ function median(arr) {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 }
 
-/* Dernière valeur finie d'une série [{year,value}]. */
-function lastFinite(serie) {
-  for (let i = serie.length - 1; i >= 0; i -= 1) {
-    if (Number.isFinite(serie[i].value)) return serie[i];
-  }
-  return null;
-}
-
 /* Remplace {clé} par une valeur dans une chaîne i18n. */
 function fillTpl(str, map) {
   return Object.entries(map).reduce(

@@ -20,7 +20,6 @@ import OceanCharts from "./OceanCharts";
 import SeaWarm from "../../components/SeaWarm/SeaWarm";
 import CoastlineShift from "../../components/CoastlineShift/CoastlineShift";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
-import Loader from "../../components/Loader/Loader";
 import COASTLINE from "../../data/coastlineByTerritory";
 import { VAA_ROUTE } from "../../data/vaaRoute";
 import { isPict, pictName } from "../../i18n/pictNames";

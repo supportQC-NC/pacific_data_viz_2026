@@ -89,7 +89,10 @@ export default function Act1Emissions() {
 
   const ready = emissions.status === "succeeded";
   const failed = emissions.status === "failed";
-  const years = ready && emissions.data ? emissions.data.years : [];
+  const years = useMemo(
+    () => (ready && emissions.data ? emissions.data.years : []),
+    [ready, emissions.data],
+  );
   const empty = ready && years.length === 0;
   const firstYear = years[0] ?? null;
   const lastYear = years[years.length - 1] ?? null;

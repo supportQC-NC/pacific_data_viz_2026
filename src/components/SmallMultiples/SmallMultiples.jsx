@@ -189,7 +189,7 @@ export default function SmallMultiples({ series, years, unit, labels = {} }) {
         };
       })
       .sort((a, b) => b.last - a.last);
-  }, [series, years, minYear, maxYear]);
+  }, [series, minYear, maxYear]);
 
   // Échap pour fermer
   useEffect(() => {

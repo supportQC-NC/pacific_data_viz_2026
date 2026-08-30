@@ -244,31 +244,39 @@ export default function Act7Vivant() {
 
   const isRl = metric === "redlist";
   const metricDecimals = isRl ? 2 : 0;
-  const M = isRl
-    ? {
-        series: rlSeries,
-        line: rlLine,
-        dumb: rlDumb,
-        rank: rlRank,
-        race: rlRace,
-        med: rlMed,
-        years: rlYears,
-        unit: t("act7.redlist_unit"),
-        A: rlA,
-        B: rlB,
-      }
-    : {
-        series: fishSeries,
-        line: fishLine,
-        dumb: fishDumb,
-        rank: fishRank,
-        race: fishRace,
-        med: fishMed,
-        years: fishYears,
-        unit: t("act7.fish_unit"),
-        A: fishA,
-        B: fishB,
-      };
+  const M = useMemo(
+    () =>
+      isRl
+        ? {
+            series: rlSeries,
+            line: rlLine,
+            dumb: rlDumb,
+            rank: rlRank,
+            race: rlRace,
+            med: rlMed,
+            years: rlYears,
+            unit: t("act7.redlist_unit"),
+            A: rlA,
+            B: rlB,
+          }
+        : {
+            series: fishSeries,
+            line: fishLine,
+            dumb: fishDumb,
+            rank: fishRank,
+            race: fishRace,
+            med: fishMed,
+            years: fishYears,
+            unit: t("act7.fish_unit"),
+            A: fishA,
+            B: fishB,
+          },
+    [
+      isRl, t,
+      rlSeries, rlLine, rlDumb, rlRank, rlRace, rlMed, rlYears, rlA, rlB,
+      fishSeries, fishLine, fishDumb, fishRank, fishRace, fishMed, fishYears, fishA, fishB,
+    ],
+  );
 
   // Ce que portent les axes et la couleur CHANGE avec l'indicateur : une
   // estimation bornée 0-1 d'un côté, un cumul de textes réglementaires de

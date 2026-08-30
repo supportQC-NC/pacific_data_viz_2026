@@ -1,25 +1,17 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Datamoana",
+  "name": "Datamoana — le climat du Pacifique en données ouvertes",
+  "description": "Douze escales interactives sur le changement climatique dans le Pacifique, construites sur des données ouvertes chargées en direct (Pacific Data Hub).",
+  "lang": "fr",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#050811",
+  "background_color": "#050811"
 }

@@ -9,9 +9,9 @@ import { baseChart, baseGrid, baseXaxis, baseYaxis, baseTooltip } from "./apexBa
 
 export default function AnnualBarsChart({ data = [], unit = "", color, format }) {
   const tk = useThemeTokens();
-  const fmtV = typeof format === "function" ? format : (v) => `${v}`;
 
   const option = useMemo(() => {
+    const fmtV = typeof format === "function" ? format : (v) => `${v}`;
     const years = data.map((d) => d.year);
     const vals = data.map((d) => Number(d.value) || 0);
     const step = Math.max(1, Math.ceil(years.length / 14));
@@ -45,7 +45,7 @@ export default function AnnualBarsChart({ data = [], unit = "", color, format })
         y: { formatter: (v) => `${fmtV(Number(v))} ${unit}`, title: { formatter: () => "" } },
       }),
     };
-  }, [data, unit, color, fmtV, tk]);
+  }, [data, unit, color, format, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

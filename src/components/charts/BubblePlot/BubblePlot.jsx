@@ -38,7 +38,7 @@ export default function BubblePlot({
 }) {
   const [hover, setHover] = useState(null);
 
-  const { points, xOf, yOf, xTicks, yTicks, injustice } = useMemo(() => {
+  const { points, xTicks, yTicks, injustice } = useMemo(() => {
     const all = groups.flatMap((g) =>
       (g.points || []).map((p) => ({
         ...p,

@@ -237,6 +237,11 @@ const SOURCE_TAX_FR =
 const SOURCE_TAX_EN =
   "Tax revenue, via the Pacific Data Hub - as a share of GDP. A rising share can come from rising revenue or from falling GDP.";
 
+/* Ordres de ventilation — constants : hors du composant, ils ne peuvent pas
+   faire changer les dépendances des useMemo à chaque rendu. */
+const TAX_CAT_ORDER = ["energy", "transport", "pollution", "resource"];
+const TOUR_CAT_ORDER = ["tourist", "excursionist"];
+
 export default function Act9Eco() {
   const { t, lang } = useLang();
 
@@ -307,25 +312,30 @@ export default function Act9Eco() {
 
   // --- Ventilations (désagrégation) ---
   // Fiscalité : composition par type de taxe (énergie/transport/pollution/ressources).
-  const taxCatOrder = ["energy", "transport", "pollution", "resource"];
-  const taxCatLabels = {
-    energy: t("act9.tax_cat_energy"),
-    transport: t("act9.tax_cat_transport"),
-    pollution: t("act9.tax_cat_pollution"),
-    resource: t("act9.tax_cat_resource"),
-  };
-  const taxCatColors = {
-    energy: tk.warm,
-    transport: tk.accent,
-    pollution: tk.negative,
-    resource: tk.positive,
-  };
+  const taxCatLabels = useMemo(
+    () => ({
+      energy: t("act9.tax_cat_energy"),
+      transport: t("act9.tax_cat_transport"),
+      pollution: t("act9.tax_cat_pollution"),
+      resource: t("act9.tax_cat_resource"),
+    }),
+    [t],
+  );
+  const taxCatColors = useMemo(
+    () => ({
+      energy: tk.warm,
+      transport: tk.accent,
+      pollution: tk.negative,
+      resource: tk.positive,
+    }),
+    [tk],
+  );
   const taxStack = useMemo(
     () =>
       breakdownStack(
         tax?.breakdown,
         taxYears,
-        taxCatOrder,
+        TAX_CAT_ORDER,
         taxCatLabels,
         taxCatColors,
         areaVisible,
@@ -334,18 +344,23 @@ export default function Act9Eco() {
   );
 
   // Tourisme : touristes (nuitées) vs excursionnistes (journée).
-  const tourCatOrder = ["tourist", "excursionist"];
-  const tourCatLabels = {
-    tourist: t("act9.tour_cat_tourist"),
-    excursionist: t("act9.tour_cat_excursionist"),
-  };
-  const tourCatColors = { tourist: tk.accent, excursionist: tk.warm };
+  const tourCatLabels = useMemo(
+    () => ({
+      tourist: t("act9.tour_cat_tourist"),
+      excursionist: t("act9.tour_cat_excursionist"),
+    }),
+    [t],
+  );
+  const tourCatColors = useMemo(
+    () => ({ tourist: tk.accent, excursionist: tk.warm }),
+    [tk],
+  );
   const tourStack = useMemo(
     () =>
       breakdownStack(
         tour?.breakdown,
         tourYears,
-        tourCatOrder,
+        TOUR_CAT_ORDER,
         tourCatLabels,
         tourCatColors,
         areaVisible,

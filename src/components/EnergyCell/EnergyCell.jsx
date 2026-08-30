@@ -137,7 +137,7 @@ export default function EnergyCell({ embed = false, code = null } = {}) {
     if (!selected || !byCode[selected]) {
       setSelected(byCode.FJ ? "FJ" : list[0].code);
     }
-  }, [list, selected, byCode, embed]);
+  }, [list, selected, byCode, embed, pinned]);
   useEffect(() => {
     if (embed && code) setSelected(code);
   }, [embed, code]);

@@ -11,9 +11,9 @@ import { fmt, baseChart, baseGrid, baseLegend, baseXaxis, baseYaxis, baseTooltip
 
 export default function MirrorBars({ rows = [], leftLabel = "", rightLabel = "", unit = "", format }) {
   const tk = useThemeTokens();
-  const fmtV = typeof format === "function" ? format : (v) => fmt(v, 0);
 
   const option = useMemo(() => {
+    const fmtV = typeof format === "function" ? format : (v) => fmt(v, 0);
     const data = rows.filter((r) => Number.isFinite(r.left) && Number.isFinite(r.right));
     const cats = data.map((r) => r.name);
     const series = [
@@ -53,7 +53,7 @@ export default function MirrorBars({ rows = [], leftLabel = "", rightLabel = "",
       }),
       annotations: { xaxis: [{ x: 0, borderColor: tk.lineStrong }] },
     };
-  }, [rows, leftLabel, rightLabel, unit, fmtV, tk]);
+  }, [rows, leftLabel, rightLabel, unit, format, tk]);
 
   return <ApexChart options={option} className="apexchart--xl" />;
 }

@@ -170,32 +170,6 @@ function raceFrom(series, years, lang) {
     .filter((r) => r.values.some((v) => v.value > 0));
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Act8Ciel() {
   const { t, lang } = useLang();
 
@@ -241,17 +215,6 @@ export default function Act8Ciel() {
   const rainAll = useMemo(() => toSeries(rain, lang), [rain, lang]);
   const tempAll = useMemo(() => toSeries(temp, lang), [temp, lang]);
   const meteoAll = useMemo(() => toSeries(meteo, lang), [meteo, lang]);
-
-  const countryOptions = useMemo(() => {
-    const set = new Set([
-      ...rainAll.map((s) => s.area),
-      ...tempAll.map((s) => s.area),
-      ...meteoAll.map((s) => s.area),
-    ]);
-    return [...set]
-      .map((a) => ({ area: a, name: pictName(a, lang) }))
-      .sort((x, y) => x.name.localeCompare(y.name, lang));
-  }, [rainAll, tempAll, meteoAll, lang]);
 
   const areaVisible = useCallback(
     (a) =>

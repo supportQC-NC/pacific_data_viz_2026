@@ -60,7 +60,10 @@ export const STAGES = [
   { id: "CTI", rank: 4, i18nKey: "act12.stage.cti", match: "cyclone tropical intense" },
   { id: "CTTI", rank: 5, i18nKey: "act12.stage.ctti", match: "cyclone tropical tres intense" },
 ];
-const STAGE_BY_ID = STAGES.reduce((m, s) => ((m[s.id] = s), m), {});
+const STAGE_BY_ID = STAGES.reduce((m, s) => {
+  m[s.id] = s;
+  return m;
+}, {});
 
 function normalizeText(s) {
   return String(s == null ? "" : s)

@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+# Datamoana — le climat du Pacifique en données ouvertes
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Application web interactive proposée au **Pacific Dataviz Challenge 2026**
+(thème : changement climatique — catégorie *Interactive Dataviz*).
 
-## Available Scripts
+Douze **escales** racontent une histoire climatique des territoires insulaires du
+Pacifique : émissions, océan, littoral, santé, agriculture, énergie, économie,
+biodiversité, cyclones. Interface **française et anglaise**.
 
-In the project directory, you can run:
+**Principe non négociable du projet : aucun chiffre n'est écrit en dur.**
+Toutes les valeurs affichées proviennent d'appels API au moment de l'exécution
+(Pacific Data Hub .Stat, principalement). Quand une source est indisponible, la
+vue affiche « indisponible » — elle n'invente jamais une valeur de repli.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Démarrage
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Prérequis : **Node.js 18+** et npm.
 
-### `npm test`
+```bash
+npm install
+cp .env.example .env.local   # puis renseigner les variables (voir plus bas)
+npm start                    # serveur de dev sur http://localhost:3000
+npm run build                # bundle de production dans build/
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+`npm test` est câblé par Create React App mais **le projet ne contient aucun
+test** : la vérification se fait dans le navigateur et par `npm run build`.
+Le build de production est le seul garde-fou de compilation — le serveur de dev
+tolère des erreurs qu'il refuse.
 
-### `npm run build`
+## Variables d'environnement
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Variable | Rôle | Sans elle |
+|---|---|---|
+| `REACT_APP_MAPBOX_TOKEN` | Fonds de carte Mapbox GL (escales 2, 3, 12) | Les scènes carte se dégradent, l'app ne plante pas |
+| `REACT_APP_PDH_BASE` | Surcharge la base SDMX Pacific Data Hub | Base publique par défaut |
+| `REACT_APP_CYCLONE_FILE` / `..._POINTS_FILE` | Surcharge les GeoJSON cyclones | Fichiers de `public/data/cyclones/` |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Le fichier `.env.local` n'est **jamais** versionné. `.env.example` ne doit
+contenir que des clés vides.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Proxies de données
 
-### `npm run eject`
+`src/setupProxy.js` relaie deux API qui refusent l'appel direct depuis
+`localhost` (Pacific Data Hub en 403, World Bank Data360 sans en-têtes CORS).
+**Ces proxies n'existent qu'en développement** (`npm start`).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Conséquence pour la mise en ligne : les services Pacific Data Hub tentent
+l'appel **direct d'abord**, le proxy seulement en secours — la version déployée
+fonctionne donc sans proxy. Si l'hébergeur en impose un, configurer le même
+reverse-proxy côté serveur (Nginx, fonction serverless…) et pointer
+`REACT_APP_PDH_BASE` dessus.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Organisation du code
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+src/
+  App.js               routes — 12 escales + 5 chapitres + /recit
+  pages/               une page par escale et par chapitre (25)
+  components/          77 dossiers, dont components/charts/ (32 graphiques)
+    charts/echartsBase.js   fragments d'options ECharts + helpers de calcul
+    charts/apexBase.js      équivalent ApexCharts (réexporte les helpers)
+  services/            10 clients API — un par domaine de données
+  data/                catalogue des jeux de données, référentiels
+  store/context/       contextes langue et parcours narratif (JOURNEY)
+  i18n/                chaînes FR/EN
+  styles/_variables.scss  tous les tokens de couleur et d'espacement
+  hooks/UseThemeTokens.js lit les tokens CSS pour les graphes canvas
+public/data/           GeoJSON statiques (cyclones, littoral)
+scripts/               scripts d'analyse et de contrôle i18n (Node, hors build)
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Deux points d'architecture à connaître avant toute modification :
 
-## Learn More
+- **`store/context/journeyContext.js` est la source de vérité de l'ordre narratif.**
+  Les numéros d'escale se recalculent à partir de `JOURNEY` ; ne jamais écrire
+  un numéro d'escale en dur, utiliser `numberOf(id)` / `padOf(id)`.
+- **Le thème passe par des variables CSS.** ECharts et ApexCharts ne savent pas
+  résoudre `var()` : chaque graphique appelle `useThemeTokens()` et passe `tk`
+  dans ses options. Un hexadécimal écrit en dur dans un graphique est un bug —
+  il ne suivra pas le changement de thème.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Le détail complet de l'architecture et des conventions dataviz est dans
+`CLAUDE.md`.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Données
 
-### Code Splitting
+Le catalogue des jeux de données consommés — avec pour chacun le lien amont et
+le lien officiel Pacific Data Hub .Stat du flux réellement appelé — vit dans
+`src/data/datasetCatalog.js` et s'affiche dans l'application sur `/a-propos` et
+`/data/:id`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Stack
 
-### Analyzing the Bundle Size
+React 19 · React Router 7 · Redux Toolkit · Sass · ECharts 6 · ApexCharts 4 ·
+D3 7 · Mapbox GL 3 · GSAP — sur Create React App 5.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Licence
 
-### Making a Progressive Web App
+Code source sous **licence MIT** (voir `LICENSE`) — licence ouverte conforme à
+l'*Open Definition*, comme l'exige le règlement du Challenge.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Les données restent sous la licence de leurs producteurs. Le détail source par
+source — origine amont et lien Pacific Data Hub .Stat du flux réellement
+appelé — est dans `src/data/datasetCatalog.js` et s'affiche sur `/a-propos`.

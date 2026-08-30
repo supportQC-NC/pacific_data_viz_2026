@@ -103,6 +103,9 @@ export default function CountryMiniMap({
       mapRef.current = null;
       map.remove();
     };
+    // `zoom` est volontairement absent : il est appliqué par l'effet suivant
+    // (flyTo). L'inclure ici recréerait la carte à chaque changement de zoom.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coords, pitch, controls]);
 
   // Zoom animé (immersion territoire ↔ vue régionale) sans recréer la carte.
@@ -255,6 +258,10 @@ export default function CountryMiniMap({
       cancelled = true;
       drop();
     };
+    // `themePoints` est volontairement absent : l'objet GeoJSON est recréé à
+    // chaque rendu. `themeKey` en est la clé stable et pilote seule la repose
+    // des couches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, coastlineUrl, themeKey, themeTone]);
 
   if (!TOKEN || !mapboxgl) {

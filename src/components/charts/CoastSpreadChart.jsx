@@ -17,7 +17,6 @@ export default function CoastSpreadChart({ rows = [], unit = "m/an" }) {
 
   const option = useMemo(() => {
     const r = [...rows].filter((x) => Array.isArray(x.box) && x.box.length === 5).sort((a, b) => a.box[2] - b.box[2]);
-    const byName = Object.fromEntries(r.map((x) => [x.name, x]));
 
     return {
       chart: baseChart(tk, { type: "boxPlot" }),

@@ -28,7 +28,7 @@ src/**/*.css.map
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+# outils locaux (notes de travail, hors livrable)
 .claude/
 nul
-.claude/
-nul
+CLAUDE.md

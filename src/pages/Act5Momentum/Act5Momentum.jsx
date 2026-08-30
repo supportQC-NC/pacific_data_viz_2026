@@ -157,32 +157,6 @@ function pointsAt(d, year, lang, inR) {
     .filter(Boolean);
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function YearSlider({ label, years, index, onChange }) {
   if (!years.length) return null;
   return (
@@ -488,7 +462,7 @@ export default function Act5Momentum() {
   useEffect(() => {
     if (mixYears.length)
       setDYear((y) => (y == null ? mixYears[mixYears.length - 1] : y));
-  }, [mixYears.length]);
+  }, [mixYears]);
   useEffect(() => {
     setDTerr("all");
   }, [dRegion]);

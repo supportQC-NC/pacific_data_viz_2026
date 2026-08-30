@@ -334,53 +334,61 @@ export default function Act10Sante() {
 
   const isWater = metric === "water";
   const metricDecimals = isWater ? 1 : 0;
-  const M = isWater
-    ? {
-        series: waterS,
-        line: waterLine,
-        rank: waterRank,
-        dumb: waterDumb,
-        race: waterRace,
-        sub: waterSub,
-        years: waterYears,
-        unit: t("act10.water_unit"),
-        A: waterA,
-        B: waterB,
-        ramp: "good",
-        highTone: "positive",
-        lowTone: "warm",
-        cmp: { up: t("act10.water_cmp_up"), down: t("act10.water_cmp_down") },
-        titles: {
-          trend: t("act10.regional_water_title"),
-          multiples: t("act10.water_title"),
-          heat: t("act10.water_hm_title"),
-          change: t("act10.water_cmp_title"),
-          rank: t("act10.water_rank_title"),
-        },
-      }
-    : {
-        series: tbS,
-        line: tbLine,
-        rank: tbRank,
-        dumb: tbDumb,
-        race: tbRace,
-        sub: tbSub,
-        years: tbYears,
-        unit: t("act10.tb_unit"),
-        A: tbA,
-        B: tbB,
-        ramp: undefined,
-        highTone: "warm",
-        lowTone: "positive",
-        cmp: { up: t("act10.tb_cmp_up"), down: t("act10.tb_cmp_down") },
-        titles: {
-          trend: t("act10.regional_tb_title"),
-          multiples: t("act10.tb_title"),
-          heat: t("act10.tb_hm_title"),
-          change: t("act10.tb_cmp_title"),
-          rank: t("act10.tb_rank_title"),
-        },
-      };
+  const M = useMemo(
+    () =>
+      isWater
+        ? {
+            series: waterS,
+            line: waterLine,
+            rank: waterRank,
+            dumb: waterDumb,
+            race: waterRace,
+            sub: waterSub,
+            years: waterYears,
+            unit: t("act10.water_unit"),
+            A: waterA,
+            B: waterB,
+            ramp: "good",
+            highTone: "positive",
+            lowTone: "warm",
+            cmp: { up: t("act10.water_cmp_up"), down: t("act10.water_cmp_down") },
+            titles: {
+              trend: t("act10.regional_water_title"),
+              multiples: t("act10.water_title"),
+              heat: t("act10.water_hm_title"),
+              change: t("act10.water_cmp_title"),
+              rank: t("act10.water_rank_title"),
+            },
+          }
+        : {
+            series: tbS,
+            line: tbLine,
+            rank: tbRank,
+            dumb: tbDumb,
+            race: tbRace,
+            sub: tbSub,
+            years: tbYears,
+            unit: t("act10.tb_unit"),
+            A: tbA,
+            B: tbB,
+            ramp: undefined,
+            highTone: "warm",
+            lowTone: "positive",
+            cmp: { up: t("act10.tb_cmp_up"), down: t("act10.tb_cmp_down") },
+            titles: {
+              trend: t("act10.regional_tb_title"),
+              multiples: t("act10.tb_title"),
+              heat: t("act10.tb_hm_title"),
+              change: t("act10.tb_cmp_title"),
+              rank: t("act10.tb_rank_title"),
+            },
+          },
+    [
+      isWater, t,
+      waterS, waterLine, waterRank, waterDumb, waterRace, waterSub, waterYears, waterA, waterB,
+      tbS, tbLine, tbRank, tbDumb, tbRace, tbSub, tbYears, tbA, tbB,
+    ],
+  );
 
   const mapRange = useMemo(() => {
     const xs = M.series

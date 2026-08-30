@@ -27,7 +27,6 @@ const MID_Y = M.top + PLOT_H / 2;
 const X_TICKS = 6;
 
 const r1 = (n) => Math.round(n * 10) / 10;
-const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 const fmtVal = (n) =>
   Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : r1(n).toLocaleString();
 

@@ -50,7 +50,6 @@ import ForestCover from "../../components/ForestCover/ForestCover";
 import RankChart from "../../components/charts/RankChart";
 import CropExplorer from "../../components/CropExplorer/CropExplorer";
 import CoverageChart from "../../components/charts/CoverageChart";
-import useThemeTokens from "../../hooks/UseThemeTokens";
 import ChangeChart from "../../components/charts/ChangeChart";
 import TrendChart from "../../components/charts/TrendChart";
 import VizSwitch from "../../components/VizSwitch/VizSwitch";
@@ -166,32 +165,6 @@ function pointsAt(agg, year, lang) {
     .filter(Boolean);
 }
 
-/* ---------- Filtres globaux ---------- */
-function Select({ label, options, value, onChange }) {
-  return (
-    <div className="act1f act1f--select">
-      {label ? <span className="act1f__lbl">{label}</span> : null}
-      <div className="act1f__selwrap">
-        <select
-          className="act1f__select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-        >
-          {options.map((o) => (
-            <option key={String(o.v)} value={o.v}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <span className="act1f__caret" aria-hidden="true">
-          ▾
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Act6Agriculture() {
   const { t, lang } = useLang();
 
@@ -203,7 +176,6 @@ export default function Act6Agriculture() {
     },
     [t, lang],
   );
-  const tk = useThemeTokens();
   const dispatch = useDispatch();
   const land = useSelector(selectDataset("landCover"));
 

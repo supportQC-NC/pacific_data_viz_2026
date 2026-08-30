@@ -21,9 +21,9 @@ export default function ParetoChart({
   format,
 }) {
   const tk = useThemeTokens();
-  const fmtV = typeof format === "function" ? format : (v) => `${v}`;
 
   const option = useMemo(() => {
+    const fmtV = typeof format === "function" ? format : (v) => `${v}`;
     const r = [...rows]
       .filter((x) => Number.isFinite(x.value) && x.value > 0)
       .sort((a, b) => b.value - a.value);
@@ -100,7 +100,7 @@ export default function ParetoChart({
         ],
       }),
     };
-  }, [rows, unit, cumulLabel, fmtV, tk]);
+  }, [rows, unit, cumulLabel, format, tk]);
 
   return <ApexChart options={option} className="apexchart--tall" />;
 }

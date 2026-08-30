@@ -13,7 +13,7 @@
 // (DualAxisChart, FlagScatter, RankChart). Rien n'est inventé.
 // ============================================================
 
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import RankChart from "../../components/charts/RankChart";
 import DualAxisChart from "../../components/charts/DualAxisChart";
 import FlagScatter from "./FlagScatter";
@@ -163,11 +163,14 @@ export default function HumainCharts({ water = null, tb = null }) {
   const { lang } = useLang();
   const T = TXT[lang] || TXT.fr;
   const loc = lang === "en" ? "en" : "fr-FR";
-  const num = (v, d = 0) =>
-    Number.isFinite(v)
-      ? v.toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d })
-      : "—";
-  const signed = (v, d = 0) => (v > 0 ? "+" : "") + num(v, d);
+  const num = useCallback(
+    (v, d = 0) =>
+      Number.isFinite(v)
+        ? v.toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d })
+        : "—",
+    [loc],
+  );
+  const signed = useCallback((v, d = 0) => (v > 0 ? "+" : "") + num(v, d), [num]);
 
   // Séries dans le temps.
   const waterSeries = useMemo(() => seriesFrom(water, lang), [water, lang]);
@@ -243,7 +246,7 @@ export default function HumainCharts({ water = null, tb = null }) {
         tone: "flat",
       },
     ];
-  }, [waterRank, tbRank, waterSeries, tbSeries, waterYears, tbYears, T, loc]);
+  }, [waterRank, tbRank, waterSeries, tbSeries, waterYears, tbYears, T, num, signed]);
 
   // Eau : classement coloré (accès élevé = mieux).
   const waterPoints = useMemo(
