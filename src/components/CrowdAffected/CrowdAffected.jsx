@@ -29,28 +29,109 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./CrowdAffected.scss";
 
-const COLS = 8;
-const ROWS = 6;
-const N = COLS * ROWS;
-const X0 = 18;
-const Y0 = 18;
-const CW = 29;
-const CH = 33;
+// ---------------------------------------------------------------------------
+// LA FOULE, ET NON PLUS LA GRILLE.
+//
+// C'étaient quarante-huit pictogrammes identiques rangés en 8 × 6, à
+// intervalles rigoureusement égaux. Une grille de cette régularité ne se lit
+// pas comme une foule : elle se lit comme un tableau, et c'est bien ce qu'elle
+// était — un graphique en unités déguisé en dessin.
+//
+// Ce qui fait une foule : des tailles inégales, des écarts irréguliers, des
+// gens qui se chevauchent, et de la PROFONDEUR — les rangs du fond sont plus
+// petits et plus serrés. Quatre silhouettes différentes suffisent à ce que
+// l'œil cesse de voir un motif répété.
+//
+// L'encodage ne change pas : une part des silhouettes s'illumine, et cette
+// part suit le total normalisé sur l'amplitude du Pacifique. Le seuil reste
+// une suite à faible discordance, pour que les personnes touchées se
+// répartissent dans la foule au lieu de s'allumer par blocs.
+// ---------------------------------------------------------------------------
+
 const PHI = 0.61803398875;
-const FIGS = Array.from({ length: N }, (_, i) => {
-  const col = i % COLS;
-  const row = Math.floor(i / COLS);
-  // seuil d'illumination en suite à faible discordance → la foule s'allume
-  // de façon régulière et dispersée (≈ v×N silhouettes allumées).
-  const t = ((i + 0.5) * PHI) % 1;
-  return {
-    x: +(X0 + col * CW + CW / 2).toFixed(2),
-    y: +(Y0 + row * CH + CH / 2).toFixed(2),
-    t,
-  };
+const GROUND_Y = 220;
+
+// Rangs, du plus lointain au plus proche. `s` porte la perspective : au fond
+// on est plus petit, plus haut, et plus serré.
+const ROWS_DEF = [
+  { y: 122, s: 0.58, n: 12 },
+  { y: 143, s: 0.71, n: 11 },
+  { y: 166, s: 0.85, n: 10 },
+  { y: 191, s: 1.0, n: 9 },
+  { y: 216, s: 1.16, n: 8 },
+];
+
+// Écarts irréguliers, mais FIGÉS : une foule qui se réorganise à chaque image
+// serait pire qu'une grille.
+const JITTER = [
+  0.0, 3.1, -2.4, 1.8, -3.6, 2.2, -1.2, 3.8, -2.9, 1.1, -3.2,
+  2.7, -1.7, 3.4, -2.1, 0.8, -3.9, 2.5, -0.6, 3.0,
+];
+
+const FIGS = [];
+let _k = 0;
+ROWS_DEF.forEach((row, r) => {
+  const span = 244 - row.s * 10;
+  const step = span / row.n;
+  for (let c = 0; c < row.n; c += 1) {
+    const j = JITTER[(r * 7 + c) % JITTER.length];
+    FIGS.push({
+      x: +(10 + row.s * 5 + step * (c + 0.5) + j).toFixed(2),
+      y: row.y,
+      s: row.s,
+      // Quatre silhouettes, distribuées sans régularité apparente.
+      kind: ["adult", "carry", "child", "adult", "arm", "adult", "child"][
+        (r * 3 + c) % 7
+      ],
+      t: ((_k++ + 0.5) * PHI) % 1,
+    });
+  }
 });
-const HEAD = { cy: -5, r: 3.4 };
-const BODY = "M-4.5,7 C-4.5,0 -2.6,-1.5 0,-1.5 C2.6,-1.5 4.5,0 4.5,7 Z";
+
+// Silhouettes en coordonnées locales : les pieds sont en (0, 0).
+// ORDRE D'ARRIVÉE. Les silhouettes n'apparaissent pas rang par rang — la
+// foule se remplirait par tranches, ce qui ne ressemble à rien. Elles suivent
+// la suite à faible discordance déjà utilisée pour le seuil : la foule
+// s'épaissit uniformément, du fond au premier plan comme de gauche à droite.
+FIGS.sort((a, b) => a.t - b.t).forEach((f, i) => {
+  f.rank = i;
+});
+
+const ADULT_BODY =
+  "M-4.6,0 C-4.6,-8.4 -2.7,-11.8 0,-11.8 C2.7,-11.8 4.6,-8.4 4.6,0 Z";
+const ADULT_HEAD = { cy: -15.6, r: 3.4 };
+const CHILD_BODY =
+  "M-3.3,0 C-3.3,-5.8 -1.9,-8.2 0,-8.2 C1.9,-8.2 3.3,-5.8 3.3,0 Z";
+const CHILD_HEAD = { cy: -11, r: 2.6 };
+// Un ballot porté à l'épaule, et un bras levé : deux gestes, et la foule
+// cesse d'être une rangée de bornes.
+const CARRY_EXTRA =
+  "M3.4,-13.4 q3.6,-2.2 6.4,0 q1.8,1.6 0,3.2 q-3.2,2 -6.4,0 q-1.6,-1.4 0,-3.2 Z";
+const ARM_EXTRA = "M3.6,-10.4 L7.4,-17.2";
+
+// Une silhouette. Le contour est le même pour la version neutre et la version
+// touchée : seule la couleur change, jamais la forme — sinon la part
+// illuminée se lirait comme une population différente.
+function Silhouette({ kind }) {
+  if (kind === "child") {
+    return (
+      <>
+        <circle cx="0" cy={CHILD_HEAD.cy} r={CHILD_HEAD.r} />
+        <path d={CHILD_BODY} />
+      </>
+    );
+  }
+  return (
+    <>
+      <circle cx="0" cy={ADULT_HEAD.cy} r={ADULT_HEAD.r} />
+      <path d={ADULT_BODY} />
+      {kind === "carry" ? <path d={CARRY_EXTRA} /> : null}
+      {kind === "arm" ? (
+        <path className="crowd__arm" d={ARM_EXTRA} fill="none" />
+      ) : null}
+    </>
+  );
+}
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -175,6 +256,10 @@ export default function CrowdAffected({ embed = false, code = null } = {}) {
   /* ----------- Illumination de la foule ----------- */
   const crowdRef = useRef(null);
   const hitRefs = useRef([]);
+  // Deux silhouettes par emplacement : la personne, et l'enfant qui
+  // porte la décimale. On bascule l'une pour l'autre.
+  const adultRefs = useRef([]);
+  const babyRefs = useRef([]);
   const numberRef = useRef(null);
   const animObj = useRef({ v: 0, val: 0 });
   const startedRef = useRef(false);
@@ -193,10 +278,51 @@ export default function CrowdAffected({ embed = false, code = null } = {}) {
         );
       }
 
+      // LA FOULE COMPTE, ELLE NE S'ALLUME PLUS.
+      //
+      // Une part des silhouettes se colorait en corail, le reste restait gris.
+      // Deux défauts : le dessin SAUTAIT — les mêmes cinquante personnes
+      // changeaient de couleur d'un territoire à l'autre, sans que rien ne
+      // bouge — et il fallait estimer une proportion de teinte, ce que l'œil
+      // fait très mal.
+      //
+      // Le nombre de personnes présentes porte maintenant la valeur. Et la
+      // décimale devient un ENFANT : plus petit que les autres, à la taille de
+      // ce qui reste. Un demi-adulte ne veut rien dire ; un enfant, si.
+      const count = 1 + v * (FIGS.length - 1);
+
+      // TOUT EST CONTINU : AUCUNE BASCULE.
+      //
+      // L'opacité passait de 0 à 1 sur un dixième de `part` (×12), et l'enfant
+      // cédait la place à l'adulte d'un coup dès que `part` atteignait 1. Deux
+      // marches, donc deux sauts — et comme `count` traverse plusieurs rangs
+      // pendant une transition de territoire, la foule sursautait.
+      //
+      // Ici tout est une rampe : la silhouette paraît doucement, grandit, puis
+      // l'enfant se FOND dans l'adulte sur le dernier quart. Un seul individu
+      // est en mouvement à la fois, et son mouvement ne comporte aucun palier.
       hitRefs.current.forEach((node, i) => {
         if (!node) return;
-        const aff = clamp01((v - FIGS[i].t) * 6);
-        node.setAttribute("opacity", aff.toFixed(3));
+        const part = clamp01(count - FIGS[i].rank);
+        const eased = 1 - (1 - part) * (1 - part);
+
+        node.setAttribute(
+          "transform",
+          `translate(${FIGS[i].x} ${FIGS[i].y}) scale(${FIGS[i].s.toFixed(3)})`,
+        );
+        // Une rampe large : la personne entre en scène au lieu d'y clignoter.
+        node.setAttribute("opacity", clamp01(part / 0.35).toFixed(3));
+
+        // Le fondu enfant → adulte occupe le dernier quart de la venue.
+        const grown = clamp01((part - 0.72) / 0.28);
+        if (adultRefs.current[i])
+          adultRefs.current[i].setAttribute("opacity", grown.toFixed(3));
+        if (babyRefs.current[i]) {
+          babyRefs.current[i].setAttribute("opacity", (1 - grown).toFixed(3));
+          // L'enfant grandit lui aussi : c'est lui qui porte la décimale.
+          const bs = 0.55 + 0.45 * eased;
+          babyRefs.current[i].setAttribute("transform", `scale(${bs.toFixed(3)})`);
+        }
       });
     },
     [reduced, nfC],
@@ -215,8 +341,8 @@ export default function CrowdAffected({ embed = false, code = null } = {}) {
     const tw = gsap.to(animObj.current, {
       v: sel.v,
       val: sel.val,
-      duration: 1.2,
-      ease: "power2.out",
+      duration: 1.6,
+      ease: "power2.inOut",
     });
     return () => tw.kill();
   }, [inView, sel, reduced, draw]);
@@ -365,24 +491,46 @@ export default function CrowdAffected({ embed = false, code = null } = {}) {
                 role="img"
                 aria-label={svgLabel}
               >
+                {/* Le sol : sans lui la foule flotte. Une simple courbe, très
+                    sourde — elle ne porte aucune donnée. */}
+                <path
+                  className="crowd__ground"
+                  d={`M6,${GROUND_Y - 2} Q70,${GROUND_Y - 7} 132,${GROUND_Y - 2} Q194,${GROUND_Y + 3} 254,${GROUND_Y - 3}`}
+                  fill="none"
+                />
+
                 <g ref={crowdRef}>
+                  {/* Dessinées dans l'ordre du tableau, c'est-à-dire du rang le
+                      plus LOINTAIN au plus proche : les silhouettes du premier
+                      plan recouvrent celles du fond, et le léger chevauchement
+                      est ce qui fait lire une foule plutôt qu'un alignement. */}
+                  {/* Une seule couleur : les gens présents. Les silhouettes
+                      grises « non touchées » ont disparu — elles laissaient
+                      croire à une population de référence qui n'existe pas
+                      dans la donnée. */}
                   {FIGS.map((fig, i) => (
-                    <g key={i} transform={`translate(${fig.x} ${fig.y})`}>
-                      {/* silhouette neutre (fond) */}
-                      <g className="crowd__person crowd__person--base">
-                        <circle cx="0" cy={HEAD.cy} r={HEAD.r} />
-                        <path d={BODY} />
-                      </g>
-                      {/* silhouette touchée (corail, opacité animée) */}
+                    <g
+                      key={i}
+                      ref={(n) => {
+                        hitRefs.current[i] = n;
+                      }}
+                      className="crowd__person crowd__person--hit"
+                      opacity="0"
+                    >
                       <g
                         ref={(n) => {
-                          hitRefs.current[i] = n;
+                          adultRefs.current[i] = n;
                         }}
-                        className="crowd__person crowd__person--hit"
+                      >
+                        <Silhouette kind={fig.kind} />
+                      </g>
+                      <g
+                        ref={(n) => {
+                          babyRefs.current[i] = n;
+                        }}
                         opacity="0"
                       >
-                        <circle cx="0" cy={HEAD.cy} r={HEAD.r} />
-                        <path d={BODY} />
+                        <Silhouette kind="child" />
                       </g>
                     </g>
                   ))}

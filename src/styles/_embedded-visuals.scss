@@ -149,5 +149,30 @@ $embedded-visuals:
       min-height: 0;
     }
 
+    /* --------------------------------------------------------------
+       LA COLONNE DE LECTURE NE RESPIRE PLUS AVEC SON CHIFFRE.
+
+       Embarquée, la scène est répartie `auto | 1fr | auto` : le dessin
+       prend ce qui reste. Or la troisième colonne est la lecture chiffrée,
+       et une colonne `auto` se dimensionne sur son contenu — donc sur la
+       LARGEUR DU NOMBRE. En passant d'un territoire à l'autre, « 1,8 »
+       devient « 52,9 k » : la colonne s'élargit, le `1fr` du milieu perd
+       d'autant, et le dessin change de taille à chaque sélection.
+
+       On lui donne donc une largeur fixe. Le nombre est ramené à un corps
+       qui tient dans cette largeur même à sept caractères — il reste le
+       plus gros élément de la colonne, ce qui est son rôle.
+       -------------------------------------------------------------- */
+    @media (min-width: 901px) {
+      .#{$b}__readout {
+        width: 216px;
+        min-width: 216px;
+        max-width: 216px;
+      }
+      .#{$b}__readout [class$="-num"] {
+        font-size: clamp(2.1rem, 3.2vw, 3.2rem);
+      }
+    }
+
   }
 }

@@ -559,8 +559,23 @@ export default function Act4Impact() {
             title: `${t("act4.rank_title")} · ${metricLabel}`,
             finding: t("act4.board.rank_find"),
             takeaway: t("act4.board.rank_take"),
-            legend: { ...key, y: tx("act4.key.terr_y", "Un territoire par ligne.", "One territory per row."), x: key.y },
+            legend: {
+              ...key,
+              y: tx(
+                "act4.key.terr_y",
+                "Un territoire par ligne.",
+                "One territory per row.",
+              ),
+              x: key.y,
+              // Le classement n encode rien par la couleur : toutes les
+              // barres sont du meme ton, c est leur longueur qui parle.
+              color: tx(
+                "act4.key.rank_color",
+                "Une seule teinte pour toutes les barres : ici c est la longueur qui porte la valeur.",
+                "One tint for every bar: here it is the length that carries the value.",
+              ),
               swatch: "none",
+            },
             hint: tx(
               "act4.hint.hover",
               "Survolez le tracé pour lire une valeur précise.",
@@ -569,7 +584,11 @@ export default function Act4Impact() {
             controls: boardControls,
             node: (
               <div className="act4b__scroll">
-                <RankBars data={selTotals} unit={selUnit} />
+                <RankBars
+                  data={selTotals}
+                  unit={selUnit}
+                  format={selFormat}
+                />
               </div>
             ),
           },

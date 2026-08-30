@@ -1,0 +1,69 @@
+// src/components/HealthMini/HealthMini.scss
+// ============================================================
+// La vignette de l'autre mesure. Elle doit se lire d'un coup d'œil et ne
+// jamais rivaliser avec le grand dessin : c'est un rappel, pas un second
+// graphique. D'où le corps réduit, l'encre atténuée, et le filet qui la
+// rattache à la lecture plutôt que de l'encadrer comme une carte.
+// ============================================================
+
+.hmini {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: var(--border-hair) solid var(--c-line);
+}
+
+.hmini__label {
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.hmini__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.hmini__svg {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+}
+
+.hmini__cup {
+  stroke: var(--c-text-mute);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.hmini__water {
+  fill: var(--c-accent);
+  opacity: 0.7;
+}
+.hmini__field {
+  fill: var(--c-bg);
+  stroke: var(--c-line-strong);
+  stroke-width: 1.4;
+}
+.hmini__bac {
+  fill: var(--c-warm);
+  opacity: 0.85;
+}
+
+.hmini__val {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-med);
+  line-height: 1.1;
+  color: var(--c-text-soft);
+}
+
+.hmini__unit {
+  margin-left: 4px;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}

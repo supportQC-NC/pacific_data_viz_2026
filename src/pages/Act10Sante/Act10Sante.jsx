@@ -19,17 +19,17 @@ import { useLang } from "../../store/context/langContext";
 import { pictName, isPict } from "../../i18n/pictNames";
 import { fetchSante } from "../../services/santeApi";
 import ActBoard from "../../components/ActBoard/ActBoard";
+import { paletteOf } from "../../components/charts/echartsBase";
+import EvolutionLines from "../../components/charts/EvolutionLines";
+import ScatterChart from "../../components/charts/ScatterChart";
 import figuresFromBundle from "../../components/KeyFigures/fromBundle";
 import ChartFilter from "../../components/ChartFilter/ChartFilter";
 import ErrorBoundary from "../../components/ErrorBoundary/ErrorBoundary";
 import Loader from "../../components/Loader/Loader";
 import SmallMultiples from "../../components/SmallMultiples/SmallMultiples";
-import ApexYearHeatmap from "../../components/charts/ApexYearHeatmap";
 import DataSpotlight from "../../components/DataSpotlight/DataSpotlight";
 import CoverageChart from "../../components/charts/CoverageChart";
 import DumbbellChart from "../../components/DumbbellChart/DumbbellChart";
-import TrendLines from "../../components/TrendLines/TrendLines";
-import RadarChart from "../../components/charts/RadarChart";
 import BarRace from "../../components/BarRace/BarRace";
 // Les visuels de la Home qui portent les deux jeux de cette escale :
 // WaterGlass lit `water`, TbBacilli lit `tuberculosis` — exactement les jeux
@@ -237,6 +237,72 @@ export default function Act10Sante() {
   const tbLine = useMemo(
     () => medianLine(tbS, tbYears, t("act10.tb_med_name")),
     [tbS, tbYears, t],
+  );
+
+  // ---------- LE CROISEMENT : LES DEUX MESURES SUR UN SEUL AXE ----------
+  //
+  // La vue « Tendance » ne montrait que la mesure sélectionnée. Or l'escale
+  // demande « l'eau potable protège-t-elle la santé ? » — et cette question ne
+  // se répond pas en regardant une courbe, puis l'autre, en s'en souvenant.
+  //
+  // On ne peut pas les superposer telles quelles : un pourcentage d'accès va
+  // de 0 à 100, une incidence de 0 à 700 pour 100 000. Deux axes seraient la
+  // réponse facile, et le dépôt l'interdit — le rapport entre les deux courbes
+  // dépendrait alors du réglage des échelles, c'est-à-dire de nous.
+  //
+  // Base 100 sur la première année commune : chaque courbe part du même point
+  // et ne montre plus que son MOUVEMENT. C'est comparable, et c'est honnête.
+  const crossLines = useMemo(
+    () => [...waterLine, ...tbLine],
+    [waterLine, tbLine],
+  );
+  const crossColors = useMemo(() => {
+    const pal = paletteOf(tk);
+    const out = {};
+    if (waterLine[0]) out[waterLine[0].name] = pal[0] || tk.accent;
+    if (tbLine[0]) out[tbLine[0].name] = pal[1] || tk.warm;
+    return out;
+  }, [waterLine, tbLine, tk]);
+
+  // ---------- LE CROISEMENT DIRECT : UN POINT PAR TERRITOIRE ----------
+  //
+  // La question de l'escale porte sur l'INCIDENCE : la tuberculose recule-t-elle
+  // là où l'eau potable est acquise ? Deux courbes dans le temps montrent deux
+  // mouvements ; elles ne mettent pas les territoires en regard les uns des
+  // autres. Un point par territoire le fait : accès à l'eau en abscisse,
+  // incidence en ordonnée, à la dernière année de chaque série.
+  //
+  // Seuls les territoires qui ont LES DEUX mesures y figurent — apparier au
+  // hasard reviendrait à inventer une paire.
+  const crossPairs = useMemo(() => {
+    const wr = buildRank(waterS, waterB);
+    const tr = buildRank(tbS, tbB);
+    const byArea = {};
+    wr.forEach((r) => {
+      byArea[r.area] = { area: r.area, name: r.name, x: r.value };
+    });
+    const out = [];
+    tr.forEach((r) => {
+      const w = byArea[r.area];
+      if (w) out.push({ ...w, y: r.value });
+    });
+    return out;
+  }, [waterS, waterB, tbS, tbB]);
+
+  const crossGroups = useMemo(() => {
+    if (!crossPairs.length) return [];
+    return [
+      {
+        name: tx("act10.cross.series", "Territoires", "Territories"),
+        color: paletteOf(tk)[0],
+        points: crossPairs.map((r) => ({ name: r.name, x: r.x, y: r.y })),
+      },
+    ];
+  }, [crossPairs, tk, tx]);
+
+  const crossMedianX = useMemo(
+    () => median(crossPairs.map((r) => r.x)) ?? 0,
+    [crossPairs],
   );
 
   const waterRank = useMemo(() => buildRank(waterS, waterB), [waterS, waterB]);
@@ -627,20 +693,41 @@ export default function Act10Sante() {
             title: M.titles.trend,
             finding: t("act10.board.trend_find"),
             takeaway: t("act10.board.trend_take"),
-            legend: { ...key, swatch: "none" },
+            legend: {
+              swatch: "none",
+              y: tx(
+                "act10.key.cross_y",
+                "Base 100 à la première année commune : 100 = le niveau de départ de chaque mesure.",
+                "Base 100 at the first shared year: 100 is each measure's starting level.",
+              ),
+              x: tx("act10.key.cross_x", "Le temps, une année par point.", "Time, one point per year."),
+              color: tx(
+                "act10.key.cross_c",
+                "Une couleur par mesure : l'accès à l'eau potable, l'incidence de la tuberculose.",
+                "One colour per measure: access to safe water, tuberculosis incidence.",
+              ),
+              caveat: tx(
+                "act10.key.cross_caveat",
+                "Deux courbes qui bougent ensemble ne prouvent pas qu'elles s'expliquent. Les deux médianes portent sur les territoires visibles, et le sens de chaque mesure est inverse : monter est bon pour l'eau, mauvais pour la tuberculose.",
+                "Two curves moving together prove nothing about cause. Both medians cover the visible territories, and the two measures point opposite ways: rising is good for water, bad for tuberculosis.",
+              ),
+              note: key.note,
+            },
             hint: tx(
-              "act10.hint.hover",
-              "Survolez le tracé pour lire une valeur précise.",
-              "Hover the plot to read a single value.",
+              "act10.hint.cross",
+              "Cliquez une pastille de légende pour isoler une mesure.",
+              "Click a legend pill to isolate one measure.",
             ),
             controls: boardControls,
             node: (
               <div className="act10b__fit">
-                <TrendLines
-                  series={M.line}
+                <EvolutionLines
+                  series={crossLines}
                   years={M.years}
-                  currentYear={M.B}
-                  unit={M.unit}
+                  unit=""
+                  mode="index"
+                  colorBy={crossColors}
+                  labels={{ base: tx("act10.evo.base", "base 100", "base 100") }}
                 />
               </div>
             ),
@@ -665,6 +752,67 @@ export default function Act10Sante() {
                   label: t("act10.spotlight.link_label"),
                 }}
               />
+            ),
+          },
+          {
+            id: "cross",
+            empty: crossGroups.length === 0,
+            tab: tx("act10.board.tab_cross", "Croisement", "Crossing"),
+            title: tx(
+              "act10.viz.cross_title",
+              "L'eau et la tuberculose, territoire par territoire",
+              "Water and tuberculosis, territory by territory",
+            ),
+            finding: tx(
+              "act10.viz.cross_find",
+              "Un point par territoire : sa position de gauche à droite est la part de sa population qui accède à une eau potable sûre, sa hauteur l'incidence de la tuberculose. Le pointillé marque la médiane d'accès.",
+              "One dot per territory: its left-to-right position is the share of its people with safely managed drinking water, its height the tuberculosis incidence. The dashed line marks the median access.",
+            ),
+            takeaway: tx(
+              "act10.viz.cross_take",
+              "Les territoires les mieux desservis se rassemblent en bas à droite : beaucoup d'eau, peu de cas. Mais quelques-uns tiennent le haut du graphique malgré un accès élevé — l'eau n'explique pas tout, et le nuage ne dit pas ce qui reste.",
+              "The best-served territories gather in the lower right: plenty of water, few cases. Yet a few sit high despite good access — water does not explain everything, and the cloud says nothing about what remains.",
+            ),
+            hint: tx(
+              "act10.hint.cross_dots",
+              "Survolez un point pour le nommer.",
+              "Hover a dot to name it.",
+            ),
+            legend: {
+              swatch: "none",
+              x: tx(
+                "act10.key.crossx_x",
+                "Part de la population avec accès à une eau potable gérée en sécurité, en %.",
+                "Share of the population with safely managed drinking water, in %.",
+              ),
+              y: tx(
+                "act10.key.crossx_y",
+                "Incidence de la tuberculose, en cas pour 100 000 habitants.",
+                "Tuberculosis incidence, in cases per 100,000 people.",
+              ),
+              color: tx(
+                "act10.key.crossx_c",
+                "La couleur ne mesure rien : tous les points sont des territoires.",
+                "Colour measures nothing: every dot is a territory.",
+              ),
+              caveat: tx(
+                "act10.key.crossx_caveat",
+                "Un nuage montre une association, jamais une cause. Les deux séries sont des estimations de l'ONU, à des années parfois différentes, et seuls les territoires qui ont les deux mesures figurent ici.",
+                "A cloud shows an association, never a cause. Both series are UN estimates, sometimes from different years, and only territories with both measurements appear here.",
+              ),
+              note: key.note,
+            },
+            controls: boardControls,
+            node: (
+              <div className="act10b__fit">
+                <ScatterChart
+                  groups={crossGroups}
+                  unit=""
+                  medianX={crossMedianX}
+                  xName={tx("act10.cross.x", "Accès à l'eau potable (%)", "Safe water access (%)")}
+                  yName={tx("act10.cross.y", "Tuberculose (cas / 100 000)", "Tuberculosis (cases / 100,000)")}
+                />
+              </div>
             ),
           },
           {
@@ -755,7 +903,12 @@ export default function Act10Sante() {
                   yearB={M.B}
                   unit={M.unit}
                   decimals={metricDecimals}
-                  labels={M.cmp}
+          // VUE « MATRICE » RETIRÉE.
+          // Territoires × années en cases colorées : elle répétait ce que les
+          // Multiples et l'Évolution montrent déjà, en demandant au lecteur de
+          // comparer des intensités de couleur — le geste le moins précis qui
+          // soit. Sur une escale dont la question est un CROISEMENT, la place
+          // revient au croisement.
                   // Occupe la hauteur du panneau : sans cela, la hauteur est
                   // calculée sur le nombre de lignes et laisse le bas vide.
                   fill
@@ -763,71 +916,17 @@ export default function Act10Sante() {
               </div>
             ),
           },
-          {
-            id: "heat",
-            empty: M.series.length === 0,
-            tab: tx("act10.board.tab_matrice", "Matrice", "Matrix"),
-            title: M.titles.heat,
-            finding: t("act10.board.heat_find"),
-            takeaway: t("act10.board.heat_take"),
-            legend: {
-              y: tx("act10.key.terr_y", "Un territoire par ligne.", "One territory per row."),
-              x: key.x,
-              color: key.color,
-              note: key.note,
-              swatch: key.swatch,
-            },
-            hint: tx(
-              "act10.hint.heat",
-              "Balayez une ligne de gauche à droite : une année isolée oscille, une bande continue s'installe.",
-              "Read a row left to right: a lone year wobbles, an unbroken band has settled in.",
-            ),
-            controls: boardControls,
-            node: (
-              <div className="act10b__scroll">
-                <ApexYearHeatmap
-                  series={M.series}
-                  years={M.years}
-                  unit={M.unit}
-                  scale="sequential"
-                  decimals={metricDecimals}
-                  labels={{
-                    low: t("act6.heatmap_low"),
-                    high: t("act6.heatmap_high"),
-                  }}
-                />
-              </div>
-            ),
-          },
-          {
-            id: "radar",
-            empty: M.sub.length < 2,
-            tab: tx("act10.board.tab_profil", "Profil", "Profile"),
-            title: t("act10.board.radar_title"),
-            finding: t("act10.board.radar_find"),
-            takeaway: t("act10.board.radar_take"),
-            legend: {
-              swatch: "none",
-              ...key,
-              y: tx(
-                "act10.key.radar_y",
-                "Chaque branche est une sous-région ; la distance au centre porte la valeur.",
-                "Each spoke is a sub-region; distance from the centre carries the value.",
-              ),
-              x: tx("act10.key.radar_x", "Les sous-régions, tout autour.", "The sub-regions, all around."),
-            },
-            hint: tx(
-              "act10.hint.hover",
-              "Survolez le tracé pour lire une valeur précise.",
-              "Hover the plot to read a single value.",
-            ),
-            controls: boardControls,
-            node: (
-              <div className="act10b__fit">
-                <RadarChart subAvg={M.sub} years={M.years} />
-              </div>
-            ),
-          },
+          // VUE « MATRICE » RETIRÉE.
+          // Territoires × années en cases colorées : elle répétait ce que les
+          // Multiples et l'Évolution montrent déjà, en demandant au lecteur de
+          // comparer des intensités de couleur — le geste le moins précis qui
+          // soit. Sur une escale dont la question EST un croisement, la place
+          // revient au croisement.
+          // VUE « PROFIL » RETIRÉE.
+          // Un radar de sous-régions sur une escale qui n'en compte que trois :
+          // il traçait un triangle, et un triangle à trois branches se lit plus
+          // vite en trois barres. Il ne croisait rien non plus — or c'est le
+          // croisement qui fait l'intérêt de cette escale.
           {
             id: "map",
             empty: M.rank.length === 0,

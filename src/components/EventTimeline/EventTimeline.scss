@@ -1,13 +1,18 @@
 // src/components/EventTimeline/EventTimeline.scss
 .etl {
   width: 100%;
+  // Le conteneur est ce qu on mesure : il doit donc porter la hauteur
+  // disponible, pas la subir de son SVG.
+  height: 100%;
+  min-height: 0;
 }
 .etl--empty {
   min-height: 1px;
 }
 .etl__svg {
   width: 100%;
-  height: auto;
+  height: 100%;
+  display: block;
   overflow: visible;
 }
 

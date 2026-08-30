@@ -6,8 +6,30 @@
 
 const EXTRA_STRINGS = {
   fr: {
+    // Les deux médianes portaient le MÊME nom, « Médiane régionale ». Tant
+    // qu'elles vivaient chacune sur sa propre vue, cela passait ; croisées sur
+    // un seul axe, elles deviennent deux courbes homonymes — indistinguables
+    // dans la légende, et la table des couleurs, indexée par le nom, n'en
+    // retenait qu'une.
     act10: {
+      // La vue « Tendance » croise désormais les deux mesures : son titre et
+      // ses phrases parlaient encore de la seule mesure sélectionnée.
+      regional_water_title: "Les deux mesures, ramenées à leur point de départ",
+      regional_tb_title: "Les deux mesures, ramenées à leur point de départ",
+      board: {
+        trend_find:
+          "Les deux médianes régionales sur un même axe : l'accès à l'eau potable et l'incidence de la tuberculose, chacune indexée à 100 à sa première année commune. On ne compare plus des niveaux — un pourcentage et une incidence ne se comparent pas — mais des mouvements.",
+        trend_take:
+          "L'accès à l'eau bouge peu à l'échelle régionale ; l'incidence, elle, oscille fortement d'une année à l'autre. Deux courbes qui se croisent ne s'expliquent pas l'une l'autre, et le sens de lecture est inverse : monter est un progrès pour l'eau, une aggravation pour la tuberculose.",
+      },
       tag: "Escale 08",
+      // Les deux médianes portaient le MÊME nom, « Médiane régionale ». Tant
+      // qu'elles vivaient chacune sur sa vue, cela passait ; croisées sur un
+      // seul axe elles deviennent deux courbes homonymes — indistinguables en
+      // légende, et la table des couleurs, indexée par le nom, n'en gardait
+      // qu'une.
+      water_med_name: "Eau potable · médiane",
+      tb_med_name: "Tuberculose · médiane",
     },
     act9: {
       tag: "Escale 11",
@@ -217,6 +239,19 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      // « Part de la population » était faux : l'indicateur est un NOMBRE de
+      // personnes affectées, pas une part. Et l'échelle est logarithmique —
+      // il faut le dire, sinon un lecteur qui compte les silhouettes croit
+      // lire une proportion.
+      crowd: {
+        share_caption:
+          "Le nombre de silhouettes suit le total de personnes affectées, sur une échelle logarithmique — chaque silhouette de plus vaut d'autant plus que le total est élevé. La dernière est un enfant, à la taille de ce qui reste. Ce n'est pas un décompte de personnes.",
+      },
+      // Libellés des vignettes croisées (voir components/HealthMini).
+      water: {
+        mini_tb: "Tuberculose, même territoire",
+        mini_tb_unit: "cas / 100 000",
+      },
       // ------------------------------------------------------------------
       // L'UNITÉ ÉTAIT FAUSSE. Le dessin annonçait « +4,4 hab. » et
       // « Population médiane » pour une valeur qui est un TAUX. La source le
@@ -389,7 +424,11 @@ const EXTRA_STRINGS = {
           "Vous pourrez changer de langue et d'affichage à tout moment, depuis l'en-tête.",
       },
       sources: "Les sources",
-      tb: { value_caption: "Incidence locale" },
+      tb: {
+        value_caption: "Incidence locale",
+        mini_water: "Eau potable, même territoire",
+        mini_water_unit: "% avec accès",
+      },
       sea: {
         value_caption: "Anomalie locale · vs normale 1971–2000",
         // Étiquette du repère tracé SUR le thermomètre. Distincte de
@@ -537,7 +576,17 @@ const EXTRA_STRINGS = {
   },
   en: {
     act10: {
+      regional_water_title: "Both measures, reset to their starting point",
+      regional_tb_title: "Both measures, reset to their starting point",
+      board: {
+        trend_find:
+          "Both regional medians on one axis: access to safe water and tuberculosis incidence, each indexed to 100 at their first shared year. We no longer compare levels — a percentage and an incidence do not compare — but movements.",
+        trend_take:
+          "Access to water barely moves at the regional scale; incidence swings hard from year to year. Two curves crossing do not explain one another, and they read opposite ways: rising is progress for water, worsening for tuberculosis.",
+      },
       tag: "Leg 08",
+      water_med_name: "Safe water · median",
+      tb_med_name: "Tuberculosis · median",
     },
     act9: {
       tag: "Leg 11",
@@ -724,6 +773,14 @@ const EXTRA_STRINGS = {
       },
     },
     home: {
+      crowd: {
+        share_caption:
+          "The number of figures follows the total of people affected, on a logarithmic scale — each added figure stands for more as the total rises. The last one is a child, sized to the remainder. It is not a headcount.",
+      },
+      water: {
+        mini_tb: "Tuberculosis, same territory",
+        mini_tb_unit: "cases / 100,000",
+      },
       pop: {
         unit: "% per year",
         value_caption: "Annual growth · Pacific median",
@@ -818,7 +875,11 @@ const EXTRA_STRINGS = {
         later: "You can change language and display at any time, from the header.",
       },
       sources: "The sources",
-      tb: { value_caption: "Local incidence" },
+      tb: {
+        value_caption: "Local incidence",
+        mini_water: "Safe water, same territory",
+        mini_water_unit: "% with access",
+      },
       sea: {
         value_caption: "Local anomaly · vs 1971–2000 normal",
         median_tag: "median",

@@ -6,14 +6,22 @@
 // ============================================================
 @import "../Act1Emissions/Act1Emissions.scss";
 
+// Le conteneur des deux figures maison (frise, classement). Il imposait
+// `height: auto` a leur SVG : quoi que le composant demande, le dessin
+// retombait sur son rapport d aspect et laissait le bas du panneau vide.
+// Les deux composants gerent desormais leur hauteur eux-memes — ce
+// conteneur ne fait plus que leur passer la place et rattraper les
+// debordements.
 .act4b__scroll {
   height: 100%;
   width: 100%;
+  min-height: 0;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
 
-  svg {
-    width: 100%;
-    height: auto;
-    display: block;
+  > * {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }

@@ -32,6 +32,7 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
 import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
+import HealthMini from "../HealthMini/HealthMini";
 import useInView from "../../hooks/UseInView";
 import "./TbBacilli.scss";
 
@@ -47,7 +48,6 @@ Object.entries(SUBREGIONS).forEach(([k, arr]) =>
     REGION_OF[c] = k;
   }),
 );
-const REGION_TABS = ["all", "melanesia", "polynesia", "micronesia"];
 
 const N = 30;
 const FIELD_R = 116;
@@ -187,7 +187,6 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
   }, [list]);
 
   /* Sélection : un PAYS ou une SOUS-RÉGION (agrégat de tous ses pays). */
-  const [region, setRegion] = useState("all");
   const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
     if (pinned) return;
@@ -205,18 +204,7 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
   }, [embed, code]);
 
   const selectCountry = (code) => setView({ kind: "country", code });
-  const selectRegion = (key) => {
-    setRegion(key);
-    setView({ kind: "region", key });
-  };
 
-  const visibleList = useMemo(
-    () =>
-      region === "all"
-        ? list
-        : list.filter((o) => REGION_OF[o.code] === region),
-    [list, region],
-  );
 
   const sel = useMemo(() => {
     if (!view) return null;
@@ -383,25 +371,52 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
 
         {ready && sel && (
           <>
-            {!pinned && (
-            <div className="bac__toolbar">
-              <span className="bac__field-label">
-                {t("home.tb.select_label")}
-              </span>
-              <div className="bac__regions" role="tablist">
-                {REGION_TABS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    role="tab"
-                    aria-selected={region === r}
-                    className={`bac__region ${region === r ? "is-on" : ""}`}
-                    onClick={() => selectRegion(r)}
+            {/* Même navigation que les autres dessins de l'escale : un menu
+                déroulant. Les onglets de sous-région doublaient le filtre déjà
+                présent dans la colonne de lecture, et la bande de puces
+                obligeait à faire défiler pour atteindre la moitié des
+                territoires. Voir la note dans WaterGlass. */}
+            
+            <div className={`bac__stage ${embed ? "bac__stage--embed" : ""}`}>
+            {/* LES RÉGLAGES ENTRENT DANS LA SCÈNE.
+                Ils vivaient dans un bandeau AU-DESSUS d'elle : le menu prenait
+                donc toute la largeur du panneau, et le dessin se retrouvait
+                relégué en bas à gauche. Or le gabarit embarqué dispose la scène
+                en trois colonnes — réglages, dessin, lecture — comme tous les
+                autres visuels du parcours. Il suffisait que les réglages en
+                soient le premier enfant. */}
+{!pinned && (
+            <div className="bac__controls">
+              <label className="bac__field">
+                <span className="bac__field-label">
+                  {t("home.tb.select_label")}
+                </span>
+                <span className="bac__select">
+                  {sel && sel.code ? (
+                    <img
+                      className="bac__flag"
+                      src={flagUrl(sel.code)}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <select
+                    className="bac__native"
+                    value={sel && sel.code ? sel.code : ""}
+                    onChange={(e) => selectCountry(e.target.value)}
+                    aria-label={t("home.tb.select_label")}
                   >
-                    {t(`home.tb.region_${r}`)}
-                  </button>
-                ))}
-              </div>
+                    {list.map((o) => (
+                      <option key={o.code} value={o.code}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="bac__chevron" aria-hidden="true">
+                    ▾
+                  </span>
+                </span>
+              </label>
               {extremes && (
                 <div className="bac__chips">
                   <button
@@ -424,8 +439,6 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
               )}
             </div>
             )}
-
-            <div className={`bac__stage ${embed ? "bac__stage--embed" : ""}`}>
               {/* Le champ de microscope */}
               <figure className="bac__viz">
                 <svg
@@ -638,41 +651,26 @@ export default function TbBacilli({ embed = false, code = null } = {}) {
                     })}
                   </p>
                 )}
+
+                {/* Le verre du même territoire, en vignette. Les deux nombres
+                    sont posés côte à côte, sans flèche ni ratio : un
+                    pourcentage d'accès et une incidence pour 100 000 ne se
+                    mettent pas en rapport. */}
+                {sel.code && (
+                  <HealthMini
+                    kind="water"
+                    code={sel.code}
+                    labels={{
+                      title: t("home.tb.mini_water"),
+                      unit: t("home.tb.mini_water_unit"),
+                    }}
+                  />
+                )}
               </div>
             </div>
 
-            {!pinned && (
-            <div className="bac__countrybar">
-              <div className="bac__countries">
-                {visibleList.map((o) => (
-                  <button
-                    key={o.code}
-                    type="button"
-                    className={`bac__country ${
-                      view && view.kind === "country" && view.code === o.code
-                        ? "is-on"
-                        : ""
-                    }`}
-                    aria-pressed={
-                      view && view.kind === "country" && view.code === o.code
-                    }
-                    onClick={() => selectCountry(o.code)}
-                  >
-                    <img
-                      className="bac__country-flag"
-                      src={flagUrl(o.code)}
-                      alt=""
-                      aria-hidden="true"
-                    />
-                    <span className="bac__country-name">{o.name}</span>
-                    <em className="bac__country-val">
-                      {nf.format(Math.round(o.val))}
-                    </em>
-                  </button>
-                ))}
-              </div>
-            </div>
-            )}
+            {/* La bande défilante de puces est remplacée par le menu
+                ci-dessus. */}
           </>
         )}
 

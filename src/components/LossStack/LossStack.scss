@@ -334,3 +334,14 @@
     justify-content: center;
   }
 }
+/* ---- Les pièces ----
+   La tranche est plus sombre que la face : c'est ce contraste, et lui seul,
+   qui fait lire un cylindre plutôt qu'un disque. */
+.loss__coin-edge {
+  fill: color-mix(in srgb, var(--c-warm) 62%, var(--c-bg) 38%);
+}
+.loss__coin-rim {
+  stroke: color-mix(in srgb, var(--c-warm) 45%, var(--c-bg) 55%);
+  stroke-width: 1;
+  opacity: 0.6;
+}

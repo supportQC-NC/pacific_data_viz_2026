@@ -167,7 +167,8 @@
 /* ---------------- Scène (2 colonnes : microscope + lecture) ---------------- */
 .bac__stage {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Réglages · dessin · lecture, comme partout ailleurs. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: clamp(var(--sp-8), 6vw, var(--sp-16));
   align-items: center;
 }
@@ -470,4 +471,74 @@
 }
 .bac--embed .bac__inner {
   gap: var(--sp-6);
+}
+/* ---- Navigation alignée sur les autres dessins de l'escale ----
+   Mêmes mesures que `waterglass__select` et `forest__select` : changer de
+   dessin ne doit pas demander de réapprendre un geste. */
+.bac__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: 240px;
+}
+.bac__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.bac__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  height: 52px;
+  border: var(--border-hair) solid var(--c-line-strong);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-glow);
+  }
+}
+.bac__flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: var(--r-sm, 4px);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px var(--c-line);
+}
+.bac__native {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  option {
+    background: var(--c-surface);
+    color: var(--c-text);
+  }
+}
+.bac__chevron {
+  flex: 0 0 auto;
+  color: var(--c-text-mute);
+  pointer-events: none;
 }

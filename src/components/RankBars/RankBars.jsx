@@ -13,14 +13,25 @@
 // Props : data [{area,name,value}], unit, worldAvg, refLabel, betterWhen.
 // ============================================================
 
-import React, { useMemo, useRef, useLayoutEffect } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from "react";
 import * as d3 from "d3";
 import gsap from "gsap";
 import "./RankBars.scss";
 
 const W = 1000;
-const BAR_H = 22;
 const GAP = 8;
+// Bornes de la hauteur de ligne, en unites de viewBox. En dessous du
+// minimum le nom du territoire n est plus lisible ; au-dessus du maximum
+// une barre isolee deviendrait un pave.
+const ROW_MIN = 26;
+const ROW_MAX = 62;
+const ROW_0 = 30;
 const M = { top: 16, right: 72, bottom: 38, left: 180 };
 
 function cssVar(name, fallback) {
@@ -37,7 +48,39 @@ export default function RankBars({
   worldAvg,
   refLabel,
   betterWhen = "low",
+  format,
 }) {
+  // ------------------------------------------------------------------
+  // LES LIGNES SE PARTAGENT LA HAUTEUR DISPONIBLE.
+  //
+  // La hauteur du viewBox etait 16 + 38 + n x 30 : elle ne dependait que du
+  // NOMBRE de territoires. Rendue en `height: auto`, la figure tombait donc
+  // ou elle voulait dans le panneau — trop courte a huit territoires, trop
+  // longue a vingt-deux, jamais a la bonne taille. Les barres, elles,
+  // gardaient 22 unites quelle que soit la place.
+  //
+  // On mesure la boite, on convertit sa hauteur en unites de viewBox, et on
+  // la divise par le nombre de lignes. Le classement remplit exactement le
+  // panneau, et les barres grossissent quand il y a de la place.
+  // ------------------------------------------------------------------
+  const wrapRef = useRef(null);
+  const [box, setBox] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(([e]) => {
+      const r = e.contentRect;
+      setBox((prev) =>
+        Math.abs(prev.w - r.width) < 1 && Math.abs(prev.h - r.height) < 1
+          ? prev
+          : { w: r.width, h: r.height },
+      );
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const rowsRef = useRef(new Map());
   const barsRef = useRef(new Map());
   const valsRef = useRef(new Map());
@@ -50,7 +93,19 @@ export default function RankBars({
   const max = useMemo(() => d3.max(data, (d) => d.value) || 1, [data]);
   const min = useMemo(() => d3.min(data, (d) => d.value) ?? 0, [data]);
   const innerW = W - M.left - M.right;
-  const H = M.top + M.bottom + sorted.length * (BAR_H + GAP);
+
+  const rowH = useMemo(() => {
+    const n = sorted.length || 1;
+    if (!(box.w > 0 && box.h > 0)) return ROW_0;
+    const availH = (W * box.h) / box.w;
+    return Math.max(
+      ROW_MIN,
+      Math.min(ROW_MAX, (availH - M.top - M.bottom) / n),
+    );
+  }, [box, sorted.length]);
+
+  const BAR_H = Math.max(12, rowH - GAP);
+  const H = M.top + M.bottom + sorted.length * rowH;
   const plotH = H - M.top - M.bottom;
 
   const xScale = useMemo(
@@ -58,10 +113,23 @@ export default function RankBars({
     [max, innerW],
   );
 
-  const pivot = useMemo(() => {
-    if (worldAvg != null && worldAvg > min && worldAvg < max) return worldAvg;
-    return (min + max) / 2;
-  }, [worldAvg, min, max]);
+  // UNE DIVERGENTE SUPPOSE UN MILIEU QUI VEUT DIRE QUELQUE CHOSE.
+  //
+  // Sans `worldAvg`, le composant prenait (min + max) / 2 comme pivot : un
+  // nombre sans signification, autour duquel il peignait quand meme deux
+  // zones « favorable » et « defavorable ». Un jugement etait donc porte sur
+  // une frontiere arbitraire — et l escale Impact, qui n a pas de repere a
+  // fournir, l affichait sur un simple cumul.
+  //
+  // Sans repere, on retombe donc sur une GRANDEUR : rampe sequentielle, pas
+  // de zones, pas de ligne. C est exactement ce que dit la cle de lecture
+  // (« une seule teinte… c est une grandeur, pas un jugement »).
+  const diverging = Number.isFinite(worldAvg) && worldAvg > min && worldAvg < max;
+
+  const pivot = useMemo(
+    () => (diverging ? worldAvg : (min + max) / 2),
+    [diverging, worldAvg, min, max],
+  );
 
   // COULEUR DIVERGENTE — LA VALIDEE, PAS VERT<->ROUGE.
   // Elle allait de --c-positive a --c-negative, c'est-a-dire du vert au
@@ -71,6 +139,22 @@ export default function RankBars({
   // themes, pire cas dE 20,5. Le repere central prend le jeton neutre de la
   // rampe plutot que l'accent, qui n'a rien d'un milieu.
   const colorFor = useMemo(() => {
+    if (!diverging) {
+      // UNE SEULE TEINTE, ET C EST VOULU.
+      //
+      // Une rampe a bien ete essayee ici. Mesuree sur les donnees reelles de
+      // l escale : quatorze territoires sur quinze tombaient entre #4e58a1 et
+      // #818ac5 — un ecart que personne ne voit, parce qu un seul territoire
+      // occupe presque toute l amplitude. La rampe ne disait donc rien, tout
+      // en ayant l air de dire quelque chose.
+      //
+      // La LONGUEUR porte deja la valeur, et elle la porte bien. La couleur
+      // n a rien a encoder de plus : un ton unique, lisible sur les deux
+      // fonds (jeton 700 de la sequentielle — clair sur le sombre, fonce sur
+      // le clair).
+      const flat = cssVar("--c-seq-700", "#adb5e4");
+      return () => flat;
+    }
     const pos = cssVar("--c-div-1", "#4f8fd0");
     const neg = cssVar("--c-div-9", "#d99b3c");
     const mid = cssVar("--c-div-5", "#9aa3b2");
@@ -81,9 +165,19 @@ export default function RankBars({
     const belowI = d3.interpolateRgb(lowColor, mid);
     const aboveI = d3.interpolateRgb(mid, highColor);
     return (v) => (v <= pivot ? belowI(belowS(v)) : aboveI(aboveS(v)));
-  }, [min, max, pivot, betterWhen]);
+  }, [diverging, min, max, pivot, betterWhen]);
 
-  const fmt2 = d3.format(".2~f");
+  // Les valeurs etaient ecrites brutes : « 1240734 ». Sept chiffres colles
+  // ne se lisent pas. On prend le formateur de la page s il y en a un, sinon
+  // un groupage par milliers.
+  const fmt2 = useMemo(() => {
+    if (typeof format === "function") return format;
+    const grouped = d3.format(",");
+    return (v) =>
+      Math.abs(v) >= 1000
+        ? grouped(Math.round(v)).replace(/,/g, "\u202f")
+        : d3.format(".2~f")(v);
+  }, [format]);
   const refX = xScale(pivot);
   const goodLeft = betterWhen !== "high";
 
@@ -91,13 +185,13 @@ export default function RankBars({
     const m = new Map();
     sorted.forEach((d, i) => {
       m.set(d.area, {
-        y: M.top + i * (BAR_H + GAP),
+        y: M.top + i * rowH,
         w: Math.max(0, xScale(d.value)),
         value: d.value,
       });
     });
     return m;
-  }, [sorted, xScale]);
+  }, [sorted, xScale, rowH]);
 
   useLayoutEffect(() => {
     let i = 0;
@@ -147,20 +241,24 @@ export default function RankBars({
     Array.from(known.current).forEach((a) => {
       if (!targets.has(a)) known.current.delete(a);
     });
-  }, [targets, colorFor]);
+  }, [targets, colorFor, fmt2]);
 
   return (
-    <div className="rank">
+    <div ref={wrapRef} className="rank">
       <svg className="rank__svg" viewBox={`0 0 ${W} ${H}`} role="img">
-        <rect className={`rank__zone ${goodLeft ? "rank__zone--good" : "rank__zone--bad"}`} x={M.left} y={M.top} width={Math.max(0, refX)} height={plotH} />
-        <rect className={`rank__zone ${goodLeft ? "rank__zone--bad" : "rank__zone--good"}`} x={M.left + refX} y={M.top} width={Math.max(0, innerW - refX)} height={plotH} />
+        {diverging && (
+          <>
+            <rect className={`rank__zone ${goodLeft ? "rank__zone--good" : "rank__zone--bad"}`} x={M.left} y={M.top} width={Math.max(0, refX)} height={plotH} />
+            <rect className={`rank__zone ${goodLeft ? "rank__zone--bad" : "rank__zone--good"}`} x={M.left + refX} y={M.top} width={Math.max(0, innerW - refX)} height={plotH} />
 
-        <g className="rank__ref-g" transform={`translate(${M.left + refX},0)`}>
-          <line className="rank__ref" y1={M.top} y2={M.top + plotH} />
-          <text className="rank__ref-label" y={H - M.bottom + 24} textAnchor="middle">
-            {refLabel} {"\u00b7"} {fmt2(pivot)}
-          </text>
-        </g>
+            <g className="rank__ref-g" transform={`translate(${M.left + refX},0)`}>
+              <line className="rank__ref" y1={M.top} y2={M.top + plotH} />
+              <text className="rank__ref-label" y={H - M.bottom + 24} textAnchor="middle">
+                {refLabel} {"\u00b7"} {fmt2(pivot)}
+              </text>
+            </g>
+          </>
+        )}
 
         {data.map((d) => (
           <g
@@ -195,7 +293,9 @@ export default function RankBars({
           </g>
         ))}
 
-        <text className="rank__axis-title" x={M.left + innerW / 2} y={H - 8} textAnchor="middle">{unit}</text>
+        {/* A gauche, sous l origine des barres : au centre il tombait sur le
+            libelle de la ligne de repere. */}
+        <text className="rank__axis-title" x={M.left} y={H - 8} textAnchor="start">{unit}</text>
       </svg>
     </div>
   );

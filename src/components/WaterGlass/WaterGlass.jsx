@@ -34,6 +34,7 @@ import { loadDataset, selectDataset } from "../../store/slices/climateSlice";
 import { useLang } from "../../store/context/langContext";
 import { isPict, pictName } from "../../i18n/pictNames";
 import flagUrl from "../../i18n/flagUrl";
+import HealthMini from "../HealthMini/HealthMini";
 import useInView from "../../hooks/UseInView";
 import "./WaterGlass.scss";
 
@@ -48,7 +49,6 @@ Object.entries(SUBREGIONS).forEach(([r, codes]) =>
     REGION_OF[c] = r;
   }),
 );
-const REGION_TABS = ["all", "melanesia", "polynesia", "micronesia"];
 
 /* ---- Géométrie du verre (repère SVG, viewBox 0 0 240 300) ---- */
 const TOP = 54; // y du bord intérieur haut (eau pleine)
@@ -163,7 +163,6 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
   }, [list]);
 
   /* Sélection : un PAYS ou une SOUS-RÉGION (agrégat de tous ses pays). */
-  const [region, setRegion] = useState("all");
   const [view, setView] = useState(null); // {kind:"country",code} | {kind:"region",key}
   useEffect(() => {
     if (pinned) return;
@@ -177,10 +176,6 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
   }, [embed, code]);
 
   const selectCountry = (code) => setView({ kind: "country", code });
-  const selectRegion = (key) => {
-    setRegion(key);
-    setView({ kind: "region", key });
-  };
 
   const sel = useMemo(() => {
     if (!view) return null;
@@ -210,14 +205,6 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
   }, [view, byCode, list, t]);
   const selPct = sel ? sel.value / 100 : 0;
 
-  /* Liste filtrée par sous-région pour les chips. */
-  const visibleList = useMemo(
-    () =>
-      region === "all"
-        ? list
-        : list.filter((o) => REGION_OF[o.code] === region),
-    [list, region],
-  );
 
   /* ----------- Animation : eau vivante (vague + bulles + déficit) ----------- */
   const waterRef = useRef(null);
@@ -381,25 +368,61 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
 
         {ready && sel && (
           <>
-          {!pinned && (
-          <div className="waterglass__toolbar">
-            <span className="waterglass__field-label">
-              {t("home.water.select_label")}
-            </span>
-            <div className="waterglass__regions" role="tablist">
-              {REGION_TABS.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  role="tab"
-                  aria-selected={region === r}
-                  className={`waterglass__region ${region === r ? "is-on" : ""}`}
-                  onClick={() => selectRegion(r)}
+          {/* LA MÊME NAVIGATION QUE LES AUTRES DESSINS DE L'ESCALE.
+              Le verre portait sa propre mécanique : une rangée d'onglets de
+              sous-région et une bande défilante de vingt-deux puces de pays.
+              Deux problèmes.
+              1. Les onglets de sous-région DOUBLAIENT le filtre de l'escale,
+                 déjà présent dans la colonne de lecture — deux commandes pour
+                 la même chose sur un seul écran, et rien ne disait laquelle
+                 gagnait.
+              2. Tous les autres visuels (le fale, le bosquet, le récif, le
+                 village) se pilotent au menu déroulant. Celui-ci demandait
+                 d'apprendre un geste de plus, et sa bande obligeait à faire
+                 défiler pour atteindre la moitié des territoires.
+              Un menu déroulant, les deux extrêmes en pastilles dessous. */}
+          
+          <div className={`waterglass__stage ${embed ? "waterglass__stage--embed" : ""}`}>
+            {/* LES RÉGLAGES ENTRENT DANS LA SCÈNE.
+                Ils vivaient dans un bandeau AU-DESSUS d'elle : le menu prenait
+                donc toute la largeur du panneau, et le dessin se retrouvait
+                relégué en bas à gauche. Or le gabarit embarqué dispose la scène
+                en trois colonnes — réglages, dessin, lecture — comme tous les
+                autres visuels du parcours. Il suffisait que les réglages en
+                soient le premier enfant. */}
+{!pinned && (
+          <div className="waterglass__controls">
+            <label className="waterglass__field">
+              <span className="waterglass__field-label">
+                {t("home.water.select_label")}
+              </span>
+              <span className="waterglass__select">
+                {sel && sel.code ? (
+                  <img
+                    className="waterglass__flag"
+                    src={flagUrl(sel.code)}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <select
+                  className="waterglass__native"
+                  value={sel && sel.code ? sel.code : ""}
+                  onChange={(e) => selectCountry(e.target.value)}
+                  aria-label={t("home.water.select_label")}
                 >
-                  {t(`home.water.region_${r}`)}
-                </button>
-              ))}
-            </div>
+                  {list.map((o) => (
+                    <option key={o.code} value={o.code}>
+                      {o.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="waterglass__chevron" aria-hidden="true">
+                  ▾
+                </span>
+              </span>
+            </label>
+
             {extremes && (
               <div className="waterglass__chips">
                 <button
@@ -422,8 +445,6 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
             )}
           </div>
           )}
-
-          <div className={`waterglass__stage ${embed ? "waterglass__stage--embed" : ""}`}>
 
             {/* Colonne 2 — le verre */}
             <figure className="waterglass__viz">
@@ -590,39 +611,27 @@ export default function WaterGlass({ embed = false, code = null } = {}) {
                   })}
                 </p>
               )}
+
+              {/* L'AUTRE MESURE, POUR LE MÊME TERRITOIRE.
+                  L'escale croise l'eau et la tuberculose, mais on ne pouvait
+                  les voir que l'une après l'autre : il fallait retenir un
+                  chiffre, basculer, et comparer de mémoire. */}
+              {sel.code && (
+                <HealthMini
+                  kind="tb"
+                  code={sel.code}
+                  labels={{
+                    title: t("home.water.mini_tb"),
+                    unit: t("home.water.mini_tb_unit"),
+                  }}
+                />
+              )}
             </div>
           </div>
 
-          {!pinned && (
-          <div className="waterglass__countrybar">
-            <div className="waterglass__countries">
-              {visibleList.map((o) => (
-                <button
-                  key={o.code}
-                  type="button"
-                  className={`waterglass__country ${
-                    view && view.kind === "country" && view.code === o.code
-                      ? "is-on"
-                      : ""
-                  }`}
-                  aria-pressed={
-                    view && view.kind === "country" && view.code === o.code
-                  }
-                  onClick={() => selectCountry(o.code)}
-                >
-                  <img
-                    className="waterglass__country-flag"
-                    src={flagUrl(o.code)}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <span className="waterglass__country-name">{o.name}</span>
-                  <em className="waterglass__country-val">{Math.round(o.value)}%</em>
-                </button>
-              ))}
-            </div>
-          </div>
-          )}
+          {/* La bande défilante de vingt-deux puces est remplacée par le
+              menu ci-dessus : elle prenait toute la largeur sous le dessin et
+              cachait la moitié des territoires derrière un défilement. */}
           </>
         )}
 

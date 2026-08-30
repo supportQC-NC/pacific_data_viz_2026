@@ -64,7 +64,10 @@
 /* ---------------- Scène (3 colonnes) ---------------- */
 .waterglass__stage {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Réglages · dessin · lecture — le même partage que le bosquet, le récif et
+     le village. En deux colonnes égales, le menu et le verre se disputaient la
+     moitié gauche. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: clamp(var(--sp-8), 6vw, var(--sp-16));
   align-items: center;
 }

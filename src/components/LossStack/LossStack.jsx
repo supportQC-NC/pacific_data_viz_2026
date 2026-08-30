@@ -30,16 +30,44 @@ import flagUrl from "../../i18n/flagUrl";
 import useInView from "../../hooks/UseInView";
 import "./LossStack.scss";
 
-const N = 18;
-const CX = 130;
-const BASE_Y = 248;
-const GAP = 9;
-const RX = 30;
-const RY = 8;
-const COINS = Array.from({ length: N }, (_, i) => ({
-  cy: BASE_Y - i * GAP,
-  alt: i % 2 === 0,
-}));
+// ---------------------------------------------------------------------------
+// DES PIÈCES, ET PLUSIEURS PILES.
+//
+// C'était UNE colonne de dix-huit ellipses plates, larges de 60 px, collées les
+// unes aux autres. Le résultat ne ressemblait pas à des pièces — il n'y avait
+// ni tranche, ni relief, ni bord : des crêpes empilées. Et une colonne unique
+// ne se jauge pas : à quinze ellipses on ne sait pas si c'est beaucoup.
+//
+// Quatre piles de huit, comme on compte réellement de la monnaie. Une pièce est
+// un CYLINDRE vu de trois quarts : une face elliptique, une tranche en dessous,
+// un liseré. Plus petites, il en tient davantage, et la quantité redevient
+// jaugeable — quatre piles pleines, ou une pile et demie.
+//
+// Comme pour la foule et le village, c'est le NOMBRE qui porte la valeur, et
+// la décimale devient une pièce plus petite posée au sommet.
+// ---------------------------------------------------------------------------
+
+const STACKS = 4;
+const PER_STACK = 8;
+const N = STACKS * PER_STACK;
+const STACK_X = [56, 106, 156, 206];
+const BASE_Y = 250;
+const GAP = 11;
+const RX = 21;
+const RY = 6.2;
+const THICK = 4.6;
+
+// Ordre de remplissage : pile par pile, de bas en haut. On empile vraiment,
+// on ne saupoudre pas — une pile à trous n'est pas une pile.
+const COINS = Array.from({ length: N }, (_, i) => {
+  const col = Math.floor(i / PER_STACK);
+  const row = i % PER_STACK;
+  return {
+    cx: STACK_X[col],
+    cy: BASE_Y - row * GAP,
+    alt: (col + row) % 2 === 0,
+  };
+});
 
 function median(arr) {
   const v = arr.filter(Number.isFinite).sort((a, b) => a - b);
@@ -180,13 +208,24 @@ export default function LossStack({ embed = false, code = null } = {}) {
         );
       }
 
+      // Le NOMBRE de pièces porte la valeur ; la dernière rétrécit pour la
+      // décimale. Les pièces tombaient auparavant en fondu depuis le haut :
+      // à mi-course on voyait des disques à demi transparents flotter
+      // au-dessus de la pile, ce qui ne ressemble à rien de physique.
       const shown = v * N;
       coinRefs.current.forEach((node, i) => {
         if (!node) return;
-        const aff = clamp01(shown - i);
-        node.setAttribute("opacity", aff.toFixed(3));
-        const rise = (1 - aff) * 12;
-        node.setAttribute("transform", `translate(0 ${rise.toFixed(2)})`);
+        const part = clamp01(shown - i);
+        const eased = 1 - (1 - part) * (1 - part);
+        // Rampe large, comme pour la foule : à ×10 la pièce apparaissait d'un
+        // coup, et pendant une transition plusieurs surgissaient ensemble.
+        const sc = 0.32 + 0.68 * eased;
+        const c = COINS[i];
+        node.setAttribute(
+          "transform",
+          `translate(${c.cx} ${c.cy}) scale(${sc.toFixed(3)}) translate(${-c.cx} ${-c.cy})`,
+        );
+        node.setAttribute("opacity", clamp01(part / 0.35).toFixed(3));
       });
     },
     [reduced, nfC],
@@ -205,8 +244,8 @@ export default function LossStack({ embed = false, code = null } = {}) {
     const tw = gsap.to(animObj.current, {
       v: sel.v,
       val: sel.val,
-      duration: 1.2,
-      ease: "power2.out",
+      duration: 1.6,
+      ease: "power2.inOut",
     });
     return () => tw.kill();
   }, [inView, sel, reduced, draw]);
@@ -355,14 +394,17 @@ export default function LossStack({ embed = false, code = null } = {}) {
                 role="img"
                 aria-label={svgLabel}
               >
-                {/* socle */}
-                <ellipse
-                  className="loss__base"
-                  cx={CX}
-                  cy="262"
-                  rx={RX + 10}
-                  ry="10"
-                />
+                {/* Une ombre par pile, pas un socle unique. */}
+                {STACK_X.map((x, i) => (
+                  <ellipse
+                    key={i}
+                    className="loss__base"
+                    cx={x}
+                    cy="262"
+                    rx={RX + 4}
+                    ry="6"
+                  />
+                ))}
 
                 <g ref={stackRef}>
                   {COINS.map((coin, i) => (
@@ -374,33 +416,44 @@ export default function LossStack({ embed = false, code = null } = {}) {
                       className="loss__coin"
                       opacity="0"
                     >
-                      {/* tranche */}
-                      <ellipse
+                      {/* UNE PIÈCE EST UN CYLINDRE, pas un disque.
+                          Trois pièces : la tranche (le corps), la face du
+                          dessus, et un liseré. Sans la tranche, on empilait
+                          des crêpes. */}
+                      <path
                         className="loss__coin-edge"
-                        cx={CX}
-                        cy={coin.cy + 3}
-                        rx={RX}
-                        ry={RY}
+                        d={`M${coin.cx - RX},${coin.cy}
+                            L${coin.cx - RX},${coin.cy + THICK}
+                            A${RX},${RY} 0 0 0 ${coin.cx + RX},${coin.cy + THICK}
+                            L${coin.cx + RX},${coin.cy} Z`}
                       />
-                      {/* face */}
                       <ellipse
                         className={
                           coin.alt
                             ? "loss__coin-face"
                             : "loss__coin-face loss__coin-face--alt"
                         }
-                        cx={CX}
+                        cx={coin.cx}
                         cy={coin.cy}
                         rx={RX}
                         ry={RY}
                       />
-                      {/* reflet */}
+                      {/* Le liseré : c'est lui qui sépare deux pièces
+                          voisines, sinon la pile est un bloc uni. */}
+                      <ellipse
+                        className="loss__coin-rim"
+                        cx={coin.cx}
+                        cy={coin.cy}
+                        rx={RX - 3.4}
+                        ry={RY - 1.6}
+                        fill="none"
+                      />
                       <ellipse
                         className="loss__coin-shine"
-                        cx={CX - 9}
-                        cy={coin.cy - 2}
-                        rx="9"
-                        ry="3"
+                        cx={coin.cx - 6}
+                        cy={coin.cy - 1.4}
+                        rx="6"
+                        ry="1.8"
                       />
                     </g>
                   ))}
