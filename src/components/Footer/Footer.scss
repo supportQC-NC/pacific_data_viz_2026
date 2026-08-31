@@ -97,6 +97,8 @@ $glow-h: 220px;
   &__links {
     margin-top: var(--sp-6);
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: var(--sp-4);
   }
 
@@ -122,6 +124,15 @@ $glow-h: 220px;
     }
     &:hover { color: var(--c-warm); }
     &:hover::after { right: 0; background: var(--c-warm); }
+  }
+
+  /* Lien vers le dépôt public : icône + libellé, même grammaire visuelle. */
+  &__link--repo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+
+    svg { width: 1em; height: 1em; }
   }
 
   /* ---------- Colonne Données ---------- */

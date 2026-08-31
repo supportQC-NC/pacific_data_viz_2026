@@ -184,7 +184,11 @@ export default function ActsIndex() {
           </section>
         ))}
 
-        <p className="home__closing">{t("home.closing")}</p>
+        {/* Citation de clôture : texte réel et sourcé, attribué à son auteur. */}
+        <blockquote className="home__closing">
+          <p className="home__closing-text">{t("home.closing")}</p>
+          <cite className="home__closing-cite">{t("home.closing_cite")}</cite>
+        </blockquote>
       </section>
     </main>
   );

@@ -79,7 +79,8 @@
     "shock_num": "0,03 %",
     "shock_text": "des émissions mondiales : c'est tout ce que pèse le Pacifique dans le dérèglement. Et pourtant, c'est l'une des voix qui portent le plus loin. Ici, être en première ligne n'enferme pas dans le rôle de victime — ça oblige à montrer la voie.",
     "acts_lead": "Chaque acte part d'un chiffre vérifiable et le suit jusqu'au bout : la réalité qu'il décrit, et la réponse que le Pacifique lui oppose déjà. Des émissions aux solutions, le fil ne lâche jamais le terrain — et il mène à l'action.",
-    "closing": "« Là où le monde voit une menace, le Pacifique a déjà commencé à tracer la sortie. »",
+    "closing": "« L'avenir, tu n'as point à le prévoir mais à le permettre. »",
+    "closing_cite": "Antoine de Saint-Exupéry · Citadelle, 1948",
     "c1_kicker": "Chapitre I",
     "c1_title": "Déchiffrer",
     "c1_desc": "On commence par les faits, sans filtre : ce que le Pacifique émet, ce que l'océan lui renvoie, la pression qui monte sur les habitants. Des chiffres nets — parce qu'aucune solution ne tient sur un constat flou.",
@@ -613,6 +614,8 @@
     "data_sources": "Pacific Data Hub · .Stat Explorer (SPC)",
     "credit": "Réalisé pour le Pacific Dataviz Challenge 2026.",
     "about": "À propos",
+    "repo": "Code source · GitHub",
+    "repo_aria": "Ouvrir le dépôt GitHub public de Datamoana",
     "challenge_aria": "Ouvrir le site du Pacific Dataviz Challenge 2026"
   },
   "scene": {
@@ -2931,18 +2934,32 @@
   "about": {
     "eyebrow": "À propos",
     "title": "Datamoana, et la main derrière les données",
-    "lead": "Un projet de datavisualisation indépendant réalisé pour le Pacific Dataviz Challenge 2026 : rendre lisible, à hauteur humaine, ce que les données climatiques du Pacifique racontent.",
+    "lead": "Une proposition réalisée pour le Pacific Dataviz Challenge 2026, sur le thème qu'il fixe — le changement climatique dans le Pacifique : rendre lisible, à hauteur humaine, ce que racontent les données ouvertes du Pacific Data Hub.",
     "back": "Retour à l'accueil",
+    "prev": "Chapitre précédent",
+    "next": "Chapitre suivant",
+    "pager_aria": "Navigation entre les chapitres",
+    "repo": {
+      "eyebrow": "Code source ouvert",
+      "title": "Le code de Datamoana est public sur GitHub",
+      "body": "L'intégralité du code de Datamoana est publiée en accès libre. Le dépôt permet de vérifier l'historique complet des commits — et notamment la date et l'heure du dernier push, qui atteste du respect de la date limite fixée par le règlement du Pacific Dataviz Challenge 2026.",
+      "cta": "Voir le dépôt GitHub",
+      "meta": "Historique des commits horodaté · licence MIT",
+      "deploy_title": "Mise en ligne et traçabilité",
+      "deploy_host": "site en ligne, hébergé chez Hostinger.",
+      "deploy_ci": "Les mises à jour passent par un script de déploiement relié aux push GitHub : ce qui est en ligne correspond à l'état du dépôt.",
+      "deploy_logs": "Les journaux du serveur peuvent être fournis au jury sur demande, pour recouper les dates de déploiement avec l'historique des commits."
+    },
     "author": {
       "eyebrow": "L'auteur",
       "name": "Stoyann Velten",
       "role": "Développeur & support informatique — Nouméa, Nouvelle-Calédonie",
-      "body": "Je vis et travaille à Nouméa, en Nouvelle-Calédonie, où j'occupe un poste de développeur et de support informatique au sein d'un grand groupe de quincaillerie du territoire. Datamoana est un projet personnel, que j'ai conçu et développé seul, en dehors de mon temps de travail.\n\nSi je m'y suis attelé, c'est que le Pacifique est chez moi. Les données que l'on manipule ici n'ont rien d'abstrait : elles racontent notre quotidien — la mer qui grignote les côtes, les cyclones, la ressource en eau, l'état des récifs. Mais elles restent souvent dispersées, techniques, difficiles d'accès, loin de celles et ceux qu'elles concernent en premier lieu.\n\nMon ambition avec Datamoana est simple : les rendre claires et sensibles, sans jamais tricher avec les échelles ni forcer le trait, pour que chacun saisisse d'un coup d'œil ce que vivent réellement nos îles.",
-      "note": "Projet solo · React, ECharts & Mapbox GL · données Pacific Data Hub (SPC)"
+      "body": "Datamoana répond au Pacific Dataviz Challenge 2026. Le thème de cette année — le changement climatique dans le Pacifique — me touche de près : je vis et travaille à Nouméa, en Nouvelle-Calédonie, où j'occupe un poste de développeur et de support informatique au sein d'un grand groupe de quincaillerie du territoire. J'ai répondu à cet appel seul, en dehors de mon temps de travail.\n\nLe Pacifique est chez moi, et les données que l'on manipule ici n'ont rien d'abstrait : elles racontent notre quotidien — la mer qui grignote les côtes, les cyclones, la ressource en eau, l'état des récifs. Mais elles restent souvent dispersées, techniques, difficiles d'accès, loin de celles et ceux qu'elles concernent en premier lieu.\n\nL'objectif fixé par le Challenge rejoint exactement ce qu'elles réclament : les rendre claires et sensibles, sans jamais tricher avec les échelles ni forcer le trait, pour que chacun saisisse d'un coup d'œil ce que vivent réellement nos îles.",
+      "note": "Réalisé pour le Pacific Dataviz Challenge 2026 · React, ECharts & Mapbox GL · données Pacific Data Hub (SPC)"
     },
     "data": {
       "eyebrow": "Les données",
-      "title": "Des sources ouvertes et vérifiables",
+      "title": "Les données de Datamoana sont ouvertes et vérifiables",
       "lead": "Toutes les données de Datamoana proviennent de sources publiques et ouvertes, agrégées par le Pacific Data Hub .Stat de la Communauté du Pacifique (SPC). Elles correspondent à la liste officielle du concours : chaque acte affiche sa source, son unité et sa méthode.",
       "platform_name": "Pacific Data Hub .Stat (SPC)",
       "platform_desc": "Point d'accès unifié (API SDMX) aux statistiques régionales du Pacifique.",
@@ -3008,6 +3025,8 @@
       "concept_5_t": "Corrélations inattendues",
       "concept_5_d": "Repérer des comportements impossibles à deviner à l'œil nu.",
       "close": "La valeur de la donnée n'est pas seulement dans les tableaux de bord : elle est dans la découverte d'opportunités invisibles à l'œil humain. C'est exactement ce que je cherche à provoquer ici, avec les données du Pacifique.",
+      "bridge_title": "Ce que ça donne, ici",
+      "bridge_text": "Le même geste, appliqué aux jeux du Pacific Data Hub : croiser les trajectoires cycloniques avec le nombre de personnes affectées par les catastrophes, ou les émissions par habitant avec la montée du niveau de la mer mesurée par ZEE. Pris séparément, aucun de ces chiffres ne dit grand-chose. Mis côte à côte, ils désignent les territoires qui encaissent le plus sans avoir émis — et cette phrase-là, c'est la donnée qui la prononce, pas moi.",
       "sources_label": "Sources",
       "src_popular": "Grand public",
       "src_case": "Étude de cas",

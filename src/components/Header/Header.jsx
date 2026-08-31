@@ -13,15 +13,12 @@
 
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { FiSun, FiMoon } from "react-icons/fi";
-import { useTheme } from "../../store/context/themeContext";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import logo from "../../logo.png";
 import "./Header.scss";
 
 export default function Header() {
-  const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLang();
   const { immersive } = useJourney();
   const [scrolled, setScrolled] = useState(false);
@@ -42,8 +39,6 @@ export default function Header() {
   }, []);
 
   if (immersive) return null;
-
-  const isDark = theme === "dark";
 
   return (
     <header
@@ -99,26 +94,9 @@ export default function Header() {
             </button>
           </div>
 
-          {/* Switch thème */}
-          <button
-            type="button"
-            className={`themeswitch ${isDark ? "themeswitch--dark" : "themeswitch--light"}`}
-            onClick={toggleTheme}
-            role="switch"
-            aria-checked={isDark}
-            aria-label={t("header.theme")}
-            title={t("header.theme")}
-          >
-            <span className="themeswitch__track" aria-hidden="true">
-              <span className="themeswitch__ico themeswitch__ico--sun">
-                <FiSun />
-              </span>
-              <span className="themeswitch__ico themeswitch__ico--moon">
-                <FiMoon />
-              </span>
-              <span className="themeswitch__thumb" />
-            </span>
-          </button>
+          {/* Le switch de thème a été retiré : Datamoana se lit en sombre,
+              point. Le récit est composé pour la nuit — laisser le choix
+              revenait à proposer une version qui n'a jamais été réglée. */}
         </div>
       </div>
     </header>

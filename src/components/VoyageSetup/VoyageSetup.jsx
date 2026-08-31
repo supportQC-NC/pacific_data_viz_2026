@@ -1,51 +1,39 @@
 // src/components/VoyageSetup/VoyageSetup.jsx
 // ============================================================
-// LE SEUIL DU VOYAGE — deux réglages, avant la première scène.
+// LE SEUIL DU VOYAGE — un réglage, avant la première scène : LA LANGUE.
 //
-// « Découvrir » partait droit vers /recit. Deux choix restaient alors
-// implicites, et ce sont précisément les deux qui décident de ce que le
-// lecteur va voir :
+// « Découvrir » partait droit vers /recit, et la langue était devinée
+// depuis `navigator.language` : un lecteur anglophone sur un poste
+// configuré en français commençait le voyage en français, puis devait
+// trouver un sélecteur dans l'en-tête pour recommencer. Le concours exige
+// les deux langues : autant demander plutôt que parier.
 //
-//   • LA LANGUE. Elle était devinée depuis `navigator.language` — un
-//     lecteur anglophone sur un poste configuré en français commençait le
-//     voyage en français et devait trouver un sélecteur dans l'en-tête,
-//     après coup, pour recommencer. Le concours exige les deux langues :
-//     autant demander plutôt que parier.
+// L'étape « Affichage » a été RETIRÉE. Datamoana se lit en sombre, et
+// seulement en sombre (voir store/context/themeContext.js) : proposer un
+// thème clair revenait à ouvrir une version qu'on ne défend pas.
 //
-//   • L'AFFICHAGE. Le thème suivait `prefers-color-scheme`, donc un système
-//     en clair ouvrait l'expérience en clair — alors que le récit est dessiné
-//     pour l'obscurité : ciel étoilé, pirogue sur la houle, cartes de nuit,
-//     trajectoires de cyclones. Ça reste lisible en clair (les rampes sont
-//     déclarées dans les deux thèmes), mais ce n'est pas ce qu'on a composé.
+// Deux règles de conception, inchangées :
 //
-// Deux règles de conception :
-//
-//   1. LE CHOIX SE VOIT AVANT D'ÊTRE VALIDÉ. Cliquer une option l'applique
-//      immédiatement — la page derrière le panneau change de thème, le
-//      panneau lui-même change de langue. On ne demande pas au lecteur de
-//      choisir à l'aveugle entre deux mots.
+//   1. LE CHOIX SE VOIT AVANT D'ÊTRE VALIDÉ. Cliquer une langue l'applique
+//      immédiatement — le panneau lui-même change de langue. On ne demande
+//      pas au lecteur de choisir à l'aveugle entre deux mots.
 //   2. RENONCER NE COÛTE RIEN. Échap, le fond, ou « Pas encore » remettent
-//      l'état exact d'avant l'ouverture — langue ET thème. Un panneau qui
-//      laisse des traces quand on le referme est un piège.
-//
-// Le sombre est présélectionné à l'ouverture, quel que soit le réglage
-// système : c'est la recommandation, et elle est écrite sur la carte.
+//      la langue d'avant l'ouverture. Un panneau qui laisse des traces
+//      quand on le referme est un piège.
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLang } from "../../store/context/langContext";
-import { useTheme } from "../../store/context/themeContext";
 import "./VoyageSetup.scss";
 
 export default function VoyageSetup({ open, onConfirm, onCancel }) {
   const { lang, setLang, t } = useLang();
-  const { theme, setTheme } = useTheme();
 
   // L'état d'AVANT. On le fige à l'ouverture pour pouvoir le rendre intact si
   // le lecteur renonce — les aperçus en direct ont modifié le vrai réglage,
   // pas une copie.
-  const entering = useRef({ lang, theme });
+  const entering = useRef({ lang });
   const panelRef = useRef(null);
   const [ready, setReady] = useState(false);
 
@@ -54,11 +42,7 @@ export default function VoyageSetup({ open, onConfirm, onCancel }) {
       setReady(false);
       return undefined;
     }
-    entering.current = { lang, theme };
-    // LE SOMBRE EST LE DÉFAUT RECOMMANDÉ, pas le réglage système. Si le poste
-    // est en clair, le panneau bascule en sombre dès l'ouverture : c'est la
-    // proposition, et elle se voit au lieu de se lire.
-    setTheme("dark");
+    entering.current = { lang };
     setReady(true);
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,9 +50,8 @@ export default function VoyageSetup({ open, onConfirm, onCancel }) {
 
   const cancel = useCallback(() => {
     setLang(entering.current.lang);
-    setTheme(entering.current.theme);
     if (onCancel) onCancel();
-  }, [onCancel, setLang, setTheme]);
+  }, [onCancel, setLang]);
 
   // Échap referme et restaure. Le panneau prend le focus à l'ouverture pour
   // que la touche arrive bien ici et non sur la page dessous.
@@ -103,16 +86,6 @@ export default function VoyageSetup({ open, onConfirm, onCancel }) {
   const LANGS = [
     { id: "fr", label: "Français", note: "Version française" },
     { id: "en", label: "English", note: "English version" },
-  ];
-
-  const MODES = [
-    {
-      id: "dark",
-      label: t("home.setup.dark"),
-      note: t("home.setup.dark_note"),
-      recommended: true,
-    },
-    { id: "light", label: t("home.setup.light"), note: t("home.setup.light_note") },
   ];
 
   return createPortal(
@@ -153,50 +126,6 @@ export default function VoyageSetup({ open, onConfirm, onCancel }) {
                 </span>
                 <span className="vsetup__card-body">
                   <span className="vsetup__card-label">{it.label}</span>
-                  <span className="vsetup__card-note">{it.note}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
-        {/* ---------- L'AFFICHAGE ---------- */}
-        <fieldset className="vsetup__group">
-          <legend className="vsetup__legend">{t("home.setup.display")}</legend>
-          <div className="vsetup__cards">
-            {MODES.map((it) => (
-              <button
-                key={it.id}
-                type="button"
-                className={`vsetup__card vsetup__card--mode ${
-                  theme === it.id ? "is-on" : ""
-                }`}
-                aria-pressed={theme === it.id}
-                onClick={() => setTheme(it.id)}
-              >
-                {/* L'ÉCHANTILLON MONTRE LE THÈME QU'IL PROPOSE, PAS LE THÈME
-                    ACTIF. C'est le seul endroit de l'application où une
-                    couleur en dur est juste : `var(--c-*)` donnerait ici deux
-                    vignettes identiques, celles du thème courant, et la carte
-                    « Clair » se peindrait en sombre. Les valeurs sont celles
-                    des deux blocs de `_variables.scss`. */}
-                <span
-                  className={`vsetup__swatch vsetup__swatch--${it.id}`}
-                  aria-hidden="true"
-                >
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className="vsetup__card-body">
-                  <span className="vsetup__card-label">
-                    {it.label}
-                    {it.recommended ? (
-                      <em className="vsetup__badge">
-                        {t("home.setup.recommended")}
-                      </em>
-                    ) : null}
-                  </span>
                   <span className="vsetup__card-note">{it.note}</span>
                 </span>
               </button>

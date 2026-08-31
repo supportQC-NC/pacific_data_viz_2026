@@ -634,7 +634,7 @@ const EXTRA_STRINGS = {
         later:
           "Vous pourrez changer de langue et d'affichage à tout moment, depuis l'en-tête.",
       },
-      sources: "Les sources",
+      sources: "À propos",
       tb: {
         value_caption: "Incidence locale",
         mini_water: "Eau potable, même territoire",
@@ -1332,7 +1332,7 @@ const EXTRA_STRINGS = {
         cancel: "Not yet",
         later: "You can change language and display at any time, from the header.",
       },
-      sources: "The sources",
+      sources: "About",
       tb: {
         value_caption: "Local incidence",
         mini_water: "Safe water, same territory",

@@ -79,7 +79,8 @@
     "shock_num": "0.03%",
     "shock_text": "of global emissions: that's the Pacific's entire weight in the crisis. And yet it's one of the voices that carry furthest. Here, being on the front line doesn't mean playing the victim — it means leading the way.",
     "acts_lead": "Every act starts from a verifiable number and follows it all the way: the reality it describes, and the response the Pacific is already mounting. From emissions to solutions, the thread never leaves the ground — and it leads to action.",
-    "closing": "“Where the world sees a threat, the Pacific has already begun charting the way out.”",
+    "closing": "“As for the future, your task is not to foresee it, but to enable it.”",
+    "closing_cite": "Antoine de Saint-Exupéry · Citadelle, 1948",
     "c1_kicker": "Chapter I",
     "c1_title": "Decipher",
     "c1_desc": "We start with the facts, unfiltered: what the Pacific emits, what the ocean sends back, the pressure mounting on its people. Clean numbers — because no solution holds on a blurry diagnosis.",
@@ -613,6 +614,8 @@
     "data_sources": "Pacific Data Hub · .Stat Explorer (SPC)",
     "credit": "Built for the Pacific Dataviz Challenge 2026.",
     "about": "About",
+    "repo": "Source code · GitHub",
+    "repo_aria": "Open Datamoana’s public GitHub repository",
     "challenge_aria": "Open the Pacific Dataviz Challenge 2026 website"
   },
   "scene": {
@@ -2929,18 +2932,32 @@
   "about": {
     "eyebrow": "About",
     "title": "Datamoana, and the hand behind the data",
-    "lead": "An independent data-visualisation project built for the Pacific Dataviz Challenge 2026: making the Pacific's climate data legible, at human scale.",
+    "lead": "An entry built for the Pacific Dataviz Challenge 2026, on the theme it sets — climate change in the Pacific: making the Pacific Data Hub's open data legible, at human scale.",
     "back": "Back to home",
+    "prev": "Previous chapter",
+    "next": "Next chapter",
+    "pager_aria": "Chapter navigation",
+    "repo": {
+      "eyebrow": "Open source code",
+      "title": "Datamoana’s code is public on GitHub",
+      "body": "Datamoana's entire codebase is published openly. The repository lets anyone check the full commit history — in particular the date and time of the last push, which evidences compliance with the deadline set by the Pacific Dataviz Challenge 2026 rules.",
+      "cta": "View the GitHub repository",
+      "meta": "Timestamped commit history · MIT licence",
+      "deploy_title": "Deployment and traceability",
+      "deploy_host": "the live site, hosted with Hostinger.",
+      "deploy_ci": "Updates go through a deployment script tied to GitHub pushes: what is online matches the state of the repository.",
+      "deploy_logs": "Server logs can be provided to the jury on request, to cross-check deployment times against the commit history."
+    },
     "author": {
       "eyebrow": "The author",
       "name": "Stoyann Velten",
       "role": "Developer & IT support — Nouméa, New Caledonia",
-      "body": "I live and work in Nouméa, New Caledonia, as a developer and IT support technician for one of the territory's largest hardware and building-supplies groups. Datamoana is a personal project — one I designed and built on my own, outside of working hours.\n\nI took it on because the Pacific is home. The data we work with here is anything but abstract: it's the texture of daily life — the sea eating into our coastlines, the cyclones, the water we rely on, the state of the reefs. Yet it often stays scattered and technical, hard to reach for the very people it concerns most.\n\nWhat I set out to do with Datamoana is simple: to make it clear and tangible, without ever bending the scales or overstating the case, so that anyone can grasp at a glance what our islands are truly living through.",
-      "note": "Solo project · React, ECharts & Mapbox GL · Pacific Data Hub (SPC) data"
+      "body": "Datamoana is an entry to the Pacific Dataviz Challenge 2026. This year's theme — climate change in the Pacific — hits close to home: I live and work in Nouméa, New Caledonia, as a developer and IT support technician for one of the territory's largest hardware and building-supplies groups. I answered that call on my own, outside of working hours.\n\nThe Pacific is home, and the data we work with here is anything but abstract: it's the texture of daily life — the sea eating into our coastlines, the cyclones, the water we rely on, the state of the reefs. Yet it often stays scattered and technical, hard to reach for the very people it concerns most.\n\nThe goal the Challenge sets is exactly what that data calls for: to make it clear and tangible, without ever bending the scales or overstating the case, so that anyone can grasp at a glance what our islands are truly living through.",
+      "note": "Built for the Pacific Dataviz Challenge 2026 · React, ECharts & Mapbox GL · Pacific Data Hub (SPC) data"
     },
     "data": {
       "eyebrow": "The data",
-      "title": "Open, verifiable sources",
+      "title": "Datamoana’s data is open and verifiable",
       "lead": "All of Datamoana's data comes from open, public sources, aggregated by the Pacific Community's (SPC) Pacific Data Hub .Stat. It matches the challenge's official list: each act shows its source, unit and method.",
       "platform_name": "Pacific Data Hub .Stat (SPC)",
       "platform_desc": "Unified access point (SDMX API) to the Pacific's regional statistics.",
@@ -3014,6 +3031,8 @@
       "concept_5_t": "Unexpected correlations",
       "concept_5_d": "Spotting behaviour impossible to guess with the naked eye.",
       "close": "The value of data isn't only in dashboards: it's in uncovering opportunities invisible to the human eye. That's exactly what I'm trying to spark here, with the data of the Pacific.",
+      "bridge_title": "What that looks like here",
+      "bridge_text": "The same move, applied to the Pacific Data Hub datasets: crossing cyclone tracks with the number of people affected by disasters, or per-capita emissions with the rise in sea level measured by EEZ. Taken on its own, neither figure says much. Set side by side, they point to the territories taking the hardest hit without having emitted — and that sentence is spoken by the data, not by me.",
       "sources_label": "Sources",
       "src_popular": "Mainstream",
       "src_case": "Case study",

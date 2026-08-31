@@ -1,7 +1,8 @@
 // src/components/Footer/Footer.jsx
 // ============================================================
 // Pied de page : LOGO + marque, accroche, périmètre, sources de données
-// (citation obligatoire au règlement) + lien « À propos » et lien externe
+// (citation obligatoire au règlement) + liens « À propos » / dépôt GitHub
+// public (vérification de l'horodatage des commits) et lien externe
 // vers le Pacific Dataviz Challenge. Tout traduit via t().
 // S'efface pendant l'immersion (intro plein écran / mode présentation).
 // Le logo s'adapte au thème via un halo défini dans Footer.scss (data-theme).
@@ -9,12 +10,14 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { FiGithub } from "react-icons/fi";
 import { useLang } from "../../store/context/langContext";
 import { useJourney } from "../../store/context/journeyContext";
 import logo from "../../logo.png";
 import "./Footer.scss";
 
 const CHALLENGE_URL = "https://pacificdatavizchallenge.org/fr";
+const REPO_URL = "https://github.com/supportQC-NC/pacific_data_viz_2026";
 
 export default function Footer() {
   const { t } = useLang();
@@ -37,6 +40,16 @@ export default function Footer() {
             <Link to="/a-propos" className="footer__link">
               {t("footer.about")}
             </Link>
+            <a
+              className="footer__link footer__link--repo"
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t("footer.repo_aria")}
+            >
+              <FiGithub aria-hidden="true" />
+              {t("footer.repo")}
+            </a>
           </nav>
         </div>
 
