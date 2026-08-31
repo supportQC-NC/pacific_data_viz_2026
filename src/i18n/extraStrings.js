@@ -185,18 +185,42 @@ const EXTRA_STRINGS = {
       // c'est un rapport de plus de huit cents, et de cent contre la médiane.
       // L'écart n'était pas sous-estimé de peu, il l'était d'un ordre de
       // grandeur — dans la phrase d'ouverture de l'escale.
+      // « Presque tout cet écart s'explique par le dénominateur » affirmait
+      // une cause qu'aucune donnée de l'application ne peut montrer :
+      // Datamoana ne publie PAS d'effectifs de population. La clé
+      // `population` de pdhApi pointe sur NMDI0002 — « Croissance
+      // démographique (%) », un taux estimé, pas un compte. On décrit donc
+      // l'écart, sans lui attribuer une cause qu'on ne peut pas afficher.
       thesis:
-        "Dans le Pacifique, l'empreinte par habitant va de 0,1 à 86,7 tonnes selon le territoire — un rapport de plus de huit cents. Presque tout cet écart s'explique par le dénominateur, et cette escale montre comment le lire.",
+        "Cinquante-cinq ans de mesures, et une médiane régionale qui n'a jamais quitté l'intervalle 0,8–1,1 tonne par habitant. Sous cette surface immobile, les territoires ne se ressemblent pas : de 0,1 à 86,7 tonnes la même année. Cette escale regarde ce qui, dans cet écart, a bougé — et ce qui n'a pas bougé du tout.",
       outro: {
         // Numéro déjà juste (a1 = escale 01), mais le vocabulaire « acte »
         // subsistait dans les trois chaînes de sortie.
         kicker: "Fin de l'escale 01",
-        title: "Un niveau bas, pas une pente",
-        // « légère, et tenue dans la durée » laissait entendre une baisse
-        // générale. Onze territoires sur dix-sept ont augmenté depuis 1970.
+        title: "Une médiane immobile",
+        // DEUX corrections. (1) « émet peu / niveau bas » est une comparaison
+        // avec un ailleurs absent de nos données. (2) Le compte était faux :
+        // sur la série PDH `A.GHG_EMI_CAPITA.` lue à la décimale publiée,
+        // 1970 contre 2024 donne HUIT hausses, quatre baisses, cinq valeurs
+        // strictement identiques — pas onze hausses. L'écart avec l'ancien
+        // chiffre vient de la précision : à une décimale, cinq territoires
+        // ne peuvent tout simplement pas bouger.
         text:
-          "Le Pacifique émet peu — la médiane régionale tient sous une tonne par habitant. Mais onze territoires sur dix-sept émettent plus qu'en 1970 : c'est un niveau bas, pas une pente descendante. Reste à voir ce que l'océan, lui, enregistre déjà.",
+          "Depuis 1970, la médiane du Pacifique est restée entre 0,8 et 1,1 tonne par habitant : cinquante-cinq ans sans déplacement net. Dessous, huit territoires sur dix-sept émettent davantage qu'à l'époque, quatre moins, et cinq affichent exactement la même valeur. Ce qui bouge ici, ce sont les écarts entre voisins — pas la région. L'océan, lui, enregistre-t-il la même immobilité ?",
         next: "Escale suivante : l'océan",
+      },
+
+      // Ce bloc `hint` n'existait pas : les indices de l'escale 01 vivaient
+      // comme littéraux dans Act1Emissions.jsx, via tx(). Comme tx() rend
+      // t(clé) dès que la clé existe, la définir ici suffit à surcharger le
+      // littéral — sans toucher à la page.
+      hint: {
+        // « les plus nerveux sont presque toujours les moins peuplés » :
+        // affirmation invérifiable ici, Datamoana n'ayant aucun effectif de
+        // population. Ce que la série montre, en revanche, c'est que le
+        // classement par nervosité suit presque exactement celui par niveau.
+        denom:
+          "Survolez un point : dans cette série, les empreintes les plus hautes sont aussi les plus nerveuses.",
       },
       viz: {
         plume_title: "L'empreinte, territoire par territoire",
@@ -270,8 +294,13 @@ const EXTRA_STRINGS = {
 
         denom_find:
           "Un point par territoire. De gauche à droite, son niveau habituel sur la période ; de bas en haut, à quel point sa courbe saute d'une année à l'autre — 0 % pour une série parfaitement régulière, 100 % pour une série qui varie autant que sa moyenne.",
+        // « Les pics disent la taille de leur population » : on ne peut pas
+        // le montrer, faute d'effectifs dans le catalogue. On énonce donc
+        // le mécanisme arithmétique, puis on décrit ce que la série montre
+        // vraiment — les plus hautes sont aussi les plus nerveuses — sans
+        // en attribuer la cause.
         denom_take:
-          "Une émission « par habitant » est une division : par dix mille personnes plutôt que dix millions, un seul navire fait bondir le résultat. Les pics des petits territoires disent la taille de leur population, pas un dérapage.",
+          "Une émission « par habitant » est une division, et un petit diviseur amplifie tout : un seul équipement peut déplacer le résultat d'un territoire peu peuplé. Dans cette série, les empreintes les plus hautes sont aussi les plus nerveuses. On le constate ici ; on ne peut pas le démontrer, faute d'effectifs de population dans le catalogue.",
 
         heat_find:
           "Une ligne par territoire, une colonne par année, une case par valeur. La couleur de la case donne la position du territoire cette année-là : claire quand il est parmi les plus sobres, sombre quand il est parmi les plus émetteurs.",
@@ -514,8 +543,12 @@ const EXTRA_STRINGS = {
         a11_cross:
           "Onze relevés, onze instruments. Nos ancêtres croisaient plusieurs étoiles pour tenir un cap. On va croiser onze mesures.",
 
+        // « Légère » ne se mesure que contre autre chose, et cette autre
+        // chose n'est pas dans nos données. On remplace le jugement par les
+        // deux faits que la série établit vraiment : une médiane immobile,
+        // et un territoire qui, seul, parcourt un intervalle énorme.
         a1_text:
-          "Cinquante ans de données, une constante : l'empreinte carbone par habitant du Pacifique reste légère et tenue dans la durée. Cette escale la mesure territoire par territoire — le socle du récit.",
+          "Dix-sept territoires, cinquante-cinq années sans une seule absence, une seule mesure : les gaz à effet de serre rapportés à un habitant. Depuis 1970, la médiane régionale n'a jamais quitté l'intervalle 0,8–1,1 tonne. Un territoire, à lui seul, va de 67 à 209.",
         a2_text:
           "L'anomalie de température de surface de la mer, territoire par territoire : l'écart à la normale, année après année. Savoir lire l'océan, c'est pouvoir anticiper — pour le vivant, le ciel et les saisons cycloniques des escales suivantes.",
         a1_tag: "Escale 01",
@@ -563,9 +596,12 @@ const EXTRA_STRINGS = {
         // La question posée est celle de la RÉGION, pas du classement : sa
         // réponse — très peu — est le socle sur lequel tiennent les onze
         // escales suivantes, puisque tout le récit part de là. Le classement
-        // territoire par territoire reste dans les vues ; il répond au
-        // « combien chacun », pas au « que pèse l'ensemble ».
-        a1_title: "Que pèse le Pacifique dans le climat ?",
+        // « Que pèse le Pacifique dans le climat ? » demandait une fraction
+        // d'un total mondial. Datamoana ne contient aucune émission hors
+        // Pacifique : la question était sans réponse possible dans ses
+        // propres données. Celle-ci se tranche avec les 935 mesures de la
+        // série — dix-sept territoires, 1970 à 2024, sans une année absente.
+        a1_title: "Notre empreinte a-t-elle bougé en cinquante-cinq ans ?",
 
         // 02 · Océan — écart à la normale 1971–2000, territoire par territoire.
         a2_title: "De combien l'océan s'est-il réchauffé ?",
